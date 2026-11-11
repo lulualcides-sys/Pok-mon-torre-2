@@ -143,6 +143,26 @@ async function walkMenus(page, report, output) {
   await page.waitForTimeout(6500);
   await page.screenshot({path:path.join(output,'public-local-battle.png')});
   report.navigation.push('local-vs-cpu-battle-attempted');
+
+  // Second completely ordinary local battle: one independent normal reload,
+  // then choose only visibly unlocked Squirtle and Pikachu. No mutations of
+  // saved progress, account state or locked rosters.
+  await page.reload({waitUntil:'domcontentloaded',timeout:45000});
+  await page.waitForTimeout(7200);
+  await clickCanvas(page,320,148); // PLAY
+  await page.waitForTimeout(900);
+  await clickCanvas(page,320,205); // LOCAL (not ONLINE)
+  await page.waitForTimeout(1600);
+  await page.screenshot({path:path.join(output,'public-second-local-menu.png')});
+  await clickCanvas(page,100,60); // Squirtle (third publicly unlocked tile)
+  await page.waitForTimeout(450);
+  await clickCanvas(page,427,60); // Pikachu (yellow visible unlocked tile)
+  await page.waitForTimeout(600);
+  await page.screenshot({path:path.join(output,'public-second-rival-chosen.png')});
+  await clickCanvas(page,565,306); // FIGHT (VS CPU)
+  await page.waitForTimeout(7000);
+  await page.screenshot({path:path.join(output,'public-second-local-battle.png')});
+  report.navigation.push('second-local-vs-cpu-battle-attempted');
 }
 async function probe(outDir, browserFactory) {
   const output = path.resolve(outDir);
