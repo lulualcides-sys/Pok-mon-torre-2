@@ -7,6 +7,8 @@ on:
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/capture-public-missing-packs.mjs'
+      - 'tests/rea-public-native-missing.test.mjs'
       - 'tools/pokearena/verify-pinned-capture.mjs'
       - '.github/workflows/pokearena-rea-current-candidate-homolog.yml'
   workflow_dispatch:
@@ -31,6 +33,8 @@ jobs:
           node --check tools/pokearena/rea-overlay-verified-client.mjs
           node --check tools/pokearena/audit-native-packs.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
+          node --check tools/pokearena/capture-public-missing-packs.mjs
+          node --test tests/rea-public-native-missing.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
           CHROME_BIN: /usr/bin/google-chrome
@@ -111,6 +115,15 @@ jobs:
           # official pack/loose-sprite coverage audit immediately below.
           # The audit must FAIL the job if any form remains unrenderable.
           test -s site-capture/pokearena-client/lazy-pack-integration-report.json
+      - name: Try only exact public missing packs by ordinary unauthenticated GET
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/capture-public-missing-packs.mjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          test -s site-capture/pokearena-client/public-missing-packs-report.json
       - name: Fail closed unless all original packs or approved loose sprites are present
         run: node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
       - name: Build original Phaser into isolated _site, never Pages
@@ -129,6 +142,7 @@ jobs:
           name: current-native-build-gates-homolog
           path: |
             site-capture/current-native-gaps.json
+            site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/rea-lazy-pack-probe/report.json
             site-capture/pokearena-client/lazy-pack-integration-report.json
             site-capture/rea-current/rea-capture-summary.json
