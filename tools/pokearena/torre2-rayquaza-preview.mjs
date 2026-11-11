@@ -11,7 +11,7 @@ export function enableRayquazaForHomologation(source){
  if(typeof source!=='string')throw new TypeError('Expected native datos.js source');
  const offCount=source.split(OFF).length-1;
  const onCount=source.split(ON).length-1;
- const auto='id:"rayquaza",dex:"0384"';
+ const auto='{id:"rayquaza",dex:"0384"';
  const autoCount=source.split(auto).length-1;
  const nativeReady=offCount===0&&onCount===0&&autoCount===1&&
   source.includes('ROSTER=TODOS.filter(p=>!p.desactivado||p.desactivado==="local"&&EN_LOCAL)');
