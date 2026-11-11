@@ -6,7 +6,7 @@ import {
 
 const native=({ray='desactivado:"local"',mega=true}={})=>
  'const TODOS=[{desactivado:true,id:"mimikyu",dex:"0778"},'+
- '{'+ray+',id:"rayquaza",dex:"0384",kit:{lmb:{nombre:"Dragon Claw"},'+
+ '{'+(ray?ray+',':'')+'id:"rayquaza",dex:"0384",kit:{lmb:{nombre:"Dragon Claw"},'+
  'rmb:{nombre:"Twister"},q:{...mov("dragonDance")},'+
  'esp:{...mov("extremeSpeed")},e:{nombre:"Dragon Ascent"}},'+
  'evoluciones:[{dex:"0384"},{'+(mega?'mega:{dex:"0384-0001",nombre:"MEGA RAYQUAZA",kit:{rmb:{nombre:"Hurricane"}}':'')+'}]}];'+
@@ -22,6 +22,13 @@ test('enable only native Rayquaza in the isolated copy, keep Mimikyu disabled',(
  assert.equal(RAYQUAZA_PREVIEW_SPECIES.megaDex,'0384-0001');
 });
 
+test('Alpha 0.69.4 Rayquaza is already native-enabled without any disabled flag',()=>{
+ const current=native({ray:''});
+ const result=enableRayquazaForHomologation(current);
+ assert.equal(result,current,'Do not mutate native kit, forms or roster flags');
+ assert.ok(result.includes('{id:"rayquaza",dex:"0384"'));
+ assert.ok(!result.includes('desactivado:false,id:"rayquaza"'));
+});
 test('upstream kit changed or disabled twice: fail safely',()=>{
  assert.throws(()=>enableRayquazaForHomologation(native({mega:false})),/Mega kit changed|kit changed/i);
  assert.throws(()=>enableRayquazaForHomologation(native({ray:'desactivado:true'})),/missing or duplicated/i);
