@@ -681,11 +681,14 @@ for(const [filename,changes] of patches){
     }
     // Upstream now gates the account tile with a DEBUG ternary.
     // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
-    const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
-    if(body.includes(debugVariant)){
-     body=body.replace(debugVariant,'ajustes:[');
+    const accountVariants=['DEBUG','CUSTOMIZE'].map(flag=>
+     'ajustes:['+flag+'?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},');
+    const present=accountVariants.filter(x=>body.includes(x));
+    if(present.length===1){
+     body=body.replace(present[0],'ajustes:[');
      continue;
     }
+    if(present.length>1)throw Error('Duplicate native account-setting variants');
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
      console.warn('Native title no longer exposes PROFILE in settings; no change');
      continue;
@@ -768,6 +771,48 @@ for(const [filename,changes] of patches){
     const cards=body.includes('casilla(p,x,y,i){casillaRetrato(this,x,y,CEL-2,p.dex)');
     if(!grid || !cards)
       throw Error('Unknown upstream Pokédex grid; refusing to remove approved card fix');
+    continue;
+   }
+   // Native 0.69.x initializes the offline local draft state before
+   // create(). Preserve it, adding only the approved Kanto Idle preload.
+   if(filename==='escenas/seleccion.js'&&
+      from==='init(datos){this.previo=datos?.previo}create(){'&&
+      to.includes('preload(){const m=this.registry.get("manifiesto")')){
+    const live='init(datos){this.previo=datos?.previo;if(this.previo?.modo==="elegir")this.sys.settings.data={}}create(){';
+    if(body.split(live).length!==2)throw Error('Unrecognized native selection init');
+    const compatible=to.replace('init(datos){this.previo=datos?.previo}',
+      'init(datos){this.previo=datos?.previo;if(this.previo?.modo==="elegir")this.sys.settings.data={}}');
+    body=body.replace(live,compatible);
+    continue;
+   }
+   // Native alternate forms may override species types. Gen-III conversion
+   // is campaign-only: retain the new alternate typing in every other mode.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.includes('gen3Types(types)')){
+    const live='get tipos(){return this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos}';
+    if(body.split(live).length!==2)throw Error('Unrecognized native alternate type getter');
+    body=body.replace(live,
+      'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
+    continue;
+   }
+   // The newer 1v1/2v2 draft preloader supports lists, teams and aspects.
+   // Preserve the entire verified upstream expression and override it ONLY
+   // for the offline Kanto party so that switching cannot 404 at runtime.
+   if(filename==='escenas/combate.js'&&
+      from.startsWith('const dexs=formasDe(d.jugadores?d.jugadores.map')&&
+      to.startsWith('const ids=d.torre2?.party?')){
+    const prefix='const dexs=formasDe(d.jugadores?d.jugadores.flatMap(';
+    const suffix=';soltarPMD(this,m,dexs);';
+    const start=body.indexOf(prefix),end=body.indexOf(suffix,start);
+    if(start<0||end<0||body.indexOf(prefix,start+1)>=0)
+      throw Error('Native combat preloader changed beyond safe party compatibility');
+    const original=body.slice(start,end);
+    if(!original.includes('d.equipos?d.equipos.flat():')||
+       !original.includes('d.aspectosEq?.flat()'))
+      throw Error('Unrecognized team/aspect preloader, refusing guessed patch');
+    const torParty='const dexs=d.torre2?.party?new Set([...d.torre2.party.friend,...d.torre2.party.foes].map(m=>{const found=buscar(m.id);return found?.etapa?found.def.evoluciones[found.etapa-1]?.dex??found.def.dex:found?.def?.dex}).filter(Boolean)):';
+    body=body.slice(0,start)+torParty+original.slice('const dexs='.length)+body.slice(end);
     continue;
    }
    // The Alpha 0.69.3 config import gained FX. Preserve the exact native
