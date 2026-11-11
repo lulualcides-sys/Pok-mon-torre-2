@@ -1,0 +1,23 @@
+name: Kanto static-map design approval standard
+on:
+  push:
+    branches: [feat/kanto-static-map-interaction-standard-20261102]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-static-map-design-standard.js'
+      - 'tests/kanto-static-map-design-standard.test.js'
+permissions:
+  contents: read
+jobs:
+  validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test data model and live overlay zones
+        run: |
+          node --check tools/pokearena/torre2-static-map-design-standard.js
+          node --test tests/kanto-static-map-design-standard.test.js
