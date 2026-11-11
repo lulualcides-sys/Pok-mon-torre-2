@@ -107,10 +107,21 @@ async function probe(outDir, browserFactory) {
   await fs.mkdir(filesDir,{recursive:true});
   let browser, page, bytes=0;
   const pending = new Set(), seen = new Set();
+  let publicConfig = null;
   try {
     browser = await browserFactory();
     page = await browser.newPage({viewport:{width:1280,height:720}});
     page.on('response', resp => {
+      // config.js must come from this very public navigation, not a guessed Alpha.
+      const configMatch = new URL(resp.url()).pathname.match(/^\/(src-[a-f0-9]{10})\/config\.js$/);
+      if (configMatch && resp.status() === 200) {
+        const work = resp.text().then(body => {
+          const alpha=body.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/)?.[1];
+          if (alpha) publicConfig={src:configMatch[1],alpha};
+        }).catch(e=>report.errors.push({stage:'public-config',reason:String(e.message)}));
+        pending.add(work);
+        work.finally(()=>pending.delete(work));
+      }
       const asset = safeAssetPath(resp.url());
       if (!asset) return;
       if (resp.status() !== 200) {
@@ -152,18 +163,10 @@ async function probe(outDir, browserFactory) {
     report.src=officialSourceDir(html);
     // A VERSION parsed from index is NOT official Alpha. The caller must
     // cross-check config.js from the exact same observed source before upgrade.
-    const configResponse = await page.waitForResponse(r =>
-      r.url() === ORIGIN+'/'+report.src+'/config.js' && r.status()===200,
-      {timeout:15000}).catch(() => null);
-    if (configResponse) {
-      const config=await configResponse.text();
-      report.version=config.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/)?.[1] || null;
-    }
-    // Browser may have loaded config.js before the waiter was installed.
-    // Don't invent its value; report version as unverified in that case.
     await walkMenus(page,report).catch(e =>
       report.errors.push({stage:'public-menu-navigation',reason:String(e.message).slice(0,160)}));
     await Promise.allSettled([...pending]);
+    if (publicConfig?.src === report.src) report.version=publicConfig.alpha;
     report.coverage=packCoverage(index,report.observed.map(item=>item.asset));
     report.totalBytes=bytes;
     report.status = report.denied.length || report.errors.length
