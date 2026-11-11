@@ -458,6 +458,7 @@ patches.push(
 // Only online, multiplayer, chat, connected players and combat evolution go.
 patches.push(
  ['escenas/titulo.js',[
+  ['...CUSTOMIZE?[{id:"personalizar",txt:"CUSTOMIZE",menu:"personalizar",ico:"pincel"}]:[],',''],
   ['{id:"online",txt:"ONLINE",menu:"online",ico:"globo"},',''],
   ['[["tiktok",600],["youtube",578],["instagram",556],["discord",528]]','[["tiktok",600],["youtube",578],["instagram",556]]'],
   ['const halo=this.add.graphics().setDepth(999).setPosition(528,Y);halo.fillStyle(5793266,.45);halo.fillRoundedRect(-13,-13,26,26,6);this.tweens.add({targets:halo,alpha:.15,duration:700,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});const flecha=this.flecha(1).setDepth(1e3).setPosition(505,Y);this.tweens.add({targets:flecha,x:509,duration:420,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});const c=this.chapa(528,Y+19,"JOIN!");c.mover(-Math.round(c.w/2))',''],
