@@ -34,3 +34,25 @@ test('unsupported upstream code fails closed rather than guessing native hitboxe
  assert.throws(()=>paginateSelectionSource('const FILAS=999;'+shared),
   /Unrecognized Poké Arena selection dimensions/);
 });
+
+test('November Alpha 0.69.3 preserves native two-row layout and optional RANDOM button',()=>{
+ const latest='const TY=43,TGAP=2,FILAS=2;const POR_FILA=12;'+
+  shared.replace('this.opciones();this.ayuda=',
+   'this.opciones();if(this.encargo?.azar)this.botonAzar=boton(this,76,12,"RANDOM",()=>{});this.ayuda=');
+ const patched=paginateSelectionSource(latest);
+ assert.ok(patched.includes('FILAS=2;const POR_FILA=12;'),
+  'Already approved 12-column native layout must not be changed');
+ assert.ok(patched.includes('this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2))'));
+ assert.ok(patched.includes('this.opciones();this.torre2Page=0;'));
+ assert.ok(patched.includes('if(this.encargo?.azar)this.botonAzar='),
+  'Do not disable new upstream local RANDOM option');
+ assert.equal(patched.match(/this.torre2Page=0/g)?.length,1,
+  'Page controls are installed exactly once');
+ assert.ok(patched.includes('card.objects=this.children.list.slice(before)'));
+ assert.ok(patched.includes('refrescar(){this.torre2Page=Math.floor(this.foco/(POR_FILA*2))'));
+});
+test('unrecognized new menu anchors fail closed rather than silently losing pagination',()=>{
+ const unexpected='FILAS=2;const POR_FILA=12;'+
+  shared.replace('this.opciones();this.ayuda=','this.menuAtualizado();this.ayuda=');
+ assert.throws(()=>paginateSelectionSource(unexpected),/refusing unsafe patch/);
+});
