@@ -1,0 +1,125 @@
+name: Poké Arena — montar cliente atual com REA e pacotes verificados (homolog)
+on:
+  pull_request:
+    branches: [test/homologacao-kanto-20261103]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/audit-native-packs.mjs'
+      - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/verify-pinned-capture.mjs'
+      - '.github/workflows/pokearena-rea-current-candidate-homolog.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  source-current:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install approved browser dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check capture source integrity
+        run: |
+          node --check tools/pokearena/rea-capture-live-public.cjs
+          node --check tools/pokearena/rea-overlay-verified-client.mjs
+          node --check tools/pokearena/audit-native-packs.mjs
+          node --check tools/pokearena/stage-verified-lazy-packs.mjs
+      - name: Confirm current official Alpha from config.js by normal Chromium/REA
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: auto
+        run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+      - name: Retain official Alpha and source hash evidence even when blocked
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-rea-provenance-homolog
+          path: |
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/rea-capture-failure.json
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Retain only REA captured public source in isolated artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-rea-source-homolog
+          path: site-capture/rea-current/pokearena-client/
+          retention-days: 7
+          if-no-files-found: error
+
+  build-and-gate:
+    needs: source-current
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      POKEARENA_EXPECTED_ALPHA: auto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify older approved public static assets with SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "${{ github.repository }}" --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: current-rea-source-homolog
+          path: site-capture/rea-current/pokearena-client/
+      - uses: actions/download-artifact@v4
+        with:
+          name: current-rea-provenance-homolog
+          path: site-capture/rea-current
+      - name: Verify original current module graph and preserve approved static bytes
+        run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+      - name: Download only browser-observed original native packs, same Alpha verified below
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture/rea-lazy-pack-probe
+          gh run download 43038006169 --repo "${{ github.repository }}" --name pokearena-lazy-pack-evidence --dir site-capture/rea-lazy-pack-probe
+      - name: Install verified lazy packs in quarantine (never overwrite)
+        shell: bash
+        run: |
+          set -uo pipefail
+          node tools/pokearena/stage-verified-lazy-packs.mjs site-capture/rea-lazy-pack-probe site-capture/pokearena-client
+          code=$?
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          exit 0
+      - name: Fail closed unless all original packs or approved loose sprites are present
+        run: node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
+      - name: Build original Phaser into isolated _site, never Pages
+        run: |
+          node tools/pokearena/build-preview.mjs
+          node tools/dev/approved-visual-guard.mjs
+          npm test
+      - name: Chromium WebGL startup and save smoke
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
+      - name: Preserve current source/version, pack and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-native-build-gates-homolog
+          path: |
+            site-capture/current-native-gaps.json
+            site-capture/pokearena-client/lazy-pack-integration-report.json
+            site-capture/rea-current/rea-capture-summary.json
+            test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
