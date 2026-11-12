@@ -1158,8 +1158,8 @@ await fs.appendFile(fighterPath,
 // Independent 0.70.0 Electro Ball backport: only Raichu in offline Arena.
 // Native Alpha 0.70.0 already implements it, so the adapter never overrides it.
 await fs.appendFile(fighterPath,
- '\\nimport{installRaichuElectroBall0700}from"./torre2/raichu-electro-ball-0700.js";'+
- 'installRaichuElectroBall0700(Luchador);\\n');
+ '\nimport{installRaichuElectroBall0700}from"./torre2/raichu-electro-ball-0700.js";'+
+ 'installRaichuElectroBall0700(Luchador);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
