@@ -8,6 +8,7 @@ on:
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
       - 'tests/native-visual-substitute-policy.test.mjs'
+      - 'tests/source-client-smoke.cjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
       - 'tools/pokearena/rea-public-pmd-manifest.cjs'
       - 'tests/rea-public-pmd-manifest.test.mjs'
