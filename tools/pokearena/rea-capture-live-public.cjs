@@ -15,7 +15,10 @@ const {spawn}=require('node:child_process');
 const {chromium}=require('playwright-core');
 
 const ORIGIN='https://www.pokearena2d.com';
-const CDP='http://127.0.0.1:9235';
+// A private ephemeral loopback port avoids collisions with other Chrome
+// processes in shared/parallel CI. No external CDP or proxy is exposed.
+const CDP_PORT=Number(process.env.REA_CDP_PORT)||Math.floor(20000+Math.random()*20000);
+const CDP='http://127.0.0.1:'+CDP_PORT;
 const OUT=path.resolve(process.argv[2]||'site-capture/rea-public-0658');
 const CLIENT=path.join(OUT,'pokearena-client');
 const CHROME=process.env.CHROME_BIN||'/usr/bin/google-chrome';
@@ -67,8 +70,13 @@ async function main(){
  const chrome=spawn(CHROME,[
   '--headless=new','--no-sandbox','--disable-dev-shm-usage','--no-first-run',
   '--no-default-browser-check','--remote-debugging-address=127.0.0.1',
-  '--remote-debugging-port=9235','--user-data-dir='+profile,'about:blank'
- ],{stdio:'ignore'});
+  '--remote-debugging-port='+CDP_PORT,'--user-data-dir='+profile,'about:blank'
+ ],{stdio:['ignore','ignore','pipe']});
+ let chromeExit=null,chromeStartupError=null,chromeStderr='';
+ chrome.stderr?.on('data',chunk=>{chromeStderr=(chromeStderr+String(chunk)).slice(-5000)});
+ chrome.on('error',err=>{chromeStartupError=err});
+ chrome.on('exit',(code,signal)=>{chromeExit={code,signal}});
+
  let browser;
  const report={generatedAt:new Date().toISOString(),source:ORIGIN,expectedAlpha:REQUIRED_ALPHA,
   observedAlpha:null,sourceDir:null,rea:true,noLogin:true,noStealth:true,noBypass:true,
@@ -92,7 +100,14 @@ async function main(){
   for(let n=0;n<40;n++){
    try{const x=await fetch(CDP+'/json/version',{signal:AbortSignal.timeout(2000)});if(x.ok)break}
    catch{}
-   if(n===39)throw Error('Chrome public CDP port unavailable');
+   if(chromeStartupError||chromeExit)
+    throw Error('Chromium process exited before public CDP startup: '+JSON.stringify({
+     binary:CHROME,exit:chromeExit,error:String(chromeStartupError||''),
+     stderr:chromeStderr.slice(-1600)
+    }));
+   if(n===39)throw Error('Chrome public CDP port unavailable: '+JSON.stringify({
+    binary:CHROME,port:CDP_PORT,stderr:chromeStderr.slice(-1600)
+   }));
    await sleep(300);
   }
   browser=await chromium.connectOverCDP(CDP);
