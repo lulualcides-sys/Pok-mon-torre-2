@@ -859,10 +859,8 @@ for(const [filename,changes] of patches){
     continue;
    }
    if(filename==='main.js'&&from.includes('import{iniciarChat,reservaChat}')){
-    // Chat bootstrap no longer has a stable import form in the public client.
-    // The offline game does not use the chat nor reserve any chat width.
-    body=body.replace(/import\s*\{[^}]*\b(?:iniciarChat|reservaChat)\b[^}]*\}\s*from\s*["']\.\/chat\.js["'];?/g,'');
-    body=body.replace(/\breservaChat\s*\(\s*\)/g,'0');
+    const {removeOnlineChatPreservingNativeResize}=await import('./torre2-offline-chat-resize.mjs');
+    body=removeOnlineChatPreservingNativeResize(body);
     continue;
    }
    // Native League's optional portrait warmup can move between releases.
