@@ -34,3 +34,12 @@ test('fails closed if upstream changes the selector structure',()=>{
  assert.throws(()=>adaptArenaFamilySelectorSource('const POR_FILA=13;'),
   /Unknown native SelectorPokemon/);
 });
+
+test('Alpha 0.70 centralized picker remains untouched so draft callbacks work',()=>{
+ const current='import{ROSTER}from"./datos.js";'+
+  'const LW=44,LH=44,LG=2;'+
+  'const POR_FILA=Math.min(13,Math.ceil(ROSTER.length/Math.ceil(ROSTER.length/13)));'+
+  'function abrirEleccion(escena,opts){escena.scene.launch("seleccion",{previo:opts})}'+
+  'class SelectorPokemon{};export{POR_FILA,SelectorPokemon,abrirEleccion};';
+ assert.equal(adaptArenaFamilySelectorSource(current),current);
+});

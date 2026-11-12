@@ -374,8 +374,10 @@ const server=http.createServer(async(req,res)=>{
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
-    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
-    if(item<0)throw Error('TRAINING disappeared from original menu');
+    const training=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
+    const local=title.botones.findIndex(b=>b.o?.id==='cpu'||b.id==='cpu');
+    const item=training>=0?training:local;
+    if(item<0)throw Error('Native solo Training or LOCAL selection entry missing');
     title.elegir(item);
   });
   try{
@@ -401,6 +403,19 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/training-select-timeout.png',fullPage:true}).catch(()=>{});
    throw err;
   }
+  // Alpha 0.70 moved Training from the title to the native LOCAL
+  // selection mode switch. Verify that the original TRAINING control exists
+  // and still selects a real stationary dummy; never invent a fake menu.
+  await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    if(scene.modo!=='entreno'){
+      const training=scene.botonesModo?.find(b=>b.id==='entreno');
+      if(!training||!training.b)throw Error('Native Training toggle absent from LOCAL selector');
+      scene.cambiarModo('entreno');
+    }
+    if(scene.modo!=='entreno'||scene.dispositivos?.[1]!=='muneco')
+      throw Error('TRAINING did not activate the native target dummy');
+  });
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
@@ -655,12 +670,26 @@ const server=http.createServer(async(req,res)=>{
   await offline.setViewportSize({width:980,height:420});
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
-  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
-  await offline.waitForFunction(async()=>{
+  await offline.evaluate(()=>{
+   window.dispatchEvent(new Event('resize'));
+   // Modern Alpha 0.70 explicitly subscribes to visualViewport resize as
+   // well as window.resize; Chromium automation may not emit the former
+   // when Playwright changes viewport dimensions programmatically.
+   window.visualViewport?.dispatchEvent(new Event('resize'));
+  });
+  // Playwright's poller treats an async callback's Promise as truthy even
+  // when its result is false. Resolve the native config ONCE, then poll a
+  // synchronous predicate until the real framebuffer has resized.
+  const viewportNativeConfig=await offline.evaluate(async()=>{
    const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
-   const canvas=document.querySelector('#juego canvas');
-   if(!src||!canvas)return false;
+   if(!src)throw Error('Native Phaser config module unavailable');
    const cfg=await import(new URL('./config.js',src).href);
+   return {ANCHO:cfg.ANCHO,ALTO:cfg.ALTO,VISTA:cfg.VISTA};
+  });
+  try{
+  await offline.waitForFunction(cfg=>{
+   const canvas=document.querySelector('#juego canvas');
+   if(!canvas)return false;
    const dpr=Math.min(4,devicePixelRatio||1);
    const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
    let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
@@ -668,7 +697,21 @@ const server=http.createServer(async(req,res)=>{
    const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
-  },null,{timeout:15000});
+  },viewportNativeConfig,{timeout:15000,polling:120});
+  }catch(err){
+   const detail=await offline.evaluate(()=>{
+    const game=window.__pt2Game,canvas=document.querySelector('#juego canvas');
+    return {inner:[innerWidth,innerHeight],outer:[outerWidth,outerHeight],
+     visual:window.visualViewport?{w:visualViewport.width,h:visualViewport.height}:null,
+     canvas:canvas?{w:canvas.width,h:canvas.height,
+       style:[canvas.style.width,canvas.style.height]}:null,
+     scale:game?{width:game.scale.width,height:game.scale.height,
+       gameSize:game.scale.gameSize?{w:game.scale.gameSize.width,h:game.scale.gameSize.height}:null}:null,
+     active:game?.scene.getScenes(true).map(x=>x.scene.key)};
+   });
+   console.error('REAL_NATIVE_RESIZE_TIMEOUT',JSON.stringify(detail));
+   throw err;
+  }
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;

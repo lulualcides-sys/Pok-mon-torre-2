@@ -20,8 +20,27 @@ export function restoreNativePokedexFamilies(original){
  s=once(s,'if(this.textures.exists(key)&&c.img.texture?.key!==key)c.img.setTexture(key);',
   'if(this.textures.exists(key)){const nativeKey=retratoA(this,c.p.dex,CEL-6);if(c.img.texture?.key!==nativeKey)c.img.setTexture(nativeKey).setDisplaySize(CEL-6,CEL-6);}',
   'native portrait refresh after file download');
- s=once(s,'const COLS=6,CEL=36,GX=10,GY=36;',
-  'const COLS=5,CEL=44,GX=10,GY=36;','original P2 44px tiles');
+ const dynamicPrefix='const GX=10,GY=36,ANCHO_REJILLA=222,ALTO_REJILLA=230;const COLS=';
+ const dynamicSuffix=';const CEL=Math.min(44,Math.floor(ANCHO_REJILLA/COLS));';
+ if(s.includes(dynamicPrefix)){
+  // The Alpha 0.70 upstream auto-squeezes EVERY battle ROSTER member into
+  // a fixed 222x230 panel, producing unreadable 17px cards once Torre2
+  // adds 151 Kanto species. Retain original card rendering but use the
+  // established 5x5 family-root page display, without touching battle data.
+  const start=s.indexOf(dynamicPrefix),end=s.indexOf(dynamicSuffix,start);
+  if(end<start||s.indexOf(dynamicPrefix,start+1)!==-1)
+   throw Error('Unknown native 0.70 responsive Pokédex grid');
+  const calc=s.slice(start+dynamicPrefix.length,end);
+  if(!calc.startsWith('(()=>{for(let c=5;c<12;c++){const cel=Math.min(44,')||
+     !calc.includes('Math.ceil(ROSTER.length/c)*cel<=ALTO_REJILLA')||
+     !calc.endsWith('return 12})()'))
+   throw Error('Unrecognized native 0.70 Pokédex column calculator');
+  s=s.slice(0,start)+'const COLS=5,CEL=44,GX=10,GY=36;'+
+    s.slice(end+dynamicSuffix.length);
+ }else{
+  s=once(s,'const COLS=6,CEL=36,GX=10,GY=36;',
+   'const COLS=5,CEL=44,GX=10,GY=36;','original P2 44px tiles');
+ }
  const orderStart=s.indexOf('let TORRE2_DEX_ORDER=null,TORRE2_DEX_RANK=null;');
  const orderEnd=s.indexOf('function kantoDexTypeColor(type){',orderStart);
  if(orderStart<0||orderEnd<0)throw Error('Unsupported National Dex order');

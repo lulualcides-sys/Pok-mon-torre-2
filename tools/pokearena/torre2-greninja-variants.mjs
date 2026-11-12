@@ -65,7 +65,13 @@ export function patchGreninjaSelectionSource(source){
  // (including Froakie). Do not fail the skin adapter or restore old locks.
  // Ranked still retains the native desbloqueadoRanked check.
  const offline='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
- if(s.includes(offline)){
+ const native070='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
+ if(s.includes(native070)){
+  // The 0.70 native Draft/Challenge picker owns its roster locks; our
+  // offline selection adapter already enables Froakie without touching it.
+  if(s.split(native070).length!==2)
+   throw Error('Ambiguous 0.70 native draft selection locks');
+ }else if(s.includes(offline)){
   if(s.split(offline).length!==2)
    throw Error('Ambiguous offline Arena unlock while installing Greninja skins');
  }else{

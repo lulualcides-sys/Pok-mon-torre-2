@@ -1,5 +1,13 @@
 /* Arena "preparar" selector only. Never change native P2 combat or saves. */
 export function adaptArenaFamilySelectorSource(source){
+ // Alpha 0.70 moved Arena/team picking to the centralized native
+ // Seleccion scene via abrirEleccion. Its draft/league/CPU callbacks MUST
+ // remain original. That real scene already receives verified 8-card pages.
+ if(typeof source==='string'&&source.includes('function abrirEleccion(escena,opts)')&&
+    source.includes('escena.scene.launch("seleccion"')&&
+    source.includes('export{POR_FILA,SelectorPokemon,abrirEleccion};'))
+   return source;
+
  const start='const LW=44,LH=44,LG=2;',end='export{POR_FILA,SelectorPokemon};';
  const a=source.indexOf(start),b=source.indexOf(end,a);
  if(a<0||b<a||source.indexOf(start,a+1)>=0||source.slice(b+end.length).trim())

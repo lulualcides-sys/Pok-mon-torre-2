@@ -141,7 +141,8 @@ async function main(){
   const raw=conf?.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/);
   report.observedAlpha=raw?.[1]??null;
   report.selectedFromOfficialConfig=!!raw;
-  if(report.observedAlpha!==REQUIRED_ALPHA)
+  if(!report.observedAlpha)throw Error('Official config.js has no verifiable Alpha version');
+  if(REQUIRED_ALPHA!=='auto'&&report.observedAlpha!==REQUIRED_ALPHA)
    throw Error('Actual published client Alpha '+report.observedAlpha+' != requested '+REQUIRED_ALPHA);
   if(!collected.has(declared+'/main.js'))throw Error('Missing real main.js');
   for(const required of [
