@@ -1,0 +1,40 @@
+name: Pages — recuperar último release funcional
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/pages-last-green-fallback-ci.yml'
+      - 'tools/pokearena/verify-pages-site-fallback.mjs'
+      - 'tools/pokearena/recover-last-green-pages.sh'
+      - 'tests/pages-site-fallback.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate fallback fail-closed rules
+        run: |
+          set -euo pipefail
+          bash -n tools/pokearena/recover-last-green-pages.sh
+          node --check tools/pokearena/verify-pages-site-fallback.mjs
+          node --test tests/pages-site-fallback.test.mjs
+      - name: Restore original green Pages build and audit all moves
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          bash tools/pokearena/recover-last-green-pages.sh
+          test -s _site/arena2d/index.html
+          test -s _site/arena2d/assets/pmd/manifest.json
+          node tools/pokearena/audit-moves.mjs
+          echo 'Previously validated native release restored without expired REA staging.'
