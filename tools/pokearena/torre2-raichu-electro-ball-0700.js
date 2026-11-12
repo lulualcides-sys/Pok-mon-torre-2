@@ -19,6 +19,9 @@ export function sweptElectroContact(a,b,r,rad=9){
 export function upgradeRaichuElectroKit(fighter,kit){
  if(!fighter||!kit||fighter.escena?.datos?.torre2===true)return kit;
  const name=String(fighter.etapa>0?fighter.forma?.nombre:fighter.def?.nombre||fighter.forma?.nombre||'').toUpperCase();
+ const family=String(fighter.def?.id||'').toLowerCase();
+ if(family!=='pichu'&&family!=='raichu')return kit;
+ if(family==='pichu'&&fighter.etapa!==2)return kit;
  if(name!=='RAICHU'||kit.rmb?.nombre!=='Electro Ball'||
     kit.rmb.forma!=='proyectil')return kit;
  // Do not replace a current native 0.70 move (bolaSombra) or approved moves.
