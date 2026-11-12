@@ -61,3 +61,16 @@ test('12 genuine native Greninja sheet families are mandatory',()=>{
  delete m['0658-azabache'].anims.Walk;
  assert.throws(()=>verifyGreninjaManifest(m),/Missing native Greninja 0658-azabache\/Walk/);
 });
+
+test('Alpha 0.70 draft roster locks remain authoritative after local Greninja art upgrade',()=>{
+ const raw='class Seleccion{preload(){this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);}'+
+ 'ficha(panel,p){panel.mostrado=p?.id??null;panel.contenido?.destroy(true);}'+
+ 'versiones(panel,p){const s=this.add.container(0,0),W=6+opciones.length*46;'+
+ 'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"});'+
+ 'panel.contenido.add(s);panel.selector=s}casilla(p){'+
+ 'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;}}';
+ const patched=patchGreninjaSelectionSource(raw);
+ assert.match(patched,/this\.encargo\?!!this\.encargo\.bloqueado\?\.\(p\.id\)/);
+ assert.match(patched,/this\.modo==="ranked"\?!desbloqueadoRanked\(p.id\):false/);
+ assert.match(patched,/torre2-greninja-popup/);
+});
