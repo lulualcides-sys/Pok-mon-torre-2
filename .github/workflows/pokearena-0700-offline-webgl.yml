@@ -1,0 +1,62 @@
+name: Alpha 0.70 Raichu — real Phaser WebGL from verified offline fixture
+on:
+  pull_request:
+    branches: [test/homologacao-kanto-20261103]
+    paths:
+      - 'tools/pokearena/torre2-raichu-electro-ball-0700.js'
+      - 'tools/pokearena/torre2-signature-fx.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/verify-pinned-capture.mjs'
+      - 'tests/raichu-0700-phaser-browser.cjs'
+      - '.github/workflows/pokearena-0700-offline-webgl.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  offline-native-webgl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CHROME_BIN: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install approved Playwright dependency
+        run: npm install --no-audit --no-fund
+      - name: Restore previously-authorized original Phaser snapshot, no website retries
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "${{ github.repository }}" \
+            --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - name: Compile executable Torre 2 Phaser with original authorized assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/lib/phaser.min.js
+          node tools/dev/approved-visual-guard.mjs
+      - name: Real Chromium/WebGL with rendered Raichu hit, KO and native adapter
+        run: node tests/raichu-0700-phaser-browser.cjs
+      - name: Published game remains untouched; historical QA is not Alpha 0.70 approval
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const report=JSON.parse(fs.readFileSync('site-capture/CAPTURE-REPORT.json','utf8'));
+          if(report.sourceVersions.selected!=='src-17c11341bf') throw Error('Unknown snapshot');
+          console.log('PASS offline game WebGL regression fixture only. Full Alpha 0.70 upstream graphics and save QA still required.');
+          NODE
+      - name: Save real browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha070-raichu-verified-offline-browser
+          path: test-evidence/raichu-0700/
+          retention-days: 14
+          if-no-files-found: warn
