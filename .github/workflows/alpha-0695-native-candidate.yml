@@ -88,7 +88,7 @@ jobs:
           const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json','utf8'));
           const js=fs.readFileSync(root+'/'+v.modules+'/config.js','utf8');
           const candidate=JSON.parse(fs.readFileSync('site-capture/pokearena-client/version.json','utf8'));
-          const official=js.match(/VERSION="([0-9]+\\.[0-9]+\\.[0-9]+)"/)?.[1];
+          const official=js.match(/VERSION="([0-9]+\.[0-9]+\.[0-9]+)"/)?.[1];
           if(!official||official!==candidate.officialAlpha)throw Error('Built native Alpha mismatches REA-verified source '+candidate.officialAlpha);
           console.log('REAL_NATIVE_ALPHA_GAME_BUILT_AND_AUDITED',v.modules);
           VERSION
