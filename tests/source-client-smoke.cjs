@@ -611,6 +611,7 @@ const server=http.createServer(async(req,res)=>{
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
+  await offline.waitForFunction(()=>innerWidth===980&&innerHeight===420,null,{timeout:10000});
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
   await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
