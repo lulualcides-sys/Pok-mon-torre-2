@@ -351,13 +351,30 @@ const server=http.createServer(async(req,res)=>{
     const scene=window.__pt2Game.scene.getScene('seleccion');
     if(!scene.botonesModo?.some(b=>b.id==='entreno'))
       throw Error('TRAINING disappeared from native LOCAL picker');
+    const zone=scene.botonesModo.find(b=>b.id==='entreno').b.zona;
+    if(!zone?.active||!zone?.input?.enabled)throw Error('Native TRAINING button has no active hitbox');
     const canvas=document.querySelector('#juego canvas');
     const rect=canvas.getBoundingClientRect();
-    return {x:rect.left+rect.width*(320/640),y:rect.top+rect.height*(27/360)};
+    return {x:rect.left+rect.width*(zone.x/640),y:rect.top+rect.height*(zone.y/360)};
   });
   await page.mouse.click(trainingButton.x,trainingButton.y);
-  await page.waitForFunction(()=>
-    window.__pt2Game.scene.getScene('seleccion').modo==='entreno',null,{timeout:10000});
+  try{
+    await page.waitForFunction(()=>
+      window.__pt2Game.scene.getScene('seleccion').modo==='entreno',null,{timeout:9000});
+  }catch(err){
+    const info=await page.evaluate(()=>{
+      const s=window.__pt2Game.scene.getScene('seleccion');
+      const z=s.botonesModo?.find(b=>b.id==='entreno')?.b?.zona;
+      return {mode:s.modo,enRed:s.enRed,active:s.scene.isActive(),
+        trainingZone:z?{x:z.x,y:z.y,visible:z.visible,enabled:z.input?.enabled,
+          width:z.input?.hitArea?.width,height:z.input?.hitArea?.height}:null,
+        canvas:document.querySelector('#juego canvas')?.getBoundingClientRect()?.toJSON?.(),
+        pointer:s.input.activePointer?{x:s.input.activePointer.x,y:s.input.activePointer.y}:null};
+    });
+    console.error('TRAINING_NATIVE_BUTTON_DIAGNOSTIC',JSON.stringify(info));
+    await page.screenshot({path:'test-evidence/native-training-hitbox-failure.png'}).catch(()=>{});
+    throw err;
+  }
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
