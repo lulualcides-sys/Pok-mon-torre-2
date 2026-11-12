@@ -11,7 +11,9 @@ const critical=[
  'torre2/auto-battle.js','torre2/next-specific-fx.js'
 ];
 async function needed(root,rel,min=100){
- const s=await fs.stat(path.join(root,rel));
+ let s;
+ try{s=await fs.stat(path.join(root,rel));}
+ catch(error){if(error?.code==='ENOENT')throw Error('Missing/truncated release asset: '+rel);throw error;}
  if(!s.isFile()||s.size<min)throw Error('Missing/truncated release asset: '+rel);
 }
 const read=(root,rel)=>fs.readFile(path.join(root,rel),'utf8');
