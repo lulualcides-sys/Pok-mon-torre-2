@@ -631,6 +631,25 @@ const server=http.createServer(async(req,res)=>{
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
   },null,{timeout:15000});
+  // Resize may be emitted more than once by Chromium (window and
+  // visualViewport). Confirm the state after their scheduled callbacks,
+  // rather than accepting a single transient matching RAF.
+  await offline.waitForTimeout(300);
+  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
+  await offline.waitForFunction(async()=>{
+    if(innerWidth!==980||innerHeight!==420)return false;
+    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
+    if(!main)return false;
+    const cfg=await import(new URL('./config.js',main).href);
+    const dpr=Math.min(4,devicePixelRatio||1);
+    const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
+    let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
+    if(z>=2&&Math.floor(z)/z>=.9)z=Math.floor(z);
+    const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
+      Math.min(fh,Math.floor(cfg.VISTA.h*z));
+    const cvs=document.querySelector('#juego canvas');
+    return cvs&&Math.abs(cvs.width/cvs.height-expected)<.035;
+  },null,{timeout:12000});
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
@@ -645,6 +664,9 @@ const server=http.createServer(async(req,res)=>{
     reparent:document.documentElement.classList.contains('torre2-edge-to-edge')||
       document.body.classList.contains('torre2-landscape-map'),
     rectWidth:rect?.width,rectHeight:rect?.height,
+    canvasBuffer:{w:canvas?.width,h:canvas?.height},nativeScale:{w:c.scale?.width,h:c.scale?.height},
+    visualViewport:{w:window.visualViewport?.width,h:window.visualViewport?.height},
+    documentViewport:{w:innerWidth,h:innerHeight},
     canvasRatio:canvas?.width/canvas?.height,
     displayRatio:rect?.width/rect?.height,
     viewportRatio:innerWidth/innerHeight,
