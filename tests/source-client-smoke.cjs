@@ -374,8 +374,10 @@ const server=http.createServer(async(req,res)=>{
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
-    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
-    if(item<0)throw Error('TRAINING disappeared from original menu');
+    const training=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
+    const local=title.botones.findIndex(b=>b.o?.id==='cpu'||b.id==='cpu');
+    const item=training>=0?training:local;
+    if(item<0)throw Error('Native solo Training or LOCAL selection entry missing');
     title.elegir(item);
   });
   try{
@@ -401,6 +403,19 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/training-select-timeout.png',fullPage:true}).catch(()=>{});
    throw err;
   }
+  // Alpha 0.70 moved Training from the title to the native LOCAL
+  // selection mode switch. Verify that the original TRAINING control exists
+  // and still selects a real stationary dummy; never invent a fake menu.
+  await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    if(scene.modo!=='entreno'){
+      const training=scene.botonesModo?.find(b=>b.id==='entreno');
+      if(!training||!training.b)throw Error('Native Training toggle absent from LOCAL selector');
+      scene.cambiarModo('entreno');
+    }
+    if(scene.modo!=='entreno'||scene.dispositivos?.[1]!=='muneco')
+      throw Error('TRAINING did not activate the native target dummy');
+  });
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
