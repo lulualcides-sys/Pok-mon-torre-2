@@ -1256,6 +1256,18 @@ for(const [filename,changes] of patches){
     body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
     continue;
    }
+   // Native 0.70.0 exposes TRAINING through LOCAL (mode selector), not as
+   // a title tile. Keep that working entry, and preserve the approved
+   // Mewtwo test lab as its own optional solo game menu item.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('{id:"entreno",txt:"TRAINING"')&&to.includes('johto-lab')){
+    const local='{id:"cpu",txt:"LOCAL",escena:"seleccion",datos:{previo:{modo:"cpu"}},ico:"mando"},';
+    const lab='{id:"johto-lab",txt:"MEWTWO TEST LAB",escena:"johto-lab",ico:"diana"},';
+    if(body.split(local).length!==2||body.includes(lab))
+     throw Error('Unrecognized native 0.70 LOCAL tile; refusing unsafe lab menu insertion');
+    body=body.replace(local,local+lab);
+    continue;
+   }
    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
     upstreamUnmatched.push({filename,issue:'unrecognized exact native anchor',
       from:from.slice(0,160),sourceSnippet:body.slice(0,300)});
