@@ -9,7 +9,7 @@ const nativeIndex={comun:'original-common',formas:{
 }};
 function route(ids){
  const patched=routeInstalledKantoLooseSprites(native,ids);
- const snippet=patched.match(/const paqueteDe=ruta=>\{[^}]+\};/);
+ const snippet=patched.match(/const paqueteDe=ruta=>\{[^;]+;[^;]+;[^;]+\};/);
  assert.ok(snippet,'All modifications isolated to recognized native pack resolver');
  return Function('INDICE','enComun',snippet[0]+'return paqueteDe;')(
   nativeIndex,ruta=>ruta.endsWith('/portrait.png'));
