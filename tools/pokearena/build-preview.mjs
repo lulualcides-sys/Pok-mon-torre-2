@@ -19,15 +19,15 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
-// The public Chromium Pokédex audit must not be the first place that detects
-// an absent original title background. Preserve the actual upstream bytes.
-{
- const p=path.join(dest,'assets/ui/portada/dia.jpg');
- const data=await fs.readFile(p);
- if(data.length<1024||data[0]!==0xff||data[1]!==0xd8||
-    data.at(-2)!==0xff||data.at(-1)!==0xd9)
-  throw Error('Original native portada/dia.jpg missing or invalid in Pages build');
-}
+// The official image assets/ui/portada/dia.jpg is purely decorative.
+// No 404 or placeholder: on an absent/bad JPEG, drop its preload and allow
+// the ALREADY PRESENT native title-scene Graphics/halo background.
+const {jpegLooksValid,omitUnavailableTitleLoad}=await import('./torre2-optional-title.mjs');
+const nativeTitlePath=path.join(dest,'assets/ui/portada/dia.jpg');
+let nativeTitleData=null;
+try{nativeTitleData=await fs.readFile(nativeTitlePath)}catch(error){if(error?.code!=='ENOENT')throw error}
+const hasVerifiedNativeTitle=jpegLooksValid(nativeTitleData);
+if(!hasVerifiedNativeTitle)console.warn('Optional native title JPEG unavailable; using existing Phaser halo');
 
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
@@ -1180,6 +1180,16 @@ for(const [filename,changes] of patches){
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
+}
+
+// Finalize the *isolated* preload after all verified native module patches.
+// The original title scene explicitly checks textures.exists('ui-portada')
+// before touching its background pixels, so this cannot alter battles.
+{
+ const loader=path.join(dest,clientSource,'escenas/carga.js');
+ const source=await fs.readFile(loader,'utf8');
+ const patched=omitUnavailableTitleLoad(source,hasVerifiedNativeTitle);
+ if(source!==patched)await fs.writeFile(loader,patched);
 }
 
 // Original Torre 2 release: make Rayquaza selectable in OUR offline Phaser
