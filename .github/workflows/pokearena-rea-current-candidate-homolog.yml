@@ -7,6 +7,8 @@ on:
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/rea-public-pmd-manifest.cjs'
+      - 'tests/rea-public-pmd-manifest.test.mjs'
       - 'tools/pokearena/torre2-selection-pages.mjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tools/pokearena/torre2-rayquaza-preview.mjs'
@@ -39,7 +41,7 @@ jobs:
           node --check tools/pokearena/audit-native-packs.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/rea-public-native-missing.test.mjs
+          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
           CHROME_BIN: /usr/bin/google-chrome
@@ -95,6 +97,20 @@ jobs:
           path: site-capture/rea-current
       - name: Verify original current module graph and preserve approved static bytes
         run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+      - name: Probe official PMD manifest by normal public Chromium, only same verified Alpha
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/rea-public-pmd-manifest.cjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          test -s site-capture/pokearena-client/public-manifest-recovery-report.json
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::Native manifest inaccessible in normal Chromium; full release gate remains closed."
+          fi
       - name: Capture native packs in THIS candidate Alpha using normal local VS CPU browser
         shell: bash
         env:
@@ -189,6 +205,7 @@ jobs:
           path: |
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
+            site-capture/pokearena-client/public-manifest-recovery-report.json
             site-capture/rea-lazy-pack-probe/report.json
             site-capture/rea-live-source-drift/report.json
             site-capture/pokearena-client/lazy-pack-integration-report.json
