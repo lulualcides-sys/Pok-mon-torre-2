@@ -154,6 +154,36 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
  try{nativePack=await fs.readFile(packFile,'utf8');}
  catch(error){if(error?.code!=='ENOENT')throw error;}
  if(nativePack){
+  const captureVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8'));
+  if(captureVersion.officialAlpha==='0.70.0'){
+   // The latest official 0.70 PMD index includes 267 forms, while 19
+   // costume packs are HTTP-403. This conditional is evaluated ONLY for
+   // exactly that known Alpha and its original source fingerprint.
+   if(clientSource!=='src-3cc4979f18')throw Error('Unverified Alpha 0.70 module fingerprint');
+   const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
+   const {auditNativePacks}=await import('./audit-native-packs.mjs');
+   const coverage=await auditNativePacks(dest);
+   if(coverage.missingFormCount||coverage.formCount!==267)
+    throw Error('Incomplete native 0.70 sprite coverage: '+coverage.missingFormCount);
+   let substitutions=[];
+   try{
+    const evidence=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/torre2-visual-substitutes.json'),'utf8'));
+    if(evidence.sourceDir!==clientSource||evidence.alpha!=='0.70.0'||
+       evidence.sourceAuthentic!==false||
+       evidence.visualSubstituteCount!==evidence.forms?.length)
+     throw Error('Alpha 0.70 substitute graphic provenance mismatch');
+    substitutions=evidence.forms;
+   }catch(e){if(e.code!=='ENOENT')throw e}
+   await fs.writeFile(packFile,routeInstalledKantoLooseSprites(nativePack,substitutions));
+   console.log('P2_ALPHA070_SPRITES_VERIFIED',JSON.stringify({
+    officialForms:coverage.formCount,
+    missing:coverage.missingFormCount,
+    originalPacks:coverage.verifiedPacks,
+    originalLoose:coverage.verifiedLoose,
+    licensedAlternatives:coverage.verifiedSubstitutes,
+    nativeSourceAuthentic:coverage.sourceAuthentic
+   }));
+  }else{
   const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
   const pmd=path.join(dest,'assets/pmd');
   const match=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
@@ -189,6 +219,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    originalLoosePngs:verified,
    rule:'use current .bin if available, else previously verified genuine PMD PNG'
   }));
+  }
  }
 }
 
@@ -853,10 +884,8 @@ for(const [filename,changes] of patches){
     continue;
    }
    if(filename==='main.js'&&from.includes('import{iniciarChat,reservaChat}')){
-    // Chat bootstrap no longer has a stable import form in the public client.
-    // The offline game does not use the chat nor reserve any chat width.
-    body=body.replace(/import\s*\{[^}]*\b(?:iniciarChat|reservaChat)\b[^}]*\}\s*from\s*["']\.\/chat\.js["'];?/g,'');
-    body=body.replace(/\breservaChat\s*\(\s*\)/g,'0');
+    const {removeOnlineChatPreservingNativeResize}=await import('./torre2-offline-chat-resize.mjs');
+    body=removeOnlineChatPreservingNativeResize(body);
     continue;
    }
    // Native League's optional portrait warmup can move between releases.
