@@ -103,13 +103,19 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
    used.push({dex,sourceDex,mode:visualMode});
  }
  // Validate *all* files and paths before first write; no partial release.
- const destinations=new Set();
+ const planned=new Map();
  for(const e of stage){
-   if(destinations.has(e.dst)||!e.dst.startsWith(candidate+path.sep))
-    throw Error('Duplicate or unsafe fallback path');
-   destinations.add(e.dst);
+   if(!e.dst.startsWith(candidate+path.sep))throw Error('Unsafe fallback path');
+   const prior=planned.get(e.dst);
+   if(prior){
+     // The upstream manifest may legitimately reuse the same PNG for
+     // multiple actions. Install it only once, but reject conflicting art.
+     if(prior.sha256!==e.sha256)throw Error('Conflicting fallback source for '+e.dst);
+     continue;
+   }
+   planned.set(e.dst,e);
  }
- for(const e of stage){
+ for(const e of planned.values()){
    await fs.mkdir(path.dirname(e.dst),{recursive:true});
    await fs.writeFile(e.dst,e.bytes,{flag:'wx'});
  }
@@ -123,7 +129,7 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
    visualFallbacks:used,remappedAnimations:remapped,
    originalManifestSha256:originalManifestSha,
    effectiveManifestSha256:digest(await fs.readFile(currentManifestPath)),
-   files:stage.map(x=>({dex:x.dex,anim:x.anim,source:x.sourceRel,
+   files:[...planned.values()].map(x=>({dex:x.dex,anim:x.anim,source:x.sourceRel,
      sha256:x.sha256,bytes:x.bytes.length,mode:x.mode})),
    disclosure:'The alpha is verified CURRENT official client code, but unavailable cosmetic sprite variants temporarily reuse approved authentic same-species art. Moltres Strike/Double use approved Attack/Shoot images. No new-client visual identity is claimed for these fallbacks.',
    releaseGate:'Must still pass full Chromium/WebGL, moves, saves and visual regression suite.'
