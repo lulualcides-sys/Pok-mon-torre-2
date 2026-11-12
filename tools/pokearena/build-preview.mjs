@@ -703,6 +703,14 @@ for(const [filename,changes] of patches){
     }
     throw Error('Unknown native account profile menu; refusing guessed removal');
    }
+   // The native getter expression may change across public Alpha versions.
+   // Preserve its exact source expression, adding Gen III adaptation only to campaign.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.startsWith('get tipos(){const types=')){
+    const {wrapNativeTypesGetter}=await import('./torre2-native-types-compat.mjs');
+    body=wrapNativeTypesGetter(body);continue;
+   }
    // Current upstream title rearranges social icon positions. The entire
    // redes() call is stripped by the later exact, verified offline patch;
    // keep its inactive original implementation untouched.
