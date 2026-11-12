@@ -670,7 +670,13 @@ const server=http.createServer(async(req,res)=>{
   await offline.setViewportSize({width:980,height:420});
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
-  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
+  await offline.evaluate(()=>{
+   window.dispatchEvent(new Event('resize'));
+   // Modern Alpha 0.70 explicitly subscribes to visualViewport resize as
+   // well as window.resize; Chromium automation may not emit the former
+   // when Playwright changes viewport dimensions programmatically.
+   window.visualViewport?.dispatchEvent(new Event('resize'));
+  });
   // Playwright's poller treats an async callback's Promise as truthy even
   // when its result is false. Resolve the native config ONCE, then poll a
   // synchronous predicate until the real framebuffer has resized.
@@ -680,6 +686,7 @@ const server=http.createServer(async(req,res)=>{
    const cfg=await import(new URL('./config.js',src).href);
    return {ANCHO:cfg.ANCHO,ALTO:cfg.ALTO,VISTA:cfg.VISTA};
   });
+  try{
   await offline.waitForFunction(cfg=>{
    const canvas=document.querySelector('#juego canvas');
    if(!canvas)return false;
@@ -691,6 +698,20 @@ const server=http.createServer(async(req,res)=>{
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
   },viewportNativeConfig,{timeout:15000,polling:120});
+  }catch(err){
+   const detail=await offline.evaluate(()=>{
+    const game=window.__pt2Game,canvas=document.querySelector('#juego canvas');
+    return {inner:[innerWidth,innerHeight],outer:[outerWidth,outerHeight],
+     visual:window.visualViewport?{w:visualViewport.width,h:visualViewport.height}:null,
+     canvas:canvas?{w:canvas.width,h:canvas.height,
+       style:[canvas.style.width,canvas.style.height]}:null,
+     scale:game?{width:game.scale.width,height:game.scale.height,
+       gameSize:game.scale.gameSize?{w:game.scale.gameSize.width,h:game.scale.gameSize.height}:null}:null,
+     active:game?.scene.getScenes(true).map(x=>x.scene.key)};
+   });
+   console.error('REAL_NATIVE_RESIZE_TIMEOUT',JSON.stringify(detail));
+   throw err;
+  }
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
