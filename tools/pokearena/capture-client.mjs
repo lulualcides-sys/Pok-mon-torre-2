@@ -206,6 +206,10 @@ async function main() {
    }
   }
  }catch(e){details.unavailable.push({path:'assets/pmd/manifest.json',error:'Cannot expand manifest: '+String(e.message)})}
+ // Unlike the decorative title JPEG, this manifest drives playable
+ // Pokemon portraits and animations. Trigger the pinned authenticated-by-hash
+ // fallback in Pages rather than pretending a 403/partial snapshot is valid.
+ if(!allManifest.size)throw Error('Critical native PMD manifest unavailable; image-free title does not waive battle sprite requirements');
  const missingManifest=[...allManifest].filter(p=>!imported.has(p));
  details.manifestAssets={declared:allManifest.size,additional:missingManifest.length};
  let cursor=0;
