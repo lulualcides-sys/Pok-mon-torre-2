@@ -11,6 +11,8 @@ on:
       - 'tests/rea-public-pmd-manifest.test.mjs'
       - 'tools/pokearena/torre2-selection-pages.mjs'
       - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-native-loose-pmd-compat.mjs'
+      - 'tests/native-loose-pmd-compat.test.mjs'
       - 'tools/pokearena/torre2-rayquaza-preview.mjs'
       - 'tests/rayquaza-mega-preview.test.js'
       - 'tests/selection-upstream-pagination.test.js'
@@ -41,7 +43,7 @@ jobs:
           node --check tools/pokearena/audit-native-packs.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs
+          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
           CHROME_BIN: /usr/bin/google-chrome
