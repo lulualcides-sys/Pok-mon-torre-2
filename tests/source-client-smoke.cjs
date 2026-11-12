@@ -671,11 +671,18 @@ const server=http.createServer(async(req,res)=>{
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
   await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
-  await offline.waitForFunction(async()=>{
+  // Playwright's poller treats an async callback's Promise as truthy even
+  // when its result is false. Resolve the native config ONCE, then poll a
+  // synchronous predicate until the real framebuffer has resized.
+  const viewportNativeConfig=await offline.evaluate(async()=>{
    const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
-   const canvas=document.querySelector('#juego canvas');
-   if(!src||!canvas)return false;
+   if(!src)throw Error('Native Phaser config module unavailable');
    const cfg=await import(new URL('./config.js',src).href);
+   return {ANCHO:cfg.ANCHO,ALTO:cfg.ALTO,VISTA:cfg.VISTA};
+  });
+  await offline.waitForFunction(cfg=>{
+   const canvas=document.querySelector('#juego canvas');
+   if(!canvas)return false;
    const dpr=Math.min(4,devicePixelRatio||1);
    const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
    let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
@@ -683,7 +690,7 @@ const server=http.createServer(async(req,res)=>{
    const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
-  },null,{timeout:15000});
+  },viewportNativeConfig,{timeout:15000,polling:120});
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
