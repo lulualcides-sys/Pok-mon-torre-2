@@ -602,7 +602,12 @@ const server=http.createServer(async(req,res)=>{
     npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
-  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
+  // The approved map renderer intentionally supports 15 distinct trainer
+  // sheets at stage 0 (9 current road roles plus 6 map revisit roles).
+  // Still reject eagerly loading the full 47-sprite original FRLG catalog.
+  assert.ok(resourceCheck.npcs.length>0&&resourceCheck.npcs.length<=16,
+   'Battle Road must limit NPC GPU textures to the current approved atlas needs: '+
+    JSON.stringify(resourceCheck));
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
