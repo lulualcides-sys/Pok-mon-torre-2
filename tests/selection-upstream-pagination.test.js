@@ -47,3 +47,17 @@ test('Selection pages have direct one-tap mobile picking and only load visible p
  assert.ok(patched.includes('this.load.image(key,"assets/pmd/"+c.p.dex+"/portrait.png")'));
  assert.ok(patched.includes('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false'));
 });
+
+test('Alpha 0.70.0 challenge draft locks and RANDOM button remain native',()=>{
+ const current=october.replace(
+  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);'
+ ).replace('this.opciones();this.ayuda=',
+  'this.opciones();if(this.encargo?.azar)this.botonAzar=boton(this,76,this.posLuchar.y-4,"RANDOM",()=>this.azarEncargo(),{altoZona:40,anchoExtra:44});this.ayuda=');
+ const patched=paginateSelectionSource(current);
+ assert.ok(patched.includes('this.encargo?!!this.encargo.bloqueado?.(p.id)'));
+ assert.ok(patched.includes('this.modo==="ranked"?!desbloqueadoRanked(p.id):false'));
+ assert.ok(patched.includes('if(this.encargo?.azar)this.botonAzar='));
+ assert.ok(patched.includes('this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2))'));
+ assert.ok(patched.includes('this.torre2LoadPortraitPage(this.torre2Page)'));
+});
