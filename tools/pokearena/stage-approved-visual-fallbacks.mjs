@@ -37,11 +37,14 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
  const prior=await verify(approved);
  if(prior.alpha!=='0.65.8'||!prior.prebuilt)throw Error('Approved fallback version not verified');
  const version=JSON.parse(await fs.readFile(path.join(candidate,'version.json'),'utf8'));
- if(!/^src-[a-f0-9]{10}$/.test(version.src||'')||version.officialAlpha!=='0.69.5')
-  throw Error('Expected independently verified current official Alpha 0.69.5');
+ const parts=String(version.officialAlpha||'').match(/^(\d+)\.(\d+)\.(\d+)$/)?.slice(1).map(Number);
+ if(!/^src-[a-f0-9]{10}$/.test(version.src||'')||!parts||
+    (parts[0]===0&&(parts[1]<69||(parts[1]===69&&parts[2]<5)))||parts[0]>1)
+  throw Error('Expected independently verified official Alpha >=0.69.5');
  const conf=await fs.readFile(path.join(candidate,version.src,'config.js'),'utf8');
- if(!/\b(?:const|let)\s+VERSION\s*=\s*["']0\.69\.5["']/.test(conf))
-  throw Error('Native config.js is not the official Alpha 0.69.5');
+ const observed=conf.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](\d+\.\d+\.\d+)["']/)?.[1];
+ if(observed!==version.officialAlpha)
+  throw Error('Native config.js does not match REA-verified Alpha '+version.officialAlpha);
  const before=await auditNativePacks(candidate);
  const currentManifestPath=path.join(candidate,'assets/pmd/manifest.json');
  const current=JSON.parse(await fs.readFile(currentManifestPath,'utf8'));
@@ -60,7 +63,7 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
    for(const [anim,tgt] of Object.entries(destForm.anims)){
      let src=sourceMeta.anims?.[anim],sourceAnim=anim;
      if(!sameGrid(src,tgt)){
-       // Moltres official 0.69.5 introduces Strike and Double, which were
+       // Newer native Moltres introduces Strike and Double, which were
        // not present in the approved native build. Reuse existing approved
        // frame sequences with EXACTLY the same frame count, never invent
        // empty/corrupt png files. Keep new move logic and timing.
@@ -114,7 +117,7 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
     JSON.stringify(current));
  const after=await auditNativePacks(candidate);
  const report={
-   officialAlpha:'0.69.5',originalSourceHash:version.src,
+   officialAlpha:version.officialAlpha,originalSourceHash:version.src,
    priorApprovedAlpha:'0.65.8',priorReleaseModules:prior.modules,
    beforeMissing:before.missingFormCount,afterMissing:after.missingFormCount,
    visualFallbacks:used,remappedAnimations:remapped,
@@ -122,7 +125,7 @@ export async function stageApprovedVisualFallbacks(candidateRoot,approvedRoot,ve
    effectiveManifestSha256:digest(await fs.readFile(currentManifestPath)),
    files:stage.map(x=>({dex:x.dex,anim:x.anim,source:x.sourceRel,
      sha256:x.sha256,bytes:x.bytes.length,mode:x.mode})),
-   disclosure:'The alpha is 0.69.5 code, but unavailable cosmetic sprite variants temporarily reuse approved authentic same-species art. Moltres Strike/Double use approved Attack/Shoot images. No 0.69.5 visual identity is claimed for these fallbacks.',
+   disclosure:'The alpha is verified CURRENT official client code, but unavailable cosmetic sprite variants temporarily reuse approved authentic same-species art. Moltres Strike/Double use approved Attack/Shoot images. No new-client visual identity is claimed for these fallbacks.',
    releaseGate:'Must still pass full Chromium/WebGL, moves, saves and visual regression suite.'
  };
  await fs.writeFile(path.join(candidate,'native-visual-fallbacks.json'),
