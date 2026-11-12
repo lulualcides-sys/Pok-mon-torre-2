@@ -53,7 +53,23 @@ jobs:
           gh run download 43211793386 --repo "$GITHUB_REPOSITORY" --name pokemon-torre-2-site-pronto --dir site-capture/last-green
           node tools/pokearena/verify-pages-site-fallback.mjs site-capture/last-green
       - name: Capture official current Alpha from normal public Chromium REA
-        run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Shared Github runners occasionally fail to expose the normal
+          # Chrome CDP localhost port. Retry only transient browser startup;
+          # do not accept a mismatched version or incomplete file graph.
+          for attempt in 1 2 3; do
+            rm -rf site-capture/rea-current
+            if node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::No complete public Chromium/REA capture after three starts"
+              exit 1
+            fi
+            sleep 3
+          done
       - name: Independently verify and apply ALL current native ESM modules
         run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
       - name: Capture current official sprites when the public site actually delivers them
