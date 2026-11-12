@@ -36,9 +36,24 @@ export function paginateSelectionSource(source){
  once('if(esTactil()&&this.paso<2&&this.foco!==i){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)',
   'if(this.paso<2)this.foco=i;this.elegir(i)');
  // User-approved offline roster is unlocked. Retain original ranked locks.
- once('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
-  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+ const officialDraftLocks='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ if(source.includes(officialDraftLocks)){
+  // Only the OFFLINE classic roster is fully open. Preserve the current
+  // online Ranked/Draft team-selection lock and the challenge's server rules.
+  once(officialDraftLocks,
+   'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+ }else{
+  once('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+   'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+ }
+ const aid='this.opciones();this.ayuda=';
+ const draftAid='this.opciones();if(this.encargo?.azar)this.botonAzar=boton(this,76,this.posLuchar.y-4,"RANDOM",()=>this.azarEncargo(),{altoZona:40,anchoExtra:44});this.ayuda=';
+ if(!source.includes(aid)&&source.includes(draftAid)){
+  // 0.70.0 adds RANDOM draft UI before the help text; preserve it.
+  once(draftAid,draftAid.replace('this.ayuda=','this.torre2Page=0;this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2));for(const [x,d,t] of [[72,-1,"◀"],[568,1,"▶"]])boton(this,x,26,t,()=>{this.torre2Page=(this.torre2Page+d+this.torre2Pages)%this.torre2Pages;this.foco=this.torre2Page*POR_FILA*2;this.refrescar()},{altoZona:26,anchoExtra:20});this.torre2PageLabel=texto(this,ANCHO-14,TY+FILAS*(TH+TGAP)/2,"",{tam:8,color:"#ffe3a7"}).setOrigin(1,.5);this.ayuda='));
+ }else{
  once('this.opciones();this.ayuda=', 'this.opciones();this.torre2Page=0;this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2));for(const [x,d,t] of [[72,-1,"◀"],[568,1,"▶"]])boton(this,x,26,t,()=>{this.torre2Page=(this.torre2Page+d+this.torre2Pages)%this.torre2Pages;this.foco=this.torre2Page*POR_FILA*2;this.refrescar()},{altoZona:26,anchoExtra:20});this.torre2PageLabel=texto(this,ANCHO-14,TY+FILAS*(TH+TGAP)/2,"",{tam:8,color:"#ffe3a7"}).setOrigin(1,.5);this.ayuda=');
+ }
  // The native "casillaRetrato" draws __MISSING when a portrait is not cached.
  // Request only 8 PNGs of the visible page, then install its real pixel-art
  // scaled texture; do not allocate/reveal 189 placeholder textures at once.
