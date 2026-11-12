@@ -35,20 +35,7 @@ jobs:
           gh run download 42195598090 --repo "${{ github.repository }}" \
             --name pokearena2d-cliente-publico-capturado --dir site-capture
           node tools/pokearena/verify-pinned-capture.mjs
-      - name: Inspect only historical account-menu signature before applying compatibility guard
-        shell: bash
-        run: |
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          const s=fs.readFileSync('site-capture/pokearena-client/src-17c11341bf/escenas/titulo.js','utf8');
-          for(const key of ['ajustes:[','id:"perfil"','id:"cuenta"']){
-            const i=s.indexOf(key);
-            console.log('HISTORICAL_TITLE_SIGNATURE',key,i,i<0?'absent':s.slice(Math.max(0,i-90),i+420));
-          }
-          NODE
       - name: Compile executable Torre 2 Phaser with original authorized assets
-        env:
-          TORRE2_UPSTREAM_AUDIT: '1'
         shell: bash
         run: |
           set -euo pipefail
