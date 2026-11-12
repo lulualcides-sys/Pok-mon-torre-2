@@ -1,0 +1,40 @@
+name: Poké Arena Alpha 0.70 — Raichu Electro Ball (homolog only)
+on:
+  pull_request:
+    branches: [test/homologacao-kanto-20261103]
+    paths:
+      - 'tools/pokearena/torre2-raichu-electro-ball-0700.js'
+      - 'tools/pokearena/torre2-signature-fx.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/raichu-electro-ball-0700.test.js'
+      - '.github/workflows/pokearena-0700-raichu-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node-and-guardian:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax, isolated contact logic and original source protection
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-raichu-electro-ball-0700.js
+          node --check tools/pokearena/torre2-signature-fx.js
+          node --check tools/pokearena/build-preview.mjs
+          node --test tests/raichu-electro-ball-0700.test.js
+          node tools/pokearena/check-move-reuse.mjs
+      - name: Full Node regression suite
+        run: npm test
+      - name: No unauthorized publication or assets
+        run: |
+          set -euo pipefail
+          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} > /tmp/changed-files || true
+          if grep -E '^((assets|src|pages|site-capture)/|\.github/workflows/pages\.yml|data/pokearena-approved-alpha\.json)' /tmp/changed-files; then
+            echo 'Protected asset, release or game path was modified.'
+            exit 1
+          fi
