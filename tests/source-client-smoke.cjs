@@ -338,11 +338,26 @@ const server=http.createServer(async(req,res)=>{
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
-    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
-    if(item<0)throw Error('TRAINING disappeared from original menu');
+    // Upstream Alpha 0.70 moved TRAINING into the LOCAL picker; it was
+    // never a separate item in the original title PLAY submenu.
+    const item=title.botones.findIndex(b=>b.o?.id==='cpu'||b.id==='cpu');
+    if(item<0)throw Error('LOCAL disappeared from native PLAY menu');
     title.elegir(item);
   });
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  // Choose the actual TRAINING button in the native Phaser selection screen.
+  // Make a real browser pointer click instead of assigning scene.modo.
+  const trainingButton=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    if(!scene.botonesModo?.some(b=>b.id==='entreno'))
+      throw Error('TRAINING disappeared from native LOCAL picker');
+    const canvas=document.querySelector('#juego canvas');
+    const rect=canvas.getBoundingClientRect();
+    return {x:rect.left+rect.width*(320/640),y:rect.top+rect.height*(27/360)};
+  });
+  await page.mouse.click(trainingButton.x,trainingButton.y);
+  await page.waitForFunction(()=>
+    window.__pt2Game.scene.getScene('seleccion').modo==='entreno',null,{timeout:10000});
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
