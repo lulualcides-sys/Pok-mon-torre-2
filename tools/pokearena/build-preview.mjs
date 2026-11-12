@@ -1182,6 +1182,30 @@ for(const [filename,changes] of patches){
  await fs.writeFile(filenameFull,body);
 }
 
+// Backport the verified 0.69.5 LEAGUE-access behavior to approved 0.65.8
+// without claiming the new official runtime or altering any native moves.
+// New full Alpha clients must retain their OWN gates without an adapter.
+{
+ const config=await fs.readFile(path.join(dest,clientSource,'config.js'),'utf8');
+ const officialAlpha=config.match(/\b(?:const|let|var)\s+VERSION\s*=\s*["'](0\.\d+\.\d+)["']/)?.[1];
+ if(!officialAlpha)throw Error('Cannot prove official native Alpha for League compatibility');
+ if(officialAlpha==='0.65.8'){
+  const {backportLeague0695}=await import('./torre2-league-0695-compat.mjs');
+  const files={league:'liga.js',scene:'escenas/liga.js',challenges:'retos.js'};
+  const originals=Object.fromEntries(await Promise.all(Object.entries(files)
+   .map(async([key,p])=>[key,await fs.readFile(path.join(dest,clientSource,p),'utf8')])));
+  const adapted=backportLeague0695(originals);
+  await Promise.all(Object.entries(files).map(([key,p])=>
+   fs.writeFile(path.join(dest,clientSource,p),adapted[key])));
+  await fs.copyFile('tools/pokearena/torre2-league-0695.js',
+   path.join(dest,clientSource,'torre2/league-0695.js'));
+  console.log('Torre2 native League Alpha 0.69.5 access backported to approved',officialAlpha);
+ }else{
+  console.log('League backport skipped for native Alpha',officialAlpha,
+   '— upstream rules must be verified by its own full release gates');
+ }
+}
+
 // Original Torre 2 release: make Rayquaza selectable in OUR offline Phaser
 // arena and keep Mega's native animation/kit. Never change the upstream site.
 // Fail the build if the roster, Mega kit or sprite assets changed or vanished.
