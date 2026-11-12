@@ -209,8 +209,20 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
 // Scope to non-indexed Kanto #0001..0151. Never touch approved native packs.
 const nativePackModulePath=path.join(dest,clientSource,'paquetes.js');
 const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
+let authorizedVisualSubstitutes=[];
+try{
+ const evidence=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/torre2-visual-substitutes.json'),'utf8'));
+ if(evidence.alpha!=='0.70.0'||evidence.sourceDir!==clientSource||
+    evidence.sourceAuthentic!==false||
+    evidence.visualSubstituteCount!==evidence.forms?.length)
+  throw Error('Visual substitute provenance does not match captured official source');
+ authorizedVisualSubstitutes=evidence.forms;
+}catch(e){if(e.code!=='ENOENT')throw e}
 await fs.writeFile(nativePackModulePath,routeInstalledKantoLooseSprites(
- await fs.readFile(nativePackModulePath,'utf8')));
+ await fs.readFile(nativePackModulePath,'utf8'),authorizedVisualSubstitutes));
+if(authorizedVisualSubstitutes.length)console.warn(
+ 'Alternative PMD sprites in '+authorizedVisualSubstitutes.length+
+ ' previously HTTP-403 native forms; original costume appearance NOT restored');
 console.log('Verified Kanto-only PMD loose route; native pack identifiers preserved');
 // The original client still preloads eight League PNGs that are no longer in
 // its asset snapshot. Recreate only missing textures from its own native
