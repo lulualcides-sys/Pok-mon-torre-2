@@ -203,6 +203,15 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// In Alpha 0.70, the official common .bin has Idle/portraits only for
+// indexed native species. Kanto's independently installed SpriteCollab
+// PNGs are not indexed by #paq and must use the existing loose-file route.
+// Scope to non-indexed Kanto #0001..0151. Never touch approved native packs.
+const nativePackModulePath=path.join(dest,clientSource,'paquetes.js');
+const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
+await fs.writeFile(nativePackModulePath,routeInstalledKantoLooseSprites(
+ await fs.readFile(nativePackModulePath,'utf8')));
+console.log('Verified Kanto-only PMD loose route; native pack identifiers preserved');
 // The original client still preloads eight League PNGs that are no longer in
 // its asset snapshot. Recreate only missing textures from its own native
 // 8x8 icon patterns, never replacing available upstream or approved art.
