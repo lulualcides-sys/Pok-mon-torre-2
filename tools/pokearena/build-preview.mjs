@@ -505,6 +505,7 @@ patches.push(
 // Only online, multiplayer, chat, connected players and combat evolution go.
 patches.push(
  ['escenas/titulo.js',[
+  ['...CUSTOMIZE?[{id:"personalizar",txt:"CUSTOMIZE",menu:"personalizar",ico:"pincel"}]:[],',''],
   ['{id:"online",txt:"ONLINE",menu:"online",ico:"globo"},',''],
   ['[["tiktok",600],["youtube",578],["instagram",556],["discord",528]]','[["tiktok",600],["youtube",578],["instagram",556]]'],
   ['const halo=this.add.graphics().setDepth(999).setPosition(528,Y);halo.fillStyle(5793266,.45);halo.fillRoundedRect(-13,-13,26,26,6);this.tweens.add({targets:halo,alpha:.15,duration:700,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});const flecha=this.flecha(1).setDepth(1e3).setPosition(505,Y);this.tweens.add({targets:flecha,x:509,duration:420,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});const c=this.chapa(528,Y+19,"JOIN!");c.mover(-Math.round(c.w/2))',''],
@@ -844,6 +845,73 @@ for(const [filename,changes] of patches){
     if(!body.includes(helper))body=body.replace(dataImport[0],dataImport[0]+helper);
     continue;
    }
+   // Alpha 0.69.3 implements responsive Pokédex cards natively.
+   // Keep that verified layout instead of forcing the old fixed five-column
+   // card size or replacing casillaRetrato with a deprecated image constructor.
+   if(filename==='escenas/pokedex.js' &&
+      (from==='const COLS=5,CEL=44,GX=10,GY=36;' ||
+       from==='this.add.image(x+1,y+1,`retrato-${p.dex}`).setOrigin(0);')){
+    const grid=body.includes('const COLS=(()=>{for(let c=5;c<12;c++){');
+    const cards=body.includes('casilla(p,x,y,i){casillaRetrato(this,x,y,CEL-2,p.dex)');
+    if(!grid || !cards)
+      throw Error('Unknown upstream Pokédex grid; refusing to remove approved card fix');
+    continue;
+   }
+   // Native 0.69.x initializes the offline local draft state before
+   // create(). Preserve it, adding only the approved Kanto Idle preload.
+   if(filename==='escenas/seleccion.js'&&
+      from==='init(datos){this.previo=datos?.previo}create(){'&&
+      to.includes('preload(){const m=this.registry.get("manifiesto")')){
+    const live='init(datos){this.previo=datos?.previo;if(this.previo?.modo==="elegir")this.sys.settings.data={}}create(){';
+    if(body.split(live).length!==2)throw Error('Unrecognized native selection init');
+    const compatible=to.replace('init(datos){this.previo=datos?.previo}',
+      'init(datos){this.previo=datos?.previo;if(this.previo?.modo==="elegir")this.sys.settings.data={}}');
+    body=body.replace(live,compatible);
+    continue;
+   }
+   // Native alternate forms may override species types. Gen-III conversion
+   // is campaign-only: retain the new alternate typing in every other mode.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.includes('gen3Types(types)')){
+    const live='get tipos(){return this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos}';
+    if(body.split(live).length!==2)throw Error('Unrecognized native alternate type getter');
+    body=body.replace(live,
+      'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
+    continue;
+   }
+   // The newer 1v1/2v2 draft preloader supports lists, teams and aspects.
+   // Preserve the entire verified upstream expression and override it ONLY
+   // for the offline Kanto party so that switching cannot 404 at runtime.
+   if(filename==='escenas/combate.js'&&
+      from.startsWith('const dexs=formasDe(d.jugadores?d.jugadores.map')&&
+      to.startsWith('const ids=d.torre2?.party?')){
+    const prefix='const dexs=formasDe(d.jugadores?d.jugadores.flatMap(';
+    const suffix=';soltarPMD(this,m,dexs);';
+    const start=body.indexOf(prefix),end=body.indexOf(suffix,start);
+    if(start<0||end<0||body.indexOf(prefix,start+1)>=0)
+      throw Error('Native combat preloader changed beyond safe party compatibility');
+    const original=body.slice(start,end);
+    if(!original.includes('d.equipos?d.equipos.flat():')||
+       !original.includes('d.aspectosEq?.flat()'))
+      throw Error('Unrecognized team/aspect preloader, refusing guessed patch');
+    const torParty='const dexs=d.torre2?.party?new Set([...d.torre2.party.friend,...d.torre2.party.foes].map(m=>{const found=buscar(m.id);return found?.etapa?found.def.evoluciones[found.etapa-1]?.dex??found.def.dex:found?.def?.dex}).filter(Boolean)):';
+    body=body.slice(0,start)+torParty+original.slice('const dexs='.length)+body.slice(end);
+    continue;
+   }
+   // The Alpha 0.69.3 config import gained FX. Preserve the exact native
+   // import and add only the already approved offline Campanha scene module.
+   // No native settings, graphics toggles or network modules are rewritten.
+   if(filename==='main.js'&&
+      from.startsWith('import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,')&&
+      to.includes('import{Campanha}')){
+    const match=body.match(/^import\{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,(?:FX,)?caso,registrarNombres\}from"\.\/config\.js";/);
+    if(!match || body.indexOf(match[0],1)!==-1 ||
+       body.includes('import{Campanha}from"./torre2/campanha.js";'))
+      throw Error('Unknown or duplicate native main.js config/Campanha import');
+    body=body.replace(match[0],match[0]+'import{Campanha}from"./torre2/campanha.js";');
+    continue;
+   }
    // Original site startup calls change; no optional online code in Torre 2.
    if(filename==='main.js'&&from.startsWith('iniciarAvisos(juego);')){
     const marker='if(DEBUG)window.juego=juego;';
@@ -884,6 +952,16 @@ for(const [filename,changes] of patches){
      continue;
     }
     console.warn('Optional League patch moved:',from.slice(0,70));
+    continue;
+   }
+   // Alpha 0.69.x removed the local 2 PLAYERS option itself and now
+   // exposes an explicit LOCAL/VS CPU entry. Avoid deleting another menu
+   // option or adding a guessed selector to an already updated title.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('{id:"versus",txt:"2 PLAYERS"') && to===''){
+    if(body.includes('{id:"versus",') ||
+       !body.includes('{id:"cpu",txt:"LOCAL",escena:"seleccion"'))
+      throw Error('Unexpected native local-versus title state');
     continue;
    }
    // The upstream client occasionally changes the CAMPO renderer's
@@ -1263,12 +1341,16 @@ if(fighterCode.split(nativePoisonHit).length!==2)
 // Don't let that small heal make the final poison tick non-lethal.
 // Scope to Torre2-added Arena species and the active poison status only.
 const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
-if(fighterCode.split(nativeRegenGuard).length!==2)
+const newNativeRegenGuard='!this.est.enfermo&&!this.escena.muerteSubita';
+const liveRegenGuard=fighterCode.includes(nativeRegenGuard)?nativeRegenGuard:
+ fighterCode.includes(newNativeRegenGuard)?newNativeRegenGuard:null;
+if(!liveRegenGuard||fighterCode.split(liveRegenGuard).length!==2)
  throw Error('Upstream Arena HP recovery guard changed');
 const poisonHpFixed=fighterCode.replace(nativePoisonHit,
  nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
-await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
- '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
+await fs.writeFile(fighterPath,poisonHpFixed.replace(liveRegenGuard,
+ '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'+
+ (liveRegenGuard===newNativeRegenGuard?'&&!this.escena.muerteSubita':'')));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
