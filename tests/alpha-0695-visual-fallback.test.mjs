@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {stageApprovedVisualFallbacks} from '../tools/pokearena/stage-approved-visual-fallbacks.mjs';
 
-const px=(w,h)=>{const b=Buffer.alloc(128,0);Buffer.from('89504e470d0a1a0a','hex').copy(b,0);
+const px=(w,h)=>{const b=Buffer.alloc(128,0);Buffer.from('89504e470d0a1a','hex').copy(b,0);
  b.writeUInt32BE(w,16);b.writeUInt32BE(h,20);return b};
 const meta=(dex,anim,fw,fh,count=2)=>({file:dex+'/'+anim+'-Anim.png',
  fw,fh,durations:Array(count).fill(2),hitFrame:-1,returnFrame:-1});
