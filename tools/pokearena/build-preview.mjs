@@ -743,6 +743,9 @@ patches.push(
    'salir(){this.soltarTiempo();if(this.datos.johtoLab)return this.scene.start("johto-lab",{slots:this.datos.johtoLab.slots});if(this.datos.torre2)']
  ]]
 );
+// In diagnostic candidate builds, gather ALL incompatible source anchors
+// to minimize repeated full public REA captures. Never publish mismatches.
+const upstreamUnmatched=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -1253,12 +1256,21 @@ for(const [filename,changes] of patches){
     body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
     continue;
    }
+   if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+    upstreamUnmatched.push({filename,issue:'unrecognized exact native anchor',
+      from:from.slice(0,160),sourceSnippet:body.slice(0,300)});
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
 }
+
+if(upstreamUnmatched.length)throw Error('Native-current build incompatible with '+
+ upstreamUnmatched.length+' reviewed patch anchors: '+
+ JSON.stringify(upstreamUnmatched).slice(0,9000));
 
 // Finalize the *isolated* preload after all verified native module patches.
 // The original title scene explicitly checks textures.exists('ui-portada')
