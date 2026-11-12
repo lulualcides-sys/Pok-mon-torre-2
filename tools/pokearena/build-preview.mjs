@@ -324,6 +324,7 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-intro-moves.js','kanto-intro-moves.js'],
  ['tools/pokearena/kanto-ultimate-policy.js','kanto-ultimate-policy.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
+ ['tools/pokearena/torre2-raichu-electro-ball-0700.js','raichu-electro-ball-0700.js'],
  ['tools/pokearena/torre2-finale13.js','finale13.js'],
  ['tools/pokearena/torre2-finale13-catalog.js','torre2-finale13-catalog.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
@@ -1153,6 +1154,12 @@ await fs.appendFile(fighterPath,
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
  'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
  'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
+
+// Independent 0.70.0 Electro Ball backport: only Raichu in offline Arena.
+// Native Alpha 0.70.0 already implements it, so the adapter never overrides it.
+await fs.appendFile(fighterPath,
+ '\\nimport{installRaichuElectroBall0700}from"./torre2/raichu-electro-ball-0700.js";'+
+ 'installRaichuElectroBall0700(Luchador);\\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
