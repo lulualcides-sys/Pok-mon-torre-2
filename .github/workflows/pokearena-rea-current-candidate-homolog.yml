@@ -6,6 +6,8 @@ on:
       - 'tools/pokearena/rea-capture-live-public.cjs'
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
+      - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
+      - 'tests/native-visual-substitute-policy.test.mjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
       - 'tools/pokearena/rea-public-pmd-manifest.cjs'
       - 'tests/rea-public-pmd-manifest.test.mjs'
@@ -41,9 +43,10 @@ jobs:
           node --check tools/pokearena/rea-capture-live-public.cjs
           node --check tools/pokearena/rea-overlay-verified-client.mjs
           node --check tools/pokearena/audit-native-packs.mjs
+          node --check tools/pokearena/stage-licensed-visual-substitutes.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs
+          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
           CHROME_BIN: /usr/bin/google-chrome
@@ -165,6 +168,28 @@ jobs:
           set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
           test -s site-capture/pokearena-client/public-missing-packs-report.json
+      - name: Build attributable CC BY-NC species visuals only for officially inaccessible forms
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/stage-licensed-visual-substitutes.mjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ]; then
+            echo "::warning::Licensed fallback incomplete or invalid; native artwork gate stays red. Never bypass CDN 403."
+          fi
+      - name: Note substitute status separately from original source art
+        shell: bash
+        run: |
+          node --input-type=module <<'VISUAL_REPORT'
+          import fs from 'node:fs';
+          const p='site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json';
+          if(fs.existsSync(p)){
+            const r=JSON.parse(fs.readFileSync(p,'utf8'));
+            console.log('PMD source-authentic art unavailable for '+r.forms.length+' forms; '+r.files.length+' verified CC BY-NC PNG files used as explicitly labeled substitutes. Original costume colors are NOT restored.');
+          }
+          VISUAL_REPORT
+
       - name: Record strict original sprite coverage for release gate
         id: sprite-gate
         shell: bash
@@ -211,6 +236,7 @@ jobs:
           path: |
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
+            site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/public-manifest-recovery-report.json
             site-capture/rea-lazy-pack-probe/report.json
             site-capture/rea-live-source-drift/report.json
