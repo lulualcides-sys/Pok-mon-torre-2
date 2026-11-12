@@ -1,0 +1,40 @@
+name: Torre 2 — League 0.69.5 regras e compatibilidade
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-league-0695.js'
+      - 'tools/pokearena/torre2-league-0695-compat.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/league-0695-backport.test.js'
+      - '.github/workflows/pokearena-0695-league-compat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  league-safe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify syntax and pure native League policy
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-league-0695.js
+          node --check tools/pokearena/torre2-league-0695-compat.mjs
+          node --check tools/pokearena/build-preview.mjs
+          node --test tests/league-0695-backport.test.js
+      - name: Confirm no fake release tag or publication change
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const release=JSON.parse(fs.readFileSync('data/pokearena-approved-alpha.json','utf8'));
+          if(release.approvedAlpha!=='0.65.8')throw Error('Unverified Alpha release');
+          const adapter=fs.readFileSync('tools/pokearena/torre2-league-0695-compat.mjs','utf8');
+          if(/localStorage\.setItem|fetch\(|https?:\/\//.test(adapter))
+            throw Error('Unexpected side effect in League access adapter');
+          NODE
