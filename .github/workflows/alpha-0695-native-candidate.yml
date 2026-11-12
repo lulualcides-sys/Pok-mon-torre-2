@@ -1,4 +1,4 @@
-name: Poké Arena Alpha 0.69.5 — integração Phaser real em homologação
+name: Poké Arena Alpha atual — integração real em homologação
 on:
   pull_request:
     paths:
@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 48
     env:
       GH_TOKEN: ${{ github.token }}
-      POKEARENA_EXPECTED_ALPHA: '0.69.5'
+      POKEARENA_EXPECTED_ALPHA: 'auto'
       CHROME_BIN: /usr/bin/google-chrome
     steps:
       - uses: actions/checkout@v4
@@ -52,9 +52,9 @@ jobs:
           mkdir -p site-capture/last-green
           gh run download 43211793386 --repo "$GITHUB_REPOSITORY" --name pokemon-torre-2-site-pronto --dir site-capture/last-green
           node tools/pokearena/verify-pages-site-fallback.mjs site-capture/last-green
-      - name: Capture official Alpha 0.69.5 from normal public Chromium REA
+      - name: Capture official current Alpha from normal public Chromium REA
         run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
-      - name: Independently verify and apply ALL native 0.69.5 ESM modules
+      - name: Independently verify and apply ALL current native ESM modules
         run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
       - name: Capture current official sprites when the public site actually delivers them
         shell: bash
@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           node tools/pokearena/stage-approved-visual-fallbacks.mjs site-capture/pokearena-client site-capture/last-green
           node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/native-pack-gaps.json
-      - name: Build 0.69.5 native client with existing Torre 2 campaign and VFX
+      - name: Build current native client with existing Torre 2 campaign and VFX
         env:
           TORRE2_UPSTREAM_AUDIT: '1'
         run: |
@@ -87,8 +87,10 @@ jobs:
           import fs from 'node:fs';
           const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json','utf8'));
           const js=fs.readFileSync(root+'/'+v.modules+'/config.js','utf8');
-          if(!/VERSION="0\.69\.5"/.test(js))throw Error('Built client did not contain native 0.69.5');
-          console.log('REAL_ALPHA_0695_GAME_BUILT_AND_AUDITED',v.modules);
+          const candidate=JSON.parse(fs.readFileSync('site-capture/pokearena-client/version.json','utf8'));
+          const official=js.match(/VERSION="([0-9]+\\.[0-9]+\\.[0-9]+)"/)?.[1];
+          if(!official||official!==candidate.officialAlpha)throw Error('Built native Alpha mismatches REA-verified source '+candidate.officialAlpha);
+          console.log('REAL_NATIVE_ALPHA_GAME_BUILT_AND_AUDITED',v.modules);
           VERSION
       - name: Run original Phaser Chromium WebGL and save smoke
         run: |
