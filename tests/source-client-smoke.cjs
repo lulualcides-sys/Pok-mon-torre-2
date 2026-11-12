@@ -671,7 +671,11 @@ const server=http.createServer(async(req,res)=>{
   // framebuffer follows Phaser's native medir() viewport-scale formula.
   // Validate both independently, including no CSS stretching or custom zoom.
   console.log('T31 NATIVE PHASER CANVAS GEOMETRY',JSON.stringify(nativeDisplay));
-  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:true});
+  // A fullPage screenshot temporarily expands the viewport to document height.
+  // That fires native Phaser resize and can leave the WebGL backing buffer
+  // at the OLD 980x650 resolution while window.innerHeight is 420.
+  // Capture the requested 980x420 viewport without changing browser height.
+  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:false});
   assert.ok(nativeDisplay.logicalRatio>1.77&&nativeDisplay.logicalRatio<1.79,
    'Original Kanto logical battlefield must remain 16:9');
   assert.ok(Number.isFinite(nativeDisplay.expectedRatio)&&
