@@ -355,7 +355,12 @@ const server=http.createServer(async(req,res)=>{
     if(!zone?.active||!zone?.input?.enabled)throw Error('Native TRAINING button has no active hitbox');
     const canvas=document.querySelector('#juego canvas');
     const rect=canvas.getBoundingClientRect();
-    return {x:rect.left+rect.width*(zone.x/640),y:rect.top+rect.height*(zone.y/360)};
+    // The 640x360 world renders inside the 980x650 canvas with an
+    // approximately 49px TOP/BOTTOM letterbox. Mapping against rect.height
+    // directly clicked above TRAINING even though its Phaser hitbox was live.
+    const fit=Math.min(rect.width/640,rect.height/360);
+    return {x:rect.left+(rect.width-640*fit)/2+zone.x*fit,
+      y:rect.top+(rect.height-360*fit)/2+zone.y*fit};
   });
   await page.mouse.click(trainingButton.x,trainingButton.y);
   try{
@@ -388,9 +393,9 @@ const server=http.createServer(async(req,res)=>{
    'Selection cards must preload actual Pokémon portraits and animated sprites, including Zubat/Golbat: '+
    JSON.stringify(visiblePokemon));
   await page.screenshot({path:'test-evidence/pokearena-training-select-sprites-fixed.png',fullPage:true});
-  await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
+  await page.mouse.click(240,149); // Confirm visible Squirtle card for Player 1.
   await page.waitForTimeout(300);
-  await page.mouse.click(68,149); // Confirm Bulbasaur as Dummy after focus switches.
+  await page.mouse.click(103,149); // Confirm visible Bulbasaur as Dummy after focus switches.
   await page.waitForTimeout(350);
   await page.mouse.click(864,544); // Fight! from original client.
   await page.waitForTimeout(2450);
