@@ -1,0 +1,262 @@
+name: Pokémon Torre 2 — Alpha 0.70 em main com REA (pré-publicação)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/audit-native-packs.mjs'
+      - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
+      - 'tests/native-visual-substitute-policy.test.mjs'
+      - 'tests/source-client-smoke.cjs'
+      - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/rea-public-pmd-manifest.cjs'
+      - 'tests/rea-public-pmd-manifest.test.mjs'
+      - 'tools/pokearena/torre2-selection-pages.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-native-loose-pmd-compat.mjs'
+      - 'tools/pokearena/torre2-offline-chat-resize.mjs'
+      - 'tests/offline-chat-native-resize.test.mjs'
+      - 'tests/native-loose-pmd-compat.test.mjs'
+      - 'tools/pokearena/torre2-rayquaza-preview.mjs'
+      - 'tests/rayquaza-mega-preview.test.js'
+      - 'tests/selection-upstream-pagination.test.js'
+      - 'tools/pokearena/capture-public-missing-packs.mjs'
+      - 'tests/rea-public-native-missing.test.mjs'
+      - 'tools/pokearena/verify-pinned-capture.mjs'
+      - '.github/workflows/pokearena-rea-current-candidate-homolog.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  source-current:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install approved browser dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check capture source integrity
+        run: |
+          node --check tools/pokearena/rea-capture-live-public.cjs
+          node --check tools/pokearena/rea-overlay-verified-client.mjs
+          node --check tools/pokearena/audit-native-packs.mjs
+          node --check tools/pokearena/stage-licensed-visual-substitutes.mjs
+          node --check tools/pokearena/torre2-offline-chat-resize.mjs
+          node --check tools/pokearena/stage-verified-lazy-packs.mjs
+          node --check tools/pokearena/capture-public-missing-packs.mjs
+          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
+      - name: Confirm current official Alpha from config.js by normal Chromium/REA
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: auto
+        run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+      - name: Retain official Alpha and source hash evidence even when blocked
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-rea-provenance-homolog
+          path: |
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/rea-capture-failure.json
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Retain only REA captured public source in isolated artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-rea-source-homolog
+          path: site-capture/rea-current/pokearena-client/
+          retention-days: 7
+          if-no-files-found: error
+
+  build-and-gate:
+    needs: source-current
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      POKEARENA_EXPECTED_ALPHA: auto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify older approved public static assets with SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "${{ github.repository }}" --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: current-rea-source-homolog
+          path: site-capture/rea-current/pokearena-client/
+      - uses: actions/download-artifact@v4
+        with:
+          name: current-rea-provenance-homolog
+          path: site-capture/rea-current
+      - name: Verify original current module graph and preserve approved static bytes
+        run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+      - name: Probe official PMD manifest by normal public Chromium, only same verified Alpha
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/rea-public-pmd-manifest.cjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          test -s site-capture/pokearena-client/public-manifest-recovery-report.json
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::Native manifest inaccessible in normal Chromium; full release gate remains closed."
+          fi
+      - name: Capture native packs in THIS candidate Alpha using normal local VS CPU browser
+        shell: bash
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set +e
+          node tools/pokearena/rea-public-lazy-pack-probe.cjs site-capture/rea-lazy-pack-probe
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          # Partial coverage alone returns exit 2; source fingerprint is
+          # independently verified against the candidate below.
+          test -s site-capture/rea-lazy-pack-probe/report.json
+          if node --input-type=module <<'SAME_RELEASE'
+          import fs from 'node:fs';
+          const a=JSON.parse(fs.readFileSync('site-capture/rea-lazy-pack-probe/report.json','utf8'));
+          const v=JSON.parse(fs.readFileSync('site-capture/pokearena-client/version.json','utf8'));
+          process.exit(a.status==='PUBLIC_UI_OBSERVED'&&a.version===v.officialAlpha&&a.src===v.src?0:1);
+          SAME_RELEASE
+          then
+            echo "Live public assets match same-source REA candidate."
+          else
+            # The public site changed mid-run. NEVER mix new source and old
+            # assets or bypass 403; use previously captured ordinary Chromium
+            # responses ONLY when the SHA/Alpha provenance matches exactly.
+            echo "::warning::Public client changed while CI ran. Verify pinned public browser snapshot against current candidate."
+            mv site-capture/rea-lazy-pack-probe site-capture/rea-live-source-drift
+            mkdir -p site-capture/rea-lazy-pack-probe
+            gh run download 43046725988 --repo "${{ github.repository }}" \
+              --name pokearena-lazy-pack-evidence --dir site-capture/rea-lazy-pack-probe
+          fi
+      - name: Install verified lazy packs in quarantine (never overwrite)
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/stage-verified-lazy-packs.mjs site-capture/rea-lazy-pack-probe site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          # A partial capture is safe as INPUT for the independent full
+          # official pack/loose-sprite coverage audit immediately below.
+          # The audit must FAIL the job if any form remains unrenderable.
+          test -s site-capture/pokearena-client/lazy-pack-integration-report.json
+      - name: Try only exact public missing packs by ordinary unauthenticated GET
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/capture-public-missing-packs.mjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          test -s site-capture/pokearena-client/public-missing-packs-report.json
+      - name: Build attributable CC BY-NC species visuals only for officially inaccessible forms
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/stage-licensed-visual-substitutes.mjs site-capture/pokearena-client
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ]; then
+            echo "::warning::Licensed fallback incomplete or invalid; native artwork gate stays red. Never bypass CDN 403."
+          fi
+      - name: Note substitute status separately from original source art
+        shell: bash
+        run: |
+          node --input-type=module <<'VISUAL_REPORT'
+          import fs from 'node:fs';
+          const p='site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json';
+          if(fs.existsSync(p)){
+            const r=JSON.parse(fs.readFileSync(p,'utf8'));
+            console.log('PMD source-authentic art unavailable for '+r.forms.length+' forms; '+r.files.length+' verified CC BY-NC PNG files used as explicitly labeled substitutes. Original costume colors are NOT restored.');
+          }
+          VISUAL_REPORT
+
+      - name: Record strict original sprite coverage for release gate
+        id: sprite-gate
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "complete=true" >> "$GITHUB_OUTPUT"
+          else
+            test -s site-capture/current-native-gaps.json
+            echo "complete=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Original native sprites are missing. Offline diagnostic Node/Phaser build may run, but full browser/saves gate will NOT run on incomplete source; production release remains blocked."
+          fi
+      - name: Build original Phaser into isolated _site for DIAGNOSTICS, never Pages
+        env:
+          TORRE2_UPSTREAM_AUDIT: '1'
+        run: |
+          node tools/pokearena/build-preview.mjs
+          node tools/dev/approved-visual-guard.mjs
+          npm test
+      # Browser startup, full Pokédex and saves require all original native
+      # sprites. When the sprite gate is already red, a second browser failure
+      # adds no evidence and wastes runner time. Do not mark release green.
+      - name: Chromium WebGL startup and save smoke
+        if: steps.sprite-gate.outputs.complete == 'true'
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
+      # Only a complete native 0.70 client that passed the REAL Chromium
+      # WebGL, Pokédex, combat and save smoke may be considered for Pages.
+      # This artifact is staging evidence, NOT an automatic live deployment.
+      - name: Archive fully verified Alpha 0.70 site for controlled publication
+        if: steps.sprite-gate.outputs.complete == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-alpha070-homologated-site
+          path: _site/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Fail closed on missing native art even if diagnostic build and browser pass
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.sprite-gate.outputs.complete }}" = true || {
+            echo "::error::Native Alpha candidate is missing source-authentic graphics. NO MERGE OR DEPLOY permitted."
+            exit 1
+          }
+      - name: Preserve current source/version, pack and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-native-build-gates-homolog
+          path: |
+            site-capture/current-native-gaps.json
+            site-capture/pokearena-client/public-missing-packs-report.json
+            site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
+            site-capture/pokearena-client/public-manifest-recovery-report.json
+            site-capture/rea-lazy-pack-probe/report.json
+            site-capture/rea-live-source-drift/report.json
+            site-capture/pokearena-client/lazy-pack-integration-report.json
+            site-capture/rea-current/rea-capture-summary.json
+            test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
