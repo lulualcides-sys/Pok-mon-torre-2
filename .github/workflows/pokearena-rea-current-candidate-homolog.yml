@@ -176,7 +176,7 @@ jobs:
           else
             test -s site-capture/current-native-gaps.json
             echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Original native sprites are missing. Continuing ONLY to isolated diagnostic build; production release remains blocked."
+            echo "::warning::Original native sprites are missing. Offline diagnostic Node/Phaser build may run, but full browser/saves gate will NOT run on incomplete source; production release remains blocked."
           fi
       - name: Build original Phaser into isolated _site for DIAGNOSTICS, never Pages
         env:
@@ -185,7 +185,11 @@ jobs:
           node tools/pokearena/build-preview.mjs
           node tools/dev/approved-visual-guard.mjs
           npm test
+      # Browser startup, full Pokédex and saves require all original native
+      # sprites. When the sprite gate is already red, a second browser failure
+      # adds no evidence and wastes runner time. Do not mark release green.
       - name: Chromium WebGL startup and save smoke
+        if: steps.sprite-gate.outputs.complete == 'true'
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/source-client-smoke.cjs
