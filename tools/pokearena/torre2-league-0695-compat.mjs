@@ -1,13 +1,13 @@
 // Backport only the League 0.69.5 access rule to an ALREADY approved
 // original native client. Unknown source layouts fail closed.
-const normalize=(s)=>String(s||'');
 function replaceOne(source,pattern,replacement,label){
  const occurrences=[...source.matchAll(new RegExp(pattern.source,pattern.flags.includes('g')?pattern.flags:pattern.flags+'g'))];
  if(occurrences.length!==1)throw Error('Unrecognized native '+label+' ('+occurrences.length+' matches)');
  return source.replace(pattern,replacement);
 }
 function addImport(source,from,identifiers){
- const target=new RegExp('import\\{([^}]+)\\}from"'+from.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')+'";');
+ if(from!=='./liga.js')throw Error('Unsupported native League import path');
+ const target=/import\{([^}]+)\}from"\.\/liga\.js";/;
  // Import strings have a fixed, audited relative path.
  const found=source.match(target);
  if(!found)throw Error('Missing expected League import '+from);
