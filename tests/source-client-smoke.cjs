@@ -615,6 +615,9 @@ const server=http.createServer(async(req,res)=>{
   // update its backing buffer; immediate reads can retain the prior 980×650.
   await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
   await offline.waitForFunction(async()=>{
+   // Playwright can signal a viewport transition before window.innerHeight
+   // changes; do not accept the OLD 980x650 canvas as the new 980x420 view.
+   if(innerWidth!==980||innerHeight!==420)return false;
    const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
    const canvas=document.querySelector('#juego canvas');
    if(!src||!canvas)return false;
