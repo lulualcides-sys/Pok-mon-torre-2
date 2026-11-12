@@ -36,6 +36,8 @@ jobs:
             --name pokearena2d-cliente-publico-capturado --dir site-capture
           node tools/pokearena/verify-pinned-capture.mjs
       - name: Compile executable Torre 2 Phaser with original authorized assets
+        env:
+          TORRE2_RAICHU_OFFLINE_FIXTURE: '1'
         shell: bash
         run: |
           set -euo pipefail
