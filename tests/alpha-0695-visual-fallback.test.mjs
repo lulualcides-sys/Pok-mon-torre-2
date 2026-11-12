@@ -66,7 +66,7 @@ test('previous approved source must be verified, no arbitrary replacement',()=>f
 }));
 test('current config mismatch blocks image staging',()=>fixture(async({candidate,approved,put})=>{
  await put(candidate,'src-0123456789/config.js','const VERSION="0.65.8";');
- await assert.rejects(stageApprovedVisualFallbacks(candidate,approved,verify),/not the official Alpha 0.69.5/);
+ await assert.rejects(stageApprovedVisualFallbacks(candidate,approved,verify),/does not match REA-verified Alpha/);
 }));
 test('if approved source is missing a required genuine animation, fail rather than fabricate',()=>fixture(async({candidate,approved})=>{
  await fs.rm(path.join(approved,'arena2d/assets/pmd/0146/Attack-Anim.png'));
