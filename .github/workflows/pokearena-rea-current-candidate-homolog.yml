@@ -224,6 +224,17 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/source-client-smoke.cjs
+      # Only a complete native 0.70 client that passed the REAL Chromium
+      # WebGL, Pokédex, combat and save smoke may be considered for Pages.
+      # This artifact is staging evidence, NOT an automatic live deployment.
+      - name: Archive fully verified Alpha 0.70 site for controlled publication
+        if: steps.sprite-gate.outputs.complete == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-alpha070-homologated-site
+          path: _site/
+          retention-days: 30
+          if-no-files-found: error
       - name: Fail closed on missing native art even if diagnostic build and browser pass
         if: always()
         shell: bash
