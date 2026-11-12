@@ -41,6 +41,14 @@ test('Arena selection preloads sprites and labels RED AURA without ranked unlock
   'Other Pokémon retain their native selector parenting');
  assert.throws(()=>patchGreninjaSelectionSource(patched),/changed or ambiguous/);
 });
+test('Alpha 0.69.4 challenge roster lock is preserved while local Froakie is available',()=>{
+ const source=`class Seleccion{preload(){this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);}ficha(panel,p){panel.mostrado=p?.id??null;panel.contenido?.destroy(true);}versiones(panel,p){const s=this.add.container(0,0),W=6+opciones.length*46;const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"});panel.contenido.add(s);panel.selector=s}casilla(p){const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);}}`;
+ const patched=patchGreninjaSelectionSource(source);
+ assert.match(patched,/this.encargo\?\!\!this.encargo.bloqueado\?\.\(p.id\)/);
+ assert.match(patched,/this.modo==="ranked"\?!desbloqueadoRanked\(p.id\)/);
+ assert.match(patched,/p.id==="froakie"&&\["cpu","entreno","versus"\]/);
+ assert.ok(!patched.includes('if(this.encargo)throw'));
+});
 test('Six-player local Arena allows Froakie but never alters league.js',()=>{
  const source='import{desbloqueado}from"../liga.js";';
  const altered=patchGreninjaPrepararSource(source);

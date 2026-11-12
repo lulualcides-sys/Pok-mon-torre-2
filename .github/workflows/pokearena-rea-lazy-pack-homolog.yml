@@ -1,0 +1,60 @@
+name: Poké Arena — REA cobertura de pacotes sob demanda (homolog)
+on:
+  pull_request:
+    branches: [test/homologacao-kanto-20261103]
+    paths:
+      - 'tools/pokearena/rea-public-lazy-pack-probe.cjs'
+      - 'tests/rea-public-lazy-pack-probe.test.cjs'
+      - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tests/rea-stage-verified-lazy-packs.test.mjs'
+      - '.github/workflows/pokearena-rea-lazy-pack-homolog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rea-lazy-packs-homolog
+  cancel-in-progress: true
+
+jobs:
+  validate-policy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source syntax and security coverage
+        run: |
+          node --check tools/pokearena/rea-public-lazy-pack-probe.cjs
+          node --test tests/rea-public-lazy-pack-probe.test.cjs
+          node --check tools/pokearena/stage-verified-lazy-packs.mjs
+          node --test tests/rea-stage-verified-lazy-packs.test.mjs
+          node --test tests/rayquaza-mega-preview.test.js tests/greninja-native-variants.test.js tests/selection-upstream-pagination.test.js
+  browser-public:
+    needs: validate-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing browser dependency only
+        run: npm install --no-audit --no-fund
+      - name: Observe lazy packs via ordinary browser menu navigation
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tools/pokearena/rea-public-lazy-pack-probe.cjs site-capture/rea-lazy-pack-probe
+      - name: Preserve SHA256/provenance and exact deficits even if blocked
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-lazy-pack-evidence
+          path: |
+            site-capture/rea-lazy-pack-probe/report.json
+            site-capture/rea-lazy-pack-probe/public-*.png
+            site-capture/rea-lazy-pack-probe/observed/
+          if-no-files-found: warn
+          retention-days: 7

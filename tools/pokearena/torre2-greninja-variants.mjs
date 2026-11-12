@@ -61,9 +61,17 @@ export function patchGreninjaSelectionSource(source){
  // entry in our local CPU, training, and local VS only; do not grant League,
  // online or ranked unlocks and do not write to any original account.
  const blocked='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
- s=replaceOnce(s,blocked,
-  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
-  'Froakie selectable in our offline Arena without League progress');
+ const allowed='p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)';
+ const current='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ if(s.includes(blocked)){
+  s=replaceOnce(s,blocked,
+   'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!('+allowed+'||desbloqueado(p.id));',
+   'Froakie selectable in our offline Arena without League progress');
+ }else{
+  s=replaceOnce(s,current,
+   'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!('+allowed+'||desbloqueado(p.id));',
+   'Preserve upstream challenge roster guard while enabling only offline Froakie');
+ }
  // Upstream draws the skin overlay inside the stats panel container. On
  // Chromium, other scene input regions intercept its clicks. Give ONLY the
  // Froakie popup an independent topmost Phaser container; preserve all 5
