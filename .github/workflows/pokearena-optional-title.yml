@@ -28,6 +28,6 @@ jobs:
           node --check tools/pokearena/torre2-optional-title.mjs
           node --test tests/optional-title.test.mjs
           node --test tests/public-client-http.test.mjs
-          node --test tests/capture-client-critical.test.mjs
+          node --test tests/capture-client-critical.test.js
       - name: Check other approved combat functionality
         run: npm test
