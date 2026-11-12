@@ -683,8 +683,12 @@ for(const [filename,changes] of patches){
     // Upstream now gates the account tile with a DEBUG ternary.
     // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
     const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
-    if(body.includes(debugVariant)){
-     body=body.replace(debugVariant,'ajustes:[');
+    // Native 0.65.x used CUSTOMIZE? while later releases use DEBUG?.
+    // Match the COMPLETE original account-only tile, never a broad menu regex.
+    const customizeVariant=debugVariant.replace('ajustes:[DEBUG?','ajustes:[CUSTOMIZE?');
+    const exactNativeVariant=[debugVariant,customizeVariant].find(v=>body.includes(v));
+    if(exactNativeVariant){
+     body=body.replace(exactNativeVariant,'ajustes:[');
      continue;
     }
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
