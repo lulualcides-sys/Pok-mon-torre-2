@@ -1104,14 +1104,24 @@ if(upstreamUnmatched.length)
 // attack kits and all 10 mandatory PMD sprite sheets before declaring ready.
 const rayquazaRosterFile=path.join(dest,clientSource,'datos.js');
 const nativeRoster=await fs.readFile(rayquazaRosterFile,'utf8');
-const previewRoster=enableRayquazaForHomologation(nativeRoster);
-const spriteManifestFile=path.join(dest,'assets/pmd/manifest.json');
-const spriteManifest=JSON.parse(await fs.readFile(spriteManifestFile,'utf8'));
-for(const relativeSprite of rayquazaRequiredSpriteFiles(spriteManifest)){
- await fs.access(path.join(dest,'assets/pmd',relativeSprite));
+if(process.env.TORRE2_RAICHU_OFFLINE_FIXTURE==='1'){
+ // Regression-only fixture: the SHA-verified 0.65.8 capture predates
+ // the later Rayquaza local-only gate. Never unlock or rewrite its roster.
+ const report=JSON.parse(await fs.readFile('site-capture/CAPTURE-REPORT.json','utf8'));
+ if(clientSource!=='src-17c11341bf'||report.sourceVersions?.selected!==clientSource||
+    !Array.isArray(report.retrieved)||report.retrieved.length<3300)
+  throw Error('Raichu offline fixture requires pinned, verified historical source');
+ console.log('Historical Raichu-only browser fixture: native Rayquaza roster UNCHANGED; NOT release QA');
+}else{
+ const previewRoster=enableRayquazaForHomologation(nativeRoster);
+ const spriteManifestFile=path.join(dest,'assets/pmd/manifest.json');
+ const spriteManifest=JSON.parse(await fs.readFile(spriteManifestFile,'utf8'));
+ for(const relativeSprite of rayquazaRequiredSpriteFiles(spriteManifest)){
+  await fs.access(path.join(dest,'assets/pmd',relativeSprite));
+ }
+ await fs.writeFile(rayquazaRosterFile,previewRoster);
+ console.log('Torre 2 homologation: Rayquaza + Mega Rayquaza native kits and sprites verified');
 }
-await fs.writeFile(rayquazaRosterFile,previewRoster);
-console.log('Torre 2 homologation: Rayquaza + Mega Rayquaza native kits and sprites verified');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
