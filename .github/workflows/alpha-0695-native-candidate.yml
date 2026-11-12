@@ -1,0 +1,118 @@
+name: Poké Arena Alpha 0.69.5 — integração Phaser real em homologação
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/stage-approved-visual-fallbacks.mjs'
+      - 'tools/pokearena/audit-native-packs.mjs'
+      - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/rea-public-lazy-pack-probe.cjs'
+      - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/alpha-0695-visual-fallback.test.mjs'
+      - '.github/workflows/alpha-0695-native-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  candidate-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 48
+    env:
+      GH_TOKEN: ${{ github.token }}
+      POKEARENA_EXPECTED_ALPHA: '0.69.5'
+      CHROME_BIN: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fast checks before external calls
+        run: |
+          set -euo pipefail
+          bash -n tools/pokearena/recover-last-green-pages.sh
+          node --check tools/pokearena/stage-approved-visual-fallbacks.mjs
+          node --check tools/pokearena/rea-capture-live-public.cjs
+          node --check tools/pokearena/rea-overlay-verified-client.mjs
+          node --test tests/alpha-0695-visual-fallback.test.mjs
+          node --test tests/rea-public-native-missing.test.mjs
+          node --test tests/rea-public-lazy-pack-probe.test.cjs
+      - name: Install browser and sprite build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Restore approved baseline original assets by SHA256
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "$GITHUB_REPOSITORY" --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - name: Restore last fully tested Torre 2 Phaser sprites for real same-species fallbacks
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture/last-green
+          gh run download 43211793386 --repo "$GITHUB_REPOSITORY" --name pokemon-torre-2-site-pronto --dir site-capture/last-green
+          node tools/pokearena/verify-pages-site-fallback.mjs site-capture/last-green
+      - name: Capture official Alpha 0.69.5 from normal public Chromium REA
+        run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+      - name: Independently verify and apply ALL native 0.69.5 ESM modules
+        run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+      - name: Capture current official sprites when the public site actually delivers them
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/rea-public-lazy-pack-probe.cjs site-capture/rea-lazy-pack-probe
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 2 ]; then
+            echo "::warning::Real public lazy sprite probe failed; only verified approved same-species art is eligible for fallback."
+          fi
+          if [ -s site-capture/rea-lazy-pack-probe/report.json ]; then
+            node tools/pokearena/stage-verified-lazy-packs.mjs site-capture/rea-lazy-pack-probe site-capture/pokearena-client || echo "::warning::Incomplete optional official packs; fallback is individually verified."
+          fi
+      - name: Recover every compatible missing sprite from full approved Pages release
+        run: |
+          set -euo pipefail
+          node tools/pokearena/stage-approved-visual-fallbacks.mjs site-capture/pokearena-client site-capture/last-green
+          node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/native-pack-gaps.json
+      - name: Build 0.69.5 native client with existing Torre 2 campaign and VFX
+        env:
+          TORRE2_UPSTREAM_AUDIT: '1'
+        run: |
+          set -euo pipefail
+          node tools/pokearena/build-preview.mjs
+          node tools/dev/approved-visual-guard.mjs
+          node tools/pokearena/audit-moves.mjs
+          npm test
+          node --input-type=module <<'VERSION'
+          import fs from 'node:fs';
+          const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json','utf8'));
+          const js=fs.readFileSync(root+'/'+v.modules+'/config.js','utf8');
+          if(!/VERSION="0\.69\.5"/.test(js))throw Error('Built client did not contain native 0.69.5');
+          console.log('REAL_ALPHA_0695_GAME_BUILT_AND_AUDITED',v.modules);
+          VERSION
+      - name: Run original Phaser Chromium WebGL and save smoke
+        run: |
+          set -euo pipefail
+          CHROME_BIN=/usr/bin/google-chrome node tests/source-client-smoke.cjs
+          CHROME_BIN=/usr/bin/google-chrome node tests/visual-guard-browser.cjs
+      - name: Record exact evidence and candidate version even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-0695-native-qa-report
+          path: |
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/rea-capture-failure.json
+            site-capture/pokearena-client/native-visual-fallbacks.json
+            site-capture/native-pack-gaps.json
+            _site/arena2d/version.json
+            test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Save actual complete playable candidate only when every gate passed
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-0695-native-verified-playable-homolog
+          path: _site/arena2d/
+          retention-days: 14
+          if-no-files-found: error
