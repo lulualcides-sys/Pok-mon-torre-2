@@ -15,6 +15,8 @@ on:
       - 'tools/pokearena/torre2-selection-pages.mjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tools/pokearena/torre2-native-loose-pmd-compat.mjs'
+      - 'tools/pokearena/torre2-offline-chat-resize.mjs'
+      - 'tests/offline-chat-native-resize.test.mjs'
       - 'tests/native-loose-pmd-compat.test.mjs'
       - 'tools/pokearena/torre2-rayquaza-preview.mjs'
       - 'tests/rayquaza-mega-preview.test.js'
@@ -45,9 +47,10 @@ jobs:
           node --check tools/pokearena/rea-overlay-verified-client.mjs
           node --check tools/pokearena/audit-native-packs.mjs
           node --check tools/pokearena/stage-licensed-visual-substitutes.mjs
+          node --check tools/pokearena/torre2-offline-chat-resize.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs
+          node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
           CHROME_BIN: /usr/bin/google-chrome
