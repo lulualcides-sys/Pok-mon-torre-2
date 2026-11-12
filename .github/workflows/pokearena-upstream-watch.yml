@@ -6,6 +6,8 @@ on:
   pull_request:
     paths:
       - 'tools/pokearena/watch-upstream.mjs'
+      - 'tools/pokearena/capture-core-public.mjs'
+      - 'tests/capture-core-public.test.mjs'
       - 'tests/watch-upstream.test.mjs'
       - '.github/workflows/pokearena-upstream-watch.yml'
   push:
@@ -74,3 +76,31 @@ jobs:
             state="$(gh issue view "$issue" --repo "$GH_REPO" --json state --jq '.state')"
             if [ "$state" != OPEN ]; then gh issue reopen "$issue" --repo "$GH_REPO"; fi
           fi
+
+  official-code-audit:
+    # This audit is independent of the sprites/title needed by playable builds.
+    # Missing genuine assets MUST still block full Phaser publication.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate fail-closed source checking without network dependencies
+        run: |
+          node --check tools/pokearena/capture-core-public.mjs
+          node --test tests/capture-core-public.test.mjs
+      - name: Verify current official Alpha and native JavaScript
+        if: github.event_name != 'pull_request'
+        run: node tools/pokearena/capture-core-public.mjs
+      - name: Keep upstream evidence even on an HTTP 403
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-official-code-audit
+          path: |
+            site-capture/upstream-core.json
+            site-capture/official-js/
+          if-no-files-found: warn
+          retention-days: 14
