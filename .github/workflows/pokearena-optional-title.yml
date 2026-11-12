@@ -1,0 +1,33 @@
+name: Poké Arena — title JPEG optional without combat regressions
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/capture-client.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-optional-title.mjs'
+      - 'tests/optional-title.test.mjs'
+      - '.github/workflows/pokearena-optional-title.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  optional-title:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check capture/build syntax and missing-title regression
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/capture-client.mjs
+          node --check tools/pokearena/build-preview.mjs
+          node --check tools/pokearena/torre2-optional-title.mjs
+          node --test tests/optional-title.test.mjs
+          node --test tests/public-client-http.test.mjs
+          node --test tests/capture-client-critical.test.js
+      - name: Check other approved combat functionality
+        run: npm test
