@@ -324,6 +324,7 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-intro-moves.js','kanto-intro-moves.js'],
  ['tools/pokearena/kanto-ultimate-policy.js','kanto-ultimate-policy.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
+ ['tools/pokearena/torre2-raichu-electro-ball-0700.js','raichu-electro-ball-0700.js'],
  ['tools/pokearena/torre2-finale13.js','finale13.js'],
  ['tools/pokearena/torre2-finale13-catalog.js','torre2-finale13-catalog.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
@@ -682,8 +683,12 @@ for(const [filename,changes] of patches){
     // Upstream now gates the account tile with a DEBUG ternary.
     // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
     const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
-    if(body.includes(debugVariant)){
-     body=body.replace(debugVariant,'ajustes:[');
+    // Native 0.65.x used CUSTOMIZE? while later releases use DEBUG?.
+    // Match the COMPLETE original account-only tile, never a broad menu regex.
+    const customizeVariant=debugVariant.replace('ajustes:[DEBUG?','ajustes:[CUSTOMIZE?');
+    const exactNativeVariant=[debugVariant,customizeVariant].find(v=>body.includes(v));
+    if(exactNativeVariant){
+     body=body.replace(exactNativeVariant,'ajustes:[');
      continue;
     }
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
@@ -697,6 +702,14 @@ for(const [filename,changes] of patches){
      continue;
     }
     throw Error('Unknown native account profile menu; refusing guessed removal');
+   }
+   // The native getter expression may change across public Alpha versions.
+   // Preserve its exact source expression, adding Gen III adaptation only to campaign.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.startsWith('get tipos(){const types=')){
+    const {wrapNativeTypesGetter}=await import('./torre2-native-types-compat.mjs');
+    body=wrapNativeTypesGetter(body);continue;
    }
    // Current upstream title rearranges social icon positions. The entire
    // redes() call is stripped by the later exact, verified offline patch;
@@ -1091,14 +1104,24 @@ if(upstreamUnmatched.length)
 // attack kits and all 10 mandatory PMD sprite sheets before declaring ready.
 const rayquazaRosterFile=path.join(dest,clientSource,'datos.js');
 const nativeRoster=await fs.readFile(rayquazaRosterFile,'utf8');
-const previewRoster=enableRayquazaForHomologation(nativeRoster);
-const spriteManifestFile=path.join(dest,'assets/pmd/manifest.json');
-const spriteManifest=JSON.parse(await fs.readFile(spriteManifestFile,'utf8'));
-for(const relativeSprite of rayquazaRequiredSpriteFiles(spriteManifest)){
- await fs.access(path.join(dest,'assets/pmd',relativeSprite));
+if(process.env.TORRE2_RAICHU_OFFLINE_FIXTURE==='1'){
+ // Regression-only fixture: the SHA-verified 0.65.8 capture predates
+ // the later Rayquaza local-only gate. Never unlock or rewrite its roster.
+ const report=JSON.parse(await fs.readFile('site-capture/CAPTURE-REPORT.json','utf8'));
+ if(clientSource!=='src-17c11341bf'||report.sourceVersions?.selected!==clientSource||
+    !Array.isArray(report.retrieved)||report.retrieved.length<3300)
+  throw Error('Raichu offline fixture requires pinned, verified historical source');
+ console.log('Historical Raichu-only browser fixture: native Rayquaza roster UNCHANGED; NOT release QA');
+}else{
+ const previewRoster=enableRayquazaForHomologation(nativeRoster);
+ const spriteManifestFile=path.join(dest,'assets/pmd/manifest.json');
+ const spriteManifest=JSON.parse(await fs.readFile(spriteManifestFile,'utf8'));
+ for(const relativeSprite of rayquazaRequiredSpriteFiles(spriteManifest)){
+  await fs.access(path.join(dest,'assets/pmd',relativeSprite));
+ }
+ await fs.writeFile(rayquazaRosterFile,previewRoster);
+ console.log('Torre 2 homologation: Rayquaza + Mega Rayquaza native kits and sprites verified');
 }
-await fs.writeFile(rayquazaRosterFile,previewRoster);
-console.log('Torre 2 homologation: Rayquaza + Mega Rayquaza native kits and sprites verified');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
@@ -1153,6 +1176,12 @@ await fs.appendFile(fighterPath,
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
  'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
  'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
+
+// Independent 0.70.0 Electro Ball backport: only Raichu in offline Arena.
+// Native Alpha 0.70.0 already implements it, so the adapter never overrides it.
+await fs.appendFile(fighterPath,
+ '\nimport{installRaichuElectroBall0700}from"./torre2/raichu-electro-ball-0700.js";'+
+ 'installRaichuElectroBall0700(Luchador);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
