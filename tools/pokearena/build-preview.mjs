@@ -1187,7 +1187,7 @@ for(const [filename,changes] of patches){
 // New full Alpha clients must retain their OWN gates without an adapter.
 {
  const config=await fs.readFile(path.join(dest,clientSource,'config.js'),'utf8');
- const officialAlpha=config.match(/\\b(?:const|let|var)\\s+VERSION\\s*=\\s*[\"'](0\\.\\d+\\.\\d+)[\"']/)?.[1];
+ const officialAlpha=config.match(/\b(?:const|let|var)\s+VERSION\s*=\s*["'](0\.\d+\.\d+)["']/)?.[1];
  if(!officialAlpha)throw Error('Cannot prove official native Alpha for League compatibility');
  if(officialAlpha==='0.65.8'){
   const {backportLeague0695}=await import('./torre2-league-0695-compat.mjs');
