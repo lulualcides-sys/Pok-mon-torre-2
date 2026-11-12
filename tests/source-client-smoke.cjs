@@ -103,7 +103,10 @@ const server=http.createServer(async(req,res)=>{
       socialIcons:title.children.list.filter(obj=>['ico-instagram','ico-youtube',
        'ico-tiktok','ico-discord'].includes(obj.texture?.key)).map(obj=>obj.texture.key),
       socialLinks:[...document.querySelectorAll('a[href]')].filter(node=>
-       /(?:instagram|youtube|tiktok|discord)/i.test(node.href)).map(node=>node.href)};
+       /(?:instagram|youtube|tiktok|discord)/i.test(node.href)&&
+       // Alpha 0.70 added genuine informational footer hyperlinks.
+       // They are NOT the Phaser social overlay hit targets prohibited here.
+       !node.closest('footer')).map(node=>node.href)};
   });
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
