@@ -1535,6 +1535,16 @@ await fs.writeFile(johtoSelectionPath,
  console.log('Native Poké Arena 2D portrait size and one-card-per-family evolution tabs restored');
  console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
 }
+// Preserve Phaser's upstream resize formula and first-party listeners.
+// Alpha 0.70 may deliver window/VisualViewport resize before Phaser commits
+// its framebuffer update. Schedule a single additional native ajustar()
+// on the next frame, with no viewport CSS/JS zoom, timers or game changes.
+{
+ const file=path.join(dest,clientSource,'main.js');
+ const {installNativeResizeFrameGuard}=await import('./torre2-native-resize-compat.mjs');
+ await fs.writeFile(file,installNativeResizeFrameGuard(await fs.readFile(file,'utf8')));
+}
+
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('reference-assets/scenic-v2/trees-green.png'));
 // External campaign art must also invalidate the published module directory.
