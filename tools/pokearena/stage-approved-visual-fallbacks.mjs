@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath} from 'node:url';
 import {auditNativePacks} from './audit-native-packs.mjs';
 import {verifyPublishedFallback} from './verify-pages-site-fallback.mjs';
 
