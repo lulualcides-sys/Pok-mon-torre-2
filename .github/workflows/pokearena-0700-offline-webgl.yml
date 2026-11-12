@@ -47,6 +47,8 @@ jobs:
           }
           NODE
       - name: Compile executable Torre 2 Phaser with original authorized assets
+        env:
+          TORRE2_UPSTREAM_AUDIT: '1'
         shell: bash
         run: |
           set -euo pipefail
