@@ -11,6 +11,7 @@ on:
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
       - 'tools/pokearena/priority-licensed-pmd.mjs'
       - 'tools/pokearena/stage-personal-alpha0713.py'
+      - 'tools/pokearena/upgrade-priority-artist-sources.py'
       - 'tools/pokearena/audit-collab-19-forms.mjs'
       - 'tools/pokearena/audit-source-rights-0713.mjs'
       - 'tests/audit-source-rights-0713.test.mjs'
@@ -94,6 +95,7 @@ jobs:
           node --check tools/pokearena/capture-public-missing-packs.mjs
           node --check tools/pokearena/priority-licensed-pmd.mjs
           python3 -m py_compile tools/pokearena/stage-personal-alpha0713.py
+          python3 -m py_compile tools/pokearena/upgrade-priority-artist-sources.py
           node --check tools/pokearena/audit-collab-19-forms.mjs
           node --check tools/pokearena/audit-source-rights-0713.mjs
           node --check tools/pokearena/native-0713-release-gate.mjs
@@ -326,6 +328,15 @@ jobs:
           else
             echo "Personal Alpha 0.71.3 fallback intentionally not staged for $alpha"
           fi
+      - name: Replace ten unknown-source priority animations with verified fan-artist alternate sets
+        if: ${{ steps.pack-fingerprint.outputs.key != '' }}
+        shell: bash
+        run: |
+          alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
+          if [ "$alpha" = "0.71.3" ]; then
+            /tmp/torre2-personal-pmd-venv/bin/python tools/pokearena/upgrade-priority-artist-sources.py --self-test
+            /tmp/torre2-personal-pmd-venv/bin/python tools/pokearena/upgrade-priority-artist-sources.py site-capture/pokearena-client
+          fi
       - name: Audit contributor credits of every exact installed fallback PNG (NO release bypass)
         if: ${{ steps.pack-fingerprint.outputs.key != '' }}
         shell: bash
@@ -448,6 +459,7 @@ jobs:
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/pokearena-client/priority-licensed-pmd-report.json
+            site-capture/pokearena-client/priority-artist-upgrade-report.json
             site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/public-manifest-recovery-report.json
