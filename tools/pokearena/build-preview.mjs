@@ -1423,12 +1423,17 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
   'bindAutoBattleToScene('+klass+',IA);\n');
 }
 
-// Expand Pokedex without overlapping its original animated Pokémon
-// pedestal: six rows of six cards with tiny previous/next Phaser controls.
+// Legacy Kanto grid pagination is incompatible with the Alpha 0.71.3
+// responsive National Dex. Preserve that native layout, form tabs and
+// Pokédex data; retain the preapproved legacy pagination only for older
+// verified releases. Never modify published Pages from this diagnostic.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
+const {guardNativePokedexPagination}=await import('./torre2-pokedex-final-gate-0713.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
-const paginatedPokedex=paginateKantoPokedexSource(
- await fs.readFile(pokedexPath,'utf8'));
+const paginationAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+const paginatedPokedex=guardNativePokedexPagination(
+ await fs.readFile(pokedexPath,'utf8'),paginationAlpha,paginateKantoPokedexSource);
+if(paginationAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_POKEDEX_PAGINATION_PRESERVED');
 // Display-only adapter for native incomplete kits, including Ho-Oh,
 // Crobat and Steelix; do NOT alter a single original P2 combat slot.
 const safeSparsePokedex=`
