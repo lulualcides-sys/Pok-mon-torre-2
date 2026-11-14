@@ -1431,9 +1431,12 @@ const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const {guardNativePokedexPagination}=await import('./torre2-pokedex-final-gate-0713.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
 const paginationAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
-const paginatedPokedex=guardNativePokedexPagination(
- await fs.readFile(pokedexPath,'utf8'),paginationAlpha,paginateKantoPokedexSource);
-if(paginationAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_POKEDEX_PAGINATION_PRESERVED');
+const {paginateModernPokedex0713}=await import('./torre2-pokedex-page-0713.mjs');
+const originalDexPage=await fs.readFile(pokedexPath,'utf8');
+const verifiedDexPage=guardNativePokedexPagination(
+ originalDexPage,paginationAlpha,paginateKantoPokedexSource);
+const paginatedPokedex=paginateModernPokedex0713(verifiedDexPage,paginationAlpha);
+if(paginationAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_POKEDEX_25_CARD_PAGES');
 // Display-only adapter for native incomplete kits, including Ho-Oh,
 // Crobat and Steelix; do NOT alter a single original P2 combat slot.
 const safeSparsePokedex=`

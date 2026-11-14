@@ -177,6 +177,28 @@ const server=http.createServer(async(req,res)=>{
     bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
     tabNames:p.etapas.map(x=>x.nombre)};
   });
+  console.log('PHASER_POKEDEX_GEOMETRY',JSON.stringify(dexData));
+  if(dexData.count>=36&&dexData.visibleCount===25){
+   const pages=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    if(typeof p.irPaginaDex!=='function')return null;
+    const first=p.dexPage;
+    const firstVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    p.irPaginaDex(1);
+    const second=p.dexPage,secondVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    const staleInteractive=p.casillas.filter((c,i)=>!c.g?.visible&&c.zone?.input?.enabled).length;
+    p.irPaginaDex(-1);
+    return {first,second,restored:p.dexPage,firstVisible,secondVisible,staleInteractive};
+   });
+   if(pages){
+    console.log('PHASER_POKEDEX_PAGE_NAVIGATION',JSON.stringify(pages));
+    assert.equal(pages.second,(pages.first+1)%Math.ceil(dexData.count/25),'Next Pokédex page must advance');
+    assert.equal(pages.restored,pages.first,'Previous page must restore focus');
+    assert.equal(pages.firstVisible.length,25,'Native first page must show 25 cards');
+    assert.ok(pages.secondVisible.length>0&&pages.secondVisible.length<=25,'Next page has visible cards');
+    assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
+   }
+  }
   assert.ok(dexData.count>=36,
    'Pokédex should retain 26 native cards and add ten original early-Kanto species');
   assert.ok(dexData.bottom<=dexData.podium-22,
