@@ -13,6 +13,7 @@ on:
       - 'tools/pokearena/rea-public-pmd-manifest.cjs'
       - 'tests/rea-public-pmd-manifest.test.mjs'
       - 'tools/pokearena/torre2-selection-pages.mjs'
+      - 'tools/pokearena/torre2-arena-family-selector.mjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tools/pokearena/torre2-native-loose-pmd-compat.mjs'
       - 'tools/pokearena/torre2-offline-chat-resize.mjs'
@@ -50,6 +51,7 @@ jobs:
           node --check tools/pokearena/torre2-offline-chat-resize.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
+          node --test tests/selection-upstream-pagination.test.js
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
