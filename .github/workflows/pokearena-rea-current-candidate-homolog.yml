@@ -10,6 +10,7 @@ on:
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
       - 'tools/pokearena/priority-licensed-pmd.mjs'
+      - 'tools/pokearena/stage-personal-alpha0713.py'
       - 'tools/pokearena/audit-collab-19-forms.mjs'
       - 'tests/audit-collab-19-forms.test.mjs'
       - 'tests/priority-licensed-pmd.test.mjs'
@@ -82,6 +83,7 @@ jobs:
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
           node --check tools/pokearena/priority-licensed-pmd.mjs
+          python3 -m py_compile tools/pokearena/stage-personal-alpha0713.py
           node --check tools/pokearena/audit-collab-19-forms.mjs
           node --check tools/pokearena/native-0713-release-gate.mjs
           node --check tools/pokearena/torre2-pokedex-modern-compat.mjs
@@ -270,6 +272,18 @@ jobs:
           }
           VISUAL_REPORT
 
+      - name: Prepare isolated Alpha 0.71.3 visual fallbacks for personal browser QA
+        if: ${{ steps.pack-fingerprint.outputs.key != '' }}
+        shell: bash
+        run: |
+          alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
+          if [ "$alpha" = "0.71.3" ]; then
+            python3 -m pip install --user --disable-pip-version-check 'Pillow==12.0.0'
+            python3 tools/pokearena/stage-personal-alpha0713.py --self-test
+            python3 tools/pokearena/stage-personal-alpha0713.py site-capture/pokearena-client
+          else
+            echo "Personal Alpha 0.71.3 fallback intentionally not staged for $alpha"
+          fi
       - name: Record strict original sprite coverage for release gate
         id: sprite-gate
         shell: bash
@@ -278,12 +292,21 @@ jobs:
           node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
           code=$?
           set -e
-          if [ "$code" -eq 0 ]; then
-            echo "complete=true" >> "$GITHUB_OUTPUT"
-          else
-            test -s site-capture/current-native-gaps.json
-            echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Original native sprites are missing. Offline diagnostic Node/Phaser build may run, but full browser/saves gate will NOT run on incomplete source; production release remains blocked."
+          test -s site-capture/current-native-gaps.json
+          node --input-type=module <<'SPLIT_GATES'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('site-capture/current-native-gaps.json','utf8'));
+          const f=process.env.GITHUB_OUTPUT;
+          fs.appendFileSync(f,'renderable='+(r.missingFormCount===0)+'\n');
+          fs.appendFileSync(f,'complete='+(r.missingFormCount===0&&r.pendingRightsForms.length===0)+'\n');
+          console.log('ALPHA0713_SEPARATE_GATES',JSON.stringify({
+            artRenderable:r.missingFormCount===0,missingForms:r.missingFormCount,
+            rightsUncleared:r.pendingRightsForms.length,
+            releaseAllowed:r.missingFormCount===0&&r.pendingRightsForms.length===0
+          }));
+          SPLIT_GATES
+          if [ "$code" -ne 0 ]; then
+            echo "::warning::Only private diagnostic candidate can continue. Rights/real art release gate remains CLOSED."
           fi
       - name: Audit SpriteCollab 19 missing forms with artist-level credits (no installation)
         if: always() && steps.pack-fingerprint.outputs.key != ''
@@ -314,7 +337,7 @@ jobs:
       # sprites. When the sprite gate is already red, a second browser failure
       # adds no evidence and wastes runner time. Do not mark release green.
       - name: Chromium WebGL startup and save smoke
-        if: steps.sprite-gate.outputs.complete == 'true'
+        if: steps.sprite-gate.outputs.renderable == 'true'
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/source-client-smoke.cjs
@@ -367,6 +390,7 @@ jobs:
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/pokearena-client/priority-licensed-pmd-report.json
+            site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/public-manifest-recovery-report.json
             site-capture/rea-lazy-pack-probe/report.json

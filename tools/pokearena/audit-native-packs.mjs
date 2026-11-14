@@ -68,7 +68,10 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
   if(alternatives){
     const {ALLOWED_VISUAL_SUBSTITUTES}=await import('./stage-licensed-visual-substitutes.mjs');
     if(alternatives.sourceAuthentic!==false||
-       alternatives.license!=='CC BY-NC 4.0 - PMD SpriteCollab'||
+       !(['CC BY-NC 4.0 - PMD SpriteCollab','MIXED_OR_UNVERIFIED - PERSONAL_DIAGNOSTIC'].includes(alternatives.license))||
+       (alternatives.license==='MIXED_OR_UNVERIFIED - PERSONAL_DIAGNOSTIC' &&
+        (alternatives.privateDiagnostic!==true||alternatives.exactOfficialVariants!==false||
+         alternatives.redistributionCleared!==false||alternatives.sourceDir!=='src-5ccc174cb8'||alternatives.alpha!=='0.71.3'))||
        alternatives.visualSubstituteCount!==fallbackForms.size||
        fallbackForms.size!==alternatives.forms.length||
        fallbackForms.size===0||
