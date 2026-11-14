@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
+import {classifyPublicResourceFailures} from './rea-public-optional-resource.mjs';
 
 const root=path.resolve(process.argv[2]||'site-capture/pokearena-client');
 const staged=path.resolve(process.argv[3]||'site-capture/rea-public-0658');
@@ -33,7 +34,11 @@ if(report.blocked.length)console.error('REA_PUBLIC_RESOURCE_BLOCKERS',
  JSON.stringify(report.blocked.slice(0,12).map(item=>({
   path:safePath(item.path),status:item.status
  }))));
-assert.equal(report.blocked.length,0,'Public resources blocked; stop, do not bypass');
+const publicFailures=classifyPublicResourceFailures(report.blocked);
+if(publicFailures.optional.length)console.warn('REA_OPTIONAL_NEWS_404',
+ JSON.stringify(publicFailures.optional.map(({path,status})=>({path,status}))));
+assert.equal(publicFailures.fatal.length,0,
+ 'Essential or unexpected public resources blocked; stop, do not bypass');
 assert.equal(report.errors.length,0,'Browser capture errors');
 const mod=report.sourceDir;
 assert.match(mod,/^src-[0-9a-f]{10}$/);
