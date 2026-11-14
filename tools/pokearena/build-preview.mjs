@@ -828,6 +828,32 @@ for(const [filename,changes] of patches){
      continue;
     }
    }
+   // Alpha 0.71.3 removed the TRAINING tile from title; keep the
+   // independent Johto lab as draft code, not a broken menu button.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('{id:"entreno",txt:"TRAINING"')&&
+      to.includes('johto-lab')){
+    const {acceptRemovedTrainingTile}=await import('./torre2-native-title-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    if(acceptRemovedTrainingTile(body,alpha)){
+     console.log('P2_ALPHA0713_NO_LEGACY_TRAINING_TILE');
+     continue;
+    }
+   }
+   // The official 0.71.3 combat preloads team groups and the three Lake
+   // guardians via flatMap. Augment only our Kanto party, preserving it.
+   if(filename==='escenas/combate.js' &&
+      from.startsWith('const dexs=formasDe(d.jugadores?')&&
+      to.startsWith('const ids=d.torre2?.party?')){
+    const {adaptModernCombatPreload}=await import('./torre2-combat-preload-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    const updated=adaptModernCombatPreload(body,alpha);
+    if(updated!==null){
+     body=updated;
+     console.log('P2_ALPHA0713_GROUP_COMBAT_PRELOAD_PRESERVED');
+     continue;
+    }
+   }
    // Account/profile entry is absent or reformatted in newer offline title.
    // Remove only a confirmed profile item, never the whole settings menu.
    if(filename==='escenas/titulo.js' &&
