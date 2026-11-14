@@ -103,7 +103,32 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
           POKEARENA_EXPECTED_ALPHA: auto
-        run: node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current; then
+              echo "REA source confirmed on attempt $attempt"
+              exit 0
+            fi
+            # Retry ONLY an ephemeral local Chromium CDP port failure.
+            # 403, changed source and denied assets remain strict blockers.
+            if ! node - <<'CDP_ONLY'
+          const fs=require('fs');
+          const p='site-capture/rea-current/rea-capture-failure.json';
+          const x=fs.existsSync(p)?JSON.parse(fs.readFileSync(p,'utf8')):{};
+          process.exit((x.error||'').includes('Chrome public CDP port unavailable')?0:1);
+          CDP_ONLY
+            then
+              echo "::error::Non-CDP capture failure; no retries or bypass."
+              exit 1
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Chromium CDP unavailable after 3 normal launches."
+              exit 1
+            fi
+            sleep "$attempt"
+          done
       - name: Retain official Alpha and source hash evidence even when blocked
         if: always()
         uses: actions/upload-artifact@v4
