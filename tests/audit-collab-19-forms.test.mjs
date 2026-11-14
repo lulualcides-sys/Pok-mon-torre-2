@@ -45,7 +45,7 @@ test('CUR credit status requires ALL contributors for each animation to be CC',(
  assert.equal(classifyCredits(row('CHUNSOFT','Unspecified','Idle,Attack'),['Idle']).status,
   'UNSPECIFIED_RIGHTS');
  assert.equal(classifyCredits(good,['Normal']).status,'MISSING_CURRENT_CREDIT');
- assert.equal(classifyCredits('bad credits',['Idle']).status,'MISSING_CURRENT_CREDIT');
+ assert.throws(()=>classifyCredits('bad credits',['Idle']),/Malformed SpriteCollab credit row/);
 });
 test('audit creates revision-scoped reference folders, deduplicates GitHub credit reads',()=>
  fixture(async({root,out})=>{
@@ -68,9 +68,9 @@ test('audit creates revision-scoped reference folders, deduplicates GitHub credi
   assert.equal(report.officialGaps,19);
   assert.equal(report.assetInstallCount,0);
   assert.equal(report.releaseReady,false);
-  assert.equal(report.summary.candidate,3+5);
+  assert.equal(report.summary.candidate,3+4+5);
   assert.equal(report.summary.review,2);
-  assert.equal(report.summary.blocked,9);
+  assert.equal(report.summary.blocked,4+1);
   assert.equal((await auditNativePacks(root)).missingFormCount,19);
   const pathBase=path.join(out,'0.71.3','src-5ccc174cb8');
   const [key]=await fs.readdir(pathBase);
