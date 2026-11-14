@@ -38,9 +38,9 @@ jobs:
           run_id=$(jq -er '.source_run_id' "$request")
           expected_sha=$(jq -er '.source_commit' "$request")
           expected_digest=$(jq -er '.artifact_digest' "$request")
-          test "$run_id" = 43650310612
-          test "$expected_sha" = f9e859c167f7dec88c88368f87d8715dde265ae0
-          test "$expected_digest" = sha256:db52629347edda394ecea416b7795b8375ff7ed128c0a0460b62e2649f115aa7
+          test "$run_id" = 43653866323
+          test "$expected_sha" = 76a776f4a09a52e8421742806c4371bcc4f392a8
+          test "$expected_digest" = sha256:c8bb69a3e7ca400cc72145e475112f30222062d84a488b4074070e989e989946
           metadata=$(gh api "repos/${{ github.repository }}/actions/runs/$run_id")
           echo "$metadata" | jq -e --arg sha "$expected_sha" '
             .head_sha==$sha and .head_branch=="feat/alpha070-main-release-20261112"
@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p _site
-          gh run download 43650310612 --repo "${{ github.repository }}"             --name pokearena-alpha070-homologated-site --dir _site
+          gh run download 43653866323 --repo "${{ github.repository }}"             --name pokearena-alpha070-homologated-site --dir _site
           test -s _site/arena2d/index.html
           test -s _site/arena2d/version.json
           test -s _site/arena2d/CONTRIBUTOR-CREDITS-0713.md
@@ -113,8 +113,8 @@ jobs:
           </body></html>
           HTML
           cat > _site/RELEASE-0713.json <<'JSON'
-          {"alpha":"0.71.3","modulesSource":"src-5ccc174cb8","sourceRun":43650310612,
-           "sourceCommit":"f9e859c167f7dec88c88368f87d8715dde265ae0",
+          {"alpha":"0.71.3","modulesSource":"src-5ccc174cb8","sourceRun":43653866323,
+           "sourceCommit":"76a776f4a09a52e8421742806c4371bcc4f392a8",
            "noncommercialFanProject":true,"officialArtAuthentic":false,
            "creatorCredits":"arena2d/CONTRIBUTOR-CREDITS-0713.md"}
           JSON

@@ -1,10 +1,10 @@
 {
   "alpha": "0.71.3",
   "modulesSource": "src-5ccc174cb8",
-  "source_run_id": 43650310612,
-  "source_commit": "f9e859c167f7dec88c88368f87d8715dde265ae0",
+  "source_run_id": 43653866323,
+  "source_commit": "76a776f4a09a52e8421742806c4371bcc4f392a8",
   "artifact": "pokearena-alpha070-homologated-site",
-  "artifact_digest": "sha256:db52629347edda394ecea416b7795b8375ff7ed128c0a0460b62e2649f115aa7",
+  "artifact_digest": "sha256:c8bb69a3e7ca400cc72145e475112f30222062d84a488b4074070e989e989946",
   "noncommercial": true,
   "usesArtistAlternatives": 30,
   "creditsFile": "arena2d/CONTRIBUTOR-CREDITS-0713.md",
