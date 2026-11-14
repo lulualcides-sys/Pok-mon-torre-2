@@ -52,8 +52,9 @@ test('0.71.3 injects independent roster and preloads all Johto Idles',()=>{
  const raw='import{ROSTER,RANURAS,ROLES,REGLAS,etapaDe}from"../datos.js";'+
  'const PAGE_SIZE=COLS*5;function etapasDe(def){return []}'+
  'function cifras(){return ""}class Pokedex extends Phaser.Scene{'+
+ 'preload(){this._torre2FirstForms=soloFormas(m,new Set(ROSTER.slice(start,start+PAGE_SIZE).map(p=>p.dex)));cargarPMD(this,this._torre2FirstForms,["Idle"])}'+
+ 'create(){crearAnimsPMD(this,this._torre2FirstForms,["Idle"]);cabecera(this,title)}'+
  'torre2CargarPagina(page){}'+
- 'let page=new Set(ROSTER.slice(start,start+PAGE_SIZE).map(p=>p.dex));'+
  'movimientos(c,p,et,tam){describir(p.id,h.nombre,h.forma);'+
  'const info=et.mega?foo:bar}}';
  const s=installIndividualPokedex0713(raw,'0.71.3');
