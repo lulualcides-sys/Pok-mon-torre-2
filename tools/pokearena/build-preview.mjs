@@ -1338,14 +1338,21 @@ console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; requi
 // Keep approved campaign visuals, saves, sprites and battle behavior intact.
 await fs.copyFile('tools/pokearena/torre2-noncombat-pixel-buttons.js',
  path.join(dest,clientSource,'torre2/noncombat-pixel-buttons.js'));
+const skinAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
 for(const scene of ['titulo','seleccion','preparar','pokedex']){
  const filename=path.join(dest,clientSource,'escenas',scene+'.js');
  const before=await fs.readFile(filename,'utf8');
- const after=skinMenuScene(before,scene);
- if(before===after)throw Error('Button skin not installed: '+scene);
+ const after=skinMenuScene(before,scene,skinAlpha);
+ if(before===after){
+  if(scene==='pokedex'&&skinAlpha==='0.71.3'){
+   console.log('P2_ALPHA0713_NATIVE_POKEDEX_SKIN_PRESERVED');
+   continue;
+  }
+  throw Error('Button skin not installed: '+scene);
+ }
  await fs.writeFile(filename,after);
 }
-console.log('Premium pixel buttons applied to title, selection, preparation and Pokédex only');
+console.log('Noncombat buttons applied only to supported native menus; modern Pokédex preserved');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
