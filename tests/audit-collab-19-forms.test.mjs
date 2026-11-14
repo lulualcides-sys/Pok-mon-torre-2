@@ -16,6 +16,8 @@ async function fixture(run){
  const root=path.join(temp,'site-capture','pokearena-client');
  const out=path.join(temp,'site-capture','substitutes-quarantine');
  await fs.mkdir(path.join(root,'assets/pmd'),{recursive:true});
+ await fs.mkdir(path.join(root,'assets/p'),{recursive:true});
+ await fs.writeFile(path.join(root,'assets/p',SHA+'.bin'),Buffer.alloc(128,42));
  await fs.writeFile(path.join(root,'version.json'),JSON.stringify({
   officialAlpha:'0.71.3',src:'src-5ccc174cb8'}));
  const forms=Object.fromEntries(COLLAB_19.map((f,i)=>[f.dex,
