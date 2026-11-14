@@ -5,6 +5,8 @@ on:
     paths:
       - 'tools/pokearena/rea-capture-live-public.cjs'
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/rea-public-optional-resource.mjs'
+      - 'tests/rea-public-optional-resource.test.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
       - 'tests/native-visual-substitute-policy.test.mjs'
@@ -51,7 +53,7 @@ jobs:
           node --check tools/pokearena/torre2-offline-chat-resize.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/selection-upstream-pagination.test.js
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
