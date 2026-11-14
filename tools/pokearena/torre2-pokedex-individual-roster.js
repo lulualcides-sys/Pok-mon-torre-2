@@ -11,7 +11,8 @@ export function buildIndividualDexRoster(native,resolveStages,vidaGlobal=1){
  const result=[],seen=new Set();
  function push(p){
   if(!realDex(p.dex)||seen.has(p.dex))return;
-  if(!p.kit?.lmb||!p.kit?.e)throw Error('Missing native moves for '+p.dex);
+  if(!p.kit||typeof p.kit!=='object')
+   throw Error('Missing native move data for '+p.dex);
   seen.add(p.dex);result.push(p);
  }
  const sameDexPower=(p,start=0)=> {
@@ -53,7 +54,7 @@ export function buildIndividualDexRoster(native,resolveStages,vidaGlobal=1){
   for(let i=0;i<evos.length;i++){
    const e=evos[i],stage=stages[i+1];
    if(!realDex(e.dex)||own.has(e.dex)||seen.has(e.dex))continue;
-   if(stage.dex!==e.dex||!stage.kit?.lmb)
+   if(stage.dex!==e.dex||!stage.kit||typeof stage.kit!=='object')
     throw Error('Unrecognized native evolution kit '+p.id+'/'+e.dex);
    const next=evos.slice(i+1).find(x=>x.dex!==e.dex);
    const clone={...p,id:'dex-'+e.dex,dex:e.dex,
