@@ -25,6 +25,8 @@ on:
       - 'tests/rayquaza-mega-preview.test.js'
       - 'tests/selection-upstream-pagination.test.js'
       - 'tools/pokearena/capture-public-missing-packs.mjs'
+      - 'tools/pokearena/native-progress-folders.mjs'
+      - 'tests/native-progress-folders.test.mjs'
       - 'tests/rea-public-native-missing.test.mjs'
       - 'tools/pokearena/verify-pinned-capture.mjs'
       - '.github/workflows/pokearena-rea-current-candidate-homolog.yml'
@@ -53,7 +55,8 @@ jobs:
           node --check tools/pokearena/torre2-offline-chat-resize.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
-          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs
+          node --check tools/pokearena/native-progress-folders.mjs
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
@@ -110,6 +113,21 @@ jobs:
           path: site-capture/rea-current
       - name: Verify original current module graph and preserve approved static bytes
         run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+      - name: Fingerprint independently confirmed Alpha + source + public pack index
+        id: pack-fingerprint
+        shell: bash
+        run: |
+          key=$(node tools/pokearena/native-progress-folders.mjs fingerprint site-capture/pokearena-client)
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+      - name: Restore verified public binary cache for exactly matching revision
+        uses: actions/cache/restore@v4
+        with:
+          path: site-capture/native-pack-cache
+          key: torre2-native-packs-${{ runner.os }}-${{ steps.pack-fingerprint.outputs.key }}-${{ github.run_id }}
+          restore-keys: |
+            torre2-native-packs-${{ runner.os }}-${{ steps.pack-fingerprint.outputs.key }}-
+      - name: Reuse SHA-verified native packs without replacing approved bytes
+        run: node tools/pokearena/native-progress-folders.mjs restore site-capture/pokearena-client site-capture/native-pack-cache
       - name: Probe official PMD manifest by normal public Chromium, only same verified Alpha
         env:
           CHROME_BIN: /usr/bin/google-chrome
@@ -239,6 +257,25 @@ jobs:
           path: _site/
           retention-days: 30
           if-no-files-found: error
+      - name: Separate verified, pending and denied resources by Alpha/source/hash
+        if: always() && steps.pack-fingerprint.outputs.key != ''
+        run: |
+          node tools/pokearena/native-progress-folders.mjs report site-capture/pokearena-client site-capture/native-progress
+          node tools/pokearena/native-progress-folders.mjs save site-capture/pokearena-client site-capture/native-pack-cache
+      - name: Persist SHA-certified binaries for next run (same Alpha/hash only)
+        if: always() && steps.pack-fingerprint.outputs.key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: site-capture/native-pack-cache
+          key: torre2-native-packs-${{ runner.os }}-${{ steps.pack-fingerprint.outputs.key }}-${{ github.run_id }}
+      - name: Retain organized progress folders even when full build is blocked
+        if: always() && steps.pack-fingerprint.outputs.key != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-verified-pending-blocked
+          path: site-capture/native-progress/
+          retention-days: 30
+          if-no-files-found: warn
       - name: Fail closed on missing native art even if diagnostic build and browser pass
         if: always()
         shell: bash
@@ -253,6 +290,7 @@ jobs:
         with:
           name: current-native-build-gates-homolog
           path: |
+            site-capture/native-progress/
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
