@@ -1558,9 +1558,14 @@ await fs.writeFile(johtoSelectionPath,
  console.log('Native title CUSTOMIZE tile:',after===before?'not present':'removed');
  const dexFile=path.join(dest,clientSource,'escenas/pokedex.js');
  const dex=await fs.readFile(dexFile,'utf8');
- await fs.writeFile(dexFile,restoreNativePokedexFamilies(preloadPokedexOnePage(dex)));
- console.log('Native Poké Arena 2D portrait size and one-card-per-family evolution tabs restored');
- console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
+ const dexAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+ const {modernPokedexOrLegacy}=await import('./torre2-pokedex-final-gate-0713.mjs');
+ const finalDex=modernPokedexOrLegacy(dex,dexAlpha,
+  source=>restoreNativePokedexFamilies(preloadPokedexOnePage(source)));
+ if(finalDex!==dex)await fs.writeFile(dexFile,finalDex);
+ console.log(dexAlpha==='0.71.3'
+  ?'Alpha 0.71.3: native responsive Pokedex preserved; obsolete legacy family-grid rewrite omitted'
+  :'Legacy National Dex family pages and lazy portrait preload restored');
 }
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('reference-assets/scenic-v2/trees-green.png'));
