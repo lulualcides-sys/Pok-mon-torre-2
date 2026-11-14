@@ -89,3 +89,14 @@ test('0.71.3 cannot introduce a fake election callback after upstream source dri
   modernSelection.replace('this.encargo?!!this.encargo.bloqueado?.(p.id)','true'),'0.71.3'),
   /Unrecognized official Alpha/);
 });
+
+test('0.71.3 reuses the existing paginated offline unlock without disabling ranked or challenges',()=>{
+ const original='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ const unlocked='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
+ const source=modernSelection.replace(original,unlocked);
+ const patched=patchGreninjaSelectionSource(source,'0.71.3');
+ assert.equal(patched.split(unlocked).length-1,1);
+ assert.ok(patched.includes('torre2-greninja-popup'));
+ assert.ok(patched.includes('trioMenu'));
+ assert.ok(!patched.includes('const bloqueado=true;'));
+});
