@@ -26,6 +26,13 @@ assert.match(expected,/^0\.\d+(?:\.\d+)?$/,'Official Alpha missing or malformed'
 assert.equal(report.observedAlpha,expected,'Official Alpha not verified via REA');
 assert.equal(report.selectedFromOfficialConfig,true,'Unverified release config');
 assert.ok(report.loadedScripts>=50&&report.fileCount>=75,'Incomplete REA capture');
+// Report only ordinary same-origin relative resource paths and HTTP statuses.
+// Keep the fail-closed gate below; diagnostics never authorize a 403 retry,
+// alternate origin, fake sprite, or incomplete client publication.
+if(report.blocked.length)console.error('REA_PUBLIC_RESOURCE_BLOCKERS',
+ JSON.stringify(report.blocked.slice(0,12).map(item=>({
+  path:safePath(item.path),status:item.status
+ }))));
 assert.equal(report.blocked.length,0,'Public resources blocked; stop, do not bypass');
 assert.equal(report.errors.length,0,'Browser capture errors');
 const mod=report.sourceDir;
