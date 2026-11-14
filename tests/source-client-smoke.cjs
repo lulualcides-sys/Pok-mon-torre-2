@@ -257,12 +257,34 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(independent.ditto,'Pound');
   // The Gen II source sprite sheets and all 100 local portraits are part of
   // the artifact and are preloaded, not fetched only after the page is shown.
-  await dexPage.waitForFunction(()=>{
-   const p=window.__pt2Game.scene.getScene('pokedex');
-   const cards=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
-   return cards.length===100&&cards.every(v=>
-    p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0'));
-  },null,{timeout:30000});
+  try{
+   await dexPage.waitForFunction(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    const cards=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
+    return cards.length===100&&cards.every(v=>
+     p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0'));
+   },null,{timeout:20000});
+  }catch(e){
+   const missing=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    const johto=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
+    return {count:johto.length,ready:johto.filter(v=>
+      p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0')).length,
+      missing:johto.filter(v=>!p.textures.exists('retrato-'+v.dex)||
+        !p.anims.exists(v.dex+'-Idle-0')).map(v=>({
+        dex:v.dex,portrait:p.textures.exists('retrato-'+v.dex),
+        idleTexture:p.textures.exists('pmd-'+v.dex+'-Idle'),
+        idleAnimation:p.anims.exists(v.dex+'-Idle-0'),
+        file:p.registry.get('manifiesto')?.[v.dex]?.anims?.Idle?.file
+      })).slice(0,100),
+      load:{running:p.load.isLoading(),queued:p.load.list.size,
+       inflight:p.load.inflight?.size,total:p.load.totalToLoad},
+      badRequests:window.__torre2JohtoFailures||[]};
+   });
+   console.error('PHASER_JOHTO_100_IDLE_AND_PORTRAIT_DIAGNOSTIC',
+    JSON.stringify({missing,errors:dexErr,badRequests:dexBad}));
+   throw e;
+  }
   for(const [dex,name] of [['0002','IVYSAUR'],['0003','VENUSAUR'],
    ['0152','CHIKORITA'],['0153','BAYLEEF'],['0154','MEGANIUM']]){
    await dexPage.evaluate(id=>{
