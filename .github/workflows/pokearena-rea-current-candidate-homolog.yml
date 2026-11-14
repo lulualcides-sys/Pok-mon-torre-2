@@ -20,6 +20,8 @@ on:
       - 'tools/pokearena/torre2-arena-family-selector.mjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tools/pokearena/native-0713-release-gate.mjs'
+      - 'tools/pokearena/torre2-pokedex-modern-compat.mjs'
+      - 'tests/torre2-pokedex-modern-compat.test.mjs'
       - 'tests/native-0713-release-gate.test.mjs'
       - 'tools/pokearena/torre2-native-loose-pmd-compat.mjs'
       - 'tests/native-visual-substitute-policy.test.mjs'
@@ -63,8 +65,9 @@ jobs:
           node --check tools/pokearena/capture-public-missing-packs.mjs
           node --check tools/pokearena/priority-licensed-pmd.mjs
           node --check tools/pokearena/native-0713-release-gate.mjs
+          node --check tools/pokearena/torre2-pokedex-modern-compat.mjs
           node --check tools/pokearena/native-progress-folders.mjs
-          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:

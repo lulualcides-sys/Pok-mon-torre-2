@@ -792,6 +792,16 @@ patches.push(
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
+ // New native form entries and adaptive grid already work in Alpha 0.71.3.
+ // The 0.65.8-oriented grid/move/portrait patch is no longer applicable.
+ if(filename==='escenas/pokedex.js'){
+  const {preserveModernPokedex}=await import('./torre2-pokedex-modern-compat.mjs');
+  const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+  if(preserveModernPokedex(body,alpha)){
+   console.log('P2_ALPHA0713_NATIVE_POKEDEX_PRESERVED');
+   continue;
+  }
+ }
  for(const [from,to] of changes){
   if(!body.includes(from)){
    // Account/profile entry is absent or reformatted in newer offline title.
