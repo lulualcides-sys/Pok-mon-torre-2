@@ -1397,13 +1397,11 @@ if(fighterCode.split(nativePoisonHit).length!==2)
 // applied poison (before its first damaging tick sets ultimoDano).
 // Don't let that small heal make the final poison tick non-lethal.
 // Scope to Torre2-added Arena species and the active poison status only.
-const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
-if(fighterCode.split(nativeRegenGuard).length!==2)
- throw Error('Upstream Arena HP recovery guard changed');
+const {patchNativePoisonRegen}=await import('./torre2-native-poison-regen-0713.mjs');
 const poisonHpFixed=fighterCode.replace(nativePoisonHit,
  nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
-await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
- '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
+const poisonAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+await fs.writeFile(fighterPath,patchNativePoisonRegen(poisonHpFixed,poisonAlpha));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
