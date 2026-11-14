@@ -203,10 +203,16 @@ def build(root, fetch=public_fetch):
         portrait_rel=portrait+"/Normal.png"
         p=make_portrait(fetch(portrait_rel,cache),dex)
         planned.append((dex+"/portrait.png",p,portrait_rel))
+        processed={dex+"/portrait.png"}
         for anim,meta in entry["anims"].items():
             file=meta["file"]
             if not re.fullmatch(re.escape(dex)+r"/[A-Za-z0-9]+-Anim\.png",file):
                 raise ValueError("Unsafe native animation path: "+file)
+            # Alias moves (for example Strike -> Attack) deliberately share
+            # the SAME official PNG path; write it exactly once per species.
+            if file in processed:
+                continue
+            processed.add(file)
             actual, fw,fh=frame_info(xmls[base],anim)
             src_rel=source+"/"+actual+"-Anim.png"
             raw=fetch(src_rel,cache)
