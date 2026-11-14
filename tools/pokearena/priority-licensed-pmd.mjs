@@ -74,7 +74,6 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
   let required;
   try{required=requiredFor(manifest,dex)}
   catch(e){pending.push({dex,reason:e.message});continue}
-  const allPresent=async()=>[...required].every(async()=>true);
   let existingComplete=true;
   for(const rel of required.keys())if(!await exists(path.join(c.root,'assets/pmd',rel)))
    existingComplete=false;
@@ -154,7 +153,8 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
  const report={alpha:c.alpha,src:c.src,indexSha256:c.indexSha256,
   license:LICENSE,sourceAuthentic:false,
   origin:'https://github.com/PMDCollab/SpriteCollab',
-  noncommercialOnly:true,completed,restored,skipped,pending,attempted};
+  noncommercialOnly:true,completed,restored,skipped,pending,attempted,
+  licensed:saved.forms};
  await fs.writeFile(path.join(c.root,'priority-licensed-pmd-report.json'),
   JSON.stringify(report,null,2)+'\n');
  return report;
