@@ -258,7 +258,11 @@ if(compatiblePortraitModule!==portraitModuleSource){
 }
 const selectionFile=path.join(dest,clientSource,'escenas/seleccion.js');
 const {paginateSelectionSource}=await import('./torre2-selection-pages.mjs');
-await fs.writeFile(selectionFile,paginateSelectionSource(await fs.readFile(selectionFile,'utf8')));
+const {loadNativeSelectionPage0713}=await import('./torre2-selection-load-0713.mjs');
+const nativeSelectionAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+await fs.writeFile(selectionFile,loadNativeSelectionPage0713(
+ paginateSelectionSource(await fs.readFile(selectionFile,'utf8')),nativeSelectionAlpha));
+if(nativeSelectionAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_SELECTION_PACK_PRELOAD');
  // The six-player Arena uses a DIFFERENT picker (selector.js), not the
  // VS CPU selection scene above. Its old 13-column grid overflowed mobile
  // and showed missing portrait markers. Group its native ROSTER into family

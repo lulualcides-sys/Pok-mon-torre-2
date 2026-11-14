@@ -26,6 +26,8 @@ on:
       - 'tools/pokearena/torre2-pokedex-modern-compat.mjs'
       - 'tools/pokearena/torre2-native-title-0713.mjs'
       - 'tools/pokearena/torre2-native-selection-0713.mjs'
+      - 'tools/pokearena/torre2-selection-load-0713.mjs'
+      - 'tests/torre2-selection-load-0713.test.mjs'
       - 'tools/pokearena/torre2-noncombat-button-skin.mjs'
       - 'tools/pokearena/torre2-native-poison-regen-0713.mjs'
       - 'tools/pokearena/torre2-pokedex-final-gate-0713.mjs'
@@ -95,6 +97,7 @@ jobs:
           node --check tools/pokearena/torre2-pokedex-modern-compat.mjs
           node --check tools/pokearena/torre2-native-title-0713.mjs
           node --check tools/pokearena/torre2-native-selection-0713.mjs
+          node --check tools/pokearena/torre2-selection-load-0713.mjs
           node --check tools/pokearena/native-adapter-drift.mjs
           node --check tools/pokearena/torre2-noncombat-button-skin.mjs
           node --check tools/pokearena/torre2-native-poison-regen-0713.mjs
@@ -105,7 +108,7 @@ jobs:
           node --check tools/pokearena/torre2-greninja-variants.mjs
           node --check tools/pokearena/torre2-combat-preload-0713.mjs
           node --check tools/pokearena/native-progress-folders.mjs
-          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs tests/torre2-native-title-0713.test.mjs tests/torre2-native-selection-0713.test.mjs tests/native-adapter-drift.test.mjs tests/torre2-combat-preload-0713.test.mjs tests/torre2-noncombat-skin-0713.test.mjs tests/torre2-native-poison-regen-0713.test.mjs tests/torre2-pokedex-final-gate-0713.test.mjs tests/torre2-pokedex-page-0713.test.mjs tests/torre2-pokedex-load-0713.test.mjs tests/torre2-pokedex-roles-0713.test.mjs tests/greninja-native-variants.test.js
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs tests/torre2-native-title-0713.test.mjs tests/torre2-native-selection-0713.test.mjs tests/torre2-selection-load-0713.test.mjs tests/native-adapter-drift.test.mjs tests/torre2-combat-preload-0713.test.mjs tests/torre2-noncombat-skin-0713.test.mjs tests/torre2-native-poison-regen-0713.test.mjs tests/torre2-pokedex-final-gate-0713.test.mjs tests/torre2-pokedex-page-0713.test.mjs tests/torre2-pokedex-load-0713.test.mjs tests/torre2-pokedex-roles-0713.test.mjs tests/greninja-native-variants.test.js
           node --test tests/audit-collab-19-forms.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
