@@ -11,7 +11,9 @@ import {auditNativePacks} from './audit-native-packs.mjs';
 const ORIGIN='https://www.pokearena2d.com';
 const MAX_FILE_BYTES=12*1024*1024;
 const MAX_TOTAL_BYTES=60*1024*1024;
-const MAX_PACKS=24;
+// Guardrail: at most a small, incremental public batch in one execution.
+const MAX_PACKS=8, MAX_DENIED=2;
+const PRIORITY_DEX=new Set(['0132','0133','0128','0196','0197','0282','0286','0480','0481','0482']);
 const sha256=x=>createHash('sha256').update(x).digest('hex');
 function safeClientRoot(p) {
   const root=path.resolve(p);
@@ -32,18 +34,29 @@ export async function capturePublicMissingPacks(rootArg, options={}) {
   if(!/^0\.\d+(?:\.\d+)?$/.test(version.officialAlpha||'') ||
      !/^src-[a-f0-9]{10}$/.test(version.src||version.modules||''))
     throw Error('Candidate has no independently verified official Alpha');
-  const missingIds=[...new Set(original.gaps.map(x=>x.pack))];
-  if(missingIds.length>MAX_PACKS)
-    throw Error('Too many unverified native packs; stop instead of bulk scraping');
+  const candidates=[...original.gaps].sort((a,b)=>
+    Number(PRIORITY_DEX.has(b.dex))-Number(PRIORITY_DEX.has(a.dex)) ||
+    a.dex.localeCompare(b.dex));
+  const missingIds=[...new Set(candidates.map(x=>x.pack))];
+  const selected=missingIds.slice(0,MAX_PACKS);
+  // Defer excess candidates rather than aborting before a useful coverage
+  // report. The strict full-form audit below still blocks release.
+  const deferred=missingIds.slice(MAX_PACKS);
   const report={
     officialAlpha:version.officialAlpha,sourceDir:version.src||version.modules,
     before:{missingForms:original.missingFormCount,missingPacks:missingIds.length},
     method:'plain-public-origin-GET-of-index-declared-packs',
     credentials:false,proxies:false,specialHeaders:false,retriesAfterDeny:0,
-    quarantined:true,downloaded:[],denied:[],errors:[],after:null
+    quarantined:true,downloaded:[],denied:[],errors:[],after:null,
+    selectedPacks:selected.length,deferredPacks:deferred.length,
+    boundedBy:MAX_PACKS,stoppedAfterDenials:false
   };
   let total=0;
-  for(const hash of missingIds){
+  for(const hash of selected){
+    if(report.denied.length>=MAX_DENIED){
+      report.stoppedAfterDenials=true;
+      break;
+    }
     if(!/^[a-f0-9]{20}$/.test(hash))throw Error('Invalid pack hash');
     const rel='assets/p/'+hash+'.bin';
     const dest=path.join(root,rel);
@@ -90,6 +103,7 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
    console.log('PUBLIC_NATIVE_MISSING_COVERAGE',JSON.stringify({
      alpha:r.officialAlpha,originallyMissing:r.before.missingForms,
      downloaded:r.downloaded.length,denied:r.denied.length,errors:r.errors.length,
+    selected:r.selectedPacks,deferred:r.deferredPacks,stoppedAfterDenials:r.stoppedAfterDenials,
      remaining:r.after.missingForms,complete:r.complete
    }));
    if(!r.complete)process.exitCode=2;
