@@ -278,9 +278,10 @@ jobs:
         run: |
           alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
           if [ "$alpha" = "0.71.3" ]; then
-            python3 -m pip install --user --disable-pip-version-check 'Pillow==12.0.0'
-            python3 tools/pokearena/stage-personal-alpha0713.py --self-test
-            python3 tools/pokearena/stage-personal-alpha0713.py site-capture/pokearena-client
+            python3 -m venv /tmp/torre2-personal-pmd-venv
+            /tmp/torre2-personal-pmd-venv/bin/python -m pip install --disable-pip-version-check 'Pillow==12.0.0'
+            /tmp/torre2-personal-pmd-venv/bin/python tools/pokearena/stage-personal-alpha0713.py --self-test
+            /tmp/torre2-personal-pmd-venv/bin/python tools/pokearena/stage-personal-alpha0713.py site-capture/pokearena-client
           else
             echo "Personal Alpha 0.71.3 fallback intentionally not staged for $alpha"
           fi
