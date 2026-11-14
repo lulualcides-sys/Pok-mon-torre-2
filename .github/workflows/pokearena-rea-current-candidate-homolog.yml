@@ -10,6 +10,8 @@ on:
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
       - 'tools/pokearena/priority-licensed-pmd.mjs'
+      - 'tools/pokearena/audit-collab-19-forms.mjs'
+      - 'tests/audit-collab-19-forms.test.mjs'
       - 'tests/priority-licensed-pmd.test.mjs'
       - 'tests/native-visual-substitute-policy.test.mjs'
       - 'tests/source-client-smoke.cjs'
@@ -80,6 +82,7 @@ jobs:
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
           node --check tools/pokearena/priority-licensed-pmd.mjs
+          node --check tools/pokearena/audit-collab-19-forms.mjs
           node --check tools/pokearena/native-0713-release-gate.mjs
           node --check tools/pokearena/torre2-pokedex-modern-compat.mjs
           node --check tools/pokearena/torre2-native-title-0713.mjs
@@ -92,6 +95,7 @@ jobs:
           node --check tools/pokearena/torre2-combat-preload-0713.mjs
           node --check tools/pokearena/native-progress-folders.mjs
           node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs tests/torre2-native-title-0713.test.mjs tests/torre2-native-selection-0713.test.mjs tests/native-adapter-drift.test.mjs tests/torre2-combat-preload-0713.test.mjs tests/torre2-noncombat-skin-0713.test.mjs tests/torre2-native-poison-regen-0713.test.mjs tests/torre2-pokedex-final-gate-0713.test.mjs tests/greninja-native-variants.test.js
+          node --test tests/audit-collab-19-forms.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
@@ -281,6 +285,24 @@ jobs:
             echo "complete=false" >> "$GITHUB_OUTPUT"
             echo "::warning::Original native sprites are missing. Offline diagnostic Node/Phaser build may run, but full browser/saves gate will NOT run on incomplete source; production release remains blocked."
           fi
+      - name: Audit SpriteCollab 19 missing forms with artist-level credits (no installation)
+        if: always() && steps.pack-fingerprint.outputs.key != ''
+        shell: bash
+        run: |
+          alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
+          if [ "$alpha" = "0.71.3" ]; then
+            node tools/pokearena/audit-collab-19-forms.mjs site-capture/pokearena-client site-capture/substitutes-quarantine
+          else
+            echo "Collab 19 review applies only to independently verified Alpha 0.71.3; actual $alpha"
+          fi
+      - name: Retain separate credits and pending status for 19 forms
+        if: always() && steps.pack-fingerprint.outputs.key != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-collab-19-credit-audit
+          path: site-capture/substitutes-quarantine/
+          retention-days: 30
+          if-no-files-found: warn
       - name: Build original Phaser into isolated _site for DIAGNOSTICS, never Pages
         env:
           TORRE2_UPSTREAM_AUDIT: '1'

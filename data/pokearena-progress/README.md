@@ -16,3 +16,8 @@ Os arquivos JSON são anexados ao artifact `pokearena-verified-pending-blocked` 
 HTTP 403/404 registrado para o mesmo hash não é repetido na execução seguinte quando o cache correspondente é recuperado; o lote público novo é limitado. Versão/hash diferente invalida o reaproveitamento.
 
 **Publicação:** nenhum resultado deste checkpoint dispensa testes Node, build Phaser, Chromium/WebGL, Guardião e saves. Nada nesta automação mescla main ou publica o jogo.
+
+
+## 19 variantes — fontes SpriteCollab
+
+Veja [COLLAB-19.md](./COLLAB-19.md) para as fontes, licenças e pastas de quarentena.
