@@ -159,21 +159,17 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    // The latest official 0.70 PMD index includes 267 forms, while 19
    // costume packs are HTTP-403. This conditional is evaluated ONLY for
    // exactly that known Alpha and its original source fingerprint.
-   const expectedCapture={
-    '0.70.0':{src:'src-3cc4979f18',forms:267},
-    '0.71.3':{src:'src-5ccc174cb8',forms:278}
-   }[captureVersion.officialAlpha];
-   if(!expectedCapture||clientSource!==expectedCapture.src)
-    throw Error('Unverified native Alpha module fingerprint');
    const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
    const {auditNativePacks}=await import('./audit-native-packs.mjs');
+   const {verifyNativeVisualGate}=await import('./native-0713-release-gate.mjs');
    const coverage=await auditNativePacks(dest);
-   if(coverage.formCount!==expectedCapture.forms)
-    throw Error('Unexpected official form count: '+coverage.formCount);
-   if(coverage.missingFormCount&&process.env.TORRE2_UPSTREAM_AUDIT!=='1')
-    throw Error('Native release blocked: '+coverage.missingFormCount+' forms lack artwork');
-   if(coverage.missingFormCount)
-    console.warn('NATIVE_DIAGNOSTIC_ONLY: '+coverage.missingFormCount+
+   const visualGate=verifyNativeVisualGate({
+    alpha:captureVersion.officialAlpha,src:clientSource,
+    forms:coverage.formCount,missing:coverage.missingFormCount,
+    diagnostic:process.env.TORRE2_UPSTREAM_AUDIT==='1'
+   });
+   if(visualGate.diagnosticOnly)
+    console.warn('NATIVE_DIAGNOSTIC_ONLY: '+visualGate.missing+
      ' forms lack sprites. Never publish or run full browser QA with missing art.');
    let substitutions=[];
    try{
