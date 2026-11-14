@@ -31,7 +31,9 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
    const version=JSON.parse(await readFile(path.join(root,'version.json'),'utf8'));
    if(priority.alpha!==version.officialAlpha||
       priority.src!==version.src||
-      priority.license!=='CC BY-NC 4.0'||
+      priority.license!=='MIXED_OR_UNVERIFIED'||
+      priority.repositoryLicense!=='CC BY-NC 4.0'||
+      priority.redistributionCleared!==false||
       priority.noncommercialOnly!==true||
       priority.sourceAuthentic!==false||
       !Array.isArray(priority.licensed))
@@ -114,7 +116,10 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
     }
     if(missing.length)gaps.push({dex,pack,missing});else if(fallbackForms.has(dex)||priorityForms.has(dex))verifiedSubstitutes++;else verifiedLoose++;
   }
-  return {alphaReleaseCandidate:true,formCount:forms.length,verifiedPacks,verifiedLoose,verifiedSubstitutes,sourceAuthentic:verifiedSubstitutes===0,missingFormCount:gaps.length,gaps,
+  const pendingRightsForms=[...new Set([...fallbackForms,...priorityForms])].sort();
+  return {alphaReleaseCandidate:true,formCount:forms.length,verifiedPacks,verifiedLoose,verifiedSubstitutes,
+   sourceAuthentic:verifiedSubstitutes===0,missingFormCount:gaps.length,gaps,
+   pendingRightsForms,redistributionCleared:pendingRightsForms.length===0,
     policy:'No missing official pack or verified original loose PNG may be replaced or forged; fail closed.'};
 }
 async function main(){
@@ -124,7 +129,10 @@ async function main(){
   await fs.mkdir(path.dirname(target),{recursive:true});
   await fs.writeFile(target,JSON.stringify(result,null,2)+'\n');
   console.log('NATIVE_PACK_COVERAGE',JSON.stringify({forms:result.formCount,packs:result.verifiedPacks,
-    loose:result.verifiedLoose,substitutes:result.verifiedSubstitutes,sourceAuthentic:result.sourceAuthentic,missingForms:result.missingFormCount,gaps:result.gaps.map(x=>({dex:x.dex,pack:x.pack,missing:x.missing.length}))}));
+    loose:result.verifiedLoose,substitutes:result.verifiedSubstitutes,sourceAuthentic:result.sourceAuthentic,missingForms:result.missingFormCount,
+    unclearedRights:result.pendingRightsForms.length,gaps:result.gaps.map(x=>({dex:x.dex,pack:x.pack,missing:x.missing.length}))}));
   if(result.missingFormCount)throw Error('Official native client not buildable yet: '+result.missingFormCount+' forms lack their verified packs/loose sprites. No deploy.');
+  if(result.pendingRightsForms.length)
+   throw Error('Rights clearance missing for '+result.pendingRightsForms.length+' substitute forms; no deploy.');
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(e=>{console.error(e);process.exitCode=1});

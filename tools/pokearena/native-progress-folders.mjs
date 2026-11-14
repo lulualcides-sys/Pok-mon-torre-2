@@ -193,10 +193,14 @@ export async function writeProgressFolders(rootArg,outputArg){
  await Promise.all([
   write('verificados/formas.json',{alpha:c.alpha,source:c.src,forms:verified}),
   write('pendentes/formas.json',{alpha:c.alpha,source:c.src,forms:pending}),
+  write('pendentes/direitos.json',{alpha:c.alpha,source:c.src,
+   forms:audit.pendingRightsForms,
+   status:'SOURCE_REPOSITORY_LICENSE_DOES_NOT_PROVE_PER_FILE_RIGHTS'}),
   write('bloqueados/http.json',{alpha:c.alpha,source:c.src,denied}),
   write('resumo.json',{alpha:c.alpha,src:c.src,indexSha256:c.indexSha256,
    totalDeclared:audit.formCount,localFilesPresent:verified.length,
-   remaining:pending.length,deniedRequests:denied.length,
+   remaining:pending.length,unclearedRights:audit.pendingRightsForms.length,
+   deniedRequests:denied.length,
    complete:audit.missingFormCount===0,
    warning:'Local SHA256 evidence is not a gameplay or licence approval; full Chromium/Guardiao gates remain mandatory.'})
  ]);

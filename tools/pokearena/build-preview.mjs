@@ -166,6 +166,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    const visualGate=verifyNativeVisualGate({
     alpha:captureVersion.officialAlpha,src:clientSource,
     forms:coverage.formCount,missing:coverage.missingFormCount,
+    unclearedRights:coverage.pendingRightsForms.length,
     diagnostic:process.env.TORRE2_UPSTREAM_AUDIT==='1'
    });
    if(visualGate.diagnosticOnly)
@@ -196,7 +197,8 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
     missing:coverage.missingFormCount,
     originalPacks:coverage.verifiedPacks,
     originalLoose:coverage.verifiedLoose,
-    licensedAlternatives:coverage.verifiedSubstitutes,
+    quarantinedAlternatives:coverage.verifiedSubstitutes,
+    unclearedRights:coverage.pendingRightsForms.length,
     nativeSourceAuthentic:coverage.sourceAuthentic
    }));
   }else{

@@ -56,11 +56,15 @@ test('one species is atomically installed with SHA256, license and audit provena
   assert.equal(report.licensed.length,1);
   assert.equal(report.licensed[0].files.length,3);
   assert.equal(report.noncommercialOnly,true);
+  assert.equal(report.redistributionCleared,false);
+  assert.equal(report.license,'MIXED_OR_UNVERIFIED');
   assert.equal(urls.length,3);
   const audited=await auditNativePacks(root);
   assert.equal(audited.missingFormCount,0);
   assert.equal(audited.verifiedSubstitutes,1);
   assert.equal(audited.sourceAuthentic,false);
+  assert.deepEqual(audited.pendingRightsForms,['0132']);
+  assert.equal(audited.redistributionCleared,false);
   const b=await fs.readFile(path.join(root,'assets/pmd/0132/Idle-Anim.png'));
   assert.equal(b.readUInt32BE(16),64);
  }));

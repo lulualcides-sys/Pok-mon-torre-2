@@ -1,4 +1,4 @@
-/* Alpha 0.71.3 independent, opt-in, NONCOMMERCIAL PMDCollab PMD sprites.
+/* Alpha 0.71.3 independent PMD reference art, QUARANTINED ONLY. Some per-file creator credits explicitly say Unspecified; repository-level CC BY-NC does NOT clear third-party rights.
  * One species is atomic: incomplete sprites are NOT installed. Original
  * game art, approved VFX, source modules and saves are NEVER overwritten.
  * New licensed art is marked separately; never claim native source fidelity.
@@ -168,7 +168,8 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
  // Per-species credit report is retained in isolated candidate; full release
  // still requires source/asset QA and adherence to noncommercial license.
  const report={alpha:c.alpha,src:c.src,indexSha256:c.indexSha256,
-  license:LICENSE,sourceAuthentic:false,
+  license:'MIXED_OR_UNVERIFIED',repositoryLicense:LICENSE,
+  redistributionCleared:false,licenseReviewRequired:true,sourceAuthentic:false,
   origin:'https://github.com/PMDCollab/SpriteCollab',
   noncommercialOnly:true,completed,restored,skipped,pending,attempted,
   licensed:verified};

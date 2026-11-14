@@ -26,3 +26,12 @@ test('previous Alpha 0.70 is still supported without weakening production block'
  assert.throws(()=>verifyNativeVisualGate({...known,missing:19}),/release blocked/);
  assert.equal(verifyNativeVisualGate({...known,missing:0}).releaseReady,true);
 });
+
+test('even full visual coverage cannot pass if artist rights remain unverified',()=>{
+ const r=verifyNativeVisualGate({...base,missing:0,unclearedRights:11,diagnostic:true});
+ assert.equal(r.releaseReady,false);
+ assert.equal(r.diagnosticOnly,true);
+ assert.equal(r.unclearedRights,11);
+ assert.throws(()=>verifyNativeVisualGate({...base,missing:0,unclearedRights:11}),
+  /redistribution clearance/);
+});

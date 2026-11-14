@@ -233,8 +233,14 @@ jobs:
         shell: bash
         run: |
           set +e
-          node tools/pokearena/stage-licensed-visual-substitutes.mjs site-capture/pokearena-client
-          code=$?
+          alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
+          if [ "$alpha" = "0.70.0" ]; then
+            node tools/pokearena/stage-licensed-visual-substitutes.mjs site-capture/pokearena-client
+            code=$?
+          else
+            echo "Old costume variants remain in their separate pending backlog. No substitute kit reused on $alpha."
+            code=0
+          fi
           set -e
           if [ "$code" -ne 0 ]; then
             echo "::warning::Licensed fallback incomplete or invalid; native artwork gate stays red. Never bypass CDN 403."
