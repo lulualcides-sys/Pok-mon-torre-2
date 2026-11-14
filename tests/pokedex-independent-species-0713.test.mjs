@@ -62,5 +62,7 @@ test('0.71.3 injects independent roster and preloads all Johto Idles',()=>{
  assert.match(s,/buildIndividualDexRoster\(BATTLE_ROSTER,etapasDe,REGLAS.vidaGlobal\)/);
  assert.match(s,/Number\(p.dex\);return n>=152&&n<=251/);
  assert.match(s,/p.torre2DexNext/);
+ assert.match(s,/this.load.spritesheet/);
+ assert.match(s,/this.load.image/);
  assert.equal(installIndividualPokedex0713(raw,'0.70.0'),raw);
 });
