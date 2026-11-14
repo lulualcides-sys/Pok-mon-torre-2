@@ -77,12 +77,23 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
   let existingComplete=true;
   for(const rel of required.keys())if(!await exists(path.join(c.root,'assets/pmd',rel)))
    existingComplete=false;
+  const prior=already.get(dex);
   if(existingComplete){
+   if(prior){
+    // Revalidate the local sprites on EVERY use, not only when restoring.
+    // Corruption or replacement can never be silently reclassified as
+    // official source art.
+    for(const [rel,meta] of required){
+     const proof=prior.files.find(x=>x.relative===rel);
+     const bytes=await fs.readFile(path.join(c.root,'assets/pmd',rel));
+     if(!proof||SHA(bytes)!==proof.sha256||!checkBytes(bytes,meta))
+      throw Error('Conflicting licensed priority sprite: '+rel);
+    }
+    verified.push(prior);
+   }
    skipped.push({dex,reason:'local-loose-sprites-already-present'});
-   // Existing files do not gain an invented license or verification claim.
    continue;
   }
-  const prior=already.get(dex);
   if(prior){
    try{
     if(prior.files.length!==required.size)throw Error('Incomplete cached species');
