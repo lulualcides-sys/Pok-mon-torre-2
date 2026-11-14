@@ -286,6 +286,7 @@ const server=http.createServer(async(req,res)=>{
       moves:scene.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text)
      };
     });
+    console.log('PHASER_NIDORAN_EVOLVED_MOVES',JSON.stringify({id,dex,visible}));
     assert.ok(!visible.labels.some(t=>String(t).includes('NaN')),
      id+' '+dex+' rendered an invalid numeric stat: '+JSON.stringify(visible.labels));
     for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])

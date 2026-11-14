@@ -1436,8 +1436,11 @@ const originalDexPage=await fs.readFile(pokedexPath,'utf8');
 const verifiedDexPage=guardNativePokedexPagination(
  originalDexPage,paginationAlpha,paginateKantoPokedexSource);
 const {loadModernPokedexPage0713}=await import('./torre2-pokedex-load-0713.mjs');
-const paginatedPokedex=loadModernPokedexPage0713(
- paginateModernPokedex0713(verifiedDexPage,paginationAlpha),paginationAlpha);
+const {labelModernPokedexRoles}=await import('./torre2-pokedex-roles-0713.mjs');
+const paginatedPokedex=labelModernPokedexRoles(
+ loadModernPokedexPage0713(
+  paginateModernPokedex0713(verifiedDexPage,paginationAlpha),paginationAlpha),
+ paginationAlpha);
 if(paginationAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_POKEDEX_25_CARD_PAGES');
 // Display-only adapter for native incomplete kits, including Ho-Oh,
 // Crobat and Steelix; do NOT alter a single original P2 combat slot.
