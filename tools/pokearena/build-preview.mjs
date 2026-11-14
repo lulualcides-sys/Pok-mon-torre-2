@@ -804,6 +804,17 @@ for(const [filename,changes] of patches){
  }
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Official Alpha 0.71.3 now uses LOCAL/CPU and has already removed
+   // the legacy 2 PLAYERS tile. Preserve the current menu unchanged.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('{id:"versus",txt:"2 PLAYERS"')&&to===''){
+    const {acceptRemovedVersusEntry}=await import('./torre2-native-title-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    if(acceptRemovedVersusEntry(body,alpha)){
+     console.log('P2_ALPHA0713_NATIVE_LOCAL_MENU_PRESERVED');
+     continue;
+    }
+   }
    // Account/profile entry is absent or reformatted in newer offline title.
    // Remove only a confirmed profile item, never the whole settings menu.
    if(filename==='escenas/titulo.js' &&
