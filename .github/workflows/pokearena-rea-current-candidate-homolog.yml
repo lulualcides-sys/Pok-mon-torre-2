@@ -413,6 +413,37 @@ jobs:
       # Only a complete native 0.70 client that passed the REAL Chromium
       # WebGL, Pokédex, combat and save smoke may be considered for Pages.
       # This artifact is staging evidence, NOT an automatic live deployment.
+      - name: Bundle exact artist credits into any release-eligible Alpha 0.71.3 artifact
+        if: steps.sprite-gate.outputs.complete == 'true' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s _site/arena2d/index.html
+          test -s site-capture/rights-provenance/CONTRIBUTOR-CREDITS-0713.md
+          test -s site-capture/rights-provenance/rights-audit-0713.json
+          node --input-type=module <<'CHECK_CREDITS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('site-capture/rights-provenance/rights-audit-0713.json','utf8'));
+          const a=JSON.parse(fs.readFileSync('site-capture/current-native-gaps.json','utf8'));
+          if(r.alpha!=='0.71.3'||r.src!=='src-5ccc174cb8'||r.summary.forms!==30||
+             r.summary.rightsReview!==0||a.pendingRightsForms.length!==0||
+             a.creditedNoncommercialForms.length!==30)
+            throw Error('Contributor proof incomplete; do not archive an apparently cleared candidate');
+          if(r.forms.some(x=>!x.verifiedContributors||x.files.some(y=>
+            !['ALL_CURRENT_CC_BY_NC','POLICY_NONCOMMERCIAL_CREDITED'].includes(y.status))))
+            throw Error('Missing individual author credit');
+          console.log('RELEASE_CANDIDATE_ART_CREDITS',r.summary);
+          CHECK_CREDITS
+          cp site-capture/rights-provenance/CONTRIBUTOR-CREDITS-0713.md _site/arena2d/CONTRIBUTOR-CREDITS-0713.md
+          cp site-capture/rights-provenance/rights-audit-0713.json _site/arena2d/rights-audit-0713.json
+          cat > _site/arena2d/READ_ME_NONCOMMERCIAL_SOURCE_ART.txt <<'NOTICE'
+          Alpha 0.71.3 game candidate uses thirty fan-artist alternative sets.
+          It is NONCOMMERCIAL and not affiliated with Nintendo, Game Freak, Creatures or Spike Chunsoft.
+          These are not source-authentic 0.71.3 costumes. Some moves reuse available fan-made animations.
+          Artist attribution and per-file links: CONTRIBUTOR-CREDITS-0713.md
+          License source and verification: rights-audit-0713.json
+          The creator credits do not imply permission over third-party trademarks or Pokemon characters.
+          NOTICE
       - name: Archive fully verified Alpha 0.70 site for controlled publication
         if: steps.sprite-gate.outputs.complete == 'true' && success()
         uses: actions/upload-artifact@v4
