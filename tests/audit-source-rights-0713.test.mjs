@@ -18,7 +18,11 @@ test('all contributing artists must have individually CC BY-NC credits',()=>{
  assert.equal(classifyCurrentCredits(cur('A','CC_BY-NC_4','Attack')+
    cur('CHUNSOFT','Unspecified','Attack'),'Attack').status,'UNSPECIFIED_RIGHTS');
  assert.equal(classifyCurrentCredits(cur('A','CC_BY-NC_4','Idle')+
-   cur('B','PMDCollab_2','Attack'),'Attack').status,'OTHER_LICENSE_REVIEW');
+   cur('B','PMDCollab_2','Attack'),'Attack').status,'POLICY_NONCOMMERCIAL_CREDITED');
+ assert.equal(classifyCurrentCredits(cur('A','PMDCollab_1','Walk'),'Walk').status,
+  'POLICY_NONCOMMERCIAL_CREDITED');
+ assert.equal(classifyCurrentCredits(cur('A','Unauthorized','Walk'),'Walk').status,
+  'OTHER_LICENSE_REVIEW');
  assert.equal(classifyCurrentCredits(cur('A','CC_BY-NC_4','Idle'),'Normal').status,
   'MISSING_CURRENT_CREDIT');
  assert.throws(()=>classifyCurrentCredits('bad line','Idle'),/Malformed/);

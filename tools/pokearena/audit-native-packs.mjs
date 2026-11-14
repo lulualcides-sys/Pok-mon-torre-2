@@ -123,11 +123,53 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
     else {verifiedLoose++;verifiedLooseForms.push(dex);}
 
   }
-  const pendingRightsForms=[...new Set([...fallbackForms,...priorityForms])].sort();
+  // Exact PNG-level author evidence is optional in old captures, mandatory
+  // for any reduction in the pending artist-rights counter. Never trust a
+  // form-level "licensed=true" claim without matching all SHA-audited
+  // source files, all animations, and each contributor's license.
+  let rights=null;
+  try{rights=JSON.parse(await readFile(path.join(root,'rights-audit-0713.json'),'utf8'))}
+  catch(e){if(e.code!=='ENOENT')throw e}
+  const contributorPermitted=new Set();
+  if(rights){
+   const v=JSON.parse(await readFile(path.join(root,'version.json'),'utf8'));
+   if(rights.alpha!==v.officialAlpha||rights.src!==v.src||
+       !Array.isArray(rights.forms)||rights.releaseApproved!==false)
+    throw Error('Invalid source/Alpha contributor permissions report');
+   const sources=new Map();
+   for(const r of priority?.licensed||[])for(const f of r.files)sources.set(f.relative,f.source);
+   for(const f of alternatives?.files||[])sources.set(f.relative,f.source);
+   const expectedIDs=new Set([...fallbackForms,...priorityForms]);
+   if(rights.forms.length!==expectedIDs.size)throw Error('Incomplete contributor report');
+   for(const r of rights.forms){
+    if(!expectedIDs.delete(r.dex)||!Array.isArray(r.files))
+     throw Error('Unknown/duplicate rights report form '+r.dex);
+    const files=new Set(r.files.map(x=>x.relative));
+    const expectedRel=[...sources.keys()].filter(x=>x.startsWith(r.dex+'/'));
+    if(files.size!==r.files.length||files.size!==expectedRel.length)
+     throw Error('Incomplete rights report source paths '+r.dex);
+    let canUse=Boolean(r.verifiedContributors);
+    for(const x of r.files){
+     if(sources.get(x.relative)!==x.source||
+        !/^[0-9]{4}(?:-[a-z0-9]+)*\/(?:portrait|[A-Za-z0-9_-]+-Anim)\.png$/.test(x.relative))
+      throw Error('Rights evidence differs from source-art SHA inventory');
+     const allowed=['ALL_CURRENT_CC_BY_NC','POLICY_NONCOMMERCIAL_CREDITED'];
+     if(!allowed.includes(x.status)||!Array.isArray(x.artists)||x.artists.length===0||
+       x.artists.some(a=>!a.artist||a.artist==='CHUNSOFT'||
+        !['CC_BY-NC_4','PMDCollab_1','PMDCollab_2'].includes(a.license)))
+      canUse=false;
+    }
+    if(canUse)contributorPermitted.add(r.dex);
+   }
+  }
+  const pendingRightsForms=[...new Set([...fallbackForms,...priorityForms])]
+    .filter(x=>!contributorPermitted.has(x)).sort();
   return {alphaReleaseCandidate:true,formCount:forms.length,verifiedPacks,verifiedLoose,verifiedSubstitutes,
    sourceAuthentic:verifiedSubstitutes===0,missingFormCount:gaps.length,gaps,
    verifiedLooseForms:verifiedLooseForms.sort(),
-   pendingRightsForms,redistributionCleared:pendingRightsForms.length===0,
+   pendingRightsForms,
+   creditedNoncommercialForms:[...contributorPermitted].sort(),
+   redistributionCleared:pendingRightsForms.length===0,
     policy:'No missing official pack or verified original loose PNG may be replaced or forged; fail closed.'};
 }
 async function main(){
@@ -138,7 +180,8 @@ async function main(){
   await fs.writeFile(target,JSON.stringify(result,null,2)+'\n');
   console.log('NATIVE_PACK_COVERAGE',JSON.stringify({forms:result.formCount,packs:result.verifiedPacks,
     loose:result.verifiedLoose,substitutes:result.verifiedSubstitutes,sourceAuthentic:result.sourceAuthentic,missingForms:result.missingFormCount,
-    unclearedRights:result.pendingRightsForms.length,gaps:result.gaps.map(x=>({dex:x.dex,pack:x.pack,missing:x.missing.length}))}));
+    unclearedRights:result.pendingRightsForms.length,
+    contributorAttributed:result.creditedNoncommercialForms.length,gaps:result.gaps.map(x=>({dex:x.dex,pack:x.pack,missing:x.missing.length}))}));
   if(result.missingFormCount)throw Error('Official native client not buildable yet: '+result.missingFormCount+' forms lack their verified packs/loose sprites. No deploy.');
   if(result.pendingRightsForms.length)
    throw Error('Rights clearance missing for '+result.pendingRightsForms.length+' substitute forms; no deploy.');
