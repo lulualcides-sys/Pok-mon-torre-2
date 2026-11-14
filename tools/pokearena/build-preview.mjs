@@ -155,27 +155,47 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
  catch(error){if(error?.code!=='ENOENT')throw error;}
  if(nativePack){
   const captureVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8'));
-  if(captureVersion.officialAlpha==='0.70.0'){
+  if(captureVersion.officialAlpha==='0.70.0'||captureVersion.officialAlpha==='0.71.3'){
    // The latest official 0.70 PMD index includes 267 forms, while 19
    // costume packs are HTTP-403. This conditional is evaluated ONLY for
    // exactly that known Alpha and its original source fingerprint.
-   if(clientSource!=='src-3cc4979f18')throw Error('Unverified Alpha 0.70 module fingerprint');
+   const expectedCapture={
+    '0.70.0':{src:'src-3cc4979f18',forms:267},
+    '0.71.3':{src:'src-5ccc174cb8',forms:278}
+   }[captureVersion.officialAlpha];
+   if(!expectedCapture||clientSource!==expectedCapture.src)
+    throw Error('Unverified native Alpha module fingerprint');
    const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
    const {auditNativePacks}=await import('./audit-native-packs.mjs');
    const coverage=await auditNativePacks(dest);
-   if(coverage.missingFormCount||coverage.formCount!==267)
-    throw Error('Incomplete native 0.70 sprite coverage: '+coverage.missingFormCount);
+   if(coverage.formCount!==expectedCapture.forms)
+    throw Error('Unexpected official form count: '+coverage.formCount);
+   if(coverage.missingFormCount&&process.env.TORRE2_UPSTREAM_AUDIT!=='1')
+    throw Error('Native release blocked: '+coverage.missingFormCount+' forms lack artwork');
+   if(coverage.missingFormCount)
+    console.warn('NATIVE_DIAGNOSTIC_ONLY: '+coverage.missingFormCount+
+     ' forms lack sprites. Never publish or run full browser QA with missing art.');
    let substitutions=[];
    try{
     const evidence=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/torre2-visual-substitutes.json'),'utf8'));
-    if(evidence.sourceDir!==clientSource||evidence.alpha!=='0.70.0'||
+    if(evidence.sourceDir!==clientSource||evidence.alpha!==captureVersion.officialAlpha||
        evidence.sourceAuthentic!==false||
        evidence.visualSubstituteCount!==evidence.forms?.length)
      throw Error('Alpha 0.70 substitute graphic provenance mismatch');
     substitutions=evidence.forms;
    }catch(e){if(e.code!=='ENOENT')throw e}
+   if(captureVersion.officialAlpha==='0.71.3'){
+    try{
+     const priority=JSON.parse(await fs.readFile(
+      path.join(dest,'priority-licensed-pmd-report.json'),'utf8'));
+     if(priority.src!==clientSource||priority.alpha!==captureVersion.officialAlpha||
+       priority.noncommercialOnly!==true||priority.sourceAuthentic!==false)
+      throw Error('Priority licensed provenance source mismatch');
+     substitutions.push(...priority.licensed.map(item=>item.dex));
+    }catch(e){if(e.code!=='ENOENT')throw e}
+   }
    await fs.writeFile(packFile,routeInstalledKantoLooseSprites(nativePack,substitutions));
-   console.log('P2_ALPHA070_SPRITES_VERIFIED',JSON.stringify({
+   console.log(coverage.missingFormCount?'P2_NATIVE_SPRITES_DIAGNOSTIC':'P2_NATIVE_SPRITES_VERIFIED',JSON.stringify({
     officialForms:coverage.formCount,
     missing:coverage.missingFormCount,
     originalPacks:coverage.verifiedPacks,
