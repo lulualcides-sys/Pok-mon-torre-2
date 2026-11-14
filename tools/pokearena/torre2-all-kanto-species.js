@@ -106,5 +106,24 @@ export function addAllKantoSpecies(original){
     .map(e=>({dex:String(e.num).padStart(4,'0'),nombre:e.id.toUpperCase(),
       tipos:[...e.tipos],...stats(e),kit:kitFor(e,pool)}))});
  }
+ // Requested four Tauros techniques are already implemented by native
+ // Ditto's TAUROS transformation. Reuse those EXACT tested move definitions
+ // for the standalone Tauros, but keep its independent Dodge instead of
+ // importing Ditto's Transform ability into the Q slot.
+ const tauros=added.find(p=>p.id==='tauros');
+ if(tauros){
+  const transform=original.find(p=>p.id==='ditto')
+   ?.formasAlt?.find(f=>f.dex==='0128'&&f.nombre==='TAUROS');
+  const kit=transform?.kit;
+  if(!kit?.lmb?.nombre||!kit?.rmb?.nombre||!kit?.esp?.nombre||
+     !kit?.e?.nombre||kit?.q?.nombre==='Transform'&&
+     !tauros.kit?.esp)throw Error('Ditto Tauros transformation source has changed');
+  const equip=m=>({...structuredClone(m),pendiente:false,
+   torre2Unavailable:false,torre2RequiresTM:false,torre2UnlockLevel:1});
+  tauros.kit={...tauros.kit,
+   lmb:equip(kit.lmb),rmb:equip(kit.rmb),
+   q:equip(kit.esp),e:{...equip(kit.e),ulti:true}};
+  tauros.torre2DittoTaurosMoves=true;
+ }
  return added;
 }

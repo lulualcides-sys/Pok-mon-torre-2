@@ -402,6 +402,7 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
  ['tools/pokearena/torre2-pokedex-families.js','pokedex-families.js'],
+ ['tools/pokearena/torre2-pokedex-individual-roster.js','pokedex-individual-roster.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-magmar-family.js','magmar-family.js'],
  ['tools/pokearena/torre2-wobbuffet-native.js','wobbuffet-native.js'],
@@ -1479,7 +1480,12 @@ Pokedex.prototype.movimientos=function(...args){
  }
 };
 `;
-await fs.writeFile(pokedexPath,paginatedPokedex+safeSparsePokedex);
+const {installIndividualPokedex0713}=await import('./torre2-pokedex-individual-0713.mjs');
+const individualPokedex=installIndividualPokedex0713(
+ paginatedPokedex,paginationAlpha);
+await fs.writeFile(pokedexPath,individualPokedex+safeSparsePokedex);
+if(paginationAlpha==='0.71.3')
+ console.log('P2_ALPHA0713_POKEDEX_INDIVIDUAL_SPECIES_AND_JOHTO_PRELOAD');
 
 // The base client already ships the five Greninja styles for Froakie,
 // Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
