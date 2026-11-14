@@ -65,7 +65,7 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
    saved=prior;
  }
  const already=new Map(saved.forms.map(f=>[f.dex,f]));
- const restored=[],completed=[],pending=[],skipped=[],attempted=[];
+ const restored=[],completed=[],pending=[],skipped=[],attempted=[],verified=[];
  // Only 11 exact form IDs are permitted; the 19 costume forms are a separate backlog.
  for(const dex of PRIORITY_FORMS){
   if(!c.index.formas[dex]){pending.push({dex,reason:'not-declared-in-current-index'});continue}
@@ -77,7 +77,11 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
   let existingComplete=true;
   for(const rel of required.keys())if(!await exists(path.join(c.root,'assets/pmd',rel)))
    existingComplete=false;
-  if(existingComplete){skipped.push({dex,reason:'local-loose-sprites-already-present'});continue}
+  if(existingComplete){
+   skipped.push({dex,reason:'local-loose-sprites-already-present'});
+   // Existing files do not gain an invented license or verification claim.
+   continue;
+  }
   const prior=already.get(dex);
   if(prior){
    try{
@@ -98,6 +102,7 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
     }
     for(const {dest,bytes} of ready){await fs.mkdir(path.dirname(dest),{recursive:true});await fs.writeFile(dest,bytes,{flag:'wx'})}
     restored.push({dex,files:prior.files.length});
+    verified.push(prior);
    }catch(e){pending.push({dex,reason:'cache-validation: '+e.message})}
    continue;
   }
@@ -145,6 +150,7 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
   const record={dex,files:metaFiles};
   saved.forms.push(record);already.set(dex,record);
   completed.push({dex,files:metaFiles.length});
+  verified.push(record);
  }
  await fs.mkdir(directory,{recursive:true});
  await fs.writeFile(savedManifest,JSON.stringify(saved,null,2)+'\n');
@@ -154,7 +160,7 @@ export async function stagePriorityLicensedPMD(clientRoot,cacheRoot,fetcher=fetc
   license:LICENSE,sourceAuthentic:false,
   origin:'https://github.com/PMDCollab/SpriteCollab',
   noncommercialOnly:true,completed,restored,skipped,pending,attempted,
-  licensed:saved.forms};
+  licensed:verified};
  await fs.writeFile(path.join(c.root,'priority-licensed-pmd-report.json'),
   JSON.stringify(report,null,2)+'\n');
  return report;
