@@ -41,3 +41,13 @@ test('fallback PNG must have compatible original PMD sheet dimensions',()=>{
  assert.equal(validPng(png,{fw:48,fh:56,durations:Array(8).fill(1)}),false);
  assert.equal(validPng(Buffer.from('not-png'),null),false);
 });
+
+test('new Alpha 0.71.3 priorities may use only actually installed licensed PNGs',()=>{
+ const f=route(['0132','0133','0480']);
+ assert.equal(f('0132/Idle-Anim.png'),null);
+ assert.equal(f('0133/portrait.png'),null);
+ assert.equal(f('0480/Attack-Anim.png'),null);
+ assert.equal(f('0094/Attack-Anim.png'),'gengar-original');
+ assert.equal(f('0007/Attack-Anim.png'),'squirtle-original');
+ assert.throws(()=>routeInstalledKantoLooseSprites(native,['0483']),/Unsafe/);
+});
