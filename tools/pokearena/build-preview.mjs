@@ -1509,20 +1509,14 @@ await fs.writeFile(johtoSelectionPath,
 // through Pages. All other scenes and the battle HUD are untouched.
 {
  const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
- let title=await fs.readFile(titleFile,'utf8');
- const fitted='jugar:{y:104+BAJA,paso:26,alto:25}';
- if(!title.includes(fitted)){
-  const originals=['jugar:{y:110+BAJA,paso:PASO}',
-   'jugar:{y:114+BAJA,paso:PASO}'];
-  const present=originals.filter(x=>title.includes(x));
-  if(present.length!==1)
-   throw Error('Unknown PLAY menu geometry: cannot safely fit seven Johto Lab entries');
-  title=title.replace(present[0],fitted);
- }
- if(!title.includes('MEWTWO TEST LAB')||!title.includes(fitted))
-  throw Error('Missing Johto Lab entry or its safe seven-button menu geometry');
- await fs.writeFile(titleFile,title);
- console.log('MEWTWO LAB seven-button PLAY layout: fitted above the 312px floor');
+ const nativeTitle=await fs.readFile(titleFile,'utf8');
+ const {fitJohtoLabTitleMenu}=await import('./torre2-native-title-0713.mjs');
+ const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+ const {source:adjusted,labIncluded}=fitJohtoLabTitleMenu(nativeTitle,alpha);
+ if(adjusted!==nativeTitle)await fs.writeFile(titleFile,adjusted);
+ console.log(labIncluded
+  ?'MEWTWO LAB seven-button PLAY layout validated'
+  :'P2_ALPHA0713_NATIVE_MENU_NO_UNSUPPORTED_JOHTO_LAB');
 }
 
 // The original client formerly had a poser() beside the logo. Its new
