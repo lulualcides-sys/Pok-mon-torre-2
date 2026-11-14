@@ -1,0 +1,128 @@
+name: Torre 2 — Publicar Alpha 0.71.3 homologada
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/alpha0713-release-request.json'
+      - '.github/workflows/pokearena-alpha0713-promote.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pokemon-torre-2-pages
+  cancel-in-progress: false
+
+jobs:
+  publish-artifact:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify successful upstream build, immutable commit and SHA256 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=data/alpha0713-release-request.json
+          test -s "$request"
+          run_id=$(jq -er '.source_run_id' "$request")
+          expected_sha=$(jq -er '.source_commit' "$request")
+          expected_digest=$(jq -er '.artifact_digest' "$request")
+          test "$run_id" = 43650310612
+          test "$expected_sha" = f9e859c167f7dec88c88368f87d8715dde265ae0
+          test "$expected_digest" = sha256:db52629347edda394ecea416b7795b8375ff7ed128c0a0460b62e2649f115aa7
+          metadata=$(gh api "repos/${{ github.repository }}/actions/runs/$run_id")
+          echo "$metadata" | jq -e --arg sha "$expected_sha" '
+            .head_sha==$sha and .head_branch=="feat/alpha070-main-release-20261112"
+            and .conclusion=="success" and .status=="completed"' >/dev/null
+          proof=$(gh api "repos/${{ github.repository }}/actions/runs/$run_id/artifacts")
+          echo "$proof" | jq -e --arg digest "$expected_digest" '
+            any(.artifacts[]; .name=="pokearena-alpha070-homologated-site"
+              and .expired==false and .digest==$digest)' >/dev/null
+          echo "Verified source run, commit and SHA256 artifact."
+      - name: Fetch precisely approved site (never recapture old Alpha)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          gh run download 43650310612 --repo "${{ github.repository }}"             --name pokearena-alpha070-homologated-site --dir _site
+          test -s _site/arena2d/index.html
+          test -s _site/arena2d/version.json
+          test -s _site/arena2d/CONTRIBUTOR-CREDITS-0713.md
+          test -s _site/arena2d/rights-audit-0713.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify actual native Phaser Alpha, author credits and complete PMD
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'VERIFY'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const root='_site/arena2d';
+          const v=JSON.parse(fs.readFileSync(root+'/version.json','utf8'));
+          if(v.src!=='src-5ccc174cb8'||!/^src-[a-f0-9]{10}$/.test(v.modules||''))
+            throw Error('Incorrect official 0.71.3 source/compiled module directory');
+          const source=fs.readFileSync(path.join(root,v.modules,'config.js'),'utf8');
+          const version=source.match(/\b(?:let|const)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/)?.[1];
+          if(version!=='0.71.3')throw Error('Not official Alpha 0.71.3 config.js: '+version);
+          if(fs.statSync(root+'/lib/phaser.min.js').size<5000)
+            throw Error('Phaser runtime missing or truncated');
+          const rights=JSON.parse(fs.readFileSync(root+'/rights-audit-0713.json','utf8'));
+          const credits=fs.readFileSync(root+'/CONTRIBUTOR-CREDITS-0713.md','utf8');
+          if(rights.alpha!=='0.71.3'||rights.src!=='src-5ccc174cb8'||
+             rights.summary.forms!==30||rights.summary.rightsReview!==0||
+             rights.forms.some(x=>!x.verifiedContributors||!x.files.length)||
+             !credits.includes('CC BY-NC 4.0'))
+            throw Error('Artist attribution/rights evidence incomplete');
+          const manifest=JSON.parse(fs.readFileSync(root+'/assets/pmd/manifest.json','utf8'));
+          if(Object.keys(manifest).length<278)throw Error('Incomplete native PMD metadata');
+          if(!fs.existsSync(root+'/assets/pmd/0007-squad/Idle-Anim.png')||
+             !fs.existsSync(root+'/assets/pmd/0133/Idle-Anim.png'))
+            throw Error('Required alternative art missing from built site');
+          console.log('PROMOTION_VERIFIED',JSON.stringify({
+            nativeVersion:version,compiledModules:v.modules,forms:Object.keys(manifest).length,
+            creditedFanAlternatives:rights.summary.forms
+          }));
+          VERIFY
+      - name: Keep root lab and redirect public game to verified Alpha 0.71.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s _site/index.html ]; then cp _site/index.html _site/lab.html; fi
+          cat > _site/index.html <<'HTML'
+          <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta name="pokemon-torre-build" content="alpha-0.71.3-src-5ccc174cb8">
+          <title>Pokémon Torre 2 — Alpha 0.71.3</title>
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-alpha=0.71.3">
+          <script>location.replace('./arena2d/index.html?torre2-alpha=0.71.3'+location.hash)</script>
+          </head><body style="background:#101725;color:#e2efff;font:18px system-ui;padding:24px;text-align:center">
+          <a href="./arena2d/index.html?torre2-alpha=0.71.3" style="color:#ffe16d">Abrir Pokémon Torre 2</a>
+          </body></html>
+          HTML
+          cat > _site/RELEASE-0713.json <<'JSON'
+          {"alpha":"0.71.3","modulesSource":"src-5ccc174cb8","sourceRun":43650310612,
+           "sourceCommit":"f9e859c167f7dec88c88368f87d8715dde265ae0",
+           "noncommercialFanProject":true,"officialArtAuthentic":false,
+           "creatorCredits":"arena2d/CONTRIBUTOR-CREDITS-0713.md"}
+          JSON
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site/
+      - id: deploy
+        uses: actions/deploy-pages@v4
+      - name: Deployment evidence
+        run: echo "Deployed the pinned audited 0.71.3 site to GitHub Pages."

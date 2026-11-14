@@ -1,13 +1,8 @@
 name: Pokémon Torre 2 — Publicação GitHub Pages
 
+# Legacy 0.65.8 Pages release: manual rollback only.
+# Never auto-overwrite the audited 0.71.3 promoted artifact.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/pages.yml']
-  workflow_run:
-    workflows: ["Pokémon Torre 2 — Testes de Combate e WebGL"]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
