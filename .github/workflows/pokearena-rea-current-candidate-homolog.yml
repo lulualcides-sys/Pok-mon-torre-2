@@ -9,6 +9,8 @@ on:
       - 'tests/rea-public-optional-resource.test.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-licensed-visual-substitutes.mjs'
+      - 'tools/pokearena/priority-licensed-pmd.mjs'
+      - 'tests/priority-licensed-pmd.test.mjs'
       - 'tests/native-visual-substitute-policy.test.mjs'
       - 'tests/source-client-smoke.cjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
@@ -55,8 +57,9 @@ jobs:
           node --check tools/pokearena/torre2-offline-chat-resize.mjs
           node --check tools/pokearena/stage-verified-lazy-packs.mjs
           node --check tools/pokearena/capture-public-missing-packs.mjs
+          node --check tools/pokearena/priority-licensed-pmd.mjs
           node --check tools/pokearena/native-progress-folders.mjs
-          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
@@ -194,6 +197,15 @@ jobs:
           set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
           test -s site-capture/pokearena-client/public-missing-packs-report.json
+      - name: Stage new 0.71.3 priority Pokemon from noncommercial SpriteCollab (isolated, bounded)
+        shell: bash
+        run: |
+          alpha=$(node -p "require('./site-capture/pokearena-client/version.json').officialAlpha")
+          if [ "$alpha" = "0.71.3" ]; then
+            node tools/pokearena/priority-licensed-pmd.mjs site-capture/pokearena-client site-capture/native-pack-cache
+          else
+            echo "No 0.71.3 priority batch: current Alpha $alpha"
+          fi
       - name: Build attributable CC BY-NC species visuals only for officially inaccessible forms
         shell: bash
         run: |
@@ -293,6 +305,7 @@ jobs:
             site-capture/native-progress/
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
+            site-capture/pokearena-client/priority-licensed-pmd-report.json
             site-capture/pokearena-client/assets/pmd/torre2-visual-substitutes.json
             site-capture/pokearena-client/public-manifest-recovery-report.json
             site-capture/rea-lazy-pack-probe/report.json
