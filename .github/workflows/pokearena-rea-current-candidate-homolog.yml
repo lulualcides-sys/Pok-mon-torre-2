@@ -22,6 +22,10 @@ on:
       - 'tools/pokearena/native-0713-release-gate.mjs'
       - 'tools/pokearena/torre2-pokedex-modern-compat.mjs'
       - 'tools/pokearena/torre2-native-title-0713.mjs'
+      - 'tools/pokearena/torre2-native-selection-0713.mjs'
+      - 'tools/pokearena/native-adapter-drift.mjs'
+      - 'tests/torre2-native-selection-0713.test.mjs'
+      - 'tests/native-adapter-drift.test.mjs'
       - 'tests/torre2-native-title-0713.test.mjs'
       - 'tests/torre2-pokedex-modern-compat.test.mjs'
       - 'tests/native-0713-release-gate.test.mjs'
@@ -69,8 +73,10 @@ jobs:
           node --check tools/pokearena/native-0713-release-gate.mjs
           node --check tools/pokearena/torre2-pokedex-modern-compat.mjs
           node --check tools/pokearena/torre2-native-title-0713.mjs
+          node --check tools/pokearena/torre2-native-selection-0713.mjs
+          node --check tools/pokearena/native-adapter-drift.mjs
           node --check tools/pokearena/native-progress-folders.mjs
-          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs tests/torre2-native-title-0713.test.mjs
+          node --test tests/selection-upstream-pagination.test.js tests/rea-public-optional-resource.test.mjs tests/native-progress-folders.test.mjs tests/priority-licensed-pmd.test.mjs tests/native-0713-release-gate.test.mjs tests/torre2-pokedex-modern-compat.test.mjs tests/torre2-native-title-0713.test.mjs tests/torre2-native-selection-0713.test.mjs tests/native-adapter-drift.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA
         env:
@@ -314,6 +320,7 @@ jobs:
           name: current-native-build-gates-homolog
           path: |
             site-capture/native-progress/
+            site-capture/native-0713-adapter-drift.json
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/pokearena-client/priority-licensed-pmd-report.json

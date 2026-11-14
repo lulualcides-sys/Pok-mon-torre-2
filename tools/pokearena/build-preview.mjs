@@ -789,6 +789,7 @@ patches.push(
    'salir(){this.soltarTiempo();if(this.datos.johtoLab)return this.scene.start("johto-lab",{slots:this.datos.johtoLab.slots});if(this.datos.torre2)']
  ]]
 );
+const upstreamUnmatched=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -799,6 +800,18 @@ for(const [filename,changes] of patches){
   const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
   if(preserveModernPokedex(body,alpha)){
    console.log('P2_ALPHA0713_NATIVE_POKEDEX_PRESERVED');
+   continue;
+  }
+ }
+ // Alpha 0.71.3 moves menu portrait logic to the native scene
+ // (elegir/trio modes), making older preload and grid rewrites unsafe.
+ if(filename==='escenas/seleccion.js'){
+  const {adaptModernSelection}=await import('./torre2-native-selection-0713.mjs');
+  const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+  const adapted=adaptModernSelection(body,alpha);
+  if(adapted!==null){
+   if(adapted!==body)await fs.writeFile(filenameFull,adapted);
+   console.log('P2_ALPHA0713_NATIVE_SELECTION_PRESERVED');
    continue;
   }
  }
@@ -1241,11 +1254,32 @@ for(const [filename,changes] of patches){
     body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
     continue;
    }
-   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
+   const {recordNativeAdapterMismatch}=await import('./native-adapter-drift.mjs');
+   recordNativeAdapterMismatch({
+    audit:process.env.TORRE2_UPSTREAM_AUDIT==='1',filename,
+    anchor:from,source:body,issues:upstreamUnmatched
+   });
+   continue;
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
+}
+if(upstreamUnmatched.length){
+ const file=path.resolve('site-capture/native-0713-adapter-drift.json');
+ await fs.mkdir(path.dirname(file),{recursive:true});
+ await fs.writeFile(file,JSON.stringify({
+  candidateSource:clientSource,
+  releaseBlocked:true,
+  unmatched:upstreamUnmatched
+ },null,2)+'\n');
+ console.error('NATIVE_ADAPTER_DRIFT',JSON.stringify({
+  count:upstreamUnmatched.length,
+  files:[...new Set(upstreamUnmatched.map(x=>x.filename))],
+  evidence:file
+ }));
+ throw Error('Upstream adapter drift: '+upstreamUnmatched.length+
+  ' incompatible edits; diagnostic report saved; no release permitted');
 }
 
 // Finalize the *isolated* preload after all verified native module patches.
