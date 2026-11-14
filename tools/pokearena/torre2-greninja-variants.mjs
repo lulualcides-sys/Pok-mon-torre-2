@@ -63,10 +63,19 @@ export function patchGreninjaModernSelection(source){
   'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"})',
   'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:a==="azabacheaura"?6:8,color:puesta?"#ffd447":"#8fb3e6"})',
   'modern red-aura label');
- s=replaceOnce(s,
-  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
-  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
-  'native election callback and ranked lock preserved');
+ // The previous approved Arena pagination adapter may already unlock
+ // all non-challenge local Pokémon. Preserve that validated rule rather than
+ // applying a second Froakie unlock or disabling ranked/challenge locks.
+ const unlocked='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
+ if(s.includes(unlocked)){
+  if(s.split(unlocked).length!==2)
+   throw Error('Ambiguous native offline unlock before Greninja patch');
+ }else{
+  s=replaceOnce(s,
+   'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+   'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
+   'native election callback and ranked lock preserved');
+ }
  s=replaceOnce(s,
   'const s=this.add.container(0,0),W=6+opciones.length*46;',
   'const s=this.add.container(p.id==="froakie"?panel.x:0,p.id==="froakie"?PY:0),W=6+opciones.length*46;if(p.id==="froakie"){s.setDepth(9000);s.setData("torre2-greninja-popup",true)}',
