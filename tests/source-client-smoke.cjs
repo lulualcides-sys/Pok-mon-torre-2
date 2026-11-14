@@ -144,8 +144,8 @@ const server=http.createServer(async(req,res)=>{
   console.log('PHASER_PLAY_MENU_GEOMETRY',JSON.stringify(subMenuLayout));
   assert.ok(subMenuLayout.bottoms.every(bottom=>bottom<312),
    'PLAY submenu must not overlap the decorative ground line: '+JSON.stringify(subMenuLayout.positions));
-  // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
-  // native layout and clickable evolution tabs must remain unchanged.
+  // Alpha 0.71.3: 278 species, one independent encyclopedia card per dex.
+  // The BATTLE ROSTER, evolution mechanics, VFX and save IDs remain native.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
   const dexBad=[];dexPage.on('response',res=>{if(res.status()>=400&&dexBad.length<50)dexBad.push({status:res.status(),url:res.url()});});
@@ -205,11 +205,11 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
    }
   }
-  assert.ok(dexData.count>=36,
-   'Pokédex should retain 26 native cards and add ten original early-Kanto species');
+  assert.equal(dexData.count,278,
+   'Each of the 278 verified national species must have its own Pokédex card');
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Native P2 family cards cannot overlap the Pokémon pedestal');
-  assert.equal(dexData.visibleCount,25,'Native 5-column Pokédex shows one entry per family');
+  assert.equal(dexData.visibleCount,25,'Independent Pokédex shows only 25 cards per page');
   if(!dexData.portraits.every(x=>x.exists&&x.idle)){
    const diag=await dexPage.evaluate(()=>{
     const p=window.__pt2Game?.scene?.getScene('pokedex');
@@ -228,18 +228,60 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
-  assert.deepEqual(dexData.tabNames.slice(0,3),['BULBASAUR','IVYSAUR','VENUSAUR'],
-   'Original Bulbasaur family tabs must remain clickable');
-  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(1));
+  const independent=await dexPage.evaluate(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex'),map=new Map();
+   for(const c of p.casillas){
+    if(map.has(c.p.dex))throw Error('Duplicate independent Dex '+c.p.dex);
+    map.set(c.p.dex,c.p);
+   }
+   const guardian=['0480','0481','0482'].map(d=>map.get(d));
+   const johto=['0152','0153','0154'].map(d=>map.get(d));
+   const tauros=map.get('0128'),ditto=map.get('0132');
+   return {
+    cards:map.size,
+    guardians:guardian.map(x=>({name:x?.nombre,dex:x?.dex,hasTrio:!!x?.trio?.length,
+      attack:x?.kit?.lmb?.nombre})),
+    johto:johto.map(x=>({name:x?.nombre,dex:x?.dex})),
+    tauros:tauros&&Object.fromEntries(['lmb','rmb','q','e','esp'].map(k=>[k,tauros.kit[k]?.nombre])),
+    ditto:ditto?.kit?.lmb?.nombre,
+    originalBattleCards:p.casillas.filter(c=>c.p.torre2DexOnly).length
+   };
+  });
+  console.log('PHASER_POKEDEX_INDEPENDENT_278',JSON.stringify(independent));
+  assert.equal(independent.cards,278);
+  assert.deepEqual(independent.guardians.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
+  assert.ok(independent.guardians.every(x=>x.attack==='Confusion'&&!x.hasTrio));
+  assert.deepEqual(independent.johto.map(x=>x.dex),['0152','0153','0154']);
+  assert.deepEqual(independent.tauros,{
+   lmb:'Horn Attack',rmb:'Take Down',q:'Headbutt',e:'Giga Impact',esp:'Dodge'});
+  assert.equal(independent.ditto,'Pound');
+  // The Gen II source sprite sheets and all 100 local portraits are part of
+  // the artifact and are preloaded, not fetched only after the page is shown.
   await dexPage.waitForFunction(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
-   return p.etapa===1&&p.anims.exists('0002-Idle-0')&&p.sprite?.dex==='0002';
-  },null,{timeout:16000});
-  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(2));
-  await dexPage.waitForFunction(()=>{
-   const p=window.__pt2Game.scene.getScene('pokedex');
-   return p.etapa===2&&p.anims.exists('0003-Idle-0')&&p.sprite?.dex==='0003';
-  },null,{timeout:16000});
+   const cards=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
+   return cards.length===100&&cards.every(v=>
+    p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0'));
+  },null,{timeout:30000});
+  for(const [dex,name] of [['0002','IVYSAUR'],['0003','VENUSAUR'],
+   ['0152','CHIKORITA'],['0153','BAYLEEF'],['0154','MEGANIUM']]){
+   await dexPage.evaluate(id=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    p.elegir(p.casillas.findIndex(c=>c.p.dex===id));
+   },dex);
+   await dexPage.waitForFunction(id=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    return p.etapa===0&&p.sprite?.dex===id;
+   },dex,{timeout:18000});
+   const visible=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    return {stage:p.etapas?.[0]?.nombre,picture:p.sprite?.texture?.key,
+      card:p.casillas[p.foco]?.p?.dex};
+   });
+   assert.equal(visible.stage,name);
+   assert.equal(visible.card,dex);
+   assert.equal(visible.picture,'pmd-'+dex+'-Idle');
+  }
   // Regression: the user's screenshots showed SPD NaN and blank moves
   // on Nidorino/Nidoking. Visit EVERY added Kanto evolution in the actual
   // Phaser Pokédex to catch the same failure across all new families.
@@ -250,7 +292,8 @@ const server=http.createServer(async(req,res)=>{
     if(!['nidoran-m','nidoran-f','pidgey','rattata','caterpie',
        'weedle','geodude','paras','clefairy','sandshrew','ekans',
        'staryu','psyduck','poliwag','oddish','bellsprout','meowth',
-       'diglett','voltorb','magnemite'].includes(scene.casillas[i].p.id))continue;
+       'diglett','voltorb','magnemite'].includes(
+        scene.casillas[i].p.torre2DexOriginId||scene.casillas[i].p.id))continue;
     scene.elegir(i);
     for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
      const stage=scene.etapas[stageIndex];
@@ -273,18 +316,15 @@ const server=http.createServer(async(req,res)=>{
    ['nidoran-m',[[1,'0033'],[2,'0034']]],
    ['nidoran-f',[[1,'0030'],[2,'0031']]]
   ]){
-   await dexPage.evaluate(base=>{
-    const scene=window.__pt2Game.scene.getScene('pokedex');
-    scene.elegir(scene.casillas.findIndex(x=>x.p.id===base));
-   },id);
    for(const [stage,dex] of stages){
-    await dexPage.evaluate(index=>{
-     window.__pt2Game.scene.getScene('pokedex').irEtapa(index);
-    },stage);
-    await dexPage.waitForFunction(([index,spriteDex])=>{
+    await dexPage.evaluate(dex=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
-     return scene.etapa===index&&scene.sprite?.dex===spriteDex;
-    },[stage,dex],{timeout:20000});
+     scene.elegir(scene.casillas.findIndex(x=>x.p.dex===dex));
+    },dex);
+    await dexPage.waitForFunction(spriteDex=>{
+     const scene=window.__pt2Game.scene.getScene('pokedex');
+     return scene.etapa===0&&scene.sprite?.dex===spriteDex;
+    },dex,{timeout:20000});
     const visible=await dexPage.evaluate(()=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
      return {
@@ -343,8 +383,11 @@ const server=http.createServer(async(req,res)=>{
     if(idx<0){results.push({base,error:'missing Pokédex card'});continue;}
     scene.elegir(idx);
     for(const species of evolutions){
-     const stage=scene.etapas.find(x=>x.nombre.toLowerCase()===species);
-     if(!stage){results.push({base,species,error:'missing evolved form'});continue;}
+     const stageIdx=scene.casillas.findIndex(x=>x.p.nombre.toLowerCase()===species);
+     if(stageIdx<0){results.push({base,species,error:'missing evolved card'});continue;}
+     scene.elegir(stageIdx);
+     const stage=scene.etapas[0];
+     if(!stage){results.push({base,species,error:'missing evolved stage'});continue;}
      const loadout=resolveLoadout({id:species,
       progression:{species,level:100}});
      const slots=['lmb','rmb','q','e'];
