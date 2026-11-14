@@ -19,6 +19,50 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
   try{alternatives=JSON.parse(await readFile(path.join(root,'assets/pmd/torre2-visual-substitutes.json'),'utf8'))}
   catch(e){if(e.code!=='ENOENT')throw e}
   const fallbackForms=new Set(alternatives?.forms||[]);
+  // Distinguish licensed replacements for the new 0.71 forms from verified
+  // original loose PNGs. An asset is NEVER source-authentic merely because
+  // it exists. Preserve per-artist/source provenance and SHA256.
+  let priority=null;
+  try{priority=JSON.parse(await readFile(path.join(root,'priority-licensed-pmd-report.json'),'utf8'))}
+  catch(e){if(e.code!=='ENOENT')throw e}
+  const priorityForms=new Set();
+  if(priority){
+   const {PRIORITY_FORMS}=await import('./priority-licensed-pmd.mjs');
+   const version=JSON.parse(await readFile(path.join(root,'version.json'),'utf8'));
+   if(priority.alpha!==version.officialAlpha||
+      priority.src!==version.src||
+      priority.license!=='CC BY-NC 4.0'||
+      priority.noncommercialOnly!==true||
+      priority.sourceAuthentic!==false||
+      !Array.isArray(priority.licensed))
+    throw Error('Invalid licensed priority source/version policy');
+   for(const record of priority.licensed){
+    if(!PRIORITY_FORMS.includes(record.dex)||priorityForms.has(record.dex)||
+       !Array.isArray(record.files)||!manifest[record.dex]?.anims?.Idle||
+       !index.formas?.[record.dex])
+     throw Error('Unsafe or duplicated licensed priority form');
+    const expected=new Set([record.dex+'/portrait.png',
+      ...Object.values(manifest[record.dex].anims).map(x=>x.file)]);
+    if(expected.size!==record.files.length||
+       await exists(path.join(root,'assets/p',index.formas[record.dex]+'.bin')))
+     throw Error('Licensed priority must not replace original native pack');
+    for(const entry of record.files){
+     if(!expected.delete(entry.relative)||
+        typeof entry.source!=='string'||
+        !entry.source.startsWith('https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/')||
+        !/^[a-f0-9]{64}$/.test(entry.sha256||'')||
+        !Number.isInteger(entry.bytes))
+      throw Error('Missing/incompatible priority PNG provenance: '+entry.relative);
+     const bytes=await readFile(path.join(root,'assets/pmd',entry.relative));
+     if(bytes.length!==entry.bytes||
+        createHash('sha256').update(bytes).digest('hex')!==entry.sha256)
+      throw Error('Modified licensed priority sprite: '+entry.relative);
+    }
+    if(expected.size)throw Error('Missing required PMD priority animation');
+    priorityForms.add(record.dex);
+   }
+  }
+
   if(alternatives){
     const {ALLOWED_VISUAL_SUBSTITUTES}=await import('./stage-licensed-visual-substitutes.mjs');
     if(alternatives.sourceAuthentic!==false||
@@ -68,7 +112,7 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
         throw Error('Unsafe native sprite path: '+rel);
       if(!await exists(path.join(root,'assets/pmd',rel)))missing.push(rel);
     }
-    if(missing.length)gaps.push({dex,pack,missing});else if(fallbackForms.has(dex))verifiedSubstitutes++;else verifiedLoose++;
+    if(missing.length)gaps.push({dex,pack,missing});else if(fallbackForms.has(dex)||priorityForms.has(dex))verifiedSubstitutes++;else verifiedLoose++;
   }
   return {alphaReleaseCandidate:true,formCount:forms.length,verifiedPacks,verifiedLoose,verifiedSubstitutes,sourceAuthentic:verifiedSubstitutes===0,missingFormCount:gaps.length,gaps,
     policy:'No missing official pack or verified original loose PNG may be replaced or forged; fail closed.'};
