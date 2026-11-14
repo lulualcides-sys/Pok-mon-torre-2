@@ -154,6 +154,54 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
  try{nativePack=await fs.readFile(packFile,'utf8');}
  catch(error){if(error?.code!=='ENOENT')throw error;}
  if(nativePack){
+  const captureVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8'));
+  if(captureVersion.officialAlpha==='0.70.0'||captureVersion.officialAlpha==='0.71.3'){
+   // The latest official 0.70 PMD index includes 267 forms, while 19
+   // costume packs are HTTP-403. This conditional is evaluated ONLY for
+   // exactly that known Alpha and its original source fingerprint.
+   const {routeInstalledKantoLooseSprites}=await import('./torre2-native-loose-pmd-compat.mjs');
+   const {auditNativePacks}=await import('./audit-native-packs.mjs');
+   const {verifyNativeVisualGate}=await import('./native-0713-release-gate.mjs');
+   const coverage=await auditNativePacks(dest);
+   const visualGate=verifyNativeVisualGate({
+    alpha:captureVersion.officialAlpha,src:clientSource,
+    forms:coverage.formCount,missing:coverage.missingFormCount,
+    unclearedRights:coverage.pendingRightsForms.length,
+    diagnostic:process.env.TORRE2_UPSTREAM_AUDIT==='1'
+   });
+   if(visualGate.diagnosticOnly)
+    console.warn('NATIVE_DIAGNOSTIC_ONLY: '+visualGate.missing+
+     ' forms lack sprites. Never publish or run full browser QA with missing art.');
+   let substitutions=[];
+   try{
+    const evidence=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/torre2-visual-substitutes.json'),'utf8'));
+    if(evidence.sourceDir!==clientSource||evidence.alpha!==captureVersion.officialAlpha||
+       evidence.sourceAuthentic!==false||
+       evidence.visualSubstituteCount!==evidence.forms?.length)
+     throw Error('Alpha 0.70 substitute graphic provenance mismatch');
+    substitutions=evidence.forms;
+   }catch(e){if(e.code!=='ENOENT')throw e}
+   if(captureVersion.officialAlpha==='0.71.3'){
+    try{
+     const priority=JSON.parse(await fs.readFile(
+      path.join(dest,'priority-licensed-pmd-report.json'),'utf8'));
+     if(priority.src!==clientSource||priority.alpha!==captureVersion.officialAlpha||
+       priority.noncommercialOnly!==true||priority.sourceAuthentic!==false)
+      throw Error('Priority licensed provenance source mismatch');
+     substitutions.push(...priority.licensed.map(item=>item.dex));
+    }catch(e){if(e.code!=='ENOENT')throw e}
+   }
+   await fs.writeFile(packFile,routeInstalledKantoLooseSprites(nativePack,substitutions));
+   console.log(coverage.missingFormCount?'P2_NATIVE_SPRITES_DIAGNOSTIC':'P2_NATIVE_SPRITES_VERIFIED',JSON.stringify({
+    officialForms:coverage.formCount,
+    missing:coverage.missingFormCount,
+    originalPacks:coverage.verifiedPacks,
+    originalLoose:coverage.verifiedLoose,
+    quarantinedAlternatives:coverage.verifiedSubstitutes,
+    unclearedRights:coverage.pendingRightsForms.length,
+    nativeSourceAuthentic:coverage.sourceAuthentic
+   }));
+  }else{
   const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
   const pmd=path.join(dest,'assets/pmd');
   const match=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
@@ -189,6 +237,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    originalLoosePngs:verified,
    rule:'use current .bin if available, else previously verified genuine PMD PNG'
   }));
+  }
  }
 }
 
@@ -209,7 +258,11 @@ if(compatiblePortraitModule!==portraitModuleSource){
 }
 const selectionFile=path.join(dest,clientSource,'escenas/seleccion.js');
 const {paginateSelectionSource}=await import('./torre2-selection-pages.mjs');
-await fs.writeFile(selectionFile,paginateSelectionSource(await fs.readFile(selectionFile,'utf8')));
+const {loadNativeSelectionPage0713}=await import('./torre2-selection-load-0713.mjs');
+const nativeSelectionAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+await fs.writeFile(selectionFile,loadNativeSelectionPage0713(
+ paginateSelectionSource(await fs.readFile(selectionFile,'utf8')),nativeSelectionAlpha));
+if(nativeSelectionAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_SELECTION_PACK_PRELOAD');
  // The six-player Arena uses a DIFFERENT picker (selector.js), not the
  // VS CPU selection scene above. Its old 13-column grid overflowed mobile
  // and showed missing portrait markers. Group its native ROSTER into family
@@ -742,11 +795,71 @@ patches.push(
    'salir(){this.soltarTiempo();if(this.datos.johtoLab)return this.scene.start("johto-lab",{slots:this.datos.johtoLab.slots});if(this.datos.torre2)']
  ]]
 );
+const upstreamUnmatched=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
+ // New native form entries and adaptive grid already work in Alpha 0.71.3.
+ // The 0.65.8-oriented grid/move/portrait patch is no longer applicable.
+ if(filename==='escenas/pokedex.js'){
+  const {preserveModernPokedex}=await import('./torre2-pokedex-modern-compat.mjs');
+  const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+  if(preserveModernPokedex(body,alpha)){
+   console.log('P2_ALPHA0713_NATIVE_POKEDEX_PRESERVED');
+   continue;
+  }
+ }
+ // Alpha 0.71.3 moves menu portrait logic to the native scene
+ // (elegir/trio modes), making older preload and grid rewrites unsafe.
+ if(filename==='escenas/seleccion.js'){
+  const {adaptModernSelection}=await import('./torre2-native-selection-0713.mjs');
+  const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+  const adapted=adaptModernSelection(body,alpha);
+  if(adapted!==null){
+   if(adapted!==body)await fs.writeFile(filenameFull,adapted);
+   console.log('P2_ALPHA0713_NATIVE_SELECTION_PRESERVED');
+   continue;
+  }
+ }
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Official Alpha 0.71.3 now uses LOCAL/CPU and has already removed
+   // the legacy 2 PLAYERS tile. Preserve the current menu unchanged.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('{id:"versus",txt:"2 PLAYERS"')&&to===''){
+    const {acceptRemovedVersusEntry}=await import('./torre2-native-title-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    if(acceptRemovedVersusEntry(body,alpha)){
+     console.log('P2_ALPHA0713_NATIVE_LOCAL_MENU_PRESERVED');
+     continue;
+    }
+   }
+   // Alpha 0.71.3 removed the TRAINING tile from title; keep the
+   // independent Johto lab as draft code, not a broken menu button.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('{id:"entreno",txt:"TRAINING"')&&
+      to.includes('johto-lab')){
+    const {acceptRemovedTrainingTile}=await import('./torre2-native-title-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    if(acceptRemovedTrainingTile(body,alpha)){
+     console.log('P2_ALPHA0713_NO_LEGACY_TRAINING_TILE');
+     continue;
+    }
+   }
+   // The official 0.71.3 combat preloads team groups and the three Lake
+   // guardians via flatMap. Augment only our Kanto party, preserving it.
+   if(filename==='escenas/combate.js' &&
+      from.startsWith('const dexs=formasDe(d.jugadores?')&&
+      to.startsWith('const ids=d.torre2?.party?')){
+    const {adaptModernCombatPreload}=await import('./torre2-combat-preload-0713.mjs');
+    const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+    const updated=adaptModernCombatPreload(body,alpha);
+    if(updated!==null){
+     body=updated;
+     console.log('P2_ALPHA0713_GROUP_COMBAT_PRELOAD_PRESERVED');
+     continue;
+    }
+   }
    // Account/profile entry is absent or reformatted in newer offline title.
    // Remove only a confirmed profile item, never the whole settings menu.
    if(filename==='escenas/titulo.js' &&
@@ -853,10 +966,8 @@ for(const [filename,changes] of patches){
     continue;
    }
    if(filename==='main.js'&&from.includes('import{iniciarChat,reservaChat}')){
-    // Chat bootstrap no longer has a stable import form in the public client.
-    // The offline game does not use the chat nor reserve any chat width.
-    body=body.replace(/import\s*\{[^}]*\b(?:iniciarChat|reservaChat)\b[^}]*\}\s*from\s*["']\.\/chat\.js["'];?/g,'');
-    body=body.replace(/\breservaChat\s*\(\s*\)/g,'0');
+    const {removeOnlineChatPreservingNativeResize}=await import('./torre2-offline-chat-resize.mjs');
+    body=removeOnlineChatPreservingNativeResize(body);
     continue;
    }
    // Native League's optional portrait warmup can move between releases.
@@ -1175,11 +1286,32 @@ for(const [filename,changes] of patches){
     body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
     continue;
    }
-   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
+   const {recordNativeAdapterMismatch}=await import('./native-adapter-drift.mjs');
+   recordNativeAdapterMismatch({
+    audit:process.env.TORRE2_UPSTREAM_AUDIT==='1',filename,
+    anchor:from,source:body,issues:upstreamUnmatched
+   });
+   continue;
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
+}
+if(upstreamUnmatched.length){
+ const file=path.resolve('site-capture/native-0713-adapter-drift.json');
+ await fs.mkdir(path.dirname(file),{recursive:true});
+ await fs.writeFile(file,JSON.stringify({
+  candidateSource:clientSource,
+  releaseBlocked:true,
+  unmatched:upstreamUnmatched
+ },null,2)+'\n');
+ console.error('NATIVE_ADAPTER_DRIFT',JSON.stringify({
+  count:upstreamUnmatched.length,
+  files:[...new Set(upstreamUnmatched.map(x=>x.filename))],
+  evidence:file
+ }));
+ throw Error('Upstream adapter drift: '+upstreamUnmatched.length+
+  ' incompatible edits; diagnostic report saved; no release permitted');
 }
 
 // Finalize the *isolated* preload after all verified native module patches.
@@ -1212,14 +1344,21 @@ console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; requi
 // Keep approved campaign visuals, saves, sprites and battle behavior intact.
 await fs.copyFile('tools/pokearena/torre2-noncombat-pixel-buttons.js',
  path.join(dest,clientSource,'torre2/noncombat-pixel-buttons.js'));
+const skinAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
 for(const scene of ['titulo','seleccion','preparar','pokedex']){
  const filename=path.join(dest,clientSource,'escenas',scene+'.js');
  const before=await fs.readFile(filename,'utf8');
- const after=skinMenuScene(before,scene);
- if(before===after)throw Error('Button skin not installed: '+scene);
+ const after=skinMenuScene(before,scene,skinAlpha);
+ if(before===after){
+  if(scene==='pokedex'&&skinAlpha==='0.71.3'){
+   console.log('P2_ALPHA0713_NATIVE_POKEDEX_SKIN_PRESERVED');
+   continue;
+  }
+  throw Error('Button skin not installed: '+scene);
+ }
  await fs.writeFile(filename,after);
 }
-console.log('Premium pixel buttons applied to title, selection, preparation and Pokédex only');
+console.log('Noncombat buttons applied only to supported native menus; modern Pokédex preserved');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
@@ -1262,13 +1401,11 @@ if(fighterCode.split(nativePoisonHit).length!==2)
 // applied poison (before its first damaging tick sets ultimoDano).
 // Don't let that small heal make the final poison tick non-lethal.
 // Scope to Torre2-added Arena species and the active poison status only.
-const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
-if(fighterCode.split(nativeRegenGuard).length!==2)
- throw Error('Upstream Arena HP recovery guard changed');
+const {patchNativePoisonRegen}=await import('./torre2-native-poison-regen-0713.mjs');
 const poisonHpFixed=fighterCode.replace(nativePoisonHit,
  nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
-await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
- '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
+const poisonAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+await fs.writeFile(fighterPath,patchNativePoisonRegen(poisonHpFixed,poisonAlpha));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
@@ -1290,12 +1427,25 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
   'bindAutoBattleToScene('+klass+',IA);\n');
 }
 
-// Expand Pokedex without overlapping its original animated Pokémon
-// pedestal: six rows of six cards with tiny previous/next Phaser controls.
+// Legacy Kanto grid pagination is incompatible with the Alpha 0.71.3
+// responsive National Dex. Preserve that native layout, form tabs and
+// Pokédex data; retain the preapproved legacy pagination only for older
+// verified releases. Never modify published Pages from this diagnostic.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
+const {guardNativePokedexPagination}=await import('./torre2-pokedex-final-gate-0713.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
-const paginatedPokedex=paginateKantoPokedexSource(
- await fs.readFile(pokedexPath,'utf8'));
+const paginationAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+const {paginateModernPokedex0713}=await import('./torre2-pokedex-page-0713.mjs');
+const originalDexPage=await fs.readFile(pokedexPath,'utf8');
+const verifiedDexPage=guardNativePokedexPagination(
+ originalDexPage,paginationAlpha,paginateKantoPokedexSource);
+const {loadModernPokedexPage0713}=await import('./torre2-pokedex-load-0713.mjs');
+const {labelModernPokedexRoles}=await import('./torre2-pokedex-roles-0713.mjs');
+const paginatedPokedex=labelModernPokedexRoles(
+ loadModernPokedexPage0713(
+  paginateModernPokedex0713(verifiedDexPage,paginationAlpha),paginationAlpha),
+ paginationAlpha);
+if(paginationAlpha==='0.71.3')console.log('P2_ALPHA0713_NATIVE_POKEDEX_25_CARD_PAGES');
 // Display-only adapter for native incomplete kits, including Ho-Oh,
 // Crobat and Steelix; do NOT alter a single original P2 combat slot.
 const safeSparsePokedex=`
@@ -1371,20 +1521,14 @@ await fs.writeFile(johtoSelectionPath,
 // through Pages. All other scenes and the battle HUD are untouched.
 {
  const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
- let title=await fs.readFile(titleFile,'utf8');
- const fitted='jugar:{y:104+BAJA,paso:26,alto:25}';
- if(!title.includes(fitted)){
-  const originals=['jugar:{y:110+BAJA,paso:PASO}',
-   'jugar:{y:114+BAJA,paso:PASO}'];
-  const present=originals.filter(x=>title.includes(x));
-  if(present.length!==1)
-   throw Error('Unknown PLAY menu geometry: cannot safely fit seven Johto Lab entries');
-  title=title.replace(present[0],fitted);
- }
- if(!title.includes('MEWTWO TEST LAB')||!title.includes(fitted))
-  throw Error('Missing Johto Lab entry or its safe seven-button menu geometry');
- await fs.writeFile(titleFile,title);
- console.log('MEWTWO LAB seven-button PLAY layout: fitted above the 312px floor');
+ const nativeTitle=await fs.readFile(titleFile,'utf8');
+ const {fitJohtoLabTitleMenu}=await import('./torre2-native-title-0713.mjs');
+ const alpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+ const {source:adjusted,labIncluded}=fitJohtoLabTitleMenu(nativeTitle,alpha);
+ if(adjusted!==nativeTitle)await fs.writeFile(titleFile,adjusted);
+ console.log(labIncluded
+  ?'MEWTWO LAB seven-button PLAY layout validated'
+  :'P2_ALPHA0713_NATIVE_MENU_NO_UNSUPPORTED_JOHTO_LAB');
 }
 
 // The original client formerly had a poser() beside the logo. Its new
@@ -1425,9 +1569,14 @@ await fs.writeFile(johtoSelectionPath,
  console.log('Native title CUSTOMIZE tile:',after===before?'not present':'removed');
  const dexFile=path.join(dest,clientSource,'escenas/pokedex.js');
  const dex=await fs.readFile(dexFile,'utf8');
- await fs.writeFile(dexFile,restoreNativePokedexFamilies(preloadPokedexOnePage(dex)));
- console.log('Native Poké Arena 2D portrait size and one-card-per-family evolution tabs restored');
- console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
+ const dexAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+ const {modernPokedexOrLegacy}=await import('./torre2-pokedex-final-gate-0713.mjs');
+ const finalDex=modernPokedexOrLegacy(dex,dexAlpha,
+  source=>restoreNativePokedexFamilies(preloadPokedexOnePage(source)));
+ if(finalDex!==dex)await fs.writeFile(dexFile,finalDex);
+ console.log(dexAlpha==='0.71.3'
+  ?'Alpha 0.71.3: native responsive Pokedex preserved; obsolete legacy family-grid rewrite omitted'
+  :'Legacy National Dex family pages and lazy portrait preload restored');
 }
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('reference-assets/scenic-v2/trees-green.png'));

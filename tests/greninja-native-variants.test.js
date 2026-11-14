@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  GRENINJA_VARIANTS,GRENINJA_DEX,
- patchGreninjaAspectSource,patchGreninjaSelectionSource,
+ patchGreninjaAspectSource,patchGreninjaSelectionSource,patchGreninjaModernSelection,
  patchGreninjaPrepararSource,verifyGreninjaManifest
 } from '../tools/pokearena/torre2-greninja-variants.mjs';
 const upstreamAspects=`const ASPECTOS={froakie:["azabacheaura","azabache","blanco","amarillo","naranja"]};const NOMBRE_ASPECTO={azabacheaura:"BLACK",azabache:"BLACK"};function abiertos(id){const t=todos(id);return t}function aspectoDe(id){const t=abiertos(id);const p=preferencias()[id];return p==="normal"?null:t.includes(p)?p:t[0]}`;
@@ -60,4 +60,43 @@ test('12 genuine native Greninja sheet families are mandatory',()=>{
  assert.deepEqual(info.spriteFolders,12);
  delete m['0658-azabache'].anims.Walk;
  assert.throws(()=>verifyGreninjaManifest(m),/Missing native Greninja 0658-azabache\/Walk/);
+});
+
+// Alpha 0.71.3 loader is handled by the official selection scene. All
+// five variants are still native, but the legacy eager preload was removed.
+const modernSelection='class Seleccion extends Phaser.Scene{'+
+ 'init(datos){this.previo=datos?.previo;if(this.previo?.modo==="elegir")this.sys.settings.data={}}'+
+ 'trioMenu;ponerRetratoA;ficha(panel,p){panel.mostrado=p?.id??null;panel.contenido?.destroy(true);}'+
+ 'versiones(panel,p){const s=this.add.container(0,0),W=6+opciones.length*46;'+
+ 'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"});'+
+ 'panel.contenido.add(s);panel.selector=s}'+
+ 'casilla(p){const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);}}';
+test('0.71.3 Greninja keeps original election/trio logic and offline-only unlock',()=>{
+ const patched=patchGreninjaSelectionSource(modernSelection,'0.71.3');
+ assert.match(patched,/this.encargo\?!!this.encargo.bloqueado/);
+ assert.match(patched,/this.modo==="ranked"\?!desbloqueadoRanked/);
+ assert.match(patched,/\["cpu","entreno","versus"\]/);
+ assert.match(patched,/trioMenu;ponerRetratoA/);
+ assert.match(patched,/torre2-greninja-popup/);
+ assert.ok(!patched.includes('this._torre2Selecao=soloFormas'));
+ assert.throws(()=>patchGreninjaModernSelection(patched),/changed or ambiguous/);
+});
+test('0.71.3 cannot introduce a fake election callback after upstream source drift',()=>{
+ assert.throws(()=>patchGreninjaSelectionSource(
+  modernSelection.replace('trioMenu','trioUnknown'),'0.71.3'),
+  /Unrecognized official Alpha/);
+ assert.throws(()=>patchGreninjaSelectionSource(
+  modernSelection.replace('this.encargo?!!this.encargo.bloqueado?.(p.id)','true'),'0.71.3'),
+  /Unrecognized official Alpha/);
+});
+
+test('0.71.3 reuses the existing paginated offline unlock without disabling ranked or challenges',()=>{
+ const original='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ const unlocked='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
+ const source=modernSelection.replace(original,unlocked);
+ const patched=patchGreninjaSelectionSource(source,'0.71.3');
+ assert.equal(patched.split(unlocked).length-1,1);
+ assert.ok(patched.includes('torre2-greninja-popup'));
+ assert.ok(patched.includes('trioMenu'));
+ assert.ok(!patched.includes('const bloqueado=true;'));
 });

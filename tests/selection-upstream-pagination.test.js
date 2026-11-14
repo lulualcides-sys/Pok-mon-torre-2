@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {paginateSelectionSource} from '../tools/pokearena/torre2-selection-pages.mjs';
+import {adaptArenaFamilySelectorSource} from '../tools/pokearena/torre2-arena-family-selector.mjs';
 
 // Mock only upstream source ANCHORS. No native gameplay, VFX or button logic
 // is altered by this compatibility fix.
@@ -46,4 +47,41 @@ test('Selection pages have direct one-tap mobile picking and only load visible p
  assert.ok(patched.includes('this.torre2LoadPortraitPage(this.torre2Page)'));
  assert.ok(patched.includes('this.load.image(key,"assets/pmd/"+c.p.dex+"/portrait.png")'));
  assert.ok(patched.includes('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false'));
+});
+
+ 
+// Alpha 0.71.2 adds abrirEleccion, which launches the official 4x2
+// selection scene. This tiny original fixture models ONLY its public API.
+const native0712='const LW=44,LH=44,LG=2;'+
+ 'const POR_FILA=13;'+
+ 'function abrirEleccion(escena,opts){return opts.alElegir}'+
+ 'class SelectorPokemon{constructor(){}elegir(){}cerrar(){}}'+
+ 'export{POR_FILA,SelectorPokemon,abrirEleccion};';
+
+test('Alpha 0.71 native choice bridge keeps new export and selection scene intact',()=>{
+ const adapted=adaptArenaFamilySelectorSource(native0712);
+ assert.equal(adapted,native0712);
+ assert.match(adapted,/function abrirEleccion/);
+ assert.match(adapted,/export\{POR_FILA,SelectorPokemon,abrirEleccion\};$/);
+});
+
+test('Alpha 0.71 choice bridge with mismatched exports fails closed',()=>{
+ const broken=native0712.replace('SelectorPokemon,abrirEleccion};','SelectorPokemon};');
+ assert.throws(()=>adaptArenaFamilySelectorSource(broken),
+  /Unrecognized native 0\.71 choice bridge/);
+});
+
+test('Alpha 0.71 duplicated selection-bridge functions fail closed',()=>{
+ const broken=native0712.replace('class SelectorPokemon{',
+  'function abrirEleccion(escena){return escena}class SelectorPokemon{');
+ assert.throws(()=>adaptArenaFamilySelectorSource(broken),
+  /Unrecognized native 0\.71 choice bridge/);
+});
+
+test('legacy selector without the new choice bridge retains original family page rewrite',()=>{
+ const legacy='const LW=44,LH=44,LG=2;const POR_FILA=13;'+
+  'class SelectorPokemon{}export{POR_FILA,SelectorPokemon};';
+ const adapted=adaptArenaFamilySelectorSource(legacy);
+ assert.ok(adapted.includes('buildPokedexFamilies'));
+ assert.ok(adapted.includes('PAGE_SIZE=8'));
 });

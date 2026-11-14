@@ -177,6 +177,28 @@ const server=http.createServer(async(req,res)=>{
     bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
     tabNames:p.etapas.map(x=>x.nombre)};
   });
+  console.log('PHASER_POKEDEX_GEOMETRY',JSON.stringify(dexData));
+  if(dexData.count>=36&&dexData.visibleCount===25){
+   const pages=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    if(typeof p.irPaginaDex!=='function')return null;
+    const first=p.dexPage;
+    const firstVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    p.irPaginaDex(1);
+    const second=p.dexPage,secondVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    const staleInteractive=p.casillas.filter((c,i)=>!c.g?.visible&&c.zone?.input?.enabled).length;
+    p.irPaginaDex(-1);
+    return {first,second,restored:p.dexPage,firstVisible,secondVisible,staleInteractive};
+   });
+   if(pages){
+    console.log('PHASER_POKEDEX_PAGE_NAVIGATION',JSON.stringify(pages));
+    assert.equal(pages.second,(pages.first+1)%Math.ceil(dexData.count/25),'Next Pokédex page must advance');
+    assert.equal(pages.restored,pages.first,'Previous page must restore focus');
+    assert.equal(pages.firstVisible.length,25,'Native first page must show 25 cards');
+    assert.ok(pages.secondVisible.length>0&&pages.secondVisible.length<=25,'Next page has visible cards');
+    assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
+   }
+  }
   assert.ok(dexData.count>=36,
    'Pokédex should retain 26 native cards and add ten original early-Kanto species');
   assert.ok(dexData.bottom<=dexData.podium-22,
@@ -264,6 +286,7 @@ const server=http.createServer(async(req,res)=>{
       moves:scene.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text)
      };
     });
+    console.log('PHASER_NIDORAN_EVOLVED_MOVES',JSON.stringify({id,dex,visible}));
     assert.ok(!visible.labels.some(t=>String(t).includes('NaN')),
      id+' '+dex+' rendered an invalid numeric stat: '+JSON.stringify(visible.labels));
     for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
@@ -374,8 +397,9 @@ const server=http.createServer(async(req,res)=>{
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
-    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
-    if(item<0)throw Error('TRAINING disappeared from original menu');
+    // Alpha 0.70 presents TRAINING inside LOCAL rather than directly in PLAY.
+    const item=title.botones.findIndex(b=>b.o?.id==='cpu'||b.id==='cpu');
+    if(item<0)throw Error('LOCAL disappeared from native PLAY menu');
     title.elegir(item);
   });
   try{
@@ -401,6 +425,41 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/training-select-timeout.png',fullPage:true}).catch(()=>{});
    throw err;
   }
+  // Choose the actual TRAINING button in the native Phaser selection screen.
+  // Make a real browser pointer click instead of assigning scene.modo.
+  const trainingButton=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    if(!scene.botonesModo?.some(b=>b.id==='entreno'))
+      throw Error('TRAINING disappeared from native LOCAL picker');
+    const zone=scene.botonesModo.find(b=>b.id==='entreno').b.zona;
+    if(!zone?.active||!zone?.input?.enabled)throw Error('Native TRAINING button has no active hitbox');
+    const canvas=document.querySelector('#juego canvas');
+    const rect=canvas.getBoundingClientRect();
+    // The 640x360 world renders inside the 980x650 canvas with an
+    // approximately 49px TOP/BOTTOM letterbox. Mapping against rect.height
+    // directly clicked above TRAINING even though its Phaser hitbox was live.
+    const fit=Math.min(rect.width/640,rect.height/360);
+    return {x:rect.left+(rect.width-640*fit)/2+zone.x*fit,
+      y:rect.top+(rect.height-360*fit)/2+zone.y*fit};
+  });
+  await page.mouse.click(trainingButton.x,trainingButton.y);
+  try{
+    await page.waitForFunction(()=>
+      window.__pt2Game.scene.getScene('seleccion').modo==='entreno',null,{timeout:9000});
+  }catch(err){
+    const info=await page.evaluate(()=>{
+      const s=window.__pt2Game.scene.getScene('seleccion');
+      const z=s.botonesModo?.find(b=>b.id==='entreno')?.b?.zona;
+      return {mode:s.modo,enRed:s.enRed,active:s.scene.isActive(),
+        trainingZone:z?{x:z.x,y:z.y,visible:z.visible,enabled:z.input?.enabled,
+          width:z.input?.hitArea?.width,height:z.input?.hitArea?.height}:null,
+        canvas:document.querySelector('#juego canvas')?.getBoundingClientRect()?.toJSON?.(),
+        pointer:s.input.activePointer?{x:s.input.activePointer.x,y:s.input.activePointer.y}:null};
+    });
+    console.error('TRAINING_NATIVE_BUTTON_DIAGNOSTIC',JSON.stringify(info));
+    await page.screenshot({path:'test-evidence/native-training-hitbox-failure.png'}).catch(()=>{});
+    throw err;
+  }
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
@@ -414,9 +473,9 @@ const server=http.createServer(async(req,res)=>{
    'Selection cards must preload actual Pokémon portraits and animated sprites, including Zubat/Golbat: '+
    JSON.stringify(visiblePokemon));
   await page.screenshot({path:'test-evidence/pokearena-training-select-sprites-fixed.png',fullPage:true});
-  await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
+  await page.mouse.click(240,149); // Confirm visible Squirtle card for Player 1.
   await page.waitForTimeout(300);
-  await page.mouse.click(68,149); // Confirm Bulbasaur as Dummy after focus switches.
+  await page.mouse.click(103,149); // Confirm visible Bulbasaur as Dummy after focus switches.
   await page.waitForTimeout(350);
   await page.mouse.click(864,544); // Fight! from original client.
   await page.waitForTimeout(2450);
@@ -649,14 +708,23 @@ const server=http.createServer(async(req,res)=>{
     npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
-  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
+  // The approved map renderer intentionally supports 15 distinct trainer
+  // sheets at stage 0 (9 current road roles plus 6 map revisit roles).
+  // Still reject eagerly loading the full 47-sprite original FRLG catalog.
+  assert.ok(resourceCheck.npcs.length>0&&resourceCheck.npcs.length<=16,
+   'Battle Road must limit NPC GPU textures to the current approved atlas needs: '+
+    JSON.stringify(resourceCheck));
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
+  await offline.waitForFunction(()=>innerWidth===980&&innerHeight===420,null,{timeout:10000});
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
   await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
   await offline.waitForFunction(async()=>{
+   // Playwright can signal a viewport transition before window.innerHeight
+   // changes; do not accept the OLD 980x650 canvas as the new 980x420 view.
+   if(innerWidth!==980||innerHeight!==420)return false;
    const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
    const canvas=document.querySelector('#juego canvas');
    if(!src||!canvas)return false;
@@ -669,6 +737,25 @@ const server=http.createServer(async(req,res)=>{
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
   },null,{timeout:15000});
+  // Resize may be emitted more than once by Chromium (window and
+  // visualViewport). Confirm the state after their scheduled callbacks,
+  // rather than accepting a single transient matching RAF.
+  await offline.waitForTimeout(300);
+  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
+  await offline.waitForFunction(async()=>{
+    if(innerWidth!==980||innerHeight!==420)return false;
+    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
+    if(!main)return false;
+    const cfg=await import(new URL('./config.js',main).href);
+    const dpr=Math.min(4,devicePixelRatio||1);
+    const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
+    let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
+    if(z>=2&&Math.floor(z)/z>=.9)z=Math.floor(z);
+    const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
+      Math.min(fh,Math.floor(cfg.VISTA.h*z));
+    const cvs=document.querySelector('#juego canvas');
+    return cvs&&Math.abs(cvs.width/cvs.height-expected)<.035;
+  },null,{timeout:12000});
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
@@ -683,6 +770,9 @@ const server=http.createServer(async(req,res)=>{
     reparent:document.documentElement.classList.contains('torre2-edge-to-edge')||
       document.body.classList.contains('torre2-landscape-map'),
     rectWidth:rect?.width,rectHeight:rect?.height,
+    canvasBuffer:{w:canvas?.width,h:canvas?.height},nativeScale:{w:c.scale?.width,h:c.scale?.height},
+    visualViewport:{w:window.visualViewport?.width,h:window.visualViewport?.height},
+    documentViewport:{w:innerWidth,h:innerHeight},
     canvasRatio:canvas?.width/canvas?.height,
     displayRatio:rect?.width/rect?.height,
     viewportRatio:innerWidth/innerHeight,
@@ -709,7 +799,11 @@ const server=http.createServer(async(req,res)=>{
   // framebuffer follows Phaser's native medir() viewport-scale formula.
   // Validate both independently, including no CSS stretching or custom zoom.
   console.log('T31 NATIVE PHASER CANVAS GEOMETRY',JSON.stringify(nativeDisplay));
-  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:true});
+  // A fullPage screenshot temporarily expands the viewport to document height.
+  // That fires native Phaser resize and can leave the WebGL backing buffer
+  // at the OLD 980x650 resolution while window.innerHeight is 420.
+  // Capture the requested 980x420 viewport without changing browser height.
+  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:false});
   assert.ok(nativeDisplay.logicalRatio>1.77&&nativeDisplay.logicalRatio<1.79,
    'Original Kanto logical battlefield must remain 16:9');
   assert.ok(Number.isFinite(nativeDisplay.expectedRatio)&&
