@@ -14,3 +14,16 @@ test('unknown newer Pokedex fails closed rather than silently deleting controls'
  assert.throws(()=>preserveModernPokedex(native.replace('trioMenu','otherMenu'),'0.71.3'),
   /Unrecognized modern Pokedex/);
 });
+
+test('approved 25-card 0.71.3 paging passes later native compatibility guards',()=>{
+ const paged='trioMenu;const out=slot==="e"?["ULT"]:[];'+
+  'const COLS=5;const CEL=44;const PAGE_SIZE=COLS*5;'+
+  'this.actualizarPaginaDex();this.controlesPaginaDex();'+
+  'c.zone.disableInteractive();'+
+  'casilla(p,x,y,i){const {g,img}=casillaRetrato(this,x,y,CEL-2,p.dex)}';
+ assert.equal(preserveModernPokedex(paged,'0.71.3'),true);
+ assert.throws(()=>preserveModernPokedex(paged.replace('c.zone.disableInteractive()',
+  'c.zone.setInteractive()'),'0.71.3'),/Unrecognized/);
+ assert.throws(()=>preserveModernPokedex(paged.replace('PAGE_SIZE=COLS*5',
+  'PAGE_SIZE=COLS*50'),'0.71.3'),/Unrecognized/);
+});
