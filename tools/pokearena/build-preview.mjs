@@ -1438,6 +1438,16 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
 // responsive National Dex. Preserve that native layout, form tabs and
 // Pokédex data; retain the preapproved legacy pagination only for older
 // verified releases. Never modify published Pages from this diagnostic.
+const {unblockLocalBattleStarts}=await import('./torre2-local-battle-start-0713.mjs');
+const {setNativeStoneEdgeCooldown0713}=await import('./torre2-stone-edge-0713.mjs');
+const modVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
+const localSelection=path.join(dest,clientSource,'escenas/seleccion.js');
+const selectionBefore=await fs.readFile(localSelection,'utf8');
+await fs.writeFile(localSelection,unblockLocalBattleStarts(selectionBefore,modVersion));
+const sourceDatos=path.join(dest,clientSource,'datos.js');
+const nativeDataSource=await fs.readFile(sourceDatos,'utf8');
+await fs.writeFile(sourceDatos,setNativeStoneEdgeCooldown0713(nativeDataSource,modVersion,3.5));
+if(modVersion==='0.71.3')console.log('T2_LOCAL_ARENA_LEAGUE_BATTLE_STARTS_AND_STONE_EDGE_3_5S');
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const {guardNativePokedexPagination}=await import('./torre2-pokedex-final-gate-0713.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');

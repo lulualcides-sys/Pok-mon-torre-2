@@ -548,8 +548,26 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForTimeout(300);
   await page.mouse.click(103,149); // Confirm visible Bulbasaur as Dummy after focus switches.
   await page.waitForTimeout(350);
-  await page.mouse.click(864,544); // Fight! from original client.
-  await page.waitForTimeout(2450);
+  await page.mouse.click(864,544); // Actual original FIGHT button.
+  try{
+   await page.waitForFunction(()=>{
+    const g=window.__pt2Game,c=g?.scene.getScene('combate');
+    return g.scene.isActive('combate')&&c.luchadores?.length===2&&c.datos?.p1&&c.datos?.p2;
+   },null,{timeout:25000});
+  }catch(e){
+   const state=await page.evaluate(()=>{
+    const g=window.__pt2Game,s=g.scene.getScene('seleccion'),c=g.scene.getScene('combate');
+    return {active:g.scene.getScenes(true).map(x=>x.scene.key),
+     paso:s.paso,elegidos:s.eleccion,boton:s.botonLuchar?.active,
+     ayuda:s.ayuda?.text,combatData:c.datos};
+   });
+   console.error('ARENA_FIGHT_BUTTON_DID_NOT_START_COMBAT',JSON.stringify(state));
+   throw e;
+  }
+  console.log('PHASER_ARENA_FIGHT_CLICK_STARTS_COMBAT',await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('combate');
+   return {mode:c.datos.modo,players:[c.datos.p1,c.datos.p2],fighters:c.luchadores.length};
+  }));
   await page.screenshot({path:'test-evidence/pokearena-training-battle.png',fullPage:true});
   // Regression: League has its own scene and initially displayed green
   // MISSING textures, even while the selection screen loaded correctly.
@@ -592,6 +610,43 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(leagueErrors.filter(x=>/ReferenceError|TypeError|SyntaxError/.test(x)),[]);
   assert.deepEqual(leagueMisses.filter(x=>/\/assets\/pmd\//.test(x)),[]);
   await league.screenshot({path:'test-evidence/pokearena-league-opponents-restored.png',fullPage:true});
+  const leagueFight=await league.evaluate(()=>{
+   const l=window.__pt2Game.scene.getScene('liga');
+   const index=l.celdas.findIndex(c=>c.rv&&c.estado!=='cerrado'&&!c.liga?.conConexion);
+   if(index<0)throw Error('No accessible offline League rival to test');
+   const rv=l.celdas[index];
+   l.vista='rivales';l.foco=index;l.focoPintado=index;
+   l.retar();
+   return {rival:rv.id,index};
+  });
+  await league.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:25000});
+  const leagueSelection=await league.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('seleccion');
+   const before={mode:s.modo,hasLeague:!!s.liga,rival:s.liga?.rival};
+   s.elegir(0);
+   before.ready=s.paso===2;
+   s.empezar();
+   return before;
+  });
+  try{
+   await league.waitForFunction(()=>{
+    const g=window.__pt2Game,c=g.scene.getScene('combate');
+    return g.scene.isActive('combate')&&c.luchadores?.length===2&&!!c.datos?.liga;
+   },null,{timeout:30000});
+  }catch(e){
+   const state=await league.evaluate(()=>{
+    const g=window.__pt2Game,s=g.scene.getScene('seleccion');
+    return {active:g.scene.getScenes(true).map(x=>x.scene.key),
+     step:s.paso,selected:s.eleccion,help:s.ayuda?.text,league:s.liga};
+   });
+   console.error('LEAGUE_FIGHT_BUTTON_DID_NOT_START_COMBAT',
+    JSON.stringify({state,leagueFight,leagueSelection,leagueErrors}));
+   throw e;
+  }
+  console.log('PHASER_LEAGUE_CHALLENGE_STARTS_COMBAT',JSON.stringify({
+   leagueFight,leagueSelection,active:true
+  }));
+  await league.screenshot({path:'test-evidence/pokearena-league-real-battle.png',fullPage:true});
   await league.close();
 
   // Android landscape: the real LOADING scene must complete before the
