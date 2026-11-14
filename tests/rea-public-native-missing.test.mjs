@@ -62,3 +62,31 @@ test('do not refetch existing valid public native package',()=>fixture(async roo
 test('reject writing to the published site or unknown workspace',async()=>{
  await assert.rejects(capturePublicMissingPacks('_site/arena2d',{fetcher:async()=>{}}),/site-capture/);
 });
+
+test('more than 24 missing native packs creates a bounded report, not an early abort',()=>fixture(async root=>{
+ const forms=Object.fromEntries(Array.from({length:29},(_,i)=>[
+  String(i+1).padStart(4,'0'),(i+1).toString(16).padStart(20,'0')]));
+ forms['0132']=missing;
+ await fs.writeFile(path.join(root,'index.html'),
+  '<script id="paq">'+JSON.stringify({comun:common,formas:forms})+'</script>');
+ const manifest=Object.fromEntries(Object.keys(forms).map(dex=>[
+  dex,{anims:{Idle:{file:dex+'/Idle-Anim.png'}}}]));
+ await fs.writeFile(path.join(root,'assets/pmd/manifest.json'),JSON.stringify(manifest));
+ const touched=[];
+ const report=await capturePublicMissingPacks(root,{fetcher:async url=>{
+  touched.push(url);return new Response('Forbidden',{status:403});
+ }});
+ assert.equal(report.before.missingForms,30);
+ assert.equal(report.selectedPacks,8);
+ assert.equal(report.deferredPacks,22);
+ assert.equal(report.stoppedAfterDenials,true);
+ assert.equal(touched.length,2,'stop after two direct 403s; never mass-query denied files');
+ assert.equal(touched[0],'https://www.pokearena2d.com/assets/p/'+missing+'.bin',
+  'new Ditto pack gets priority over old gaps');
+ assert.equal(report.after.missingForms,30);
+ assert.equal(report.complete,false);
+ const persisted=JSON.parse(await fs.readFile(
+  path.join(root,'public-missing-packs-report.json'),'utf8'));
+ assert.equal(persisted.deferredPacks,22);
+ assert.equal(persisted.complete,false);
+}));
