@@ -178,6 +178,12 @@ const server=http.createServer(async(req,res)=>{
     tabNames:p.etapas.map(x=>x.nombre)};
   });
   console.log('PHASER_POKEDEX_GEOMETRY',JSON.stringify(dexData));
+  // Source Alpha 0.71.3's Crobat pack (0169) is absent, but the complete
+  // original loose sprites were verified. Never silently 404 an indexed
+  // species while passing a smoke test that loads the Pokédex.
+  const missingCrobatPack='a3a93436eb3b3abdd343.bin';
+  assert.ok(!notFound.some(item=>item.url.endsWith('/assets/p/'+missingCrobatPack)),
+   'The Crobat native PMD loader must route verified loose PNGs, not a missing 404 bin');
   if(dexData.count>=36&&dexData.visibleCount===25){
    const pages=await dexPage.evaluate(()=>{
     const p=window.__pt2Game.scene.getScene('pokedex');

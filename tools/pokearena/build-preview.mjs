@@ -191,7 +191,13 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
      substitutions.push(...priority.licensed.map(item=>item.dex));
     }catch(e){if(e.code!=='ENOENT')throw e}
    }
-   await fs.writeFile(packFile,routeInstalledKantoLooseSprites(nativePack,substitutions));
+   // The local PMD audit proves that *every* routed source has all the
+   // required PNG files; official packed forms retain their binary route.
+   if(!Array.isArray(coverage.verifiedLooseForms)||
+      coverage.verifiedLooseForms.length!==coverage.verifiedLoose)
+    throw Error('Native loose sprite audit is incomplete');
+   await fs.writeFile(packFile,routeInstalledKantoLooseSprites(
+    nativePack,substitutions,coverage.verifiedLooseForms));
    console.log(coverage.missingFormCount?'P2_NATIVE_SPRITES_DIAGNOSTIC':'P2_NATIVE_SPRITES_VERIFIED',JSON.stringify({
     officialForms:coverage.formCount,
     missing:coverage.missingFormCount,

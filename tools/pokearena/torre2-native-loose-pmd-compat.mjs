@@ -8,7 +8,7 @@ const REPLACEMENT='const paqueteDe=ruta=>{const dex=ruta.split("/")[0];if(/^[0-9
 
 import {ALLOWED_VISUAL_SUBSTITUTES} from './stage-licensed-visual-substitutes.mjs';
 import {PRIORITY_FORMS} from './priority-licensed-pmd.mjs';
-export function routeInstalledKantoLooseSprites(source,visualSubstituteForms=[]){
+export function routeInstalledKantoLooseSprites(source,visualSubstituteForms=[],verifiedLooseForms=[]){
  if(typeof source!=='string'||source.split(ORIGINAL).length!==2||
     !source.includes('const enComun=')||!source.includes('function cargarHoja(')||
     !source.includes('function urlHoja('))
@@ -16,7 +16,15 @@ export function routeInstalledKantoLooseSprites(source,visualSubstituteForms=[])
  if(!Array.isArray(visualSubstituteForms)||visualSubstituteForms.some(x=>!ALLOWED_VISUAL_SUBSTITUTES.includes(x)&&!PRIORITY_FORMS.includes(x))||
     new Set(visualSubstituteForms).size!==visualSubstituteForms.length)
   throw Error('Unsafe or duplicate visual substitute ID');
- const list=JSON.stringify(visualSubstituteForms);
+ // Native packs can be absent even for indexed, otherwise playable species
+ // (e.g. Crobat 0169). Audit the complete original PMD loose folder before
+ // calling this function; never reroute a species with its real native .bin.
+ if(!Array.isArray(verifiedLooseForms)||
+    verifiedLooseForms.some(x=>!(/^[0-9]{4}(?:-[a-z0-9]+)*$/.test(x)))||
+    verifiedLooseForms.length!==new Set(verifiedLooseForms).size||
+    verifiedLooseForms.some(x=>visualSubstituteForms.includes(x)))
+  throw Error('Unsafe or duplicated verified native loose form ID');
+ const list=JSON.stringify([...visualSubstituteForms,...verifiedLooseForms]);
  const patched=REPLACEMENT.replace(
   'if(/^[0-9]{4}$/.test(dex)',
   'if('+list+'.includes(dex)||/^[0-9]{4}$/.test(dex)');

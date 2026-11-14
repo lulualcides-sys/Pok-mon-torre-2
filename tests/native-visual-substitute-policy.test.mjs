@@ -5,10 +5,11 @@ import {routeInstalledKantoLooseSprites} from '../tools/pokearena/torre2-native-
 const native='const enComun=ruta=>ruta.endsWith("/portrait.png");const paqueteDe=ruta=>enComun(ruta)?INDICE.comun:INDICE.formas[ruta.split("/")[0]];function cargarHoja(){}function urlHoja(){}';
 const nativeIndex={comun:'original-common',formas:{
  '0007':'squirtle-original','0007-squad':'squad-original','0094':'gengar-original',
- '0146':'moltres-original','0146-aureo':'moltres-aureo-original'
+ '0146':'moltres-original','0146-aureo':'moltres-aureo-original',
+ '0169':'crobat-native-missing-pack'
 }};
-function route(ids){
- const patched=routeInstalledKantoLooseSprites(native,ids);
+function route(ids,loose=[]){
+ const patched=routeInstalledKantoLooseSprites(native,ids,loose);
  const snippet=patched.match(/const paqueteDe=ruta=>\{[^;]+;[^;]+;[^;]+\};/);
  assert.ok(snippet,'All modifications isolated to recognized native pack resolver');
  return Function('INDICE','enComun',snippet[0]+'return paqueteDe;')(
@@ -50,4 +51,16 @@ test('new Alpha 0.71.3 priorities may use only actually installed licensed PNGs'
  assert.equal(f('0094/Attack-Anim.png'),'gengar-original');
  assert.equal(f('0007/Attack-Anim.png'),'squirtle-original');
  assert.throws(()=>routeInstalledKantoLooseSprites(native,['0483']),/Unsafe/);
+});
+
+test('indexed original Crobat uses its fully audited loose PNG when the official bin is absent',()=>{
+ const f=route(['0007-squad'],['0169']);
+ assert.equal(f('0169/Attack-Anim.png'),null);
+ assert.equal(f('0169/Idle-Anim.png'),null);
+ assert.equal(f('0169/portrait.png'),null);
+ assert.equal(f('0094/Attack-Anim.png'),'gengar-original');
+ assert.equal(f('0146/Attack-Anim.png'),'moltres-original');
+ assert.throws(()=>routeInstalledKantoLooseSprites(native,[],['0169','0169']),/duplicate/);
+ assert.throws(()=>routeInstalledKantoLooseSprites(native,[],['../0169']),/Unsafe/);
+ assert.throws(()=>routeInstalledKantoLooseSprites(native,['0007-squad'],['0007-squad']),/Unsafe/);
 });

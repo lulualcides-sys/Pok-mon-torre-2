@@ -12,6 +12,7 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
   const exists=async p=>{try{await access(p);return true}catch{return false}};
   const gaps=[],forms=Object.entries(index.formas||{});
   let verifiedPacks=0, verifiedLoose=0, verifiedSubstitutes=0;
+  const verifiedLooseForms=[];
   // The 19 local alternative skins are NOT native source-authentic art.
   // Independently check the build's explicit SHA-256 provenance so the
   // official-coverage report never silently counts them as native originals.
@@ -117,11 +118,15 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
         throw Error('Unsafe native sprite path: '+rel);
       if(!await exists(path.join(root,'assets/pmd',rel)))missing.push(rel);
     }
-    if(missing.length)gaps.push({dex,pack,missing});else if(fallbackForms.has(dex)||priorityForms.has(dex))verifiedSubstitutes++;else verifiedLoose++;
+    if(missing.length)gaps.push({dex,pack,missing});
+    else if(fallbackForms.has(dex)||priorityForms.has(dex))verifiedSubstitutes++;
+    else {verifiedLoose++;verifiedLooseForms.push(dex);}
+
   }
   const pendingRightsForms=[...new Set([...fallbackForms,...priorityForms])].sort();
   return {alphaReleaseCandidate:true,formCount:forms.length,verifiedPacks,verifiedLoose,verifiedSubstitutes,
    sourceAuthentic:verifiedSubstitutes===0,missingFormCount:gaps.length,gaps,
+   verifiedLooseForms:verifiedLooseForms.sort(),
    pendingRightsForms,redistributionCleared:pendingRightsForms.length===0,
     policy:'No missing official pack or verified original loose PNG may be replaced or forged; fail closed.'};
 }
