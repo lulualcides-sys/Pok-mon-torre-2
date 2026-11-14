@@ -90,3 +90,23 @@ test('more than 24 missing native packs creates a bounded report, not an early a
  assert.equal(persisted.deferredPacks,22);
  assert.equal(persisted.complete,false);
 }));
+
+
+test('cached HTTP 403 for SAME official Alpha/hash is skipped on the next run',()=>fixture(async root=>{
+ const fetcher=async()=>new Response('Denied',{status:403});
+ const first=await capturePublicMissingPacks(root,{fetcher});
+ assert.equal(first.denied.length,1);
+ const {saveCachedPacks,restoreCachedPacks}=await import(
+  '../tools/pokearena/native-progress-folders.mjs');
+ const cache=path.join(path.dirname(root),'native-pack-cache');
+ await saveCachedPacks(root,cache);
+ const restored=await restoreCachedPacks(root,cache);
+ assert.equal(restored.previousDenied,1);
+ const second=await capturePublicMissingPacks(root,{
+  fetcher:async()=>{throw Error('same denied hash must not be requested twice')}
+ });
+ assert.equal(second.skippedPriorDenied,1);
+ assert.equal(second.selectedPacks,0);
+ assert.equal(second.after.missingForms,1);
+ assert.equal(second.complete,false);
+}));

@@ -38,10 +38,28 @@ export async function capturePublicMissingPacks(rootArg, options={}) {
     Number(PRIORITY_DEX.has(b.dex))-Number(PRIORITY_DEX.has(a.dex)) ||
     a.dex.localeCompare(b.dex));
   const missingIds=[...new Set(candidates.map(x=>x.pack))];
-  const selected=missingIds.slice(0,MAX_PACKS);
+  // A 403/404 for an unchanged pack hash need not be tried again in each
+  // run. Previous denials are accepted ONLY for this exact Alpha+src+#paq.
+  const html=await fs.readFile(path.join(root,'index.html'),'utf8');
+  const paq=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
+  const indexSha256=paq?sha256(Buffer.from(paq[1])):null;
+  const previousFile=path.join(root,'prior-http-denials.json');
+  let blockedPreviously=new Set();
+  try{
+   const prior=JSON.parse(await fs.readFile(previousFile,'utf8'));
+   if(prior.alpha===version.officialAlpha&&
+      prior.src===(version.src||version.modules)&&
+      prior.indexSha256===indexSha256)
+    blockedPreviously=new Set((prior.denied||[])
+     .filter(x=>[403,404].includes(x.status)&&
+      /^assets\/p\/[a-f0-9]{20}\.bin$/.test(x.path||''))
+     .map(x=>x.path.slice(9,-4)));
+  }catch(e){if(e.code!=='ENOENT')throw e}
+  const freshIds=missingIds.filter(hash=>!blockedPreviously.has(hash));
+  const selected=freshIds.slice(0,MAX_PACKS);
   // Defer excess candidates rather than aborting before a useful coverage
   // report. The strict full-form audit below still blocks release.
-  const deferred=missingIds.slice(MAX_PACKS);
+  const deferred=freshIds.slice(MAX_PACKS);
   const report={
     officialAlpha:version.officialAlpha,sourceDir:version.src||version.modules,
     before:{missingForms:original.missingFormCount,missingPacks:missingIds.length},
@@ -49,6 +67,7 @@ export async function capturePublicMissingPacks(rootArg, options={}) {
     credentials:false,proxies:false,specialHeaders:false,retriesAfterDeny:0,
     quarantined:true,downloaded:[],denied:[],errors:[],after:null,
     selectedPacks:selected.length,deferredPacks:deferred.length,
+    skippedPriorDenied:missingIds.length-freshIds.length,
     boundedBy:MAX_PACKS,stoppedAfterDenials:false
   };
   let total=0;
@@ -103,7 +122,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
    console.log('PUBLIC_NATIVE_MISSING_COVERAGE',JSON.stringify({
      alpha:r.officialAlpha,originallyMissing:r.before.missingForms,
      downloaded:r.downloaded.length,denied:r.denied.length,errors:r.errors.length,
-    selected:r.selectedPacks,deferred:r.deferredPacks,stoppedAfterDenials:r.stoppedAfterDenials,
+    selected:r.selectedPacks,deferred:r.deferredPacks,
+    skippedPriorDenied:r.skippedPriorDenied,stoppedAfterDenials:r.stoppedAfterDenials,
      remaining:r.after.missingForms,complete:r.complete
    }));
    if(!r.complete)process.exitCode=2;

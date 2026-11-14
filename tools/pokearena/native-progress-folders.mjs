@@ -66,6 +66,13 @@ export async function restoreCachedPacks(rootArg,cacheArg){
  if(m.alpha!==c.alpha||m.src!==c.src||m.indexSha256!==c.indexSha256)
   return {restored:0,skipped:'different Alpha/source/index; cache ignored'};
  const allowed=new Set([c.index.comun,...Object.values(c.index.formas)]);
+ const previousDenied=[];
+ for(const item of m.denied||[]){
+  const match=/^assets\/p\/([a-f0-9]{20})\.bin$/.exec(item.path||'');
+  if(!match||!allowed.has(match[1])||![403,404].includes(item.status))
+   throw Error('Unsafe cached HTTP-denial metadata');
+  previousDenied.push({path:item.path,status:item.status});
+ }
  const staged=[];
  for(const item of m.files||[]){
   if(!safePack(item.path)||!allowed.has(item.path.slice(9,-4))||
@@ -86,7 +93,12 @@ export async function restoreCachedPacks(rootArg,cacheArg){
   await fs.mkdir(path.dirname(item.dest),{recursive:true});
   await fs.writeFile(item.dest,item.binary,{flag:'wx'});
  }
- return {restored:staged.length,source:c.key};
+ // Retain denied hashes ONLY for this exact Alpha+source+#paq fingerprint.
+ // This is a retry hint, never an asset or permission to bypass a denial.
+ await fs.writeFile(path.join(c.root,'prior-http-denials.json'),
+  JSON.stringify({alpha:c.alpha,src:c.src,indexSha256:c.indexSha256,
+   denied:previousDenied},null,2)+'\n');
+ return {restored:staged.length,source:c.key,previousDenied:previousDenied.length};
 }
 export async function saveCachedPacks(rootArg,cacheArg){
  const c=await contextFor(rootArg),cache=quarantine(cacheArg);
@@ -114,12 +126,22 @@ export async function saveCachedPacks(rootArg,cacheArg){
   }
   files.push({path:rel,sha256:h,bytes:binary.length,provenance:proof.provenance});
  }
+ const allowed=new Set([c.index.comun,...Object.values(c.index.formas)]);
+ const currentReport=path.join(c.root,'public-missing-packs-report.json');
+ const current=await exists(currentReport)?(await json(currentReport)).denied||[]:[];
+ const denied=new Map();
+ for(const item of [...(prior.size?[]:[]),...(prior.size?old?.denied||[]:old?.denied||[]),...current]){
+  const match=/^assets\/p\/([a-f0-9]{20})\.bin$/.exec(item.path||'');
+  if(!match||!allowed.has(match[1])||![403,404].includes(item.status))continue;
+  if(!await exists(resourceFile(c.root,item.path)))
+   denied.set(item.path,{path:item.path,status:item.status});
+ }
  await fs.mkdir(cache,{recursive:true});
  await fs.writeFile(oldPath,JSON.stringify({
   alpha:c.alpha,src:c.src,indexSha256:c.indexSha256,
-  verifiedOnly:true,files
+  verifiedOnly:true,files,denied:[...denied.values()]
  },null,2)+'\n');
- return {saved:files.length,key:c.key};
+ return {saved:files.length,priorDenialsSaved:denied.size,key:c.key};
 }
 export async function writeProgressFolders(rootArg,outputArg){
  const c=await contextFor(rootArg),output=quarantine(outputArg);
@@ -154,6 +176,14 @@ export async function writeProgressFolders(rootArg,outputArg){
  let denied=[];
  const captureReport=path.join(c.root,'public-missing-packs-report.json');
  if(await exists(captureReport))denied=(await json(captureReport)).denied||[];
+ const previous=path.join(c.root,'prior-http-denials.json');
+ if(await exists(previous)){
+  const record=await json(previous);
+  if(record.alpha===c.alpha&&record.src===c.src&&
+    record.indexSha256===c.indexSha256)
+   denied=[...(record.denied||[]),...denied];
+ }
+ denied=[...new Map(denied.map(x=>[x.path,x])).values()];
  const base=path.join(output,c.alpha,c.src,c.indexSha256.slice(0,16));
  for(const x of ['verificados','pendentes','bloqueados'])
   await fs.mkdir(path.join(base,x),{recursive:true});

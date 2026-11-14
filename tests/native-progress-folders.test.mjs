@@ -101,3 +101,18 @@ test('report and cache cannot target published _site or arbitrary folders',()=>
   await assert.rejects(writeProgressFolders(root,path.join(tmp,'_site')),/quarantine/);
   await assert.rejects(saveCachedPacks(root,path.join(tmp,'outside')),/quarantine/);
  }));
+
+
+test('cached denial is displayed in blocked folder without claiming coverage',()=>
+ fixture(async({root,cache,output})=>{
+  const first=await saveCachedPacks(root,cache);
+  assert.equal(first.priorDenialsSaved,1);
+  await fs.unlink(path.join(root,'public-missing-packs-report.json'));
+  const restored=await restoreCachedPacks(root,cache);
+  assert.equal(restored.previousDenied,1);
+  const progress=await writeProgressFolders(root,output);
+  const block=JSON.parse(await fs.readFile(
+   path.join(progress.directory,'bloqueados/http.json'),'utf8'));
+  assert.equal(block.denied.length,1);
+  assert.equal(progress.pending,1);
+ }));
