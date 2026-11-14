@@ -62,20 +62,20 @@ test('Alpha 0.71 native choice bridge keeps new export and selection scene intac
  const adapted=adaptArenaFamilySelectorSource(native0712);
  assert.equal(adapted,native0712);
  assert.match(adapted,/function abrirEleccion/);
- assert.match(adapted,/export\\{POR_FILA,SelectorPokemon,abrirEleccion\\};$/);
+ assert.match(adapted,/export\{POR_FILA,SelectorPokemon,abrirEleccion\};$/);
 });
 
 test('Alpha 0.71 choice bridge with mismatched exports fails closed',()=>{
  const broken=native0712.replace('SelectorPokemon,abrirEleccion};','SelectorPokemon};');
  assert.throws(()=>adaptArenaFamilySelectorSource(broken),
-  /Unrecognized native 0\\.71 choice bridge/);
+  /Unrecognized native 0\.71 choice bridge/);
 });
 
 test('Alpha 0.71 duplicated selection-bridge functions fail closed',()=>{
  const broken=native0712.replace('class SelectorPokemon{',
   'function abrirEleccion(escena){return escena}class SelectorPokemon{');
  assert.throws(()=>adaptArenaFamilySelectorSource(broken),
-  /Unrecognized native 0\\.71 choice bridge/);
+  /Unrecognized native 0\.71 choice bridge/);
 });
 
 test('legacy selector without the new choice bridge retains original family page rewrite',()=>{
