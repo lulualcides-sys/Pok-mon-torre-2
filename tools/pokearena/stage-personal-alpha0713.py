@@ -26,8 +26,15 @@ BASE = {
     "0009": ("sprite/0009/0004", "portrait/0009/0004"),
     "0092": ("sprite/0092/0000/0001", "portrait/0092/0000/0001"),
     "0093": ("sprite/0093/0000/0001", "portrait/0093/0000/0001"),
-    "0094": ("sprite/0094/0003", "portrait/0094/0001"),
+    # CC BY-NC artist credited pack 0001 avoids Chunsoft/Unspecified
+    # source pack 0003. Three absent moves map to available CC animations.
+    "0094": ("sprite/0094/0001", "portrait/0094/0001"),
     "0146": ("sprite/0146/0003", "portrait/0146/0003"),
+}
+# Original costumes are approximated with recolors; animation aliases below
+# are explicit, not misrepresented as animation parity with the base client.
+ANIM_SOURCE_ALIAS = {
+    "0094": {"Faint": "Hurt", "Pose": "Idle", "LeapForth": "Hop"},
 }
 FORMS = (
     "0007-squad", "0008-squad", "0009-squad",
@@ -213,7 +220,8 @@ def build(root, fetch=public_fetch):
             if file in processed:
                 continue
             processed.add(file)
-            actual, fw,fh=frame_info(xmls[base],anim)
+            mapped_anim=ANIM_SOURCE_ALIAS.get(base,{}).get(anim,anim)
+            actual, fw,fh=frame_info(xmls[base],mapped_anim)
             src_rel=source+"/"+actual+"-Anim.png"
             raw=fetch(src_rel,cache)
             png=render_sheet(raw,fw,fh,meta,dex,dex.endswith("-squad"))
@@ -246,6 +254,8 @@ def build(root, fetch=public_fetch):
 
 def self_test():
     assert len(FORMS)==19 and len(set(FORMS))==19
+    assert BASE["0094"][0]=="sprite/0094/0001"
+    assert ANIM_SOURCE_ALIAS["0094"]=={"Faint":"Hurt","Pose":"Idle","LeapForth":"Hop"}
     xml=b'<AnimData><Anims><Anim><Name>Attack</Name><FrameWidth>32</FrameWidth><FrameHeight>32</FrameHeight></Anim><Anim><Name>Strike</Name><CopyOf>Attack</CopyOf></Anim></Anims></AnimData>'
     assert frame_info(parse_xml(xml),"Strike")==("Attack",32,32)
     src=Image.new("RGBA",(64,64),(76,28,126,255))

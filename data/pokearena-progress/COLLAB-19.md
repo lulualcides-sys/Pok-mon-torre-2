@@ -16,3 +16,10 @@ O classificador exige créditos `CUR` para `Idle`, `Attack` e `Normal`. O status
 O caminho correto para conclusão: obter ou criar as variantes legalmente utilizáveis, validar cada animação do manifesto e dimensões oficiais, creditar autores e só então revisar o release gate, com Chromium, combate e saves.
 
 **Não modificar** a pasta de artes aprovadas, os 11 conjuntos da pesquisa anterior, a branch principal ou o Pages a partir dessa auditoria.
+
+
+## Gengar 0094: substituição documentada de fonte (14/11/2026)
+
+O conjunto `sprite/0094/0003` contém créditos `CHUNSOFT/Unspecified` e não pode servir como prova de redistribuição. Para as cinco recolorações de Gengar da candidata diagnóstica, o gerador agora usa `sprite/0094/0001` (animações com créditos CC BY-NC dos colaboradores) e `portrait/0094/0001` (PMDCollab_2).
+
+O novo conjunto não tem `Faint`, `Pose` e `LeapForth`, que passam respectivamente a reutilizar `Hurt`, `Idle` e `Hop`. Isso mantém a compatibilidade dos arquivos requisitados pelo cliente, mas **não reproduz exatamente todos os movimentos originais**. O relatório por PNG registra as fontes efetivamente usadas, a licença e o autor. Não altera outros VFX ou artes aprovadas.
