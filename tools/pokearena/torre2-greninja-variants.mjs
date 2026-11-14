@@ -46,7 +46,44 @@ export function patchGreninjaAspectSource(source){
   'preserve native default and existing saved selections');
  return s;
 }
-export function patchGreninjaSelectionSource(source){
+
+/* Alpha 0.71.3 uses its own responsive selection scene, now with local
+ * election callbacks and trio rendering. It no longer preloads every
+ * variant inside the old selection preload. Keep all native call paths.
+ */
+export function patchGreninjaModernSelection(source){
+ if(typeof source!=='string'||
+    !source.includes('class Seleccion extends Phaser.Scene')||
+    !source.includes('ponerRetratoA')||
+    !source.includes('trioMenu')||
+    !source.includes('this.encargo?!!this.encargo.bloqueado?.(p.id)'))
+   throw Error('Unrecognized official Alpha 0.71.3 selection scene for Greninja');
+ let s=source;
+ s=replaceOnce(s,
+  'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"})',
+  'const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:a==="azabacheaura"?6:8,color:puesta?"#ffd447":"#8fb3e6"})',
+  'modern red-aura label');
+ s=replaceOnce(s,
+  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
+  'native election callback and ranked lock preserved');
+ s=replaceOnce(s,
+  'const s=this.add.container(0,0),W=6+opciones.length*46;',
+  'const s=this.add.container(p.id==="froakie"?panel.x:0,p.id==="froakie"?PY:0),W=6+opciones.length*46;if(p.id==="froakie"){s.setDepth(9000);s.setData("torre2-greninja-popup",true)}',
+  'Greninja native popup depth');
+ s=replaceOnce(s,
+  'panel.contenido.add(s);panel.selector=s}',
+  'if(p.id!=="froakie")panel.contenido.add(s);panel.selector=s}',
+  'preserve other variants container ownership');
+ s=replaceOnce(s,
+  'panel.mostrado=p?.id??null;panel.contenido?.destroy(true);',
+  'panel.mostrado=p?.id??null;if(panel.selector?.getData?.("torre2-greninja-popup"))panel.selector.destroy(true);panel.contenido?.destroy(true);',
+  'destroy only relocated popup on selection change');
+ return s;
+}
+
+export function patchGreninjaSelectionSource(source,alpha=null){
+ if(alpha==='0.71.3')return patchGreninjaModernSelection(source);
  if(typeof source!=='string')throw TypeError('Missing native selection scene');
  let s=source;
  const original='this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);';
@@ -126,10 +163,12 @@ export async function installGreninjaVariants(dest,clientSource){
   for(const file of ['Idle-Anim.png','Walk-Anim.png','Attack-Anim.png','portrait.png'])
    await fs.access(path.join(pmd,k,file));
  }
+ const officialAlpha=JSON.parse(await fs.readFile(
+  path.join(dest,'version.json'),'utf8')).officialAlpha;
  const edit=async(filename,patcher)=>{
   const filenameFull=path.join(dest,clientSource,filename);
   const original=await fs.readFile(filenameFull,'utf8');
-  const patched=patcher(original);
+  const patched=patcher(original,officialAlpha);
   if(original===patched)throw Error('Greninja patch did not modify '+filename);
   await fs.writeFile(filenameFull,patched);
  };
