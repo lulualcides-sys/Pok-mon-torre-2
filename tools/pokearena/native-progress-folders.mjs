@@ -130,7 +130,9 @@ export async function saveCachedPacks(rootArg,cacheArg){
  const currentReport=path.join(c.root,'public-missing-packs-report.json');
  const current=await exists(currentReport)?(await json(currentReport)).denied||[]:[];
  const denied=new Map();
- for(const item of [...(prior.size?[]:[]),...(prior.size?old?.denied||[]:old?.denied||[]),...current]){
+ const previousDenials=old&&old.alpha===c.alpha&&old.src===c.src&&
+  old.indexSha256===c.indexSha256?old.denied||[]:[];
+ for(const item of [...previousDenials,...current]){
   const match=/^assets\/p\/([a-f0-9]{20})\.bin$/.exec(item.path||'');
   if(!match||!allowed.has(match[1])||![403,404].includes(item.status))continue;
   if(!await exists(resourceFile(c.root,item.path)))
