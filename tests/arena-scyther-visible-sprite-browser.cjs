@@ -38,15 +38,21 @@ const server=http.createServer(async(req,res)=>{
    'preparar',{previo:{jugadores:ids.map(id=>({id,disp:'cpu'}))}}),ids);
   await p.waitForFunction(()=>window.__pt2Game?.scene.isActive('preparar')&&
    window.__pt2Game.scene.getScene('preparar').tarjetas?.length===6,
-   null,{timeout:30000});
+   null,{timeout:18000}).catch(async error=>{
+    const state=await p.evaluate(()=>{
+     const g=window.__pt2Game,s=g?.scene?.getScene('preparar');
+     return {registered:g?.scene?.scenes?.map(x=>({key:x.scene.key,active:x.scene.isActive()})),
+      active:s?.scene?.isActive(),status:s?.sys?.settings?.status,
+      seats:s?.plazas?.map(x=>({id:x.id,disp:x.disp})),cards:s?.tarjetas?.length,
+      loading:s?.load?.isLoading?.(),errors:window.__torre2Errors||[]};
+    }).catch(e=>({error:String(e)}));
+    throw Error('Arena six-slot scene failed to mount: '+JSON.stringify({state,errs})+'; '+error);
+   });
   await p.waitForFunction(()=>{
    const s=window.__pt2Game.scene.getScene('preparar');
-   return s.tarjetas.every(t=>{
-    const dex=s.plazas[t.i]&&s.registry.get('manifiesto')&&
-      window.__pt2ArenaSpritesById?.[s.plazas[t.i].id];
-    return t.contenido?.list?.some(o=>String(o.texture?.key||'').startsWith('pmd-')&&
-      String(o.texture?.key||'').endsWith('-Idle')&&o.active);
-   });
+   return s.tarjetas.every(t=>t.contenido?.list?.some(o=>
+    String(o.texture?.key||'').startsWith('pmd-')&&
+    String(o.texture?.key||'').endsWith('-Idle')&&o.active));
   },null,{timeout:50000}).catch(async e=>{
    const diagnostics=await p.evaluate(()=>{
     const s=window.__pt2Game?.scene.getScene('preparar');
