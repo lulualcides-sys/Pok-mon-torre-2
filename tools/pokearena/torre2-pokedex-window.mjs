@@ -95,10 +95,10 @@ export function windowNativePokedex(original){
   'this.torre2CargarPagina(this.dexPage)}torre2PortraitOnly(forms){',
   'defer remaining portrait requests until Pokédex is mounted');
  const start=s.indexOf('torre2CargarPagina(page){');
- const end=s.indexOf('torre2EnsureIdle(dex){',start);
- if(start<0||end<start||s.indexOf('torre2CargarPagina(page){',start+1)>=0)
+ const pageEnd=s.indexOf('torre2EnsureIdle(dex){',start);
+ if(start<0||pageEnd<start||s.indexOf('torre2CargarPagina(page){',start+1)>=0)
   throw Error('Pokedex window: missing unique page loader');
- let page=s.slice(start,end);
+ let page=s.slice(start,pageEnd);
  page=once(page,
   'const missing=ids.some(dex=>!this.textures.exists("retrato-"+dex)||!this.textures.exists("pmd-"+dex+"-Idle"));',
   'const missing=ids.some(dex=>!this.textures.exists("retrato-"+dex));',
@@ -111,6 +111,6 @@ export function windowNativePokedex(original){
   'const count=this.torre2DirectLocal(forms);',
   'const count=this.torre2PortraitOnly(forms);',
   'page requests portraits only');
- s=s.slice(0,start)+page+s.slice(end);
+ s=s.slice(0,start)+page+s.slice(pageEnd);
  return s;
 }
