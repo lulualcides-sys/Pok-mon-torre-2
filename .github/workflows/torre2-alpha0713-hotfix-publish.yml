@@ -57,9 +57,9 @@ jobs:
             throw Error('Approved original source must remain for rollback');
           console.log('HOTFIX_ALPHA0713_SOURCE_VERIFIED',v);
           VERIFY
-      - name: Unit regressions
+      - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
@@ -71,6 +71,15 @@ jobs:
           # TRAINING exists and is inapplicable to this approved snapshot.
           # Verify actual 0.71.3 PLAY menu navigation in desktop and mobile
           node tests/alpha0713-hotfix-navigation-browser.cjs
+          node tests/alpha0713-performance-browser.cjs
+      - name: Save real mobile/Pokedex performance samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-performance-0713-measurements
+          path: test-evidence/torre2-pokedex-performance-0713.json
+          if-no-files-found: warn
+          retention-days: 14
       - if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
