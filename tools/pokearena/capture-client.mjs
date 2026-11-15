@@ -297,7 +297,8 @@ async function main() {
  details.totalFiles=details.retrieved.length;
  // Report file counts but never certify a client with missing mandatory
  // PMD portraits or animations, even if the historical inventory omitted them.
- details.complete=details.manifestAssets.missing.length===0&&
+ details.complete=details.retrieved.length===details.planned&&
+  details.manifestAssets.missing.length===0&&
   details.referencedAssets.missing.length===0&&unresolved.length===0;
  await fs.mkdir('site-capture',{recursive:true});
  await fs.writeFile('site-capture/CAPTURE-REPORT.json',JSON.stringify(details,null,2));
