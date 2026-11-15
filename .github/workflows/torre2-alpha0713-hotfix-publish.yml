@@ -59,11 +59,19 @@ jobs:
             throw Error('Requested Discharge/Psybeam/Wobbuffet correction absent');
           if(!fs.existsSync(root+'/src-62269b459e/habilidades.js'))
             throw Error('Approved original source must remain for rollback');
+          const earth=fs.readFileSync(m+'/torre2/batch24/runtime.js','utf8');
+          const campaign=fs.readFileSync(m+'/torre2/campaign-core.js','utf8');
+          if(!earth.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')||
+             !earth.includes('for(const r of batch24AreaTargets(l))'))
+            throw Error('Earth Power verified AoE release absent');
+          if(!campaign.includes('const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind)')||
+             !campaign.includes('const encounter=regionalTrainer(s.stage,s.trainer)'))
+            throw Error('Regional campaign difficulty release absent');
           console.log('HOTFIX_ALPHA0713_SOURCE_VERIFIED',v);
           VERIFY
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
