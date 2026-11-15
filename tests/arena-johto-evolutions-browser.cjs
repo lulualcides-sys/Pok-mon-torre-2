@@ -150,7 +150,35 @@ const server=http.createServer(async(req,res)=>{
     skills:['lmb','rmb','q','e'].map(slot=>me.kit?.[slot]?.nombre||null)};
   });
   assert.ok(kit.atk&&kit.dmg>0,'Togepi real combat kit has no damage');
-  assert.deepEqual(errors,[],'Real evolution generated Phaser errors');
+  // Previous Wobbuffet checks invoked its custom functions directly.
+  // This must verify its actual human touch-to-native-combat cast path.
+  await battle('wobbuffet');
+  const button=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
+   w.energia=100;w.accion=null;w.dash=null;w.cd.lmb=0;
+   const p=s.panelTactil,b=p?.botones?.find(x=>x.slot==='lmb');
+   if(!b)throw Error('Wobbuffet native ATK touch button missing');
+   const at=p.pos(b),o=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
+   p.abajo({id:88,x:(at.x-o.x)/(unit.x-o.x),y:(at.y-o.y)/(unit.y-o.y)});
+   return {move:w.kit?.lmb?.nombre,form:w.kit?.lmb?.forma,energy:w.energia};
+  });
+  assert.equal(button.move,'Counter');
+  await page.waitForFunction(()=>{
+   const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+   return w.est?.torre2WobbuffetCounter?.hasta>w.t;
+  },null,{timeout:6000}).catch(async e=>{
+   const state=await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
+    return {phase:s.fase,form:w.kit?.lmb?.forma,cd:w.cd?.lmb,
+     energy:w.energia,action:w.accion,status:w.est,
+     buttons:s.panelTactil?.botones?.map(b=>b.slot)};
+   });
+   throw Error('Wobbuffet real native touch input did not cast Counter: '+
+    JSON.stringify(state)+'; '+e);
+  });
+  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate')
+   .panelTactil.arriba({id:88}));
+  assert.deepEqual(errors,[],'Real evolution or cast generated Phaser errors');
   await page.screenshot({path:'test-evidence/arena-johto-evolutions-mobile.png'});
   console.log('PASS_REAL_JOHTO_ARENA_EVO',JSON.stringify({magby,magmar,umbreon,kit}));
   await page.close();
