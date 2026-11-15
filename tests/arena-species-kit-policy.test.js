@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,chooseEeveeBranch,installArenaMovePolicy}
+import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,enforceNativeHexCooldown,replaceGengarHyperBeam,chooseEeveeBranch,guardEeveeSingleEvolution,guardTyrogueSingleEvolution,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
 import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
@@ -63,13 +63,13 @@ test('Thunder cooldown is 3s in Arena without changing other electrical moves or
  const unavailable={q:move('Thunder Shock',10,5,'ELECTRIC')};
  assert.strictEqual(enforceArenaMoveCooldowns(unavailable),unavailable,'Different move remains unchanged');
 });
-test('Psybeam cooldown is 3s, while Psychic, Psywave and Confusion keep their original timing',()=>{
+test('Psybeam cooldown is 3.5s, while Psychic, Psywave and Confusion keep their original timing',()=>{
  const kit={lmb:move('Psybeam',18,12,'PSYCHIC'),
             rmb:move('Psychic',20,8.5,'PSYCHIC'),
             q:move('Psywave',12,4.7,'PSYCHIC'),
             e:move('Confusion',10,2.6,'PSYCHIC')};
  const out=enforceArenaMoveCooldowns(kit);
- assert.equal(out.lmb.cd,3);
+ assert.equal(out.lmb.cd,3.5);
  assert.equal(out.rmb.cd,8.5);
  assert.equal(out.q.cd,4.7);
  assert.equal(out.e.cd,2.6);
@@ -81,7 +81,7 @@ test('Psybeam cooldown is 3s, while Psychic, Psywave and Confusion keep their or
  assert.strictEqual(out.e,kit.e);
  assert.strictEqual(enforceArenaMoveCooldowns(out),out);
  const alternate={q:move('Psy Beam',16,0,'PSYCHIC')};
- assert.equal(enforceArenaMoveCooldowns(alternate).q.cd,3,'Psy Beam alternate spelling');
+ assert.equal(enforceArenaMoveCooldowns(alternate).q.cd,3.5,'Psy Beam alternate spelling');
 });
 test('Only Fire Blast and Charge gain 2–4s cooldowns; unrelated moves and source metadata are preserved',()=>{
  const raw={lmb:move('Fire Blast',23,12,'FIRE'),rmb:move('Charge',0,9,'ELECTRIC'),
@@ -230,13 +230,13 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.equal(story.puedeEvolucionar,true,'Campaign evolution rule unchanged');
 });
 
-test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX or campaign',()=>{
+test('Psybeam, Discharge and Hyper Beam take 3.5s / 3s / 4s without touching VFX or campaign',()=>{
  const base={lmb:move('Psybeam',14,0,'PSYCHIC'),
   rmb:move('Discharge',17,0,'ELECTRIC'),
   q:move('Hyper Beam',32,0,'NORMAL'),
   e:move('Shadow Ball',22,8,'GHOST')};
  const tuned=enforceArenaMoveCooldowns(base);
- assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3,3,4]);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3.5,3,4]);
  for(const slot of ['lmb','rmb','q']){
   assert.equal(base[slot].cd,0,'Original move must not be mutated');
   assert.equal(tuned[slot].forma,base[slot].forma,'Keep approved renderer');
@@ -245,7 +245,7 @@ test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX o
  assert.strictEqual(tuned.e,base.e,'Unrelated move remains native');
  assert.strictEqual(enforceArenaMoveCooldowns(tuned),tuned);
  const aliases={lmb:move('Psy Beam',15,0),rmb:move('Descarga',18,0),q:move('Hiperrayo',30,0)};
- assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3,3,4]);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3.5,3,4]);
 });
 test('Native Gengar drops only generic Hyper Beam in Arena and keeps approved Ghost/Poison VFX',()=>{
  const shadow=move('Shadow Ball',23,6,'GHOST'),sludge=move('Sludge Bomb',24,7,'POISON');
@@ -389,4 +389,185 @@ test('Eevee Arena independently samples Espeon and Umbreon without rewriting P2 
  }finally{Math.random=priorRandom}
  assert.deepEqual([eevee,...extras],original,
   'Never mutate original Eevee or independently installed Johto Pokémon');
+});
+
+test('Hex uses 3.5s in Arena and League, preserving native moves and campaign',()=>{
+ const nativeKit=Object.freeze({
+  lmb:Object.freeze(move('Hex',14,8.5,'GHOST')),
+  rmb:Object.freeze(move('Shadow Ball',20,6,'GHOST')),
+  q:Object.freeze(move('Hex',14,0,'GHOST')),
+  e:Object.freeze(move('Thunderbolt',16,8,'ELECTRIC')),
+  esp:Object.freeze(move('Dodge',0,3))
+ });
+ assert.equal(enforceArenaMoveCooldowns(nativeKit).lmb.cd,3.5);
+ assert.equal(enforceArenaMoveCooldowns(nativeKit).q.cd,3.5);
+ assert.equal(enforceNativeHexCooldown(nativeKit).lmb.cd,3.5);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).rmb,nativeKit.rmb);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).e,nativeKit.e);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).esp,nativeKit.esp);
+ assert.equal(nativeKit.lmb.cd,8.5,'Native move source must stay unmodified');
+ class Fighter{
+  constructor(mode){this.def=def;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ const def={id:'gengar',kit:nativeKit,evoluciones:[]};
+ installArenaMovePolicy(Fighter,[def]);
+ for(const mode of ['arena','liga','cpu','entreno']){
+  const kit=new Fighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,mode+' Hex must be 3.5s');
+  assert.equal(kit.q.cd,3.5,mode+' second Hex must be 3.5s');
+  assert.strictEqual(kit.rmb,nativeKit.rmb,'Unrelated native attacks unchanged');
+  assert.strictEqual(kit.e,nativeKit.e,'Unrelated native cooldowns unchanged');
+ }
+ assert.strictEqual(new Fighter('campaign').kitActual(),nativeKit,
+  'Never change campaign move cooldowns');
+ const johto={id:'sneasel',torre2ArenaAdded:true,torre2Johto100:true,
+  kit:nativeKit,evoluciones:[]};
+ class JohtoFighter{
+  constructor(mode){this.def=johto;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(JohtoFighter,[johto]);
+ for(const mode of ['arena','liga']){
+  const kit=new JohtoFighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,'Johto '+mode+' Hex cooldown');
+  assert.strictEqual(kit.rmb,nativeKit.rmb,'Keep Johto other moves unchanged');
+ }
+ assert.strictEqual(new JohtoFighter('campaign').kitActual(),nativeKit);
+});
+
+test('Eevee advances one stage only in each Arena or League battle, despite repeated commands',()=>{
+ const eevee={id:'eevee',kit:{lmb:move('Quick Attack',7)},evoluciones:[
+  {nombre:'VAPOREON',kit:{lmb:move('Water Gun')}},
+  {nombre:'JOLTEON',kit:{lmb:move('Thunderbolt')}},
+  {nombre:'FLAREON',kit:{lmb:move('Ember')}}]};
+ class Fighter{
+  constructor(mode){this.def=eevee;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ installArenaMovePolicy(Fighter,[eevee]);
+ for(const mode of ['arena','liga']){
+  const fighter=new Fighter(mode);
+  assert.equal(fighter.forma.id,'eevee');
+  assert.strictEqual(guardEeveeSingleEvolution(fighter),fighter);
+  fighter.etapa=1;
+  const chosen=fighter.forma.nombre,chosenStage=fighter.etapa;
+  for(let i=0;i<7;i++){
+   fighter.etapa=chosenStage+1;
+   assert.equal(fighter.etapa,chosenStage,mode+' Eevee must not evolve a second time');
+   assert.equal(fighter.forma.nombre,chosen,mode+' Eevee form changes after first evolution');
+  }
+  fighter.etapa=0;
+  assert.equal(fighter.etapa,chosenStage,'Eevee cannot reset and re-evolve during same battle');
+  assert.equal(fighter.puedeEvolucionar,false);
+  assert.equal(new Fighter(mode).etapa,0,'A new battle gets a fresh Eevee');
+ }
+ const campaign=new Fighter('campaign');
+ campaign.etapa=1;campaign.etapa=2;
+ assert.equal(campaign.etapa,2,'Campaign stage handling must remain unchanged');
+});
+
+test('Reversal 3.5s in Arena/League while other moves remain unchanged',()=>{
+ const source={lmb:move('Reversal',17,8,'FIGHTING'),
+  rmb:move('Psybeam',17,6,'PSYCHIC'),
+  q:move('Cross Chop',15,4,'FIGHTING'),
+  esp:move('Dodge',0,2)};
+ const actual=enforceArenaMoveCooldowns(source);
+ assert.equal(actual.lmb.cd,3.5);
+ assert.equal(actual.rmb.cd,3.5);
+ assert.strictEqual(actual.q,source.q);
+ assert.strictEqual(actual.esp,source.esp);
+ assert.equal(source.lmb.cd,8);
+ assert.equal(source.rmb.cd,6);
+ assert.strictEqual(enforceArenaMoveCooldowns(actual),actual);
+ const johto={id:'tyrogue',torre2Johto100:true,torre2ArenaAdded:true,
+  kit:source,evoluciones:[]};
+ class Fighter{
+  constructor(mode){this.def=johto;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(Fighter,[johto]);
+ for(const mode of ['arena','liga','league','cpu']){
+  const kit=new Fighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,mode+' Reversal');
+  assert.equal(kit.rmb.cd,3.5,mode+' Psybeam');
+ }
+ assert.strictEqual(new Fighter('campaign').kitActual(),source);
+});
+
+test('Discharge cooldown is exactly 3s across native Arena/League and Johto, never campaign',()=>{
+ const kit={lmb:move('Discharge',16,1.5,'ELECTRIC'),
+  rmb:move('Descarga',16,9,'ELECTRIC'),
+  q:move('Thunderbolt',16,4,'ELECTRIC'),esp:move('Dodge',0,2)};
+ const native={id:'raikou',kit,evoluciones:[]};
+ const johto={id:'mareep',torre2ArenaAdded:true,torre2Johto100:true,kit,evoluciones:[]};
+ class Fighter{
+  constructor(def,mode){this.def=def;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(Fighter,[native,johto]);
+ for(const species of [native,johto])
+  for(const mode of ['arena','liga','league']){
+   const result=new Fighter(species,mode).kitActual();
+   assert.equal(result.lmb.cd,3,'Discharge '+species.id+' '+mode);
+   assert.equal(result.rmb.cd,3,'Descarga '+species.id+' '+mode);
+   assert.strictEqual(result.q,kit.q,'Thunderbolt must be unchanged');
+   assert.strictEqual(result.esp,kit.esp,'Dodge must be unchanged');
+  }
+ assert.equal(kit.lmb.cd,1.5,'Do not rewrite source client');
+ assert.equal(new Fighter(native,'campaign').kitActual().lmb.cd,1.5,
+  'Discharge campaign cooldown remains unchanged');
+});
+test('Tyrogue chooses each of three installed forms uniformly and only evolves once per Arena/League fight',()=>{
+ const nativeA={id:'hitmonchan',kit:{lmb:move('Mach Punch',12)}},
+  nativeB={id:'hitmonlee',kit:{lmb:move('Rolling Kick',14)}};
+ const tyrogue={id:'tyrogue',torre2Johto100:true,torre2ArenaAdded:true,
+  tipos:['FIGHTING'],kit:{lmb:move('Tackle',6)},evoluciones:[
+   {dex:'0107',nombre:'HITMONCHAN',tipos:['FIGHTING'],kit:nativeA.kit},
+   {dex:'0106',nombre:'HITMONLEE',tipos:['FIGHTING'],kit:nativeB.kit},
+   {dex:'0237',nombre:'HITMONTOP',tipos:['FIGHTING'],kit:{lmb:move('Revenge',15)}}
+  ]};
+ const before=JSON.stringify(tyrogue);
+ class Fighter{
+  constructor(mode){this.def=tyrogue;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ installArenaMovePolicy(Fighter,[tyrogue,nativeA,nativeB]);
+ const oldRandom=Math.random;
+ try{
+  for(const mode of ['arena','liga','league','cpu']){
+   for(const [value,chosen] of [[0,'HITMONCHAN'],[.40,'HITMONLEE'],[.99,'HITMONTOP']]){
+    Math.random=()=>value;
+    const fighter=new Fighter(mode);
+    assert.equal(fighter.puedeEvolucionar,true,'Tyrogue may evolve first time');
+    assert.strictEqual(guardTyrogueSingleEvolution(fighter),fighter);
+    fighter.etapa=1; // Native real evolution increments stage once.
+    assert.equal(fighter.forma.nombre,chosen,mode+' '+value);
+    assert.equal(fighter.forma.nombre,chosen,'Random outcome is stable on subsequent reads');
+    const chosenStage=fighter.etapa;
+    assert.equal(fighter.puedeEvolucionar,false,'Do not allow a second evolution');
+    fighter.etapa=chosenStage+1;assert.equal(fighter.etapa,chosenStage);
+    fighter.etapa=0;assert.equal(fighter.etapa,chosenStage);
+    assert.equal(new Fighter(mode).etapa,0,'Next battle begins with a fresh Tyrogue');
+   }
+  }
+ }finally{Math.random=oldRandom;}
+ assert.equal(JSON.stringify(tyrogue),before,'Original roster must remain immutable');
+ const story=new Fighter('campaign');story.etapa=1;story.etapa=2;
+ assert.equal(story.forma.nombre,'HITMONLEE','Campaign must not use Arena random evolution');
 });

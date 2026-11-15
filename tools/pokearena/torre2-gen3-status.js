@@ -29,7 +29,14 @@ export function applyGen3Status(actor,name,data={},random=Math.random){
 function residual(actor,amount){
  if(!(amount>0)||actor.hp<=0||actor.ko)return;
  actor.hp=Math.max(actor.inmortal?1:0,actor.hp-Math.max(1,Math.floor(amount)));
- if(actor.hp<=0){actor.ko=true;actor.escena?.alKO?.(actor);}
+ if(actor.hp<=0&&!actor.ko){
+  // Always use the engine's real native KO lifecycle for status damage.
+  // Directly setting ko=true bypasses morir(): callbacks, score, cleanup,
+  // victory detection and sprite faint animation can all be skipped.
+  if(typeof actor.morir==='function')
+   actor.morir(actor.est?.veneno?.fuente||actor.est?.quemado?.fuente);
+  else {actor.ko=true;actor.escena?.alKO?.(actor);}
+ }
 }
 export function tickGen3Status(actor,dt,random=Math.random){
  if(actor.ko||actor.hp<=0)return;

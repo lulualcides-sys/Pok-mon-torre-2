@@ -24,9 +24,11 @@ export const PROTECTED_P2_KANTO_IDS=new Set([
 const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
  'thunder':3,
- 'psybeam':3,'psy-beam':3,
+ 'psybeam':3.5,'psy-beam':3.5,
+ 'reversal':3.5,
  'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
+ 'hex':3.5,
  'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
@@ -95,6 +97,22 @@ export function enforceArenaMoveCooldowns(kit){
    if(output===kit)output={...kit};
    output[slot]={...h,cd:target};
   }
+ }
+ return output;
+}
+// Native Poké Arena fighters retain their original kits except for
+// explicitly requested Hex, Reversal, Psybeam and Discharge cooldowns outside campaign.
+export function enforceNativeHexCooldown(kit){
+ if(!kit||typeof kit!=='object')return kit;
+ let output=kit;
+ for(const slot of ATTACK_SLOTS){
+  const h=kit[slot];
+  const move=idOf(h?.nombre);
+  const target=['hex','reversal','psybeam','psy-beam'].includes(move)?3.5:
+   ['discharge','descarga'].includes(move)?3:null;
+  if(target===null||h.cd===target)continue;
+  if(output===kit)output={...kit};
+  output[slot]={...h,cd:target};
  }
  return output;
 }
@@ -246,6 +264,35 @@ export function chooseEeveeBranch(count,random=Math.random){
  const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
  return Math.floor(safe*count)+1;
 }
+// Eevee and Tyrogue have ALTERNATIVE branches, not sequential stages.
+// Install a fighter-local stage guard before the native evolution decision.
+// Preserve campaign/PvP and keep every original roster record immutable.
+function guardSingleBranchEvolution(fighter,species){
+ if(fighter?.def?.id!==species||fighter?.escena?.datos?.torre2)return fighter;
+ const guardKey=species==='eevee'?'__torre2EeveeStageGuard':'__torre2TyrogueStageGuard';
+ const settingKey=species==='eevee'?'__torre2EeveeSettingBranch':'__torre2TyrogueSettingBranch';
+ if(fighter[guardKey])return fighter;
+ const descriptor=Object.getOwnPropertyDescriptor(fighter,'etapa');
+ if(descriptor&&(!('value' in descriptor)||descriptor.configurable===false))
+  return fighter;
+ let stage=fighter.etapa;
+ let evolved=Number(stage)>0;
+ Object.defineProperty(fighter,'etapa',{
+  configurable:true,enumerable:descriptor?.enumerable??true,
+  get(){return stage;},
+  set(value){
+   if(!this.escena?.datos?.torre2&&!this[settingKey]){
+    if(evolved&&value!==stage)return;
+    if(Number(value)>0)evolved=true;
+   }
+   stage=value;
+  }
+ });
+ Object.defineProperty(fighter,guardKey,{value:true,configurable:true});
+ return fighter;
+}
+export const guardEeveeSingleEvolution=fighter=>guardSingleBranchEvolution(fighter,'eevee');
+export const guardTyrogueSingleEvolution=fighter=>guardSingleBranchEvolution(fighter,'tyrogue');
 export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const proto=Luchador.prototype,originalKit=proto.kitActual;
  if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
@@ -289,9 +336,26 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
  if(!formaDescriptor?.get)throw Error('Unknown Arena evolution getter');
  Object.defineProperty(proto,'forma',{...formaDescriptor,get:function(){
+  if(!this.escena?.datos?.torre2&&this.def?.id==='tyrogue'){
+   guardTyrogueSingleEvolution(this);
+   const form=formaDescriptor.get.call(this);
+   if(!(this.etapa>0)||this.__torre2TyrogueEvolution)return form;
+   const options=this.def.evoluciones||[];
+   const names=['hitmonchan','hitmonlee','hitmontop'];
+   const branches=names.map(name=>options.findIndex(e=>idOf(e?.nombre)===name));
+   if(branches.some(index=>index<0))return form;
+   const chosen=branches[chooseEeveeBranch(branches.length)-1];
+   this.__torre2TyrogueEvolution=options[chosen].nombre;
+   this.__torre2TyrogueSettingBranch=true;
+   try{this.etapa=chosen+1;}
+   finally{delete this.__torre2TyrogueSettingBranch;}
+   return formaDescriptor.get.call(this);
+  }
+  if(this.escena?.datos?.torre2||this.def?.id!=='eevee')
+   return formaDescriptor.get.call(this);
+  guardEeveeSingleEvolution(this);
   const form=formaDescriptor.get.call(this);
-  if(this.escena?.datos?.torre2||this.def?.id!=='eevee'||!(this.etapa>0))
-   return form;
+  if(!(this.etapa>0))return form;
   if(!this.__torre2EeveeEvolution){
    // Only the evolving fighter receives a cloned descriptor with Johto
    // options; the global P2 Eevee and its original kits stay immutable.
@@ -307,13 +371,22 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
    if(choices.length<3)return form;
    const pick=chooseEeveeBranch(choices.length);
    this.__torre2EeveeEvolution=choices[pick-1].nombre;
-   this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
+   this.__torre2EeveeSettingBranch=true;
+   try{this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;}
+   finally{delete this.__torre2EeveeSettingBranch;}
   }
   return formaDescriptor.get.call(this); // retain complete merged stage stats
  }});
  const evoDescriptor=Object.getOwnPropertyDescriptor(proto,'puedeEvolucionar');
  if(evoDescriptor?.get)Object.defineProperty(proto,'puedeEvolucionar',{...evoDescriptor,get:function(){
-  if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'&&this.etapa>0)return false;
+  if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'){
+   guardEeveeSingleEvolution(this); // Install before the first native EVO decision.
+   if(this.etapa>0)return false;
+  }
+  if(!this.escena?.datos?.torre2&&this.def?.id==='tyrogue'){
+   guardTyrogueSingleEvolution(this);
+   if(this.etapa>0)return false;
+  }
   return evoDescriptor.get.call(this);
  }});
  proto.kitActual=function(...args){
@@ -323,15 +396,15 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
   // Native P2 battle kits stay exactly as they came from original client.
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
-   return original;
+   return enforceNativeHexCooldown(original);
   // Johto was chosen using genuine species FRLG/approved attacks, not
   // Kanto Arena-121 fallback or native cooldown rewrite.
   // Eevee's stage is built from the actual installed Johto form. Never
   // re-plan Espeon/Umbreon through Kanto and erase its original/legal kit.
   if(this.def.torre2Johto100===true||
      (this.def.id==='eevee'&&['espeon','umbreon'].includes(id)))
-   return original;
+   return enforceNativeHexCooldown(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
-  return selectApprovedArenaKit(auto,id,library,nativeDodges);
+  return enforceNativeHexCooldown(selectApprovedArenaKit(auto,id,library,nativeDodges));
  };
 }

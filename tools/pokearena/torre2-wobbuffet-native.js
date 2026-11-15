@@ -50,6 +50,13 @@ const validSource=(fighter,source,g,d)=>Boolean(
 );
 export function wobbuffetAfterHit(fighter,source,g,d){
  if(!validSource(fighter,source,g,d))return;
+ if(fighter.def?.id==='wobbuffet'){
+  // Last REAL incoming damage, used only by Wobbuffet's offline auto AI.
+  // No artificial damage or synthetic counter triggers.
+  fighter.__torre2WobbuffetLastHit={
+   at:Number(fighter.t)||0,category:wobbuffetHitCategory(g)
+  };
+ }
  const armed=fighter.est?.torre2WobbuffetCounter;
  const activeCounter=armed?.hasta>fighter.t&&
   wobbuffetHitCategory(g)==='PHYSICAL'&&fighter.hp>0;

@@ -267,6 +267,56 @@ export function tuneLeagueAutoBrain(scene,brain){
 }
 // Supplement genuine native IA gaps during League only. The original fight
 // engine still enforces timing, aim, energy, cooldown, dodge, status and EVO.
+// Wobbuffet uses reactive moves with zero direct damage and zero range.
+// Native damage-only tactical scoring suppresses all four attacks; pick a
+// ready counter based on genuine incoming damage (or foe's current kit),
+// without inventing contact, altering cooldowns or touching manual/PvP.
+export function wobbuffetAutoInput(scene,actor,input){
+ const d=scene?.datos||{};
+ const mode=String(d.modo||'').toLowerCase();
+ if(!actor||actor.def?.id!=='wobbuffet'||d.torre2||d.online||
+    d.ranked||scene.enLinea||scene.red||scene.sim||
+    !(['cpu','arena','entreno','liga','league'].includes(mode)||
+      isLeagueAutoBattle(scene))||
+    scene.fase!=='lucha'||scene.pausado||actor.ko||
+    !(Number(actor.hp)>0)||actor.accion?.bloquea||actor.dash||
+    actor.est?.aturdido||actor.est?.dormido||actor.est?.congelado||
+    !input||typeof input!=='object'||input.esp||input.mega||
+    input.lmb||input.rmb||input.q||input.e)return input;
+ const foe=livingCampaignOpponent(scene,actor);
+ if(!foe||foe.ko||!(Number(foe.hp)>0))return input;
+ const moves=['lmb','rmb','q','e'];
+ const ready=slot=>{
+  const h=actor.kit?.[slot];
+  return !!h?.forma&&!h.pendiente&&!h.torre2Unavailable&&
+   Number.isFinite(actor.cd?.[slot])&&actor.cd[slot]<=0&&
+   Number.isFinite(actor.energia)&&
+   actor.energia>=Number(h.coste??0)&&
+   (!h.ulti||Number(actor.ulti??0)>=100);
+ };
+ const last=actor.__torre2WobbuffetLastHit;
+ const hitRecent=last&&Number(actor.t)-last.at>=0&&
+  Number(actor.t)-last.at<=1.2;
+ // The native engine may expose physical/special with categoria or by Gen III type.
+ const physicalTypes=new Set(['NORMAL','FIGHTING','FLYING','POISON','GROUND',
+  'ROCK','BUG','GHOST','STEEL']);
+ const enemyMoves=['lmb','rmb','q','e'].map(k=>foe.kit?.[k])
+  .filter(m=>m?.forma&&Number(m.dano)>0);
+ const physicalThreat=enemyMoves.some(m=>physicalTypes.has(m.tipo));
+ const specialThreat=enemyMoves.some(m=>!physicalTypes.has(m.tipo));
+ let slot=null;
+ if(actor.hp/Math.max(1,actor.hpMax)<.22&&ready('e'))slot='e';
+ else if(hitRecent&&last.category==='SPECIAL'&&ready('rmb'))slot='rmb';
+ else if(hitRecent&&last.category==='PHYSICAL'&&ready('lmb'))slot='lmb';
+ else if(physicalThreat&&ready('lmb'))slot='lmb';
+ else if(specialThreat&&ready('rmb'))slot='rmb';
+ else if(ready('q')&&!actor.est?.torre2WobbuffetSafeguard)slot='q';
+ else if(ready('lmb'))slot='lmb';
+ else if(ready('rmb'))slot='rmb';
+ if(!slot)return input;
+ return {...input,lmb:slot==='lmb',rmb:slot==='rmb',
+  q:slot==='q',e:slot==='e',ax:foe.x,ay:foe.y};
+}
 export function improveLeagueAutoInput(scene,actor,input){
  if(!isLeagueAutoBattle(scene)||scene?.fase!=='lucha'||scene.pausado||
     scene.__torre2Changing||!actor||!input||typeof input!=='object'||
@@ -414,7 +464,8 @@ export function installAutoBattle(scene,makeNativeAI){
     e:false,esp:false,mega:false};
   }
   const leagueAware=improveLeagueAutoInput(scene,fighter,it);
-  const weatherAware=chooseCampaignAutoWeatherInput(scene,fighter,leagueAware);
+  const reactive=wobbuffetAutoInput(scene,fighter,leagueAware);
+  const weatherAware=chooseCampaignAutoWeatherInput(scene,fighter,reactive);
   const skilled=pressureCampaignAutoSkillInput(scene,fighter,weatherAware,state.ai);
   const pressured=pressureCampaignAutoInput(scene,fighter,skilled,state.ai);
   if(!it.lmb&&pressured.lmb)stats.assistedBasicFrames++;
@@ -486,6 +537,25 @@ export function installAutoBattle(scene,makeNativeAI){
  sync();
  return state;
 }
+// CPU fighters are driven directly by native controller.leer(), not the
+// player's AUTO wrapper. Install the same safe reactive chooser only on
+// Wobbuffet's offline IA controller. Manual controls are never patched.
+export function bindWobbuffetCpuAI(scene){
+ const d=scene?.datos||{},mode=String(d.modo||'').toLowerCase();
+ if(scene.enLinea||scene.red||scene.sim||d.online||d.ranked||
+    d.torre2||['versus','online','replay'].includes(mode))return 0;
+ let patched=0;
+ for(const c of scene.controles||[]){
+  if(!c||c.tipo!=='ia'||typeof c.leer!=='function'||c.__torre2WobbuffetPatched)continue;
+  const original=c.leer;
+  c.leer=function(dt,...args){
+   const next=original.call(this,dt,...args);
+   return wobbuffetAutoInput(scene,this.l,next);
+  };
+  c.__torre2WobbuffetPatched=true;patched++;
+ }
+ return patched;
+}
 export function bindAutoBattleToScene(Scene,IA){
  if(typeof Scene?.prototype?.create!=='function'||typeof IA!=='function')
   throw Error('Original Phaser scene and Poké Arena IA required');
@@ -493,6 +563,7 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
+  bindWobbuffetCpuAI(this);
   // Campaign AUTO: stronger-than-Hard tactical parameters ONLY for the
   // player AUTO brain. No bonus damage, speed, energy, cooldown or VFX changes.
   // Manual control and the original Arena AUTO still use their old settings.

@@ -1,0 +1,136 @@
+name: Torre 2 — Alpha 0.71.3 hotfix auditado
+
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
+      - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
+      - 'tests/alpha0713-hotfix-navigation-browser.cjs'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
+      - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
+      - 'tests/alpha0713-hotfix-navigation-browser.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install project-declared test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify and download immutable audited 0.71.3 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          metadata=$(gh api "repos/${{ github.repository }}/actions/runs/43657903565")
+          echo "$metadata" | jq -e '.conclusion=="success" and .head_sha=="7c89fb0e900702d03c4a9954c6d49311330ad1f7"' >/dev/null
+          proof=$(gh api "repos/${{ github.repository }}/actions/runs/43657903565/artifacts")
+          echo "$proof" | jq -e 'any(.artifacts[]; .name=="pokearena-alpha070-homologated-site" and .expired==false and .digest=="sha256:130f60e5a9a5687d56f814fff7a92c55e3c960d48ecffe01362f7b4077507903")' >/dev/null
+          mkdir -p _site
+          gh run download 43657903565 --repo "${{ github.repository }}" \
+            --name pokearena-alpha070-homologated-site --dir _site
+          test -s _site/arena2d/lib/phaser.min.js
+          test -s _site/arena2d/rights-audit-0713.json
+      - name: Patch and verify only new 0.71.3 source tree
+        run: |
+          set -euo pipefail
+          node tools/pokearena/publish-hotfix-on-alpha0713.mjs
+          node --input-type=module <<'VERIFY'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json'));
+          if(v.src!=='src-5ccc174cb8'||v.modules==='src-62269b459e')
+            throw Error('Pinned official client not incremented');
+          const m=path.join(root,v.modules),s=fs.readFileSync(m+'/habilidades.js','utf8');
+          const p=fs.readFileSync(m+'/torre2/arena-move-policy.js','utf8');
+          if(!s.includes('...TORRE2_WOBBUFFET_FORMS')||
+             !p.includes("'discharge':3")||!p.includes("'psybeam':3.5"))
+            throw Error('Requested Discharge/Psybeam/Wobbuffet correction absent');
+          if(!fs.existsSync(root+'/src-62269b459e/habilidades.js'))
+            throw Error('Approved original source must remain for rollback');
+          console.log('HOTFIX_ALPHA0713_SOURCE_VERIFIED',v);
+          VERIFY
+      - name: Unit regressions
+        run: |
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js
+      - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/arena-johto-evolutions-browser.cjs
+          node tests/arena-species-kit-browser.cjs
+          # This pinned 0.71.3 release intentionally replaced TRAINING with
+          # KANTO CAMPAIGN/LOCAL; the legacy source-client-smoke.cjs asserts
+          # TRAINING exists and is inapplicable to this approved snapshot.
+          # Verify actual 0.71.3 PLAY menu navigation in desktop and mobile
+          node tests/alpha0713-hotfix-navigation-browser.cjs
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-alpha0713-hotfix-site
+          path: _site/
+          retention-days: 5
+          if-no-files-found: error
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-alpha0713-hotfix-failure-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 5
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: qa
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pokemon-torre-2-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: torre2-alpha0713-hotfix-site
+          path: _site/
+      - name: Preserve lab and link official game at root
+        run: |
+          set -euo pipefail
+          test -s _site/arena2d/index.html
+          test -s _site/RELEASE-0713-HOTFIX.json
+          if [ -s _site/index.html ]; then cp _site/index.html _site/lab.html; fi
+          cat > _site/index.html <<'HTML'
+          <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Pokémon Torre 2 — Alpha 0.71.3</title>
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-alpha=0.71.3">
+          <script>location.replace('./arena2d/index.html?torre2-alpha=0.71.3'+location.hash)</script>
+          </head><body><a href="./arena2d/index.html?torre2-alpha=0.71.3">Abrir jogo</a></body></html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site/
+      - id: deploy
+        uses: actions/deploy-pages@v4
+      - name: Release URL
+        run: echo "Published Alpha 0.71.3 hotfix at ${{ steps.deploy.outputs.page_url }}"

@@ -234,6 +234,26 @@ export function addAllJohtoSpecies(original){
   // Magby #240 -> Magmar #126, then Magmortar #467 only when an installed
   // stage exists. Do not fabricate missing moves or visuals.
   const bridge=[];
+  // Tyrogue #0236 branches to ONE of the real Hitmonchan/Hitmonlee/
+  // Hitmontop forms. The Kanto originals have already been installed; copy
+  // their battle descriptors into this new Johto baby's private family.
+  // The existing Johto lineage adds Hitmontop #0237 below. Random selection
+  // belongs to the fighter in arena-move-policy, never this shared roster.
+  if(p[1]==="tyrogue"){
+   for(const id of ["hitmonchan","hitmonlee"]){
+    const root=original.find(q=>canon(q.id)===id||canon(q.nombre)===id);
+    const nested=original.flatMap(q=>q.evoluciones||[])
+     .find(q=>canon(q.nombre)===id);
+    const installed=root||nested;
+    // Partial roster/unit fixtures may omit Kanto families. Do not invent
+    // battle move renderers; the built-client gate requires all three forms.
+    if(!installed?.kit||!installed.dex)continue;
+    bridge.push({dex:String(installed.dex).padStart(4,"0"),
+     nombre:id.toUpperCase(),tipos:[...installed.tipos],
+     hp:installed.hp,vel:installed.vel,atk:installed.atk,
+     def:installed.def,regen:installed.regen,kit:installed.kit});
+   }
+  }
   if(p[1]==="magby"){
    const magmar=original.find(q=>canon(q.id)==="magmar"||
     canon(q.nombre)==="magmar");

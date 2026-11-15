@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {removeCustomizeTitleOption,preloadPokedexOnePage} from '../tools/pokearena/torre2-title-pokedex-fast.mjs';
+import {removeCustomizeTitleOption,removeNewsTitleOption,preloadPokedexOnePage} from '../tools/pokearena/torre2-title-pokedex-fast.mjs';
 
 test('remove only CUSTOMIZE menu tile, keep settings and other buttons',()=>{
  const src='const MENUS={principal:[{id:"jugar",txt:"PLAY",menu:"jugar"},'+
@@ -43,4 +43,20 @@ test('Pokédex loads one 36-card page, not the entire roster at entry',()=>{
  assert.ok(out.includes('this.textures.exists("pmd-"+et.dex+"-Idle")'), 'Never show a missing selected sprite');
  assert.ok(out.includes('this.__torre2DexPageRequests.delete(page)'), 'Allow retries after failed requests');
  assert.throws(()=>preloadPokedexOnePage('class Pokedex {}'),/upstream changed/);
+});
+
+test('remove only NEWS from the home sidebar and preserve PLAY/SETTINGS',()=>{
+ const src='const MENUS={principal:[{id:"news",txt:"NEWS",ico:"news"},'+
+  '{id:"jugar",txt:"PLAY",menu:"jugar"},{id:"ajustes",txt:"SETTINGS",menu:"ajustes"}],'+
+  'jugar:[{id:"liga",txt:"LEAGUE"},{id:"arena",txt:"ARENA"}]};';
+ const out=removeNewsTitleOption(src);
+ assert.ok(!out.includes('txt:"NEWS"'));
+ for(const label of ['PLAY','SETTINGS','LEAGUE','ARENA'])
+  assert.ok(out.includes('txt:"'+label+'"'),label+' must survive');
+ assert.equal(removeNewsTitleOption(out),out,'NEWS removal is idempotent');
+ assert.equal(removeCustomizeTitleOption(out),out,'CUSTOMIZE removal remains isolated');
+ const quoted="[{id:'news',txt:'NEWS'},{id:'x',txt:'PLAY'}]";
+ assert.equal(removeNewsTitleOption(quoted),"[{id:'x',txt:'PLAY'}]");
+ assert.equal(removeNewsTitleOption('[{id:"news",txt:"NEWS"}]'),'[]');
+ assert.throws(()=>removeNewsTitleOption('{id:"news",txt:"NEWS"}'),/delimiter/);
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  isLeagueAutoBattle,autoBattleAllowed,LEAGUE_AUTO_TACTICAL,
- tuneLeagueAutoBrain,improveLeagueAutoInput,installAutoBattle
+ tuneLeagueAutoBrain,improveLeagueAutoInput,wobbuffetAutoInput,bindWobbuffetCpuAI,installAutoBattle
 } from '../tools/pokearena/torre2-auto-battle.js';
 
 const ui=()=>{
@@ -173,4 +173,54 @@ test('Other Arena/CPU automatic inputs still suppress EVO and stay manual by def
   assert.equal(s.controles[0].leer(.016).mega,false,modo);
   s.handlers.get('shutdown')();
  }
+});
+
+test('Wobbuffet League and CPU automatic battle can cast reactive actual moves',()=>{
+ const setup=(mode='liga')=>{
+  const s=fixture({modo:mode}),p=s.controles[0].l,foe=s.luchadores[1];
+  p.def={id:'wobbuffet'};p.tipos=['PSYCHIC'];p.energia=100;p.ulti=100;
+  p.kit={
+   lmb:{nombre:'Counter',forma:'torre2_wobbuffet_counter',dano:0,alcance:0,coste:0,cd:3.4},
+   rmb:{nombre:'Mirror Coat',forma:'rayo',dano:0,alcance:0,coste:0,cd:4.5},
+   q:{nombre:'Safeguard',forma:'torre2_wobbuffet_safeguard',dano:0,alcance:0,coste:22,cd:13},
+   e:{nombre:'Destiny Bond',forma:'torre2_wobbuffet_destinybond',dano:0,alcance:0,coste:35,cd:17,ulti:true}
+  };
+  foe.kit={lmb:{nombre:'Tackle',forma:'impacto',dano:8,tipo:'NORMAL'}};
+  return {s,p,foe};
+ };
+ const command={mx:0,my:0,lmb:false,rmb:false,q:false,e:false,mega:false};
+ for(const mode of ['liga','league','cpu','arena']){
+  const {s,p,foe}=setup(mode);
+  const first=wobbuffetAutoInput(s,p,command);
+  assert.equal(first.lmb,true,mode+' auto should ARM Counter, not remain idle');
+  assert.equal(first.ax,foe.x);
+  p.cd.lmb=2;
+  assert.notEqual(wobbuffetAutoInput(s,p,command).lmb,true,
+   'Never bypass Counter cooldown');
+  foe.kit={lmb:{nombre:'Water Gun',forma:'proyectil',dano:8,tipo:'WATER'}};
+  const special=wobbuffetAutoInput(s,p,command);
+  assert.equal(special.rmb,true,'Special attacker should trigger Mirror Coat');
+  p.hp=12;
+  const last=wobbuffetAutoInput(s,p,command);
+  assert.equal(last.e,true,'Near KO, use genuine Destiny Bond if ULT ready');
+  p.energia=0;
+  assert.notEqual(wobbuffetAutoInput(s,p,command).e,true,
+   'No Destiny Bond when energy is unavailable');
+  assert.strictEqual(wobbuffetAutoInput(s,p,{...command,esp:true}).esp,true,
+   'Never override a native dodge');
+  assert.strictEqual(wobbuffetAutoInput({...s,datos:{modo:'online'}},p,command),command,
+   'Never activate Wobbuffet auto in online mode');
+ }
+});
+test('enemy native IA chooses Wobbuffet counters only offline; manual control untouched',()=>{
+ const s=fixture({modo:'cpu'}),enemy=s.controles[1];
+ const w=enemy.l;w.def={id:'wobbuffet'};w.energia=100;
+ w.kit={lmb:{nombre:'Counter',forma:'torre2_wobbuffet_counter',dano:0,coste:0}};
+ const before=s.controles[0].leer;
+ assert.equal(bindWobbuffetCpuAI(s),1);
+ assert.equal(bindWobbuffetCpuAI(s),0,'No duplicate controller wrappers');
+ assert.equal(enemy.leer(.016).lmb,true,'Native enemy should arm Counter');
+ assert.strictEqual(s.controles[0].leer,before,'Player controls not modified');
+ const online=fixture({modo:'online'});
+ assert.equal(bindWobbuffetCpuAI(online),0);
 });

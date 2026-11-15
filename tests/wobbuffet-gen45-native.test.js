@@ -6,11 +6,14 @@ import {
  wobbuffetBlocksStatus,wobbuffetHitCategory,wobbuffetAfterHit
 } from '../tools/pokearena/torre2-wobbuffet-native.js';
 const source=readFileSync('tools/pokearena/build-preview.mjs','utf8');
+const catalogCompat=readFileSync('tools/pokearena/torre2-forms-compat.mjs','utf8');
 test('battle Phaser registers real Wobbuffet forms and damage/status hooks',()=>{
  for(const move of TORRE2_WOBBUFFET_MOVES){
   assert.ok(move.forma.startsWith('torre2_wobbuffet_'));
   assert.equal(typeof TORRE2_WOBBUFFET_FORMS[move.forma],'function');
   assert.ok(source.includes('...TORRE2_WOBBUFFET_FORMS'));
+ assert.ok(catalogCompat.includes('...TORRE2_WOBBUFFET_FORMS'),
+  'Reordered native FORMAS must contain the Wobbuffet function callbacks');
  }
  assert.ok(source.includes('wobbuffetAfterHit(this,fuente,g,d)'),
   'Must use native recibir combat HP path, not a fake text-only attack');

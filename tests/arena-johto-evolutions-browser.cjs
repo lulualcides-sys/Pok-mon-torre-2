@@ -100,6 +100,26 @@ const server=http.createServer(async(req,res)=>{
    const magmortar=await evo();
    assert.equal(magmortar.stage,firstStage+1);
    assert.equal(magmortar.name,'MAGMORTAR');
+   assert.equal(magmortar.dex,'0467','Evolution must use Magmortar national-dex sprite');
+   assert.equal(magmortar.kit.filter(Boolean).length,4,
+    'Evolved Magmortar must retain all four combat moves');
+   await page.waitForFunction(()=>{
+    const me=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    return me.spr?.texture?.key?.includes('0467');
+   },null,{timeout:9000}).catch(async error=>{
+    const state=await page.evaluate(()=>{
+     const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+     return {form:me.forma?.nombre,dex:me.dex,texture:me.spr?.texture?.key,
+      available:s.textures.exists('pmd-0467-Idle'),
+      expectedPreload:window.__torre2HotfixPreloads,
+      manifest0467:s.registry.get('manifiesto')?.['0467']?.anims?.Idle,
+      load0467:s.load?.list?.get?.('pmd-0467-Idle')?.url,
+      anim:me.spr?.anims?.currentAnim?.key,
+      kit:['lmb','rmb','q','e'].map(slot=>me.kit?.[slot]?.nombre)};
+    });
+    throw Error('Magmortar did not render its real battle sprite: '+
+     JSON.stringify(state)+'; '+error);
+   });
   }
   // Force the last of five available branches only in this synthetic test
   // battle. This does not alter global roster or the original Eevee.
@@ -125,6 +145,35 @@ const server=http.createServer(async(req,res)=>{
    throw new Error('Umbreon PMD never replaced the sprite: '+JSON.stringify(state)+'; '+error);
   });
   assert.ok(umbreon.kit.some(Boolean),'Evolved Eevee lost its skills');
+  // Real mobile EVO must choose each Tyrogue branch exactly once.
+  // Each roll uses an independent new battle (not a fake roster mutation).
+  for(const [roll,expected,dex] of [
+   [0,'HITMONCHAN','0107'],[.40,'HITMONLEE','0106'],[.99,'HITMONTOP','0237']
+  ]){
+   const initial=await battle('tyrogue');
+   assert.deepEqual(initial.stages,['HITMONCHAN','HITMONLEE','HITMONTOP']);
+   await page.evaluate(value=>{window.__tyroguePriorRandom=Math.random;Math.random=()=>value},roll);
+   let chosen;
+   try{chosen=await evo();}
+   finally{await page.evaluate(()=>{Math.random=window.__tyroguePriorRandom})}
+   assert.equal(chosen.name,expected,'Tyrogue must choose a legitimate branch '+roll);
+   assert.equal(chosen.dex,dex,'Tyrogue must equip the correct battle art '+expected);
+   assert.ok(chosen.kit.some(Boolean),'Tyrogue '+expected+' has no usable attacks');
+   await page.waitForFunction(dex=>{
+    const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    return w.spr?.texture?.key?.includes(dex);
+   },dex,{timeout:9000});
+   const stable=await page.evaluate(()=>{
+    const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    const initial=w.etapa;
+    w.etapa=initial+1;
+    return {actual:w.etapa,expected:initial,can:w.puedeEvolucionar,
+     name:w.forma.nombre};
+   });
+   assert.equal(stable.actual,stable.expected,'Tyrogue cannot re-evolve');
+   assert.equal(stable.can,false,'Tyrogue has only one evolution per fight');
+   assert.equal(stable.name,expected,'No accidental branch change');
+  }
   const togepi=await battle('togepi');
   assert.ok(togepi.buttons?.includes('lmb'),'Togepi cannot attack in Arena');
   const kit=await page.evaluate(()=>{
@@ -133,7 +182,62 @@ const server=http.createServer(async(req,res)=>{
     skills:['lmb','rmb','q','e'].map(slot=>me.kit?.[slot]?.nombre||null)};
   });
   assert.ok(kit.atk&&kit.dmg>0,'Togepi real combat kit has no damage');
-  assert.deepEqual(errors,[],'Real evolution generated Phaser errors');
+  // Previous Wobbuffet checks invoked its custom functions directly.
+  // This must verify its actual human touch-to-native-combat cast path.
+  await battle('wobbuffet');
+  const button=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
+   // Observe the real native frame path; do not inject or fabricate a cast.
+   window.__torre2WobbuffetFrames=[];
+   const nativeUpdate=w.update;
+   w.update=function(dt,input){
+    let failure=null;
+    try{return nativeUpdate.call(this,dt,input)}
+    catch(error){failure=String(error?.stack||error);throw error}
+    finally{
+     if(input?.lmb||failure){
+      const trace=window.__torre2WobbuffetFrames;
+      if(trace.length<80)trace.push({t:w.t,lmb:input?.lmb,
+       cd:w.cd.lmb,usos:w.stats?.usosSlot?.lmb||0,
+       estado:w.est?.torre2WobbuffetCounter,
+       pending:w.kit?.lmb?.pendiente,form:w.kit?.lmb?.forma,
+       active:s.scene.isActive(),phase:s.fase,error:failure});
+     }
+    }
+   };
+   w.energia=100;w.accion=null;w.dash=null;w.cd.lmb=0;
+   const p=s.panelTactil,b=p?.botones?.find(x=>x.slot==='lmb');
+   if(!b)throw Error('Wobbuffet native ATK touch button missing');
+   const at=p.pos(b),o=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
+   p.abajo({id:88,x:(at.x-o.x)/(unit.x-o.x),y:(at.y-o.y)/(unit.y-o.y)});
+   // Match the native successful EVO test: flush the touch panel read.
+   const pressed=p.leer(v=>({ax:v.x,ay:v.y}));
+   return {move:w.kit?.lmb?.nombre,form:w.kit?.lmb?.forma,
+    energy:w.energia,pressed};
+  });
+  assert.equal(button.move,'Counter');
+  assert.equal(button.pressed?.lmb,true,
+   'Touch panel must register the actual Counter button');
+  await page.waitForFunction(()=>{
+   const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+   return w.est?.torre2WobbuffetCounter?.hasta>w.t;
+  },null,{timeout:6000}).catch(async e=>{
+   const state=await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
+    return {phase:s.fase,form:w.kit?.lmb?.forma,cd:w.cd?.lmb,
+     energy:w.energia,action:w.accion,status:w.est,
+     frames:window.__torre2WobbuffetFrames,
+     frameErrors:s.erroresFotograma||0,
+     controller:s.controles?.[0]?.tipo,autoEnabled:s.__torre2AutoMode?.enabled,
+     move:w.kit?.lmb,uses:w.stats?.usosSlot,
+     buttons:s.panelTactil?.botones?.map(b=>b.slot)};
+   });
+   throw Error('Wobbuffet real native touch input did not cast Counter: '+
+    JSON.stringify(state)+'; '+e);
+  });
+  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate')
+   .panelTactil.arriba({id:88}));
+  assert.deepEqual(errors,[],'Real evolution or cast generated Phaser errors');
   await page.screenshot({path:'test-evidence/arena-johto-evolutions-mobile.png'});
   console.log('PASS_REAL_JOHTO_ARENA_EVO',JSON.stringify({magby,magmar,umbreon,kit}));
   await page.close();
