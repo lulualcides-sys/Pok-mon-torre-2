@@ -27,3 +27,23 @@ test('paralysis and confusion use one chance per window, not every rendered fram
 test('serialization has no source reference and does not transfer confusion',()=>{
  const a=actor();apply(a,'veneno',{fuente:a});apply(a,'confuso');const saved=JSON.parse(JSON.stringify(save(a)));const b=actor();restore(b,saved);assert.ok(b.est.veneno);assert.ok(!b.est.confuso);assert.equal(save(actor()),null);
 });
+
+test('lethal poison uses native morrer/K.O. flow once, never leaves a living 0-HP fighter',()=>{
+ const a=actor();a.hp=15;let deaths=0,events=0;
+ a.morir=function(){deaths++;this.ko=true;this.est={};this.escena.alKO(this);};
+ a.escena={alKO(){events++;}};
+ apply(a,'veneno',{fuente:{id:'gengar'}});
+ tick(a,4);
+ assert.equal(a.hp,0);
+ assert.equal(a.ko,true);
+ assert.equal(deaths,1,'Use native death cleanup and callbacks');
+ assert.equal(events,1,'Only one victory/KO event');
+ tick(a,4);
+ assert.equal(deaths,1,'Do not trigger duplicate KO events');
+});
+test('poison fallback handles engine stubs without native morir',()=>{
+ const a=actor();a.hp=1;let events=0;
+ a.escena={alKO(){events++;}};
+ apply(a,'veneno');tick(a,4);
+ assert.equal(a.ko,true);assert.equal(a.hp,0);assert.equal(events,1);
+});
