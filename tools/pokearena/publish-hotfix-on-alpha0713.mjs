@@ -92,7 +92,8 @@ exactly(combat,nativeSpriteLoad,'native fighter sprite preload');
 const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of '+
  '[["0240",["0126","0467"]],["0236",["0107","0106","0237"]]])'+
  'if(dexs.has(baby))for(const dex of stages)if(m[dex])dexs.add(dex);';
-const combatPatched=combat.replace(nativeSpriteLoad,branchPreload+nativeSpriteLoad);
+const combatPatched=combat.replace(nativeSpriteLoad,
+ branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad);
 
 const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 const title=removeNewsTitleOption(originalTitle);
