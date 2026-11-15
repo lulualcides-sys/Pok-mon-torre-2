@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {addTorre2FormsToNativeCatalog} from '../tools/pokearena/torre2-forms-compat.mjs';
+import {injectNativeTorre2FormsImport} from '../tools/pokearena/torre2-native-habilidades-compat.mjs';
 const header='import{TORRE2_FORMS}from"./torre2/signature-fx.js";'+
  'import{TORRE2_WOBBUFFET_FORMS}from"./torre2/wobbuffet-native.js";';
 test('October reordered native FORMAS still includes all original renderers',()=>{
@@ -18,6 +19,16 @@ test('Legacy ordered FORMAS works without changing native VFX parameters',()=>{
  const patched=addTorre2FormsToNativeCatalog(native);
  assert.ok(patched.includes('proyectil,chorro,cono,zona,rayo,pulso,halo'));
  assert.equal(patched.split('const FORMAS={').length,2);
+});
+test('Reordered native imports register all Wobbuffet casts before FORMAS compatibility',()=>{
+ const native='import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo,FX}from"./config.js";'+
+  'const FORMAS={pulso,proyectil,cono,rayo,chorro,zona};';
+ const imported=injectNativeTorre2FormsImport(native);
+ assert.ok(imported.includes('import{TORRE2_WOBBUFFET_FORMS}'));
+ assert.ok(imported.includes('import{TORRE2_FORMS}'));
+ const compiled=addTorre2FormsToNativeCatalog(imported);
+ assert.ok(compiled.includes('const FORMAS={...TORRE2_FORMS,...TORRE2_WOBBUFFET_FORMS,'));
+ assert.equal(injectNativeTorre2FormsImport(imported),imported,'No duplicate module imports');
 });
 test('Unregistered Wobbuffet import rejects unsafe injection',()=>{
  const incomplete='import{TORRE2_FORMS}from"./torre2/signature-fx.js";'+
