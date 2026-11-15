@@ -9,7 +9,16 @@ test('every gameplay module physically overlaid into release triggers QA and pub
  const workflow=read('.github/workflows/torre2-alpha0713-hotfix-publish.yml');
  const overlays=[...builder.matchAll(/\['(tools\/pokearena\/[^']+\.js)','torre2\/[^']+\.js'\]/g)]
   .map(x=>x[1]);
- assert.equal(overlays.length,7,'Any changed release overlay must be reviewed');
+ assert.deepEqual(overlays,[
+  'tools/pokearena/torre2-arena-move-policy.js',
+  'tools/pokearena/torre2-johto-100-species.js',
+  'tools/pokearena/torre2-auto-battle.js',
+  'tools/pokearena/torre2-wobbuffet-native.js',
+  'tools/pokearena/torre2-gen3-status.js',
+  'tools/pokearena/batch24/runtime.js',
+  'tools/pokearena/torre2-campaign-core.js',
+  'tools/pokearena/torre2-trainer-cards.js'
+ ],'Any changed or added release overlay must be reviewed explicitly');
  const pull=workflow.slice(workflow.indexOf('  pull_request:'),workflow.indexOf('  push:'));
  const push=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('  workflow_dispatch:'));
  for(const path of overlays){
