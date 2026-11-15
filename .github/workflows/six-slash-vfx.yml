@@ -1,0 +1,61 @@
+name: Six Slash VFX — sprite integrity
+
+on:
+  push:
+    branches: [feat/six-slash-vfx-review-20261107]
+    paths:
+      - 'reference-assets/vfx/six-slashes/**'
+      - 'tools/pokearena/torre2-six-slash-vfx.js'
+      - 'tests/six-slash-vfx.test.js'
+      - 'tests/six-slash-phaser-browser.cjs'
+      - 'slash-phaser-lab.html'
+      - '.github/workflows/six-slash-vfx.yml'
+  pull_request:
+    paths:
+      - 'reference-assets/vfx/six-slashes/**'
+      - 'tools/pokearena/torre2-six-slash-vfx.js'
+      - 'tests/six-slash-vfx.test.js'
+      - 'tests/six-slash-phaser-browser.cjs'
+      - 'slash-phaser-lab.html'
+      - '.github/workflows/six-slash-vfx.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-pixel-sheets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse adapter
+        run: node --check tools/pokearena/torre2-six-slash-vfx.js
+      - name: Validate strips
+        run: node --test tests/six-slash-vfx.test.js
+  phaser-webgl-gallery:
+    needs: verify-pixel-sheets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing browser test runner
+        run: npm install --no-audit --no-fund
+      - name: Verify Phaser/WebGL lab on desktop and mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/six-slash-phaser-browser.cjs
+      - name: Archive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: six-slash-phaser-screenshots
+          path: test-evidence/slashes/*.png
+          if-no-files-found: warn
+          retention-days: 14
