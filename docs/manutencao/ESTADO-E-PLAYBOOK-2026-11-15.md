@@ -81,3 +81,13 @@ O estado **aberto** de uma PR não prova que a funcionalidade esteja ausente; a 
 - O catálogo nativo é **metadado de pesquisa**. O workflow novo não dá mais push automático no `main`: propõe PR DRAFT separada a partir de um hash oficial verificável. Antes de integrar, comparar kits do cliente base, preservar o padrão de golpes e executar testes Chromium/Phaser.
 - Os testes de rotina do catálogo usam a Alpha 0.71.3 auditada, evitando que uma falha de terceiros seja considerada regressão do jogo. Uma captura de Alpha nova **permanece pendente** se o manifesto oficial continuar inacessível.
 - Testes: `node --test tests/catalog-preflight.test.mjs tests/capture-gate-policy.test.js`; histórico do último resultado antes desta manutenção: captura REA `43748682357`, catálogo `43748635712` (ambos falharam por manifesto nativo ausente).
+
+### Falha real de descoberta corrigida
+
+A análise de `tools/pokearena/capture-client.mjs` mostrou que a lista de arquivos vinha de um inventário REA antigo. Quando ele não continha `assets/pmd/manifest.json`, o próprio capturador **não solicitava** o manifesto e depois abortava ao tentar expandir os sprites. Isso não é prova de HTTP 403 naquele arquivo: antes, o log `Critical native PMD manifest unavailable` era ambíguo.
+
+- `tools/pokearena/capture-critical-assets.mjs` agora injeta **exatamente uma** solicitação do manifesto oficial na frente da fila, preservando a proveniência do inventário quando já existe.
+- `tools/pokearena/capture-client.mjs` usa essa fila. A validação de PNGs, importações, hashes, sprites e direitos permanece estrita: erro de leitura **ainda bloqueia** a sincronização real.
+- `tests/capture-critical-assets.test.js` valida inventário antigo, ausência/duplicação de manifesto e preservação da recusa em concluir capturas incompletas.
+
+Mesmo com o arquivo principal recuperável, outros sprites podem continuar indisponíveis no ambiente de Actions; **somente uma captura integral com QA prova que a origem nova está apta à atualização**.
