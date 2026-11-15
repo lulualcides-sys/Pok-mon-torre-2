@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
 import {getPublicClientResource} from './public-client-http.mjs';
+import {prioritizedNativeSourceTasks} from './capture-critical-assets.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -96,8 +97,11 @@ async function main() {
  // A missing decorative image is not a failed client source capture.
  tasks.delete('assets/ui/portada/dia.jpg');
  details.skipped.push({path:'assets/ui/portada/dia.jpg',reason:'optional original title background; no substitute artwork'});
- details.planned=tasks.size;
- const queue=[...tasks];
+ // Historic inventories do not necessarily name this critical dependency.
+ // Always request the FIRST-PARTY PMD manifest before expanding sprite assets.
+ // A denied/missing manifest remains a hard failure, never a fake success.
+ const queue=prioritizedNativeSourceTasks(tasks);
+ details.planned=queue.length;
  let index=0;
  async function worker(){
   while(index<queue.length){
