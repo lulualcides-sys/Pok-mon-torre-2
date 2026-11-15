@@ -432,6 +432,16 @@ export function swapPokemon(s,teamIndex,boxIndex){
  return persistPartyTransfer(s,{team,box,
   lastMessage:team[teamIndex].id+' trocado com '+old.id+'.'});
 }
+// In the real regional party battles, regular checkpoint AI must climb
+// gradually from easy to master without modifying any original enemy kit.
+export function campaignDifficultyTier(stage,leader=false,role='trainer'){
+ const level=Math.max(0,Math.trunc(Number(stage)||0));
+ if(leader)return level>=8?'maestro':level>=4?'dificil':'normal';
+ if(level>=8)return 'maestro';
+ if(level>=6)return 'dificil';
+ if(level>=3||role==='rival')return 'normal';
+ return 'facil';
+}
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
  const gym=STAGES[s.stage];
@@ -488,9 +498,7 @@ export function startBattle(s){
  recordSeen(next,firstSeen);
  saveCampaign(next);
  s.dexSeen=nextDexSeen;
- const tier=opponent.leader?
-  (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
-  (s.stage>=8?'maestro':s.stage>=3?'normal':'facil');
+ const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind);
  return {p1:s.team[s.active].id,p2:opponent.id,modo:'cpu',nivel:tier,
   arena:opponent.arena,mandos:['kbm','cpu'],torre2:{stage:s.stage,trainer:s.trainer,kind:'trainer',
    playerLevel:s.team[s.active].progression?.level??5,

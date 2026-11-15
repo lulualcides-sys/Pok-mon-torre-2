@@ -243,6 +243,9 @@ function earth(l,h,extra){
  const distance=Math.min(h.alcance,Math.hypot((l.ax??l.x)-l.x,(l.ay??l.y)-l.y));
  const point={x:o.x+o.c*distance,y:o.y+o.s*distance};
  let age=0,checked=false;
+ // One impact per target that suffered native HP damage; AoE target selection
+ // stays unchanged, including its ally/KO filters.
+ const hitPoints=[];
  return lifecycle(l,(dt,g)=>{
   age+=dt;g.clear();
   if(age<.27){
@@ -252,10 +255,16 @@ function earth(l,h,extra){
    drawMove(g,h,point.x,point.y,Math.min(11,Math.floor((age-.27)*24)));
    if(!checked&&age>=.36){
     checked=true;
-    for(const r of batch24AreaTargets(l))
-     if(swept(point,point,r,22))strike(l,r,h,extra);
+    for(const r of batch24AreaTargets(l)){
+     const contact=swept(point,point,r,22);
+     if(!contact)continue;
+     const hit=strike(l,r,h,extra);
+     if(hit.landed)hitPoints.push({x:contact.x,y:contact.y});
+    }
    }
-   if(age>.42)impact(g,point.x,point.y,p,age-.42,2);
+   // Telegraph is harmless; dodge, accuracy miss and immunity have no burst.
+   if(age>.42)for(const hit of hitPoints)
+    impact(g,hit.x,hit.y,p,age-.42,2);
   }
   return age<.94;
  });

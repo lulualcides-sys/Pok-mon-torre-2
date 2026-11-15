@@ -39,7 +39,11 @@ const overlayNames=[
  ['tools/pokearena/torre2-johto-100-species.js','torre2/johto-100-species.js'],
  ['tools/pokearena/torre2-auto-battle.js','torre2/auto-battle.js'],
  ['tools/pokearena/torre2-wobbuffet-native.js','torre2/wobbuffet-native.js'],
- ['tools/pokearena/torre2-gen3-status.js','torre2/gen3-status.js']
+ ['tools/pokearena/torre2-gen3-status.js','torre2/gen3-status.js'],
+ // Signed off independently: original Batch24 AoE collision/VFX and current
+ // regional Kanto battle logic. Both are part of the existing approved site.
+ ['tools/pokearena/batch24/runtime.js','torre2/batch24/runtime.js'],
+ ['tools/pokearena/torre2-campaign-core.js','torre2/campaign-core.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
@@ -47,6 +51,14 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  must((await fs.stat(path.join(original,target))).size>500,
   'missing approved module '+target);
  let content=incoming;
+ if(target==='torre2/batch24/runtime.js')
+  must(content.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')&&
+   content.includes('for(const r of batch24AreaTargets(l))'),
+   'Earth Power AoE verified-impact patch missing');
+ if(target==='torre2/campaign-core.js')
+  must(content.includes('const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind)')&&
+   content.includes('const encounter=regionalTrainer(s.stage,s.trainer)'),
+   'Campaign native battle and regional roster patch missing');
  if(target==='torre2/arena-move-policy.js'){
   for(const [before,after] of [
    ["from './torre2-frlg-learnsets.js'","from './frlg-learnsets.js'"],
