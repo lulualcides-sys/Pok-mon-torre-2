@@ -88,7 +88,8 @@ const packs=await read(path.join(original,'paquetes.js'));
 const packAnchor='const paqueteDe=ruta=>{const dex=ruta.split("/")[0];';
 exactly(packs,packAnchor,'native PMD package routing');
 const looseDex=['0467','0236','0237','0171','0198'];
-const packageOverride='if(["0467","0236","0237","0171","0198"].includes(dex))return null;';
+const packageOverride='if(["0467","0236","0237"].includes(dex)||'+
+ '(["0171","0198"].includes(dex)&&/\\/Idle-Anim\\.png$/.test(ruta)))return null;';
 const packsPatched=packs.replace(packAnchor,packAnchor+packageOverride);
 
 // In this exact Alpha 0.71.3 snapshot the native Eevee has two obsolete
