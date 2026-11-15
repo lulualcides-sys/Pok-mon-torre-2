@@ -35,5 +35,8 @@ test('source capture must rely on mandatory manifest as native asset dependency'
  assert.match(source,/details\.planned=queue\.length/);
  assert.match(source,/if\(!allManifest\.size\)throw Error\('Critical native PMD manifest unavailable/);
  assert.match(source,/details\.manifestAssets\.missing/);
+ assert.match(source,/if\(details\.manifestAssets\.missing\.length\)/);
+ assert.match(source,/throw Error\('Incomplete official PMD sprites:/);
+ assert.match(source,/if\(details\.referencedAssets\.missing\.length\)/);
  assert.throws(()=>prioritizedNativeSourceTasks([]),TypeError);
 });
