@@ -2,20 +2,33 @@ name: Torre 2 — Alpha 0.71.3 hotfix auditado
 
 on:
   pull_request:
+    # Any candidate affecting an installed release overlay must run the real
+    # approved-alpha QA, not just unit tests.
     paths:
       - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-auto-battle.js'
+      - 'tools/pokearena/torre2-wobbuffet-native.js'
+      - 'tools/pokearena/torre2-gen3-status.js'
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tools/pokearena/torre2-campaign-core.js'
       - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
-      - 'tools/pokearena/torre2-arena-move-policy.js'
       - 'tests/arena-species-kit-policy.test.js'
   push:
     branches: [main]
+    # Do not republish identical gameplay after docs/tests/CI-only changes.
+    # A runtime overlay change always triggers the auditable Pages pipeline.
     paths:
       - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
-      - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
-      - 'tests/alpha0713-hotfix-navigation-browser.cjs'
       - 'tools/pokearena/torre2-arena-move-policy.js'
-      - 'tests/arena-species-kit-policy.test.js'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-auto-battle.js'
+      - 'tools/pokearena/torre2-wobbuffet-native.js'
+      - 'tools/pokearena/torre2-gen3-status.js'
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tools/pokearena/torre2-campaign-core.js'
   workflow_dispatch:
 
 permissions:
