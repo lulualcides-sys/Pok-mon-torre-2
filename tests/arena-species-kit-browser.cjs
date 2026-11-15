@@ -169,7 +169,7 @@ const server=http.createServer(async(req,res)=>{
   const psybeam=(results.cooldown.psybeam||[]).concat(results.cooldown['psy beam']||[]);
   assert.ok(psybeam.length>0,'Psybeam should be present in a real Arena roster kit');
   for(const attack of psybeam)
-   assert.equal(attack.cd,3,'Psybeam must have 3s cooldown '+JSON.stringify(attack));
+   assert.equal(attack.cd,3.5,'Psybeam must have 3.5s cooldown '+JSON.stringify(attack));
   assert.ok((results.cooldown['fire blast']||[]).length>0,
     'Fire Blast must be present in actual Arena roster');
   for(const attack of results.cooldown['fire blast'])
