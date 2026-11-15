@@ -431,6 +431,35 @@ export function swapPokemon(s,teamIndex,boxIndex){
  return persistPartyTransfer(s,{team,box,
   lastMessage:team[teamIndex].id+' trocado com '+old.id+'.'});
 }
+// Flavor for ordinary Kanto checkpoints; species, sprites, roster size, saves
+// and every gym / Elite Four lineup remain byte-for-byte unaffected.
+export function campaignTrainerTitle(stage,trainer,role){
+ if(role==='rival')return 'Rival';
+ if(role==='rocket')return 'Equipe Rocket';
+ const cities=[
+  ['Montanhista','Escoteiro','Campista'],
+  ['Pescador','Nadador','Excursionista'],
+  ['Mecânico','Ciclista','Jovem'],
+  ['Botânico','Criador','Campista'],
+  ['Domador','Ninja','Veterano'],
+  ['Médium','Cientista','Treinador'],
+  ['Aventureiro','Excursionista','Criador'],
+  ['Montanhista','Veterano','Excursionista'],
+  ['Veterano','Montanhista','Treinador']
+ ];
+ const idx=Math.min(cities.length-1,Math.max(0,Math.trunc(Number(stage)||0)));
+ const turn=Math.max(0,Math.trunc(Number(trainer)||0));
+ return cities[idx][turn%cities[idx].length]+' '+(turn+1);
+}
+// Native CPU tiers only: avoid an abrupt jump from Normal to Master for
+// Victory Road NPCs. Gym / Elite Four bosses retain their canonical tier.
+export function campaignDifficultyTier(stage,leader=false,role='trainer'){
+ const level=Math.max(0,Math.trunc(Number(stage)||0));
+ if(leader)return level>=8?'maestro':level>=4?'dificil':'normal';
+ if(level>=6)return 'dificil';
+ if(level>=3||role==='rival')return 'normal';
+ return 'facil';
+}
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
  const gym=STAGES[s.stage];
@@ -450,7 +479,7 @@ export function currentOpponent(s){
  // as their levels rise, with the actual evolved sprite and attacks.
  const species=leader?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
  return {id:species,leader,kind:role,
-  name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
+  name:leader?gym.leader:campaignTrainerTitle(s.stage,s.trainer,role),
   level,arena:gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.
@@ -483,9 +512,7 @@ export function startBattle(s){
  recordSeen(next,firstSeen);
  saveCampaign(next);
  s.dexSeen=nextDexSeen;
- const tier=opponent.leader?
-  (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
-  (s.stage>=8?'maestro':s.stage>=3?'normal':'facil');
+ const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind);
  return {p1:s.team[s.active].id,p2:opponent.id,modo:'cpu',nivel:tier,
   arena:opponent.arena,mandos:['kbm','cpu'],torre2:{stage:s.stage,trainer:s.trainer,kind:'trainer',
    playerLevel:s.team[s.active].progression?.level??5,
