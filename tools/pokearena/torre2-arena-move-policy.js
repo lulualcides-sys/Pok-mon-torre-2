@@ -357,7 +357,10 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  }});
  const evoDescriptor=Object.getOwnPropertyDescriptor(proto,'puedeEvolucionar');
  if(evoDescriptor?.get)Object.defineProperty(proto,'puedeEvolucionar',{...evoDescriptor,get:function(){
-  if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'&&this.etapa>0)return false;
+  if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'){
+   guardEeveeSingleEvolution(this); // Install before the first native EVO decision.
+   if(this.etapa>0)return false;
+  }
   return evoDescriptor.get.call(this);
  }});
  proto.kitActual=function(...args){
