@@ -63,5 +63,54 @@ export function windowNativePokedex(original){
  s=once(s,'crearAnimsPMD(this,this._torre2JohtoForms,["Idle"]);',
   '/* Johto Idle animations are created by the existing lazy loaders. */',
   'eager Johto animation decoding');
+
+ // A full page contains up to 25 large animated PMD spritesheets.
+ // Load only eight small portraits at startup and the visible remainder
+ // asynchronously. The focused Pokémon's Idle is requested separately by
+ // the already existing torre2EnsureIdle; never fetch 25 Idles just to draw
+ // thumbnail cards.
+ s=once(s,
+  'ROSTER.slice(start,start+PAGE_SIZE).map(p=>p.dex)',
+  'ROSTER.slice(start,start+Math.min(PAGE_SIZE,8)).map(p=>p.dex)',
+  'bounded initial portrait prefetch');
+ s=once(s,
+  'this.torre2DirectLocal(this._torre2FirstForms);',
+  'this.torre2PortraitOnly(this._torre2FirstForms);',
+  'portrait-only startup');
+ const portraitLoader=[
+  'torre2PortraitOnly(forms){',
+  'this.__torre2PortraitQueue??=new Set();let count=0;',
+  'for(const dex of Object.keys(forms)){',
+  'const key="retrato-"+dex;',
+  'if(this.textures.exists(key)||this.__torre2PortraitQueue.has(key))continue;',
+  'this.__torre2PortraitQueue.add(key);',
+  'this.load.image(key,"assets/pmd/"+dex+"/portrait.png");count++;',
+  '}return count;}'
+ ].join('');
+ s=once(s,'torre2DirectLocal(forms){',
+  portraitLoader+'torre2DirectLocal(forms){',
+  'portrait-only loader method');
+ s=once(s,'this.refrescar()}torre2PortraitOnly(forms){',
+  'this.refrescar();this.__torre2PortraitQueue?.clear();'+
+  'this.torre2CargarPagina(this.dexPage)}torre2PortraitOnly(forms){',
+  'defer remaining portrait requests until Pokédex is mounted');
+ const start=s.indexOf('torre2CargarPagina(page){');
+ const end=s.indexOf('torre2EnsureIdle(dex){',start);
+ if(start<0||end<start||s.indexOf('torre2CargarPagina(page){',start+1)>=0)
+  throw Error('Pokedex window: missing unique page loader');
+ let page=s.slice(start,end);
+ page=once(page,
+  'const missing=ids.some(dex=>!this.textures.exists("retrato-"+dex)||!this.textures.exists("pmd-"+dex+"-Idle"));',
+  'const missing=ids.some(dex=>!this.textures.exists("retrato-"+dex));',
+  'portrait-only page load criterion');
+ page=once(page,
+  'crearAnimsPMD(this,forms,["Idle"]);',
+  'for(const dex of ids)this.__torre2PortraitQueue?.delete("retrato-"+dex);',
+  'clear portrait requests after load, including failures');
+ page=once(page,
+  'const count=this.torre2DirectLocal(forms);',
+  'const count=this.torre2PortraitOnly(forms);',
+  'page requests portraits only');
+ s=s.slice(0,start)+page+s.slice(end);
  return s;
 }
