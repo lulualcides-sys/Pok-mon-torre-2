@@ -377,8 +377,8 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   // re-plan Espeon/Umbreon through Kanto and erase its original/legal kit.
   if(this.def.torre2Johto100===true||
      (this.def.id==='eevee'&&['espeon','umbreon'].includes(id)))
-   return original;
+   return enforceNativeHexCooldown(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
-  return selectApprovedArenaKit(auto,id,library,nativeDodges);
+  return enforceNativeHexCooldown(selectApprovedArenaKit(auto,id,library,nativeDodges));
  };
 }
