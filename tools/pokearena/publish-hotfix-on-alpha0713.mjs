@@ -43,7 +43,9 @@ const overlayNames=[
  // Signed off independently: original Batch24 AoE collision/VFX and current
  // regional Kanto battle logic. Both are part of the existing approved site.
  ['tools/pokearena/batch24/runtime.js','torre2/batch24/runtime.js'],
- ['tools/pokearena/torre2-campaign-core.js','torre2/campaign-core.js']
+ ['tools/pokearena/torre2-campaign-core.js','torre2/campaign-core.js'],
+ // Audited presentation-only #600 backport; preserves sprites and campaign save order.
+ ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
@@ -59,6 +61,12 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
   must(content.includes('const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind)')&&
    content.includes('const encounter=regionalTrainer(s.stage,s.trainer)'),
    'Campaign native battle and regional roster patch missing');
+ if(target==='torre2/trainer-cards.js')
+  must(content.includes('export function trainerCardSections(stage,total)')&&
+   content.includes('const visibleEntries=sections[page].indices.map(index=>all[index])')&&
+   content.includes('scenicBackdrop(scene,layer,state.stage)')&&
+   content.includes("setData('torre2-trainer-card-index',entry.index)"),
+   'Safe campaign route/gym card partition or approved touch hitboxes absent');
  if(target==='torre2/arena-move-policy.js'){
   for(const [before,after] of [
    ["from './torre2-frlg-learnsets.js'","from './frlg-learnsets.js'"],
