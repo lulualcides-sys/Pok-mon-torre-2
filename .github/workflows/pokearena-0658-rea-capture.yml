@@ -44,24 +44,12 @@ jobs:
           node --check tools/pokearena/rea-capture-live-public.cjs
           node --check tools/pokearena/rea-overlay-verified-client.mjs
           node --check tools/pokearena/publish-hotfix-on-alpha0713.mjs
-      - name: Authenticate REA 0.71.3 source and audit artifacts by run, commit and digest
+      - name: Recover audited 0.71.3 REA source (Actions or permanent archive)
         shell: bash
         run: |
           set -euo pipefail
-          release=$(gh api "repos/$GH_REPO/actions/runs/43657903565")
-          echo "$release" | jq -e '.conclusion=="success" and .head_sha=="7c89fb0e900702d03c4a9954c6d49311330ad1f7"' >/dev/null
-          artifacts=$(gh api "repos/$GH_REPO/actions/runs/43657903565/artifacts?per_page=100")
-          echo "$artifacts" | jq -e 'any(.artifacts[]; .name=="pokearena-alpha070-homologated-site" and .expired==false and .digest=="sha256:130f60e5a9a5687d56f814fff7a92c55e3c960d48ecffe01362f7b4077507903")' >/dev/null
-          echo "$artifacts" | jq -e 'any(.artifacts[]; .name=="current-rea-provenance-homolog-1" and .expired==false and .digest=="sha256:d9008396e9435093aabfb731e28714e58f372e257e2382d04764f927206c62ab")' >/dev/null
-          echo "$artifacts" | jq -e 'any(.artifacts[]; .name=="current-rea-source-homolog-1" and .expired==false and .digest=="sha256:a5e4cca1be70819338ab408d0cdf1be5d08fec46435aafa0acaf2d5b7cf5867c")' >/dev/null
-          mkdir -p site-capture/current-rea/provenance site-capture/current-rea/source
-          gh run download 43657903565 --repo "$GH_REPO" \
-            --name current-rea-provenance-homolog-1 --dir site-capture/current-rea/provenance
-          gh run download 43657903565 --repo "$GH_REPO" \
-            --name current-rea-source-homolog-1 --dir site-capture/current-rea/source
-          test "$(find site-capture/current-rea/provenance -type f | wc -l)" -ge 1
-          test "$(find site-capture/current-rea/source -type f | wc -l)" -ge 30
-          echo "VERIFIED_CURRENT_REA_SOURCE_0713: audited run/commit/digests, source files and provenance present"
+          bash tools/pokearena/restore-audited-alpha0713.sh provenance site-capture/current-rea/provenance
+          bash tools/pokearena/restore-audited-alpha0713.sh source site-capture/current-rea/source
       - name: Preserve verified provenance summary
         if: always()
         uses: actions/upload-artifact@v4
@@ -90,8 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p _site
-          gh run download 43657903565 --repo "$GH_REPO" \
-            --name pokearena-alpha070-homologated-site --dir _site
+          bash tools/pokearena/restore-audited-alpha0713.sh site _site
           node --input-type=module <<'CHECK'
           import fs from 'node:fs';
           import path from 'node:path';
