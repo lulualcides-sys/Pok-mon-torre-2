@@ -115,6 +115,23 @@ const previousRegen='!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&
 exactly(fighter,previousRegen,'previous poison regeneration guard');
 fighter=fighter.replace(previousRegen,
  '!(!this.escena.entreno&&!this.escena.datos?.torre2&&this.est.veneno)');
+// The approved 0.71.3 native EVO callback can complete after the branch
+// guard has selected Eevee/ Tyrogue's final form. Synchronize the actual
+// Phaser fighter sprite and move kit to its selected dex on the next frame.
+// One-time, per-fighter, offline, after evolution; never repaint in campaign,
+// online, or for any other species. The visual update still belongs to Phaser.
+const spriteGraphicsAnchor='actualizarGraficos(dt=0){';
+exactly(fighter,spriteGraphicsAnchor,'native sprite update');
+const branchSpriteSync='if(!this.escena?.datos?.torre2&&'+
+ 'this.escena?.datos?.modo!=="online"&&'+
+ '(this.def?.id==="eevee"||this.def?.id==="tyrogue")&&this.etapa>0){'+
+ 'const dex=this.dexActual;'+
+ 'if(dex&&this.dex!==dex&&this.escena.manifiesto?.[dex]){'+
+ 'this.cambiarForma(dex);this.kit=this.kitActual();'+
+ 'this.__torre2BranchSpriteSync=(this.__torre2BranchSpriteSync||0)+1;'+
+ '}}';
+fighter=fighter.replace(spriteGraphicsAnchor,spriteGraphicsAnchor+branchSpriteSync);
+
 
 // The audited 0.71.3 client only preloads the current fighter sprite.
 // Preload genuine installed sprites for Magby and Tyrogue alternatives before
