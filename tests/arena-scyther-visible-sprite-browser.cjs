@@ -147,11 +147,25 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(pre.canEvolve,'Scyther should be able to evolve after real EXP');
   assert.deepEqual(pre.forms,['SCIZOR']);
+  assert.ok(pre.buttonRegistered,'Touch EVO press was not actually registered');
+  assert.ok(pre.scizorPreloaded,'Scizor was not in the native combat preload set');
+  assert.ok(pre.spriteReady,'Approved Scizor #0212 Idle was not loaded before EVO');
   await mobile.p.waitForFunction(stage=>{
    const me=window.__pt2Game.scene.getScene('combate').luchadores[0];
    return me.etapa>stage&&Number(me.dexActual)===212&&
     String(me.spr?.texture?.key||'').includes('0212');
-  },pre.stage,{timeout:16000});
+  },pre.stage,{timeout:16000}).catch(async error=>{
+   const state=await mobile.p.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+    return{stage:me.etapa,canEvolve:me.puedeEvolucionar,
+     exp:me.exp,needed:me.expNecesaria,dex:me.dexActual,
+     texture:me.spr?.texture?.key,form:me.forma?.nombre,
+     evoInput:s.panelTactil?.pulsados?.has('mega'),
+     spriteReady:s.textures.exists('pmd-0212-Idle'),
+     sync:me.__torre2BranchSpriteSync||0,phase:s.fase,paused:s.pausado};
+   });
+   throw Error('Real mobile Scyther evolution failed '+JSON.stringify({pre,state,errors:mobile.errs})+'; '+error);
+  });
   evidence.evolution=await mobile.p.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
    s.panelTactil.arriba({id:94});
