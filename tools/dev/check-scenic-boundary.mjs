@@ -28,10 +28,14 @@ const newCheck=oldCheck+"\n"+
  "   content.includes('scenicBackdrop(scene,layer,state.stage)')&&\n"+
  '   content.includes("setData(\'torre2-trainer-card-index\',entry.index)"),\n'+
  "   'Safe campaign route/gym card partition or approved touch hitboxes absent');";
-const expectedPublisher=once(once(publisherBefore,oldOverlay,newOverlay,'publisher overlay'),
- oldCheck,newCheck,'publisher cards-only integrity guard');
-assert.equal(publisherNow,expectedPublisher,
- 'Unreviewed publisher logic change; allow only the pinned cards-only overlay');
+// After #640 becomes the merge base, identical publisher code is the safe
+// baseline. Only calculate the one-off backport when a PR actually changes it.
+if(publisherBefore!==publisherNow){
+ const expectedPublisher=once(once(publisherBefore,oldOverlay,newOverlay,'publisher overlay'),
+  oldCheck,newCheck,'publisher cards-only integrity guard');
+ assert.equal(publisherNow,expectedPublisher,
+  'Unreviewed publisher logic change; allow only the pinned cards-only overlay');
+}
 
 for(const p of git('diff',base,'--name-only').split('\n').filter(p=>p.startsWith('tools/pokearena/')||p.startsWith('src/')||p.startsWith('data/')))
  assert.ok(allowed.has(p),'Unexpected runtime edit: '+p);
