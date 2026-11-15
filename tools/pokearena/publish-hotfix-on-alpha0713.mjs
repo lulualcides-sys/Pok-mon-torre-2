@@ -165,7 +165,14 @@ const branchSpriteSync='if(!this.escena?.datos?.torre2&&'+
  'if(dex&&this.dex!==dex&&this.escena.manifiesto?.[dex]){'+
  'this.cambiarForma(dex);this.kit=this.kitActual();'+
  'this.__torre2BranchSpriteSync=(this.__torre2BranchSpriteSync||0)+1;'+
- '}}';
+ '}'+
+ 'const idleKey="pmd-"+this.dex+"-Idle";'+
+ 'if(this.spr?.active&&this.escena.textures.exists(idleKey)&&'+
+ 'this.spr.texture?.key!==idleKey){'+
+ 'this.spr.anims?.stop();this.spr.setTexture(idleKey);this.claveAnim=null;'+
+ 'this.__torre2EvolutionTextureSync=(this.__torre2EvolutionTextureSync||0)+1;'+
+ '}'+
+ '}';
 fighter=fighter.replace(spriteGraphicsAnchor,spriteGraphicsAnchor+branchSpriteSync);
 
 
