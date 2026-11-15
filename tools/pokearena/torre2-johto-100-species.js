@@ -245,8 +245,9 @@ export function addAllJohtoSpecies(original){
     const nested=original.flatMap(q=>q.evoluciones||[])
      .find(q=>canon(q.nombre)===id);
     const installed=root||nested;
-    if(!installed?.kit||!installed.dex)
-     throw Error("Tyrogue branching requires installed "+id+" battle form");
+    // Partial roster/unit fixtures may omit Kanto families. Do not invent
+    // battle move renderers; the built-client gate requires all three forms.
+    if(!installed?.kit||!installed.dex)continue;
     bridge.push({dex:String(installed.dex).padStart(4,"0"),
      nombre:id.toUpperCase(),tipos:[...installed.tipos],
      hp:installed.hp,vel:installed.vel,atk:installed.atk,
