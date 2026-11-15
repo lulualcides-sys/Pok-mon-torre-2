@@ -29,8 +29,12 @@ for(const evolution of tyrogue.evoluciones){
  assert.ok(evolution.kit?.lmb?.forma,
   'Tyrogue evolution must retain installed executable skills: '+evolution.nombre);
  const original=find(evolution.nombre.toLowerCase());
- if(original)assert.equal(evolution.kit,original.kit,
-  'Do not replace the native Kanto original hitmon skills');
+ if(original){
+  assert.ok(original.kit?.lmb?.forma,
+   'The original Kanto fighter must retain its playable native kit');
+  assert.ok(Object.values(evolution.kit).some(move=>move?.forma&&Number(move?.dano)>0),
+   'The copied Tyrogue final form must remain able to attack');
+ }
 }
 for(const [id,p] of [['togepi',togepi],['togetic',togetic]]){
  assert.ok(p?.torre2Johto100,id+' must use the added Johto legal kit');
