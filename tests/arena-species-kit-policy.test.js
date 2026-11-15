@@ -571,3 +571,47 @@ test('Tyrogue chooses each of three installed forms uniformly and only evolves o
  const story=new Fighter('campaign');story.etapa=1;story.etapa=2;
  assert.equal(story.forma.nombre,'HITMONLEE','Campaign must not use Arena random evolution');
 });
+
+
+test('Hydro Pump is 3.5s for native Kanto, Johto, Arena and League; campaign unchanged',()=>{
+ const original={
+  lmb:move('Hydro Pump',20,1,'WATER'),
+  rmb:move('Hidrobomba',20,9,'WATER'),
+  q:move('Water Gun',8,2.2,'WATER'),
+  e:move('Surf',12,6,'WATER'),
+  esp:move('Dodge',0,4.2)
+ };
+ const native={id:'blastoise',kit:original,evoluciones:[]};
+ const johto={id:'totodile',torre2ArenaAdded:true,torre2Johto100:true,
+  kit:original,evoluciones:[]};
+ class Fighter{
+  constructor(def,mode){this.def=def;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(Fighter,[native,johto]);
+ for(const def of [native,johto]){
+  for(const mode of ['arena','liga','league','cpu']){
+   const actual=new Fighter(def,mode).kitActual();
+   assert.equal(actual.lmb.cd,3.5,def.id+' '+mode+' Hydro Pump');
+   assert.equal(actual.rmb.cd,3.5,def.id+' '+mode+' Hidrobomba');
+   for(const slot of ['lmb','rmb']){
+    assert.equal(actual[slot].dano,original[slot].dano);
+    assert.equal(actual[slot].forma,original[slot].forma);
+    assert.equal(actual[slot].tipo,original[slot].tipo);
+   }
+   assert.strictEqual(actual.q,original.q,'Water Gun cooldown preserved');
+   assert.strictEqual(actual.e,original.e,'Surf cooldown preserved');
+   assert.strictEqual(actual.esp,original.esp,'Dodge unchanged');
+   assert.strictEqual(enforceNativeHexCooldown(actual),actual,'Idempotent patch');
+  }
+  assert.strictEqual(new Fighter(def,'campaign').kitActual(),original,
+   'Do not modify the FRLG campaign');
+ }
+ assert.equal(original.lmb.cd,1,'Hydro Pump source unchanged');
+ assert.equal(original.rmb.cd,9,'Hidrobomba source unchanged');
+ assert.equal(enforceArenaMoveCooldowns(original).lmb.cd,3.5);
+ assert.equal(enforceNativeHexCooldown(original).rmb.cd,3.5);
+});
