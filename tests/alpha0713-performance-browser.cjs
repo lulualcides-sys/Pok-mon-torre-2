@@ -44,7 +44,7 @@ const server=http.createServer(async(req,res)=>{
    const result=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('pokedex');
     const report=()=>({total:s.casillas.length,objects:s.casillas.filter(c=>c.g&&c.img&&c.zone).length,
-     mounted:s.__torre2MountedDexIndices?.length,page:s.dexPage,pages:s.dexPages,selected:s.foco,
+     mounted:s.__torre2MountedDexIndices?.length,page:s.dexPage,pages:Math.ceil(s.casillas.length/25),selected:s.foco,
      pendingIdle:s.__torre2DexIdleRequests?.size??0});
     const before=report();
     s.mover(30);
