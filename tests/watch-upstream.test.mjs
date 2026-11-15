@@ -59,3 +59,19 @@ test('denied public config never invents Alpha',async()=>{
   assert.equal(r.alpha,null);
   assert.match(r.alphaError,/HTTP 403/);
 });
+
+test('monitor uses approved deployed source rather than stale historical move catalog',async()=>{
+ const readVersion=async path=>path.includes('approved-alpha')
+  ?JSON.stringify({approvedAlpha:'0.71.3',approvedSource:'src-5ccc174cb8'})
+  :JSON.stringify({siteVersion:'src-43a0198bd6'});
+ const fetcher=async url=>response(200,url.endsWith('/config.js')
+  ?'const VERSION="0.71.3";'
+  :'<script type="module" src="src-5ccc174cb8/main.js"></script>');
+ const r=await probe(fetcher,readVersion);
+ assert.equal(r.catalogued,'src-43a0198bd6');
+ assert.equal(r.approvedSource,'src-5ccc174cb8');
+ assert.equal(r.status,'same-fingerprint');
+ assert.equal(r.alpha,'0.71.3');
+ assert.equal(r.needsAttention,false);
+ assert.match(incident(r),/Fonte aprovada\/publicada: src-5ccc174cb8/);
+});
