@@ -29,18 +29,13 @@ jobs:
           node-version: '24'
       - name: Install project-declared test dependencies
         run: npm install --no-audit --no-fund
-      - name: Verify and download immutable audited 0.71.3 artifact
+      - name: Recover verified 0.71.3 client from Actions or persistent release
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
-          metadata=$(gh api "repos/${{ github.repository }}/actions/runs/43657903565")
-          echo "$metadata" | jq -e '.conclusion=="success" and .head_sha=="7c89fb0e900702d03c4a9954c6d49311330ad1f7"' >/dev/null
-          proof=$(gh api "repos/${{ github.repository }}/actions/runs/43657903565/artifacts")
-          echo "$proof" | jq -e 'any(.artifacts[]; .name=="pokearena-alpha070-homologated-site" and .expired==false and .digest=="sha256:130f60e5a9a5687d56f814fff7a92c55e3c960d48ecffe01362f7b4077507903")' >/dev/null
-          mkdir -p _site
-          gh run download 43657903565 --repo "${{ github.repository }}" \
-            --name pokearena-alpha070-homologated-site --dir _site
+          bash tools/pokearena/restore-audited-alpha0713.sh site _site
           test -s _site/arena2d/lib/phaser.min.js
           test -s _site/arena2d/rights-audit-0713.json
       - name: Patch and verify only new 0.71.3 source tree
