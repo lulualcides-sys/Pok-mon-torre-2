@@ -215,13 +215,41 @@ function extrasPage(scene,state,handlers){
  credits.on('pointerdown',()=>window.open('assets/ui/scenic/CREDITS.txt','_blank','noopener'));layer.add(credits);
  return layer;
 }
+// Pure presentation: routes and gym leaders occupy distinct pages.
+// Encounter indices, save keys, click targets and original battles are untouched.
+export function trainerCardSections(stage,total){
+ if(!Number.isInteger(stage)||stage<0||!Number.isInteger(total)||total<0)
+  throw Error('Invalid campaign stage/card total');
+ const routeCount=stage<8?Math.max(0,total-(stage===0?3:4)):stage===8?total:0;
+ const sections=[];
+ const pageGroup=(start,count,kind)=>{
+  if(count<=0)return;
+  const pages=Math.ceil(count/5),base=Math.floor(count/pages),extra=count%pages;
+  let cursor=start;
+  for(let i=0;i<pages;i++){
+   const size=base+(i<extra?1:0);
+   sections.push({kind,indices:Array.from({length:size},(_,j)=>cursor+j)});
+   cursor+=size;
+  }
+ };
+ pageGroup(0,routeCount,stage===8?'victory':'route');
+ pageGroup(routeCount,total-routeCount+1,stage<8?'gym':'league');
+ return sections;
+}
 function cardsPage(scene,state,handlers){
  const all=trainerCardEntries(state);
  const current=all.find(e=>e.active)||all.at(-1);
- const maxPage=Math.max(0,Math.ceil(all.length/5)-1);
- const desired=Math.floor((state.trainer||0)/5);
+ const sections=trainerCardSections(state.stage,all.length-1);
+ const maxPage=sections.length-1;
+ const desired=Math.max(0,sections.findIndex(x=>x.indices.includes(state.trainer||0)));
+ const progressKey=state.stage+':'+(state.trainer||0);
+ if(scene.__torre2CardProgressKey!==progressKey){
+  scene.__torre2CardPage=desired;
+  scene.__torre2CardProgressKey=progressKey;
+ }
  const page=Math.min(maxPage,Math.max(0,scene.__torre2CardPage??desired));
  scene.__torre2CardPage=page;
+ const visibleEntries=sections[page].indices.map(index=>all[index]);
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
  scenicBackdrop(scene,layer,state.stage);
@@ -240,12 +268,17 @@ function cardsPage(scene,state,handlers){
  },{id:'fullscreen',size:9});
  control(scene,layer,578,9,54,32,'MENU',handlers.menu,
   {id:'menu',size:9});
- const heading=page*5+1;
+ const heading=visibleEntries[0].index+1,last=visibleEntries.at(-1).index+1;
+ const kind=sections[page].kind;
+ const area=kind==='route'?'CAMINHO PARA '+city.toUpperCase():
+  kind==='victory'?'ESTRADA DA VITÓRIA':
+  kind==='league'?(state.stage>=12?'CAMPEÃO':'LIGA ÍNDIGO · '+(STAGES[state.stage]?.leader||'ELITE FOUR').toUpperCase()):
+  'GINÁSIO DE '+city.toUpperCase();
  text(scene,layer,320,68,
-  (state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'JORNADA EM '+city.toUpperCase())+'  ·  DESAFIOS '+heading+'–'+
-  Math.min(all.length,(page+1)*5),11,'#f8f2d6');
+  area+' · '+(heading===last?'DESAFIO '+heading:'DESAFIOS '+heading+'–'+last),
+  11,'#f8f2d6');
  for(let c=0;c<5;c++){
-  const entry=all[page*5+c];
+  const entry=visibleEntries[c];
   if(!entry)continue;
   const x=18+c*124,y=81,w=109,h=190;
   const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
@@ -278,7 +311,7 @@ function cardsPage(scene,state,handlers){
  }
  // Last pages use their otherwise empty slots for a regional journey panel.
  // Pure presentation: no extra actions, progress writes or card hit areas.
- const visible=all.slice(page*5,(page+1)*5).length;
+ const visible=visibleEntries.length;
  if(visible<5){
   const px=18+visible*124,pw=(5-visible)*124-15;
   box(scene,layer,px,86,pw,181,{fill:0x1b3942,edge:0x5b827f,accent:0xb3cbbb});
@@ -314,7 +347,8 @@ function cardsPage(scene,state,handlers){
   detailPage(scene,state,handlers,current);
  },{gold:true,id:'cards-open-current',size:8});
  scene.__torre2CardUI={stage:state.stage,mode:'cards',total:all.length,
-  page,active:current.index,visible:all.slice(page*5,(page+1)*5).map(e=>e.index)};
+  page,section:sections[page].kind,active:current.index,
+  visible:visibleEntries.map(e=>e.index)};
  return scene.__torre2CardUI;
 }
 function detailPage(scene,state,handlers,entry){
