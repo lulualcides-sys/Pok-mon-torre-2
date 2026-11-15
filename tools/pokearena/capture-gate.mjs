@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {probe} from './watch-upstream.mjs';
+import {publicPmdPreflight,requireCriticalPmd} from './pmd-source-preflight.mjs';
 
 export function captureDecision(report,approved,eventName='schedule'){
  if(eventName==='workflow_dispatch')
@@ -21,9 +22,11 @@ export function captureDecision(report,approved,eventName='schedule'){
 async function main(){
  const approved=JSON.parse(await fs.readFile('data/pokearena-approved-alpha.json','utf8'));
  const observed=await probe();
- const decision=captureDecision(observed,approved,process.env.GITHUB_EVENT_NAME);
+ const proposed=captureDecision(observed,approved,process.env.GITHUB_EVENT_NAME);
+ const pmd=proposed.capture?await publicPmdPreflight():null;
+ const decision=requireCriticalPmd(proposed,pmd);
  const report={
-  mode:'official-public-source-probe-only',decision,
+  mode:'official-public-source-probe-only',decision,criticalPmd:pmd,
   observed:{fingerprint:observed.observed,alpha:observed.alpha,alphaProof:observed.alphaProof,
     error:observed.error,alphaError:observed.alphaError},
   approved:{fingerprint:approved.approvedSource,alpha:approved.approvedAlpha,
@@ -39,14 +42,15 @@ async function main(){
   '- Alpha comprovada via config.js: '+(observed.alpha||'indisponível'),
   '- Última aprovada: '+approved.approvedAlpha+' / '+approved.approvedSource,
   '- Observação: gate sem captura NÃO significa que nova Alpha passou na QA.',
-  '- Erro de origem: '+(observed.alphaError||observed.error||'não identificado')
+  '- Erro de origem: '+(observed.alphaError||observed.error||'não identificado'),
+  '- Manifesto PMD crítico: '+(pmd?JSON.stringify(pmd):'não consultado; captura desnecessária')
  ].join('\n')+'\n';
  if(process.env.GITHUB_OUTPUT)
   await fs.appendFile(process.env.GITHUB_OUTPUT,'capture='+decision.capture+'\n');
  if(process.env.GITHUB_STEP_SUMMARY)
   await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,summary);
  if(decision.attention&&!decision.capture)
-  console.log('::warning::Upstream cannot be verified; preserving audited Pages release');
+  console.log('::warning::External capture blocked or unverified; audited Pages game is not changed');
  console.log('REA_CAPTURE_GATE',JSON.stringify(report));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)
