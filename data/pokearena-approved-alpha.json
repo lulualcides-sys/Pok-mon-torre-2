@@ -1,7 +1,10 @@
 {
-  "schemaVersion": 1,
-  "approvedAlpha": "0.65.8",
-  "source": "verified public REA capture",
-  "reference": "https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/609",
-  "releasePolicy": "This is the approved deployed client Alpha, not the current upstream version. Never bump without complete verified files, compatibility tests and successful publication."
+  "schemaVersion": 2,
+  "approvedAlpha": "0.71.3",
+  "approvedSource": "src-5ccc174cb8",
+  "publishedModule": "src-c84fbc99d6",
+  "publishedCommit": "c45c8e42c91012abf87d8bb5e2715573f8190f38",
+  "source": "Verified permanent REA/PMD archive, with audited GitHub Pages Alpha 0.71.3 deployment",
+  "reference": "https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/43747414242",
+  "releasePolicy": "This is the last VERIFIED published version, not the current live upstream version. Require VERSION in official config.js, source fingerprint, complete licensed assets, native Phaser/Chromium/Node/Guardian QA and exact CDN SHA before promotion. Never update this manifest from an HTML src hash alone."
 }
