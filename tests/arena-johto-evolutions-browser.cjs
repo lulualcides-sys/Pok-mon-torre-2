@@ -100,6 +100,23 @@ const server=http.createServer(async(req,res)=>{
    const magmortar=await evo();
    assert.equal(magmortar.stage,firstStage+1);
    assert.equal(magmortar.name,'MAGMORTAR');
+   assert.equal(magmortar.dex,'0467','Evolution must use Magmortar national-dex sprite');
+   assert.equal(magmortar.kit.filter(Boolean).length,4,
+    'Evolved Magmortar must retain all four combat moves');
+   await page.waitForFunction(()=>{
+    const me=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    return me.spr?.texture?.key?.includes('0467');
+   },null,{timeout:9000}).catch(async error=>{
+    const state=await page.evaluate(()=>{
+     const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+     return {form:me.forma?.nombre,dex:me.dex,texture:me.spr?.texture?.key,
+      available:s.textures.exists('pmd-0467-Idle'),
+      anim:me.spr?.anims?.currentAnim?.key,
+      kit:['lmb','rmb','q','e'].map(slot=>me.kit?.[slot]?.nombre)};
+    });
+    throw Error('Magmortar did not render its real battle sprite: '+
+     JSON.stringify(state)+'; '+error);
+   });
   }
   // Force the last of five available branches only in this synthetic test
   // battle. This does not alter global roster or the original Eevee.
