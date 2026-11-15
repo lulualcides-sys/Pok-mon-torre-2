@@ -83,6 +83,17 @@ exactly(fighter,previousRegen,'previous poison regeneration guard');
 fighter=fighter.replace(previousRegen,
  '!(!this.escena.entreno&&!this.escena.datos?.torre2&&this.est.veneno)');
 
+// The audited 0.71.3 client only preloads the current fighter sprite.
+// Preload genuine installed sprites for Magby and Tyrogue alternatives before
+// their Phaser EVO callback; never switch sprites post-hit or affect online.
+const combat=await read(path.join(original,'escenas/combate.js'));
+const nativeSpriteLoad='soltarPMD(this,m,dexs);';
+exactly(combat,nativeSpriteLoad,'native fighter sprite preload');
+const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of '+
+ '[["0240",["0126","0467"]],["0236",["0107","0106","0237"]]])'+
+ 'if(dexs.has(baby))for(const dex of stages)if(m[dex])dexs.add(dex);';
+const combatPatched=combat.replace(nativeSpriteLoad,branchPreload+nativeSpriteLoad);
+
 const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 const title=removeNewsTitleOption(originalTitle);
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
@@ -100,7 +111,7 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
 const inputHash=createHash('sha256');
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
-inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);
+inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -109,6 +120,7 @@ for(const {target,content} of overlays)await fs.writeFile(path.join(dest,target)
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
+await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
 exactly(html,oldModule+'/main.js','native main entrypoint');
