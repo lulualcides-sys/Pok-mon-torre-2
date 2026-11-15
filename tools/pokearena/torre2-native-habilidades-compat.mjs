@@ -2,12 +2,15 @@
  * Only add the independent imported Kanto VFX registry.
  */
 const fxImport='import{TORRE2_FORMS}from"./torre2/signature-fx.js";';
+const wobImport='import{TORRE2_WOBBUFFET_FORMS}from"./torre2/wobbuffet-native.js";';
 export function injectNativeTorre2FormsImport(source) {
  if(typeof source!=='string') throw new TypeError('Expected native skill source');
  const exists=/\bimport\s*\{\s*TORRE2_FORMS\s*\}\s*from\s*["']\.\/torre2\/signature-fx\.js["'];?/.test(source);
- if(exists)return source;
- if(/\bTORRE2_FORMS\b/.test(source))
-  throw Error('Incomplete TORRE2_FORMS binding; refusing duplicate import');
+ const hasWobbuffet=/\bimport\s*\{\s*TORRE2_WOBBUFFET_FORMS\s*\}\s*from\s*["']\.\/torre2\/wobbuffet-native\.js["'];?/.test(source);
+ if(exists&&hasWobbuffet)return source;
+ if((/\bTORRE2_FORMS\b/.test(source)&&!exists)||
+    (/\bTORRE2_WOBBUFFET_FORMS\b/.test(source)&&!hasWobbuffet))
+  throw Error('Incomplete native FORMAS import binding; refusing duplicate import');
  const re=/\bimport\s*\{([^{}]*)\}\s*from\s*(["'])\.\/config\.js\2\s*;?/g;
  const matches=[...source.matchAll(re)];
  if(matches.length!==1)throw Error('Unknown native skill config imports');
@@ -17,5 +20,6 @@ export function injectNativeTorre2FormsImport(source) {
  const forms=(source.match(/\bconst\s+FORMAS\s*=\s*\{/g)||[]);
  if(forms.length!==1)throw Error('Unknown native FORMAS registry');
  const match=matches[0],point=match.index+match[0].length;
- return source.slice(0,point)+fxImport+source.slice(point);
+ return source.slice(0,point)+(exists?'':fxImport)+
+  (hasWobbuffet?'':wobImport)+source.slice(point);
 }
