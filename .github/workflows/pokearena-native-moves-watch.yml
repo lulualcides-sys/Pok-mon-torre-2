@@ -7,14 +7,19 @@ on:
   pull_request:
     paths:
       - 'tools/pokearena/sync-source-moves.mjs'
+      - 'tools/pokearena/catalog-preflight.mjs'
+      - 'tools/pokearena/pmd-source-preflight.mjs'
+      - 'tools/pokearena/capture-gate.mjs'
+      - 'tools/pokearena/capture-client.mjs'
+      - 'tools/pokearena/capture-critical-assets.mjs'
+      - 'tests/capture-critical-assets.test.js'
+      - 'tests/catalog-preflight.test.mjs'
       - 'tests/pokearena-source-catalog.test.js'
       - '.github/workflows/pokearena-native-moves-watch.yml'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/pokearena-native-moves-watch.yml'
+# Pull-request QA may read the audited release, but must never write the repo.
 permissions:
-  contents: write
+  contents: read
+  actions: read
 concurrency:
   group: pokearena-native-moves-watch
   cancel-in-progress: false
@@ -34,25 +39,25 @@ jobs:
           npm install --no-audit --no-fund
           node --check tools/pokearena/sync-source-moves.mjs
           node --check tools/pokearena/audit-moves.mjs
-          node --test tests/pokearena-source-catalog.test.js
+          node --test tests/pokearena-source-catalog.test.js tests/catalog-preflight.test.mjs tests/capture-gate-policy.test.js
           npm run check
           npm run check:reuse
           npm test
-      - name: Validate actual Phaser capture, site provenance and Chromium
+      - name: Verify real audited 0.71.3 native client without asserting a new upstream capture
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          for attempt in 1 2 3; do
-            if node tools/pokearena/capture-client.mjs; then break; fi
-            if [ "$attempt" -eq 3 ]; then exit 1; fi
-            sleep $((attempt*8))
-          done
-          node tools/pokearena/build-preview.mjs
-          node tools/pokearena/audit-moves.mjs
-          node -e "const a=require('./site-capture/POKEARENA-MOVE-AUDIT.json');const v=require('./_site/arena2d/version.json');if(a.siteVersion!==v.src)throw Error('Homepage provenance mismatch');"
-          node tools/pokearena/sync-source-moves.mjs
-          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          bash tools/pokearena/prepare-audited-qa.sh
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/alpha0713-hotfix-navigation-browser.cjs
+          node tests/arena-species-kit-browser.cjs
   catalog:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -62,30 +67,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Detect source version without downloading the whole game
+      - name: Check official VERSION and critical PMD readiness before full capture
         id: probe
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --input-type=module <<'JS'
-          import fs from 'node:fs';
-          let needsCapture=true;
-          try {
-            const res=await fetch('https://www.pokearena2d.com/',{signal:AbortSignal.timeout(18000)});
-            if(!res.ok)throw Error('HTTP '+res.status);
-            const html=await res.text();
-            const match=html.match(/src-[0-9a-f]{10}/);
-            const file='data/pokearena2d-source-moves.json';
-            const previous=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):null;
-            // Compare homepage src to homepage src, not the Phaser modules hash.
-            // Those hashes are distinct; comparing them forced unnecessary full captures.
-            const previousSiteVersion=previous?.siteVersion||null;
-            if(match&&previousSiteVersion===match[0])needsCapture=false;
-            console.log(JSON.stringify({detected:match?.[0]||null,
-              previousSiteVersion,previousModuleVersion:previous?.sourceVersion||null,needsCapture}));
-          }catch(error){console.warn('Source probe inconclusive. Full capture required:',String(error));}
-          fs.appendFileSync(process.env.GITHUB_OUTPUT,'capture='+(needsCapture?'true':'false')+'\n');
-          JS
+        run: node tools/pokearena/catalog-preflight.mjs
+      - name: Preserve probe status even if upstream is unavailable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-native-catalog-preflight
+          path: site-capture/catalog-preflight.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Capture updated public Phaser modules with retries
         if: steps.probe.outputs.capture == 'true'
         shell: bash
@@ -117,8 +109,10 @@ jobs:
             site-capture/CAPTURE-REPORT.json
           retention-days: 14
           if-no-files-found: error
-      - name: Commit only verified catalog metadata (never VFX or saves)
+      - name: Propose verified catalog metadata as a reviewable draft PR (never auto-commit to main)
         if: steps.probe.outputs.capture == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -126,19 +120,25 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- data/pokearena2d-source-moves.json data/pokearena2d-source-changes.json
           if git diff --cached --quiet; then
-            echo 'No new native catalog metadata.'
+            echo 'Official metadata unchanged after audit; main untouched.'
             exit 0
           fi
-          git commit -m 'catalog: synchronize verified Poké Arena 2D native move metadata'
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo 'Main changed incompatibly; refusing to overwrite concurrent work.'
-              exit 1
-            fi
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt*5))
-          done
-          echo 'Could not safely publish metadata to main.'
-          exit 1
+          source="$(node -p "require('./data/pokearena2d-source-moves.json').siteVersion")"
+          [[ "$source" =~ ^src-[a-f0-9]{10}$ ]] || { echo '::error::Invalid source hash'; exit 1; }
+          branch="bot/native-catalog-${source#src-}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "::warning::Catalog review branch $branch already exists; no duplicate or force push."
+            exit 0
+          fi
+          git switch -c "$branch"
+          git commit -m "catalog: verified native move metadata from $source"
+          git fetch origin main
+          if ! git rebase origin/main; then
+            git rebase --abort || true
+            echo '::error::Catalog drift conflicts with main; not overwriting any changes.'
+            exit 1
+          fi
+          git push origin "HEAD:refs/heads/$branch"
+          gh pr create --draft --head "$branch" --base main \
+            --title "Catalog native Poké Arena source $source (metadata only)" \
+            --body "Read-only public source captured and audited. Metadata diff only. Check rights, VFX, kits, saves, full Phaser visual QA before merging. No automatic native gameplay changes."

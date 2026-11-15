@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
 import {getPublicClientResource} from './public-client-http.mjs';
+import {prioritizedNativeSourceTasks} from './capture-critical-assets.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -96,8 +97,11 @@ async function main() {
  // A missing decorative image is not a failed client source capture.
  tasks.delete('assets/ui/portada/dia.jpg');
  details.skipped.push({path:'assets/ui/portada/dia.jpg',reason:'optional original title background; no substitute artwork'});
- details.planned=tasks.size;
- const queue=[...tasks];
+ // Historic inventories do not necessarily name this critical dependency.
+ // Always request the FIRST-PARTY PMD manifest before expanding sprite assets.
+ // A denied/missing manifest remains a hard failure, never a fake success.
+ const queue=prioritizedNativeSourceTasks(tasks);
+ details.planned=queue.length;
  let index=0;
  async function worker(){
   while(index<queue.length){
@@ -291,7 +295,11 @@ async function main() {
  details.unavailable.sort((a,b)=>a.path.localeCompare(b.path));
  details.completed=new Date().toISOString();
  details.totalFiles=details.retrieved.length;
- details.complete=details.retrieved.length===details.planned;
+ // Report file counts but never certify a client with missing mandatory
+ // PMD portraits or animations, even if the historical inventory omitted them.
+ details.complete=details.retrieved.length===details.planned&&
+  details.manifestAssets.missing.length===0&&
+  details.referencedAssets.missing.length===0&&unresolved.length===0;
  await fs.mkdir('site-capture',{recursive:true});
  await fs.writeFile('site-capture/CAPTURE-REPORT.json',JSON.stringify(details,null,2));
  await fs.writeFile('site-capture/README.txt',
@@ -301,6 +309,10 @@ async function main() {
   'Run a static server rooted at pokearena-client/ to inspect local Training. Online functions need separate work.\n');
  console.log(JSON.stringify({files:details.totalFiles,planned:details.planned,bytes:details.totalBytes,
   sourceVersions:details.sourceVersions,unavailable:details.unavailable.slice(0,14),changedHashes:details.changedHashes.length},null,2));
+ if(details.manifestAssets.missing.length)
+  throw Error('Incomplete official PMD sprites: '+details.manifestAssets.missing.slice(0,8).join(', '));
+ if(details.referencedAssets.missing.length)
+  throw Error('Incomplete original JS-referenced assets: '+details.referencedAssets.missing.slice(0,8).join(', '));
  if(details.retrieved.filter(x=>x.path.endsWith('.js')).length<10)
   throw Error('Insufficient real JS source captured; check source origin and site availability');
 }
