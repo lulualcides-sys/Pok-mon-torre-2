@@ -24,7 +24,8 @@ export const PROTECTED_P2_KANTO_IDS=new Set([
 const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
  'thunder':3,
- 'psybeam':3,'psy-beam':3,
+ 'psybeam':3.5,'psy-beam':3.5,
+ 'reversal':3.5,
  'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
  'hex':3.5,
