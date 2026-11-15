@@ -6,6 +6,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {removeNewsTitleOption} from './torre2-title-pokedex-fast.mjs';
+import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
 
 const site=path.resolve(process.env.TORRE2_SITE_ROOT||'_site');
@@ -156,6 +157,12 @@ const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of 
 const combatPatched=combat.replace(nativeSpriteLoad,
  branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad);
 
+// Virtualize only the native Pokedex graphics in the isolated SHA-addressed
+// hotfix tree. The original P2 client and battle roster are never modified.
+const originalDex=await read(path.join(original,'escenas/pokedex.js'));
+const virtualDex=windowNativePokedex(originalDex);
+const perfScript=await read('tools/pokearena/torre2-performance-monitor.js');
+must(perfScript.length>1500,'performance probe missing');
 const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 const title=removeNewsTitleOption(originalTitle);
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
@@ -181,6 +188,7 @@ for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
 inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
+inputHash.update(virtualDex);inputHash.update(perfScript);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -192,11 +200,19 @@ await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
 await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
+await fs.writeFile(path.join(dest,'escenas/pokedex.js'),virtualDex);
+await fs.writeFile(path.join(root,'torre2-performance-monitor.js'),perfScript);
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
 exactly(html,oldModule+'/main.js','native main entrypoint');
 html=html.replace(oldModule+'/main.js',newModule+'/main.js');
 html=html.replaceAll('content="'+oldModule+'"','content="'+newModule+'"');
+// Diagnostics are completely off for normal players; load the probe only
+// when explicitly requested. Do not alter native Phaser scenes or VFX.
+const perfHook='<script>if(new URLSearchParams(location.search).get("torre2-perf")==="1")'+
+ '{const s=document.createElement("script");s.src="./torre2-performance-monitor.js";document.head.append(s)}</script>';
+must(html.split('</body>').length===2,'native index body changed');
+html=html.replace('</body>',perfHook+'</body>');
 await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
 const release={alpha:'0.71.3',source:version.src,baseModules:oldModule,
