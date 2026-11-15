@@ -23,6 +23,7 @@ on:
       - 'tests/arena-native-idle-loading.test.js'
       - 'tests/torre2-pokedex-window.test.js'
       - 'tests/arena-scyther-visible-sprite-browser.cjs'
+      - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tests/trainer-card-route-gym-pages.test.js'
   push:
     branches: [main]
@@ -115,6 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/arena-johto-evolution-built.test.mjs
           node tests/arena-johto-evolutions-browser.cjs
           node tests/arena-species-kit-browser.cjs
           # This pinned 0.71.3 release intentionally replaced TRAINING with
