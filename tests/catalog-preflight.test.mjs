@@ -77,4 +77,9 @@ test('workflow never makes blind catalog updates or silently changes approved ga
  assert.doesNotMatch(workflow,/git push origin HEAD:main/);
  assert.match(workflow,/site-capture\/catalog-preflight\.json/);
  assert.match(workflow,/prepare-audited-qa\.sh/);
+ const head=workflow.slice(workflow.indexOf('permissions:'),workflow.indexOf('concurrency:'));
+ assert.match(head,/contents: read/);
+ assert.doesNotMatch(head,/contents: write|pull-requests: write/);
+ const catalogJob=workflow.slice(workflow.indexOf('  catalog:'));
+ assert.match(catalogJob,/permissions:\n      contents: write\n      pull-requests: write/);
 });
