@@ -587,7 +587,10 @@ const server=http.createServer(async(req,res)=>{
      paso:s.paso,elegidos:s.eleccion,boton:s.botonLuchar?.active,
      ayuda:s.ayuda?.text,combatData:c.datos};
    });
-   console.error('ARENA_FIGHT_BUTTON_DID_NOT_START_COMBAT',JSON.stringify(state));
+   console.error('ARENA_FIGHT_BUTTON_DID_NOT_START_COMBAT',JSON.stringify({
+    state,errors:errors.slice(-12),consoleFailures:consoleFailures.slice(-18),
+    requestFailures:requestFailures.slice(-10),notFound:notFound.slice(-10)
+   }));
    throw e;
   }
   console.log('PHASER_ARENA_FIGHT_CLICK_STARTS_COMBAT',await page.evaluate(()=>{
