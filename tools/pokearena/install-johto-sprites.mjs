@@ -9,7 +9,7 @@ import {JOHTO_100_ROWS} from "./torre2-johto-100-data.js";
 export const JOHTO_SPRITECOLLAB_COMMIT="bbed4cdf28546e18df6f821d78853d54e1e64b56";
 const ROOT="https://raw.githubusercontent.com/PMDCollab/SpriteCollab/"+JOHTO_SPRITECOLLAB_COMMIT+"/";
 const ACTIONS=["Idle","Walk","Attack","Shoot","Charge","Hurt","Faint",
- "Hop","Swing","Double","Rotate","Pose","Strike"];
+ "Hop","Swing","Double","Rotate","Pose","Strike","SpAttack","Emit"];
 const nDex=id=>String(id).padStart(4,"0");
 // Add original PMDCollab Gen-IV Magmortar art without replacing native client sprites.
 const ALL_SPRITE_ROWS=[...JOHTO_100_ROWS,[467,"magmortar"]];
@@ -73,6 +73,28 @@ export async function installJohtoSpriteCollabAssets(site,{
  const missing=ALL_SPRITE_ROWS.filter(p=>!manifest[nDex(p[0])]);
  const jobs=[];
  let totalBytes=0,totalPNG=0;
+ // Earlier installs omitted Magmortar's genuine SpAttack/Emit animations
+ // despite their presence in SpriteCollab AnimData.xml. Heal additive only;
+ // never overwrite native P2 sprite metadata or installed PNG bytes.
+ if(manifest["0467"]?.anims){
+  const existing=manifest["0467"].anims;
+  const missingSpecials=["SpAttack","Emit"].filter(name=>!existing[name]?.file);
+  if(missingSpecials.length){
+   const xml=(await load(ROOT+"sprite/0467/AnimData.xml")).toString("utf8");
+   const fromSource=animations(xml,"0467");
+   const queued=new Set();
+   for(const name of missingSpecials){
+    const info=fromSource[name];
+    if(!info?.file)throw Error("Magmortar genuine "+name+" source missing");
+    existing[name]={...info};
+    if(!queued.has(info.file)){
+     queued.add(info.file);
+     jobs.push({url:ROOT+"sprite/"+info.file,
+      file:path.join(root,info.file),required:true,dex:"0467"});
+    }
+   }
+  }
+ }
  await pool(missing,Math.min(concurrency,12),async row=>{
   const dex=nDex(row[0]);
   const xml=(await load(ROOT+"sprite/"+dex+"/AnimData.xml")).toString("utf8");
@@ -84,7 +106,9 @@ export async function installJohtoSpriteCollabAssets(site,{
   manifest[dex]=info;
   for(const file of distinct)jobs.push({
     url:ROOT+"sprite/"+file,
-    file:path.join(root,file),required:file.endsWith("/Idle-Anim.png"),
+    file:path.join(root,file),
+    required:file.endsWith("/Idle-Anim.png")||
+     (dex==="0467"&&file.endsWith("/SpAttack-Anim.png")),
     dex
   });
   jobs.push({
@@ -117,6 +141,16 @@ export async function installJohtoSpriteCollabAssets(site,{
  for(const row of ALL_SPRITE_ROWS)
   if(!manifest[nDex(row[0])]?.anims?.Idle)
    throw Error("Johto asset coverage incomplete for "+nDex(row[0]));
+ // A manifest-only check misses absent files and missing special-cast
+ // animation. Magmortar uses the real SpriteCollab sheet, never a blank tile.
+ for(const name of ["Idle","Attack","Shoot","SpAttack","Emit"]){
+  const file=manifest["0467"]?.anims?.[name]?.file;
+  if(!file)throw Error("Magmortar battle animation missing: "+name);
+  const entry=path.join(root,file);
+  const stat=await fs.stat(entry).catch(()=>null);
+  if(!stat?.isFile()||stat.size<128)
+   throw Error("Magmortar incomplete battle sheet: "+file);
+ }
  await fs.writeFile(manifestFile,JSON.stringify(manifest));
  await fs.writeFile(path.join(root,"JOHTO-SPRITECOLLAB-CREDITS.txt"),
   "Johto #0152-0251 + Magmortar #0467 art: PMDCollab SpriteCollab.\n"+
