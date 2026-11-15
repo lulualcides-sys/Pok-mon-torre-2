@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,chooseEeveeBranch,installArenaMovePolicy}
+import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,enforceNativeHexCooldown,replaceGengarHyperBeam,chooseEeveeBranch,guardEeveeSingleEvolution,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
 import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
@@ -389,4 +389,71 @@ test('Eevee Arena independently samples Espeon and Umbreon without rewriting P2 
  }finally{Math.random=priorRandom}
  assert.deepEqual([eevee,...extras],original,
   'Never mutate original Eevee or independently installed Johto Pokémon');
+});
+
+test('Hex uses 3.5s in Arena and League, preserving native moves and campaign',()=>{
+ const nativeKit=Object.freeze({
+  lmb:Object.freeze(move('Hex',14,8.5,'GHOST')),
+  rmb:Object.freeze(move('Shadow Ball',20,6,'GHOST')),
+  q:Object.freeze(move('Hex',14,0,'GHOST')),
+  e:Object.freeze(move('Thunderbolt',16,8,'ELECTRIC')),
+  esp:Object.freeze(move('Dodge',0,3))
+ });
+ assert.equal(enforceArenaMoveCooldowns(nativeKit).lmb.cd,3.5);
+ assert.equal(enforceArenaMoveCooldowns(nativeKit).q.cd,3.5);
+ assert.equal(enforceNativeHexCooldown(nativeKit).lmb.cd,3.5);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).rmb,nativeKit.rmb);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).e,nativeKit.e);
+ assert.strictEqual(enforceNativeHexCooldown(nativeKit).esp,nativeKit.esp);
+ assert.equal(nativeKit.lmb.cd,8.5,'Native move source must stay unmodified');
+ class Fighter{
+  constructor(mode){this.def=def;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ const def={id:'gengar',kit:nativeKit,evoluciones:[]};
+ installArenaMovePolicy(Fighter,[def]);
+ for(const mode of ['arena','liga','cpu','entreno']){
+  const kit=new Fighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,mode+' Hex must be 3.5s');
+  assert.equal(kit.q.cd,3.5,mode+' second Hex must be 3.5s');
+  assert.strictEqual(kit.rmb,nativeKit.rmb,'Unrelated native attacks unchanged');
+  assert.strictEqual(kit.e,nativeKit.e,'Unrelated native cooldowns unchanged');
+ }
+ assert.strictEqual(new Fighter('campaign').kitActual(),nativeKit,
+  'Never change campaign move cooldowns');
+});
+
+test('Eevee advances one stage only in each Arena or League battle, despite repeated commands',()=>{
+ const eevee={id:'eevee',kit:{lmb:move('Quick Attack',7)},evoluciones:[
+  {nombre:'VAPOREON',kit:{lmb:move('Water Gun')}},
+  {nombre:'JOLTEON',kit:{lmb:move('Thunderbolt')}},
+  {nombre:'FLAREON',kit:{lmb:move('Ember')}}]};
+ class Fighter{
+  constructor(mode){this.def=eevee;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ installArenaMovePolicy(Fighter,[eevee]);
+ for(const mode of ['arena','liga']){
+  const fighter=new Fighter(mode);
+  assert.equal(fighter.forma.id,'eevee');
+  assert.strictEqual(guardEeveeSingleEvolution(fighter),fighter);
+  fighter.etapa=1;
+  const chosen=fighter.forma.nombre,chosenStage=fighter.etapa;
+  for(let i=0;i<7;i++){
+   fighter.etapa=chosenStage+1;
+   assert.equal(fighter.etapa,chosenStage,mode+' Eevee must not evolve a second time');
+   assert.equal(fighter.forma.nombre,chosen,mode+' Eevee form changes after first evolution');
+  }
+  fighter.etapa=0;
+  assert.equal(fighter.etapa,chosenStage,'Eevee cannot reset and re-evolve during same battle');
+  assert.equal(fighter.puedeEvolucionar,false);
+  assert.equal(new Fighter(mode).etapa,0,'A new battle gets a fresh Eevee');
+ }
+ const campaign=new Fighter('campaign');
+ campaign.etapa=1;campaign.etapa=2;
+ assert.equal(campaign.etapa,2,'Campaign stage handling must remain unchanged');
 });
