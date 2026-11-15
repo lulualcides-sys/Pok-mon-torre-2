@@ -120,6 +120,17 @@ fighter=fighter.replace(previousRegen,
 // Phaser fighter sprite and move kit to its selected dex on the next frame.
 // One-time, per-fighter, offline, after evolution; never repaint in campaign,
 // online, or for any other species. The visual update still belongs to Phaser.
+// Some 0.71.3 Eevee slots retain alternate-costume dex #0133 even after
+// the fighter's evolved form has switched to Umbreon/Espeon. Native dexActual
+// prioritizes that cosmetic alternate. Only the chosen permanent offline
+// branch should override this priority; all other costumes remain native.
+const branchDexAnchor='get dexActual(){return this.alt?.dex??this.forma.dex}';
+exactly(fighter,branchDexAnchor,'native cosmetic-first dex getter');
+const branchDexGetter='get dexActual(){'+
+ 'if(!this.escena?.datos?.torre2&&this.escena?.datos?.modo!=="online"&&'+
+ '(this.def?.id==="eevee"||this.def?.id==="tyrogue")&&this.etapa>0)'+
+ 'return this.forma.dex;return this.alt?.dex??this.forma.dex}';
+fighter=fighter.replace(branchDexAnchor,branchDexGetter);
 const spriteGraphicsAnchor='actualizarGraficos(dt=0){';
 exactly(fighter,spriteGraphicsAnchor,'native sprite update');
 const branchSpriteSync='if(!this.escena?.datos?.torre2&&'+
