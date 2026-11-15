@@ -29,10 +29,10 @@ async function get(url, headers = {}, fetcher = fetch) {
   throw error;
 }
 export async function probe(fetcher = fetch, read = fs.readFile, token = '', repository = '') {
-  const result={source: SOURCE, observed: null, catalogued: null, alpha: null, alphaProof: null, alphaError: null, approvedAlpha: null, status: 'unverified', error: null, captures: {}};
+  const result={source: SOURCE, observed: null, catalogued: null, alpha: null, alphaProof: null, alphaError: null, approvedAlpha: null, approvedSource: null, status: 'unverified', error: null, captures: {}};
   try {result.catalogued=JSON.parse(await read(CATALOG, 'utf8')).siteVersion ?? null;}
   catch(e) {result.error='Catalog unavailable: '+String(e.message || e);}
-  try {result.approvedAlpha=JSON.parse(await read(APPROVED,'utf8')).approvedAlpha??null;} catch {}
+  try {const a=JSON.parse(await read(APPROVED,'utf8'));result.approvedAlpha=a.approvedAlpha??null;result.approvedSource=a.approvedSource??null;} catch {}
   try {
     const html=await get(SOURCE, {}, fetcher);
     result.observed=fingerprint(html);
@@ -47,7 +47,9 @@ export async function probe(fetcher = fetch, read = fs.readFile, token = '', rep
       } catch(e) {result.alphaError='Official config unavailable: '+String(e.message||e);}
     } else result.alphaError='Official main.js source directory missing';
   } catch(e) {result.error='Source inaccessible: '+String(e.message || e);}
-  result.status=compare(result.observed, result.catalogued);
+  // A historical move-catalog fingerprint is NOT the approved deployed source.
+  // Compare against the proven release first, keep the old catalog for context.
+  result.status=compare(result.observed, result.approvedSource||result.catalogued);
   if (token && /^[^/]+\/[^/]+$/.test(repository)) for (const name of RUNS) {
     try {
       const url='https://api.github.com/repos/'+repository+'/actions/workflows/'+name+'/runs?per_page=5';
@@ -65,7 +67,8 @@ export function incident(r) {
     '',
     '- Origem: '+r.source,
     '- Fonte HTML observada: '+(r.observed || 'indisponível'),
-    '- Fonte HTML catalogada: '+(r.catalogued || 'indisponível'),
+    '- Fonte aprovada/publicada: '+(r.approvedSource || 'indisponível'),
+    '- Fonte do catálogo histórico de golpes: '+(r.catalogued || 'indisponível'),
     '- Estado: **'+r.status+'**',
     '- Alpha oficial: **'+(r.alpha || 'não verificada')+'**'+(r.alphaProof?' (config.js público: '+r.alphaProof+')':''),
     '- Alpha aprovada para o Torre 2: **'+(r.approvedAlpha || 'não catalogada')+'**',
@@ -89,6 +92,6 @@ async function main() {
   console.log(JSON.stringify(r,null,2));
   if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT,'attention='+(r.needsAttention?'true':'false')+'\n');
   if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
-    '## Monitor Poké Arena 2D\nFonte: '+(r.observed || 'indisponível')+'\nStatus: '+r.status+'\nAlpha oficial: '+(r.alpha||'não verificada')+'\nAlpha aprovada Torre 2: '+(r.approvedAlpha||'não catalogada')+'\n');
+    '## Monitor Poké Arena 2D\nFonte: '+(r.observed || 'indisponível')+'\nStatus: '+r.status+'\nAlpha oficial: '+(r.alpha||'não verificada')+'\nAlpha aprovada Torre 2: '+(r.approvedAlpha||'não catalogada')+'\nFonte publicada: '+(r.approvedSource||'não catalogada')+'\n');
 }
 if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) main().catch(e=>{console.error(e);process.exitCode=1;});
