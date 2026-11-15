@@ -16,6 +16,7 @@ on:
 # Pull-request QA may read the audited release, but must never write the repo.
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: pokearena-native-moves-watch
   cancel-in-progress: false
