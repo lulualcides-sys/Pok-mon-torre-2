@@ -202,6 +202,29 @@ export function johto100Kit(p,library){
  });
  return kit;
 }
+// The Kanto Scyther #0123 is an ADDITIVE Torre 2 species; original Poké
+// Arena fighters are never modified. Scizor #0212 already owns its approved
+// Johto/Gen-II battle kit and licensed PMD artwork. Reuse that exact stage.
+export function bridgeAddedScytherToScizor(original,added){
+ const parent=original.find(p=>p.id==='scyther'&&
+  p.torre2Kanto151===true&&p.torre2ArenaAdded===true&&Number(p.dex)===123);
+ const child=added.find(p=>p.id==='scizor'&&
+  p.torre2Johto100===true&&p.torre2ArenaAdded===true&&Number(p.dex)===212);
+ if(!parent||!child)return false;
+ const stages=parent.evoluciones||[];
+ if(stages.some(e=>Number(e.dex)===212))return false;
+ // A changed upstream Scyther evolution tree must be inspected explicitly.
+ if(stages.length!==0)return false;
+ if(!child.kit?.lmb?.forma||!child.kit?.e?.forma||
+    !child.hp||!child.vel||!child.atk||!child.def)return false;
+ parent.evoluciones=[...stages,{
+  dex:child.dex,nombre:child.nombre,tipos:[...child.tipos],
+  hp:child.hp,vel:child.vel,atk:child.atk,def:child.def,regen:child.regen,
+  kit:structuredClone(child.kit)
+ }];
+ return true;
+}
+
 export function addAllJohtoSpecies(original){
  const library=johtoMoveLibrary(original);
  // The native P2 roster contains both root species and evolution stages
@@ -283,6 +306,9 @@ export function addAllJohtoSpecies(original){
    }))]
   });
  }
+ // Bind Scyther to the already-installed Scizor, but ONLY for the added
+ // Kanto copy (original P2 roots and Mega forms are read-only).
+ bridgeAddedScytherToScizor(original,result);
  // The newer native ROSTER builder skips the later explicit Magmortar hook.
  // Attach it after the complete Johto roster is built so the existing legal
  // FIRE skill providers are present. The operation is idempotent and mutates
