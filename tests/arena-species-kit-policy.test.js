@@ -423,6 +423,21 @@ test('Hex uses 3.5s in Arena and League, preserving native moves and campaign',(
  }
  assert.strictEqual(new Fighter('campaign').kitActual(),nativeKit,
   'Never change campaign move cooldowns');
+ const johto={id:'sneasel',torre2ArenaAdded:true,torre2Johto100:true,
+  kit:nativeKit,evoluciones:[]};
+ class JohtoFighter{
+  constructor(mode){this.def=johto;this.etapa=0;this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(JohtoFighter,[johto]);
+ for(const mode of ['arena','liga']){
+  const kit=new JohtoFighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,'Johto '+mode+' Hex cooldown');
+  assert.strictEqual(kit.rmb,nativeKit.rmb,'Keep Johto other moves unchanged');
+ }
+ assert.strictEqual(new JohtoFighter('campaign').kitActual(),nativeKit);
 });
 
 test('Eevee advances one stage only in each Arena or League battle, despite repeated commands',()=>{
