@@ -100,14 +100,15 @@ export function enforceArenaMoveCooldowns(kit){
  }
  return output;
 }
-// Native Poké Arena fighters keep their original move kits except for
-// the explicitly requested Hex cooldown in offline Arena and League.
+// Native Poké Arena fighters retain their original kits except for
+// the explicitly requested Hex, Reversal and Psybeam cooldowns outside campaign.
 export function enforceNativeHexCooldown(kit){
  if(!kit||typeof kit!=='object')return kit;
  let output=kit;
  for(const slot of ATTACK_SLOTS){
   const h=kit[slot];
-  if(idOf(h?.nombre)!=='hex'||h.cd===3.5)continue;
+  if(!['hex','reversal','psybeam','psy-beam'].includes(idOf(h?.nombre))||
+     h.cd===3.5)continue;
   if(output===kit)output={...kit};
   output[slot]={...h,cd:3.5};
  }
