@@ -40,6 +40,8 @@ on:
       - 'tests/pokedex-evolution-families-0713.test.mjs'
       - 'tools/pokearena/torre2-pokedex-individual-0713.mjs'
       - 'tools/pokearena/torre2-local-battle-start-0713.mjs'
+      - 'tools/pokearena/torre2-combat-ids-fix-0713.mjs'
+      - 'tests/combat-preload-ids-0713.test.mjs'
       - 'tools/pokearena/torre2-stone-edge-0713.mjs'
       - 'tests/battle-start-stone-edge-0713.test.mjs'
       - 'tests/pokedex-independent-species-0713.test.mjs'
@@ -117,6 +119,7 @@ jobs:
           node --check tools/pokearena/torre2-native-poison-regen-0713.mjs
           node --check tools/pokearena/torre2-pokedex-final-gate-0713.mjs
           node --check tools/pokearena/torre2-local-battle-start-0713.mjs
+          node --check tools/pokearena/torre2-combat-ids-fix-0713.mjs
           node --check tools/pokearena/torre2-stone-edge-0713.mjs
           node --check tools/pokearena/torre2-pokedex-individual-roster.js
           node --check tools/pokearena/torre2-pokedex-individual-0713.mjs
@@ -133,6 +136,7 @@ jobs:
           node --test tests/pokedex-independent-species-0713.test.mjs
           node --test tests/pokedex-evolution-families-0713.test.mjs
           node --test tests/battle-start-stone-edge-0713.test.mjs
+          node --test tests/combat-preload-ids-0713.test.mjs
           node --test tests/audit-source-rights-0713.test.mjs
           node --test tests/rea-public-native-missing.test.mjs tests/rea-public-pmd-manifest.test.mjs tests/native-loose-pmd-compat.test.mjs tests/native-visual-substitute-policy.test.mjs tests/offline-chat-native-resize.test.mjs
       - name: Confirm current official Alpha from config.js by normal Chromium/REA

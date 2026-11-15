@@ -1440,11 +1440,16 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
 // Pokédex data; retain the preapproved legacy pagination only for older
 // verified releases. Never modify published Pages from this diagnostic.
 const {unblockLocalBattleStarts}=await import('./torre2-local-battle-start-0713.mjs');
+const {fixNativeBattleIds0713}=await import('./torre2-combat-ids-fix-0713.mjs');
 const {setNativeStoneEdgeCooldown0713}=await import('./torre2-stone-edge-0713.mjs');
 const modVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
 const localSelection=path.join(dest,clientSource,'escenas/seleccion.js');
 const selectionBefore=await fs.readFile(localSelection,'utf8');
 await fs.writeFile(localSelection,unblockLocalBattleStarts(selectionBefore,modVersion));
+const combatPreload=path.join(dest,clientSource,'escenas/combate.js');
+const oldCombat=await fs.readFile(combatPreload,'utf8');
+await fs.writeFile(combatPreload,fixNativeBattleIds0713(oldCombat,modVersion));
+if(modVersion==='0.71.3')console.log('T2_COMBAT_PRELOAD_EEVEE_IDS_REFERENCE_FIXED');
 const sourceDatos=path.join(dest,clientSource,'datos.js');
 const nativeDataSource=await fs.readFile(sourceDatos,'utf8');
 await fs.writeFile(sourceDatos,setNativeStoneEdgeCooldown0713(nativeDataSource,modVersion,3.5));
