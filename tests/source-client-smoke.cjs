@@ -241,7 +241,7 @@ const server=http.createServer(async(req,res)=>{
    });
    const ch=cards.find(c=>c.torre2DexFamilyMembers?.includes('0152'));
    const mag=cards.find(c=>c.torre2DexFamilyMembers?.includes('0467'));
-   return {cards:cards.length,species:byDex.size,guardian,
+   return {cards:cards.length,species:new Set(cards.flatMap(c=>c.torre2DexFamilyMembers||[])).size,extraForms:byDex.size,guardian,
     ch:ch?.torre2DexFamilyMembers,mag:mag?.torre2DexFamilyMembers,
     tauros:Object.fromEntries(['lmb','rmb','q','e','esp'].map(k=>
       [k,byDex.get('0128')?.kit?.[k]?.nombre])),
@@ -249,6 +249,7 @@ const server=http.createServer(async(req,res)=>{
   });
   console.log('PHASER_POKEDEX_FAMILY_278',JSON.stringify(groups));
   assert.equal(groups.species,278,'All 278 native species must remain available in family tabs');
+  assert.ok(groups.extraForms>=groups.species,'Additional Mega/Power Up forms remain accessible without inflating the species count');
   assert.ok(groups.cards>=90&&groups.cards<278,'Evolution families should share cards');
   assert.deepEqual(groups.guardian.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
   assert.ok(groups.guardian.every(x=>x.alone&&x.attack==='Confusion'));
