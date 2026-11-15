@@ -53,3 +53,11 @@ O estado **aberto** de uma PR não prova que a funcionalidade esteja ausente; a 
 - **Captura upstream independente:** monitor `.github/workflows/pokearena-upstream-watch.yml`, capturas REA próprias. Registrar o erro, não contornar acesso.
 - **Guardião:** `.github/workflows/visual-guard.yml`; **deploy:** `.github/workflows/torre2-alpha0713-hotfix-publish.yml`.
 - Nas próximas atualizações, começar por **este relatório**, `AGENTS.md` e `docs/GUIA-RAPIDO-REPOSITORIO.md`; atualizar o relatório com os novos resultados e remover apenas itens efetivamente resolvidos.
+
+## Proteção automática da próxima atualização de origem
+
+- `data/pokearena-approved-alpha.json` foi corrigido para a última versão **efetivamente implantada** (0.71.3, `src-5ccc174cb8`, commit `c45c8e42...`). O catálogo histórico `data/pokearena2d-source-moves.json` mantém seu hash de **captura própria**, sem forjar recaptura recente.
+- `tools/pokearena/capture-gate.mjs` consulta somente a página pública e o `config.js` para **comparar versão oficial e fingerprint** com a release aprovada. Se ambos forem iguais, não baixa novamente centenas de sprites; se um mudou de forma verificável, a captura independente é liberada.
+- Se a origem negar `config.js`, a captura é **não executada por falta de prova** e documentada em `site-capture/capture-gate.json` e no resumo do GitHub Actions. Isso é **bloqueio de origem**, jamais sucesso de atualização.
+- `.github/workflows/pokearena-source-snapshot.yml` não roda mais uma captura nova em cada push da `main`; permanece o gatilho agendado diário e a verificação manual. O monitor `pokearena-upstream-watch.yml` continua de quatro em quatro horas e pode registrar incidentes.
+- Tests: `tests/capture-gate-policy.test.js` bloqueia retorno ao padrão de recaptura cega ou alteração de versão sem fonte comprovada. Para aprovar uma Alpha posterior, atualizar o manifesto de aprovação **somente depois do deploy validado**, preservando o SHA antigo como rollback.
