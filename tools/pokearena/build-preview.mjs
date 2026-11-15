@@ -1497,6 +1497,10 @@ const individualPokedex=installIndividualPokedex0713(
 const {restoreFamiliesAndMissingSprites0713}=await import('./torre2-pokedex-family-restore-0713.mjs');
 const familyPokedex=restoreFamiliesAndMissingSprites0713(individualPokedex,paginationAlpha);
 await fs.writeFile(pokedexPath,familyPokedex+safeSparsePokedex);
+const pokedexParse=(await import('node:child_process')).spawnSync(
+ process.execPath,['--check',pokedexPath],{encoding:'utf8'});
+if(pokedexParse.status!==0)
+ throw Error('Compiled Pokédex has invalid JavaScript syntax: '+pokedexParse.stderr);
 if(paginationAlpha==='0.71.3')
  console.log('T2_EVOLUTION_FAMILIES_RESTORED_AND_DIRECT_LOOSE_SPRITES');
 if(paginationAlpha==='0.71.3')

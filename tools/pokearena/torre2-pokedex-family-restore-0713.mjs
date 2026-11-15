@@ -52,7 +52,7 @@ export function restoreFamiliesAndMissingSprites0713(source,alpha){
  const end='}create(){';
  const i=s.indexOf(start),j=s.indexOf(end,i);
  if(i<0||j<0||s.indexOf(start,i+1)!==-1)throw Error('Johto preload sequence changed');
- s=s.slice(0,i)+'this.torre2DirectLocal(this._torre2JohtoForms);'+s.slice(j+1);
+ s=s.slice(0,i)+'this.torre2DirectLocal(this._torre2JohtoForms);'+s.slice(j);
  s=replace(s,
   'const info=p.torre2DexNext?"EVOLVES INTO "+p.torre2DexNext+" WHEN EXP IS FULL":et.mega?',
   'const info=(this.etapas?.slice(this.etapa+1).find(x=>x.dex!==et.dex))?'+
