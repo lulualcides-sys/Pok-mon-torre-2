@@ -63,6 +63,8 @@ assert.match(combat,/soltarPMD\(this,m,dexs\)/,
  'Original combat sprite preloading must remain native and alive');
 assert.match(combat,/dex of \["0196","0197"\]/,'Espeon/Umbreon animations unavailable at evolution');
 assert.match(combat,/d\.modo!=="online"/,'Never change online native battle preloading');
+assert.ok(combat.includes('["0123",["0212"]]'),
+ 'Scyther combat must preload genuine Scizor texture before EVO');
 console.log('PASS_BUILT_ARENA_JOHTO',JSON.stringify({
  release:modules,magbyStages:stages.map(e=>e.nombre),
  tyrogueBranches:tyrogue.evoluciones.map(e=>e.nombre),
