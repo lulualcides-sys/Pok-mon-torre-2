@@ -101,16 +101,18 @@ export function enforceArenaMoveCooldowns(kit){
  return output;
 }
 // Native Poké Arena fighters retain their original kits except for
-// the explicitly requested Hex, Reversal and Psybeam cooldowns outside campaign.
+// explicitly requested Hex, Reversal, Psybeam and Discharge cooldowns outside campaign.
 export function enforceNativeHexCooldown(kit){
  if(!kit||typeof kit!=='object')return kit;
  let output=kit;
  for(const slot of ATTACK_SLOTS){
   const h=kit[slot];
-  if(!['hex','reversal','psybeam','psy-beam'].includes(idOf(h?.nombre))||
-     h.cd===3.5)continue;
+  const move=idOf(h?.nombre);
+  const target=['hex','reversal','psybeam','psy-beam'].includes(move)?3.5:
+   ['discharge','descarga'].includes(move)?3:null;
+  if(target===null||h.cd===target)continue;
   if(output===kit)output={...kit};
-  output[slot]={...h,cd:3.5};
+  output[slot]={...h,cd:target};
  }
  return output;
 }
@@ -262,12 +264,14 @@ export function chooseEeveeBranch(count,random=Math.random){
  const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
  return Math.floor(safe*count)+1;
 }
-// Eevee's five outcomes are alternatives, not sequential evolutions.
-// Guard the fighter-local stage against a second evolution in the same battle.
-// The first random branch remap is exempt; global P2 roster stays untouched.
-export function guardEeveeSingleEvolution(fighter){
- if(fighter?.def?.id!=='eevee'||fighter?.escena?.datos?.torre2||
-    fighter.__torre2EeveeStageGuard)return fighter;
+// Eevee and Tyrogue have ALTERNATIVE branches, not sequential stages.
+// Install a fighter-local stage guard before the native evolution decision.
+// Preserve campaign/PvP and keep every original roster record immutable.
+function guardSingleBranchEvolution(fighter,species){
+ if(fighter?.def?.id!==species||fighter?.escena?.datos?.torre2)return fighter;
+ const guardKey=species==='eevee'?'__torre2EeveeStageGuard':'__torre2TyrogueStageGuard';
+ const settingKey=species==='eevee'?'__torre2EeveeSettingBranch':'__torre2TyrogueSettingBranch';
+ if(fighter[guardKey])return fighter;
  const descriptor=Object.getOwnPropertyDescriptor(fighter,'etapa');
  if(descriptor&&(!('value' in descriptor)||descriptor.configurable===false))
   return fighter;
@@ -277,17 +281,18 @@ export function guardEeveeSingleEvolution(fighter){
   configurable:true,enumerable:descriptor?.enumerable??true,
   get(){return stage;},
   set(value){
-   if(!this.escena?.datos?.torre2&&!this.__torre2EeveeSettingBranch){
+   if(!this.escena?.datos?.torre2&&!this[settingKey]){
     if(evolved&&value!==stage)return;
     if(Number(value)>0)evolved=true;
    }
    stage=value;
   }
  });
- Object.defineProperty(fighter,'__torre2EeveeStageGuard',
-  {value:true,configurable:true});
+ Object.defineProperty(fighter,guardKey,{value:true,configurable:true});
  return fighter;
 }
+export const guardEeveeSingleEvolution=fighter=>guardSingleBranchEvolution(fighter,'eevee');
+export const guardTyrogueSingleEvolution=fighter=>guardSingleBranchEvolution(fighter,'tyrogue');
 export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const proto=Luchador.prototype,originalKit=proto.kitActual;
  if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
@@ -331,6 +336,21 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
  if(!formaDescriptor?.get)throw Error('Unknown Arena evolution getter');
  Object.defineProperty(proto,'forma',{...formaDescriptor,get:function(){
+  if(!this.escena?.datos?.torre2&&this.def?.id==='tyrogue'){
+   guardTyrogueSingleEvolution(this);
+   const form=formaDescriptor.get.call(this);
+   if(!(this.etapa>0)||this.__torre2TyrogueEvolution)return form;
+   const options=this.def.evoluciones||[];
+   const names=['hitmonchan','hitmonlee','hitmontop'];
+   const branches=names.map(name=>options.findIndex(e=>idOf(e?.nombre)===name));
+   if(branches.some(index=>index<0))return form;
+   const chosen=branches[chooseEeveeBranch(branches.length)-1];
+   this.__torre2TyrogueEvolution=options[chosen].nombre;
+   this.__torre2TyrogueSettingBranch=true;
+   try{this.etapa=chosen+1;}
+   finally{delete this.__torre2TyrogueSettingBranch;}
+   return formaDescriptor.get.call(this);
+  }
   if(this.escena?.datos?.torre2||this.def?.id!=='eevee')
    return formaDescriptor.get.call(this);
   guardEeveeSingleEvolution(this);
@@ -361,6 +381,10 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  if(evoDescriptor?.get)Object.defineProperty(proto,'puedeEvolucionar',{...evoDescriptor,get:function(){
   if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'){
    guardEeveeSingleEvolution(this); // Install before the first native EVO decision.
+   if(this.etapa>0)return false;
+  }
+  if(!this.escena?.datos?.torre2&&this.def?.id==='tyrogue'){
+   guardTyrogueSingleEvolution(this);
    if(this.etapa>0)return false;
   }
   return evoDescriptor.get.call(this);
