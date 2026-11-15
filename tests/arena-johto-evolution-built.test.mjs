@@ -9,6 +9,18 @@ const {ROSTER}=await import(pathToFileURL(path.join(root,modules,'datos.js')).hr
 const find=id=>ROSTER.find(p=>p.id===id);
 const magby=find('magby'),magmar=find('magmar'),eevee=find('eevee'),
  togepi=find('togepi'),togetic=find('togetic'),tyrogue=find('tyrogue');
+const scyther=find('scyther'),scizor=find('scizor');
+assert.ok(scyther?.torre2ArenaAdded&&scyther?.torre2Kanto151,
+ 'Scyther must be an added Kanto offline fighter, not native P2');
+assert.ok(scizor?.torre2ArenaAdded&&scizor?.torre2Johto100,
+ 'Scizor must be an already installed Johto fighter');
+assert.deepEqual(scyther.evoluciones.map(x=>[x.dex,x.nombre]),
+ [['0212','SCIZOR']], 'Scyther must evolve once into genuine #0212');
+assert.deepEqual(scyther.evoluciones[0].kit,scizor.kit,
+ 'Scizor stage must reuse approved installed Johto moves without new VFX');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'assets/pmd/manifest.json'),'utf8'));
+for(const dex of ['0123','0212'])
+ assert.ok(manifest[dex]?.anims?.Idle?.file,'Evolved Scyther idle sprite missing: '+dex);
 assert.ok(magby?.torre2ArenaAdded,'Missing added Magby');
 assert.ok(magmar,'Missing Kanto Magmar');
 assert.ok(eevee&&find('espeon')&&find('umbreon'),'Eevee has no installed Johto branch source');
