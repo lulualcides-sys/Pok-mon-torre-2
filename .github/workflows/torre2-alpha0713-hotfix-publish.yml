@@ -23,6 +23,7 @@ on:
       - 'tests/arena-native-idle-loading.test.js'
       - 'tests/torre2-pokedex-window.test.js'
       - 'tests/arena-scyther-visible-sprite-browser.cjs'
+      - 'tests/torre2-evolution-sprite-continuity.test.js'
       - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tests/trainer-card-route-gym-pages.test.js'
   push:
@@ -111,7 +112,7 @@ jobs:
           VERIFY
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/torre2-evolution-sprite-continuity.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail

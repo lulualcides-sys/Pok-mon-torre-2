@@ -175,6 +175,24 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(evidence.evolution.to,'SCIZOR');
   assert.ok(evidence.evolution.kit);
+  // Regression: an EVO must not reset the Walk/Attack sheet back to Idle
+  // every update. Check the real native Phaser renderer, not mock textures.
+  evidence.animationContinuity=await mobile.p.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+   me.moviendo=true;me.dash=null;me.animAccion=null;me.pose=null;
+   me.dolorHasta=-10;me.est={};
+   const samples=[];
+   for(let i=0;i<12;i++){
+    me.actualizarGraficos(1/60);
+    samples.push({texture:me.spr.texture?.key,anim:me.spr.anims.currentAnim?.key,
+     playing:me.spr.anims.isPlaying});
+   }
+   return samples;
+  });
+  assert.ok(evidence.animationContinuity.every(s=>s.texture==='pmd-0212-Walk'&&
+   s.anim?.includes('-Walk-')&&s.playing),
+   'Scizor must animate walking continuously, not slide on an Idle sprite: '+
+    JSON.stringify(evidence.animationContinuity));
   assert.deepEqual(mobile.errs,[],'Scyther battle evolved with no JS exception');
   console.log('PASS_SCYTHER_SCIZOR_REAL_MOBILE_EVOLUTION',JSON.stringify(evidence.evolution));
  }finally{
