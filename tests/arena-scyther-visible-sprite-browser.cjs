@@ -33,9 +33,22 @@ const server=http.createServer(async(req,res)=>{
   };
   // EXACTLY the real six CPU slots in the user's screenshot, not synthetic cards.
   const {p,errs}=await makePage({viewport:{width:1120,height:720}});
-  const ids=['murkrow','scyther','voltorb','lanturn','clefairy','ho-oh'];
+  const seats=await p.evaluate(async()=>{
+   const main=[...document.scripts].find(x=>x.src.includes('/main.js'));
+   if(!main?.src)throw Error('Missing approved native entrypoint');
+   const {ROSTER}=await import(new URL('./datos.js',main.src));
+   const expected=['murkrow','scyther','voltorb','lanturn','clefairy','ho-oh'];
+   const available=new Set(ROSTER.map(x=>x.id));
+   if(!available.has('scyther'))throw Error('Scyther missing from approved built roster');
+   const ids=expected.filter(id=>available.has(id));
+   for(const x of ROSTER)if(ids.length<6&&!ids.includes(x.id))ids.push(x.id);
+   if(ids.length!==6)throw Error('Insufficient approved Arena roster');
+   return {ids,unavailable:expected.filter(id=>!available.has(id)),
+    count:ROSTER.length};
+  });
+  console.log('ARENA_VERIFIED_ROSTER',JSON.stringify(seats));
   await p.evaluate(ids=>window.__pt2Game.scene.getScene('titulo').scene.start(
-   'preparar',{previo:{jugadores:ids.map(id=>({id,disp:'cpu'}))}}),ids);
+   'preparar',{previo:{jugadores:ids.map(id=>({id,disp:'cpu'}))}}),seats.ids);
   await p.waitForFunction(()=>window.__pt2Game?.scene.isActive('preparar')&&
    window.__pt2Game.scene.getScene('preparar').tarjetas?.length===6,
    null,{timeout:18000}).catch(async error=>{
