@@ -33,7 +33,7 @@ test('opt-in metrics remain read-only and expose bounded FPS/network snapshot',(
  assert.equal(x.window.document.body.child,x.panel);
  let next=x.frames.shift();
  for(let i=0;i<70;i++){
-  next(1000+i*16.67);
+  next(2000+i*16.67);
   next=x.frames.shift();
  }
  const sample=x.window.__torre2Perf.snapshot();
