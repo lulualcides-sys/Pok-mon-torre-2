@@ -142,6 +142,35 @@ const server=http.createServer(async(req,res)=>{
    throw new Error('Umbreon PMD never replaced the sprite: '+JSON.stringify(state)+'; '+error);
   });
   assert.ok(umbreon.kit.some(Boolean),'Evolved Eevee lost its skills');
+  // Real mobile EVO must choose each Tyrogue branch exactly once.
+  // Each roll uses an independent new battle (not a fake roster mutation).
+  for(const [roll,expected,dex] of [
+   [0,'HITMONCHAN','0107'],[.40,'HITMONLEE','0106'],[.99,'HITMONTOP','0237']
+  ]){
+   const initial=await battle('tyrogue');
+   assert.deepEqual(initial.stages,['HITMONCHAN','HITMONLEE','HITMONTOP']);
+   await page.evaluate(value=>{window.__tyroguePriorRandom=Math.random;Math.random=()=>value},roll);
+   let chosen;
+   try{chosen=await evo();}
+   finally{await page.evaluate(()=>{Math.random=window.__tyroguePriorRandom})}
+   assert.equal(chosen.name,expected,'Tyrogue must choose a legitimate branch '+roll);
+   assert.equal(chosen.dex,dex,'Tyrogue must equip the correct battle art '+expected);
+   assert.ok(chosen.kit.some(Boolean),'Tyrogue '+expected+' has no usable attacks');
+   await page.waitForFunction(dex=>{
+    const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    return w.spr?.texture?.key?.includes(dex);
+   },dex,{timeout:9000});
+   const stable=await page.evaluate(()=>{
+    const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
+    const initial=w.etapa;
+    w.etapa=initial+1;
+    return {actual:w.etapa,expected:initial,can:w.puedeEvolucionar,
+     name:w.forma.nombre};
+   });
+   assert.equal(stable.actual,stable.expected,'Tyrogue cannot re-evolve');
+   assert.equal(stable.can,false,'Tyrogue has only one evolution per fight');
+   assert.equal(stable.name,expected,'No accidental branch change');
+  }
   const togepi=await battle('togepi');
   assert.ok(togepi.buttons?.includes('lmb'),'Togepi cannot attack in Arena');
   const kit=await page.evaluate(()=>{
