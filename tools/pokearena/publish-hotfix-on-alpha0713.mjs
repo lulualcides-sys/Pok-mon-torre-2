@@ -69,6 +69,29 @@ const looseDex=['0467','0236','0237'];
 const packageOverride='if(["0467","0236","0237"].includes(dex))return null;';
 const packsPatched=packs.replace(packAnchor,packAnchor+packageOverride);
 
+// In this exact Alpha 0.71.3 snapshot the native Eevee has two obsolete
+// self-stages (DEX 0133), not the real evolutions. Reconstruct ONLY its
+// offline candidate stage descriptors from installed Kanto/Johto libraries.
+// No made-up VFX, types, statistics, scripts, or replacement of original P2.
+const sourceRoster=await read(path.join(original,'datos.js'));
+const rosterAnchor='upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=';
+exactly(sourceRoster,rosterAnchor,'native 0.71.3 roster factory');
+const eeveeBranches=[
+ 'const __pt2Eevee=TODOS.find(p=>p.id==="eevee");',
+ 'const __pt2KantoEevee=addAllKantoSpecies(TODOS.filter(p=>p.id!=="eevee")).find(p=>p.id==="eevee");',
+ 'const __pt2JohtoEevee=["espeon","umbreon"].map(id=>TODOS.find(p=>p.id===id));',
+ 'if(!__pt2Eevee||__pt2KantoEevee?.evoluciones?.length!==3||__pt2JohtoEevee.some(p=>!p?.kit?.lmb?.forma))',
+ 'throw Error("Eevee branches require five installed native legal battle kits");',
+ '__pt2Eevee.evoluciones=[',
+ '...__pt2KantoEevee.evoluciones.map(p=>({...p})),',
+ '...__pt2JohtoEevee.map(p=>({dex:p.dex,nombre:p.nombre,tipos:[...p.tipos],',
+ ' hp:p.hp,atk:p.atk,def:p.def,vel:p.vel,regen:p.regen,kit:p.kit}))];',
+ 'if(__pt2Eevee.evoluciones.some(p=>!p?.kit?.lmb?.forma||!p.dex))',
+ 'throw Error("Missing Eevee real evolution moves or art");'
+].join('');
+const rosterPatched=sourceRoster.replace(rosterAnchor,
+ 'upgradeKantoEvolutionBattleKits(TODOS);'+eeveeBranches+'const ROSTER=');
+
 const nativeSkills=await read(path.join(original,'habilidades.js'));
 const fxImport='import{TORRE2_FORMS}from"./torre2/signature-fx.js";';
 const fxSpread='const FORMAS={...TORRE2_FORMS,';
@@ -129,6 +152,7 @@ inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
 inputHash.update(packsPatched);
+inputHash.update(rosterPatched);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -139,6 +163,7 @@ await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
+await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
 exactly(html,oldModule+'/main.js','native main entrypoint');
