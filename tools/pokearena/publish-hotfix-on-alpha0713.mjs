@@ -160,20 +160,6 @@ const combatPatched=combat.replace(nativeSpriteLoad,
 // Virtualize only the native Pokedex graphics in the isolated SHA-addressed
 // hotfix tree. The original P2 client and battle roster are never modified.
 const originalDex=await read(path.join(original,'escenas/pokedex.js'));
-const excerpt=(anchor,n=850)=>{const i=originalDex.indexOf(anchor);return i<0?'NOT_FOUND':originalDex.slice(i,i+n)};
-console.log('P2_0713_DEX_SHAPE',JSON.stringify({
-  rosterCards:excerpt('this.casillas='),
-  familyCard:excerpt('casilla(p,x,y,i){'),
-  choose:excerpt('elegir(i){'),
-  paging:excerpt('torre2DexLoadPage(page){'),
-  lazyPreload:excerpt('preload(){'),
-  familyMarker:originalDex.includes('TORRE2_DEX_FAMILIES'),
-  updatePage:excerpt('actualizarPaginaDex(){',2100),
-  loadPage:excerpt('torre2CargarPagina(',2100),
-  buttons:excerpt('controlesPaginaDex(){',1200),
-  directLocal:excerpt('torre2DirectLocal(',1200),
-  firstRow:excerpt('PAGE_SIZE=',500)
-}));
 const virtualDex=windowNativePokedex(originalDex);
 const perfScript=await read('tools/pokearena/torre2-performance-monitor.js');
 must(perfScript.length>1500,'performance probe missing');
