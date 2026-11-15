@@ -239,7 +239,7 @@ function earth(l,h,extra){
  const o=start(l,h),p=PALETTES[h.palette];
  const distance=Math.min(h.alcance,Math.hypot((l.ax??l.x)-l.x,(l.ay??l.y)-l.y));
  const point={x:o.x+o.c*distance,y:o.y+o.s*distance};
- let age=0,checked=false;
+ let age=0,checked=false,landed=false,hitPoint=null;
  return lifecycle(l,(dt,g)=>{
   age+=dt;g.clear();
   if(age<.27){
@@ -247,8 +247,18 @@ function earth(l,h,extra){
    for(let j=0;j<4;j++)pixel(g,point.x+(j-1.5)*9,point.y+10-Math.sin(age*18+j)*3,p[3],2,.7);
   }else{
    drawMove(g,h,point.x,point.y,Math.min(11,Math.floor((age-.27)*24)));
-   if(!checked&&age>=.36){checked=true;const r=l.rival;if(swept(point,point,r,22))strike(l,r,h,extra);}
-   if(age>.42)impact(g,point.x,point.y,p,age-.42,2);
+   if(!checked&&age>=.36){
+    checked=true;
+    const r=l.rival,contact=swept(point,point,r,22);
+    if(contact){
+     const result=strike(l,r,h,extra);
+     landed=result.landed;
+     if(landed)hitPoint=contact;
+    }
+   }
+   // The fissure is a telegraph, not proof of damage: no hit burst on miss,
+   // dodge, immunity or KO. Leave the original crack/pillar renderer intact.
+   if(landed&&hitPoint&&age>.42)impact(g,hitPoint.x,hitPoint.y,p,age-.42,2);
   }
   return age<.94;
  });
