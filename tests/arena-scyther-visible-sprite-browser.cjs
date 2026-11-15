@@ -138,8 +138,12 @@ const server=http.createServer(async(req,res)=>{
    if(!b)throw Error('No real mobile EVO input');
    const at=p.pos(b),o=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
    p.abajo({id:94,x:(at.x-o.x)/(unit.x-o.x),y:(at.y-o.y)/(unit.y-o.y)});
-   p.leer(v=>({ax:v.x,ay:v.y}));
-   return{stage:me.etapa,canEvolve:me.puedeEvolucionar,forms:me.def.evoluciones?.map(e=>e.nombre)};
+   const input=p.leer(v=>({ax:v.x,ay:v.y}));
+   return{stage:me.etapa,canEvolve:me.puedeEvolucionar,
+    forms:me.def.evoluciones?.map(e=>e.nombre),
+    buttonRegistered:input.mega,
+    scizorPreloaded:window.__torre2HotfixPreloads?.includes('0212')??false,
+    spriteReady:s.textures.exists('pmd-0212-Idle')};
   });
   assert.ok(pre.canEvolve,'Scyther should be able to evolve after real EXP');
   assert.deepEqual(pre.forms,['SCIZOR']);
