@@ -27,6 +27,7 @@ const ARENA_CD=Object.freeze({
  'psybeam':3,'psy-beam':3,
  'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
+ 'hex':3.5,
  'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
@@ -95,6 +96,19 @@ export function enforceArenaMoveCooldowns(kit){
    if(output===kit)output={...kit};
    output[slot]={...h,cd:target};
   }
+ }
+ return output;
+}
+// Native Poké Arena fighters keep their original move kits except for
+// the explicitly requested Hex cooldown in offline Arena and League.
+export function enforceNativeHexCooldown(kit){
+ if(!kit||typeof kit!=='object')return kit;
+ let output=kit;
+ for(const slot of ATTACK_SLOTS){
+  const h=kit[slot];
+  if(idOf(h?.nombre)!=='hex'||h.cd===3.5)continue;
+  if(output===kit)output={...kit};
+  output[slot]={...h,cd:3.5};
  }
  return output;
 }
@@ -246,6 +260,32 @@ export function chooseEeveeBranch(count,random=Math.random){
  const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
  return Math.floor(safe*count)+1;
 }
+// Eevee's five outcomes are alternatives, not sequential evolutions.
+// Guard the fighter-local stage against a second evolution in the same battle.
+// The first random branch remap is exempt; global P2 roster stays untouched.
+export function guardEeveeSingleEvolution(fighter){
+ if(fighter?.def?.id!=='eevee'||fighter?.escena?.datos?.torre2||
+    fighter.__torre2EeveeStageGuard)return fighter;
+ const descriptor=Object.getOwnPropertyDescriptor(fighter,'etapa');
+ if(descriptor&&(!('value' in descriptor)||descriptor.configurable===false))
+  return fighter;
+ let stage=fighter.etapa;
+ let evolved=Number(stage)>0;
+ Object.defineProperty(fighter,'etapa',{
+  configurable:true,enumerable:descriptor?.enumerable??true,
+  get(){return stage;},
+  set(value){
+   if(!this.escena?.datos?.torre2&&!this.__torre2EeveeSettingBranch){
+    if(evolved&&value!==stage)return;
+    if(Number(value)>0)evolved=true;
+   }
+   stage=value;
+  }
+ });
+ Object.defineProperty(fighter,'__torre2EeveeStageGuard',
+  {value:true,configurable:true});
+ return fighter;
+}
 export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const proto=Luchador.prototype,originalKit=proto.kitActual;
  if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
@@ -289,9 +329,11 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
  if(!formaDescriptor?.get)throw Error('Unknown Arena evolution getter');
  Object.defineProperty(proto,'forma',{...formaDescriptor,get:function(){
+  if(this.escena?.datos?.torre2||this.def?.id!=='eevee')
+   return formaDescriptor.get.call(this);
+  guardEeveeSingleEvolution(this);
   const form=formaDescriptor.get.call(this);
-  if(this.escena?.datos?.torre2||this.def?.id!=='eevee'||!(this.etapa>0))
-   return form;
+  if(!(this.etapa>0))return form;
   if(!this.__torre2EeveeEvolution){
    // Only the evolving fighter receives a cloned descriptor with Johto
    // options; the global P2 Eevee and its original kits stay immutable.
@@ -307,7 +349,9 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
    if(choices.length<3)return form;
    const pick=chooseEeveeBranch(choices.length);
    this.__torre2EeveeEvolution=choices[pick-1].nombre;
-   this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
+   this.__torre2EeveeSettingBranch=true;
+   try{this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;}
+   finally{delete this.__torre2EeveeSettingBranch;}
   }
   return formaDescriptor.get.call(this); // retain complete merged stage stats
  }});
@@ -323,7 +367,7 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
   // Native P2 battle kits stay exactly as they came from original client.
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
-   return original;
+   return enforceNativeHexCooldown(original);
   // Johto was chosen using genuine species FRLG/approved attacks, not
   // Kanto Arena-121 fallback or native cooldown rewrite.
   // Eevee's stage is built from the actual installed Johto form. Never
