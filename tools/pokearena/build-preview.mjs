@@ -403,6 +403,7 @@ await Promise.all([
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
  ['tools/pokearena/torre2-pokedex-families.js','pokedex-families.js'],
  ['tools/pokearena/torre2-pokedex-individual-roster.js','pokedex-individual-roster.js'],
+ ['tools/pokearena/torre2-pokedex-family-cards.js','pokedex-family-cards.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-magmar-family.js','magmar-family.js'],
  ['tools/pokearena/torre2-wobbuffet-native.js','wobbuffet-native.js'],
@@ -1493,7 +1494,11 @@ Pokedex.prototype.movimientos=function(...args){
 const {installIndividualPokedex0713}=await import('./torre2-pokedex-individual-0713.mjs');
 const individualPokedex=installIndividualPokedex0713(
  paginatedPokedex,paginationAlpha);
-await fs.writeFile(pokedexPath,individualPokedex+safeSparsePokedex);
+const {restoreFamiliesAndMissingSprites0713}=await import('./torre2-pokedex-family-restore-0713.mjs');
+const familyPokedex=restoreFamiliesAndMissingSprites0713(individualPokedex,paginationAlpha);
+await fs.writeFile(pokedexPath,familyPokedex+safeSparsePokedex);
+if(paginationAlpha==='0.71.3')
+ console.log('T2_EVOLUTION_FAMILIES_RESTORED_AND_DIRECT_LOOSE_SPRITES');
 if(paginationAlpha==='0.71.3')
  console.log('P2_ALPHA0713_POKEDEX_INDIVIDUAL_SPECIES_AND_JOHTO_PRELOAD');
 
