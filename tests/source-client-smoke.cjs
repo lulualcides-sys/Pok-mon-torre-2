@@ -144,8 +144,8 @@ const server=http.createServer(async(req,res)=>{
   console.log('PHASER_PLAY_MENU_GEOMETRY',JSON.stringify(subMenuLayout));
   assert.ok(subMenuLayout.bottoms.every(bottom=>bottom<312),
    'PLAY submenu must not overlap the decorative ground line: '+JSON.stringify(subMenuLayout.positions));
-  // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
-  // native layout and clickable evolution tabs must remain unchanged.
+  // Alpha 0.71.3: 278 species, one independent encyclopedia card per dex.
+  // The BATTLE ROSTER, evolution mechanics, VFX and save IDs remain native.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
   const dexBad=[];dexPage.on('response',res=>{if(res.status()>=400&&dexBad.length<50)dexBad.push({status:res.status(),url:res.url()});});
@@ -177,11 +177,39 @@ const server=http.createServer(async(req,res)=>{
     bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
     tabNames:p.etapas.map(x=>x.nombre)};
   });
-  assert.ok(dexData.count>=36,
-   'Pokédex should retain 26 native cards and add ten original early-Kanto species');
+  console.log('PHASER_POKEDEX_GEOMETRY',JSON.stringify(dexData));
+  // Source Alpha 0.71.3's Crobat pack (0169) is absent, but the complete
+  // original loose sprites were verified. Never silently 404 an indexed
+  // species while passing a smoke test that loads the Pokédex.
+  const missingCrobatPack='a3a93436eb3b3abdd343.bin';
+  assert.ok(!notFound.some(item=>item.url.endsWith('/assets/p/'+missingCrobatPack)),
+   'The Crobat native PMD loader must route verified loose PNGs, not a missing 404 bin');
+  if(dexData.count>=36&&dexData.visibleCount===25){
+   const pages=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    if(typeof p.irPaginaDex!=='function')return null;
+    const first=p.dexPage;
+    const firstVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    p.irPaginaDex(1);
+    const second=p.dexPage,secondVisible=p.casillas.map((c,i)=>c.g?.visible?i:-1).filter(i=>i>=0);
+    const staleInteractive=p.casillas.filter((c,i)=>!c.g?.visible&&c.zone?.input?.enabled).length;
+    p.irPaginaDex(-1);
+    return {first,second,restored:p.dexPage,firstVisible,secondVisible,staleInteractive};
+   });
+   if(pages){
+    console.log('PHASER_POKEDEX_PAGE_NAVIGATION',JSON.stringify(pages));
+    assert.equal(pages.second,(pages.first+1)%Math.ceil(dexData.count/25),'Next Pokédex page must advance');
+    assert.equal(pages.restored,pages.first,'Previous page must restore focus');
+    assert.equal(pages.firstVisible.length,25,'Native first page must show 25 cards');
+    assert.ok(pages.secondVisible.length>0&&pages.secondVisible.length<=25,'Next page has visible cards');
+    assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
+   }
+  }
+  assert.ok(dexData.count>=90&&dexData.count<278,
+   'Family cards must group the 278 species without losing the national catalog');
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Native P2 family cards cannot overlap the Pokémon pedestal');
-  assert.equal(dexData.visibleCount,25,'Native 5-column Pokédex shows one entry per family');
+  assert.equal(dexData.visibleCount,25,'Family Pokédex shows only 25 cards per page');
   if(!dexData.portraits.every(x=>x.exists&&x.idle)){
    const diag=await dexPage.evaluate(()=>{
     const p=window.__pt2Game?.scene?.getScene('pokedex');
@@ -200,18 +228,91 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
-  assert.deepEqual(dexData.tabNames.slice(0,3),['BULBASAUR','IVYSAUR','VENUSAUR'],
-   'Original Bulbasaur family tabs must remain clickable');
-  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(1));
-  await dexPage.waitForFunction(()=>{
+  const groups=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
-   return p.etapa===1&&p.anims.exists('0002-Idle-0')&&p.sprite?.dex==='0002';
-  },null,{timeout:16000});
-  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(2));
-  await dexPage.waitForFunction(()=>{
-   const p=window.__pt2Game.scene.getScene('pokedex');
-   return p.etapa===2&&p.anims.exists('0003-Idle-0')&&p.sprite?.dex==='0003';
-  },null,{timeout:16000});
+   const cards=p.casillas.map(c=>c.p),byDex=new Map();
+   for(const c of cards)for(const stage of c.torre2DexStages||[]){
+    if(!byDex.has(stage.dex))byDex.set(stage.dex,stage);
+   }
+   const guardian=['0480','0481','0482'].map(id=>{
+    const card=cards.find(c=>c.torre2DexFamilyMembers?.includes(id));
+    return {name:byDex.get(id)?.nombre,alone:card?.torre2DexFamilyMembers.length===1,
+     attack:byDex.get(id)?.kit?.lmb?.nombre};
+   });
+   const ch=cards.find(c=>c.torre2DexFamilyMembers?.includes('0152'));
+   const mag=cards.find(c=>c.torre2DexFamilyMembers?.includes('0467'));
+   return {cards:cards.length,species:new Set(cards.flatMap(c=>c.torre2DexFamilyMembers||[])).size,extraForms:byDex.size,guardian,
+    ch:ch?.torre2DexFamilyMembers,mag:mag?.torre2DexFamilyMembers,
+    tauros:Object.fromEntries(['lmb','rmb','q','e','esp'].map(k=>
+      [k,byDex.get('0128')?.kit?.[k]?.nombre])),
+    ditto:byDex.get('0132')?.kit?.lmb?.nombre};
+  });
+  console.log('PHASER_POKEDEX_FAMILY_278',JSON.stringify(groups));
+  assert.equal(groups.species,278,'All 278 native species must remain available in family tabs');
+  assert.ok(groups.extraForms>=groups.species,'Additional Mega/Power Up forms remain accessible without inflating the species count');
+  assert.ok(groups.cards>=90&&groups.cards<278,'Evolution families should share cards');
+  assert.deepEqual(groups.guardian.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
+  assert.ok(groups.guardian.every(x=>x.alone&&x.attack==='Confusion'));
+  assert.deepEqual(groups.ch,['0152','0153','0154']);
+  assert.deepEqual(groups.mag,['0240','0126','0467']);
+  assert.deepEqual(groups.tauros,{
+   lmb:'Horn Attack',rmb:'Take Down',q:'Headbutt',e:'Giga Impact',esp:'Dodge'});
+  assert.equal(groups.ditto,'Pound');
+  // The Gen II source sprite sheets and all 100 local portraits are part of
+  // the artifact and are preloaded, not fetched only after the page is shown.
+  try{
+   await dexPage.waitForFunction(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    const cards=[...new Map(p.casillas.flatMap(c=>c.p.torre2DexStages||[]).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251).map(v=>[v.dex,v])).values()];
+    return cards.length===100&&cards.every(v=>
+     p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0'));
+   },null,{timeout:20000});
+  }catch(e){
+   const missing=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    const johto=[...new Map(p.casillas.flatMap(c=>c.p.torre2DexStages||[]).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251).map(v=>[v.dex,v])).values()];
+    return {count:johto.length,ready:johto.filter(v=>
+      p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0')).length,
+      missing:johto.filter(v=>!p.textures.exists('retrato-'+v.dex)||
+        !p.anims.exists(v.dex+'-Idle-0')).map(v=>({
+        dex:v.dex,portrait:p.textures.exists('retrato-'+v.dex),
+        idleTexture:p.textures.exists('pmd-'+v.dex+'-Idle'),
+        idleAnimation:p.anims.exists(v.dex+'-Idle-0'),
+        file:p.registry.get('manifiesto')?.[v.dex]?.anims?.Idle?.file
+      })).slice(0,100),
+      load:{running:p.load.isLoading(),queued:p.load.list.size,
+       inflight:p.load.inflight?.size,total:p.load.totalToLoad},
+      badRequests:window.__torre2JohtoFailures||[]};
+   });
+   console.error('PHASER_JOHTO_100_IDLE_AND_PORTRAIT_DIAGNOSTIC',
+    JSON.stringify({missing,errors:dexErr,badRequests:dexBad}));
+   throw e;
+  }
+  for(const [dex,name] of [['0002','IVYSAUR'],['0003','VENUSAUR'],
+   ['0152','CHIKORITA'],['0153','BAYLEEF'],['0154','MEGANIUM'],
+   ['0240','MAGBY'],['0126','MAGMAR'],['0467','MAGMORTAR']]){
+   await dexPage.evaluate(id=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    const index=p.casillas.findIndex(c=>c.p.torre2DexFamilyMembers?.includes(id));
+    if(index<0)throw Error('Missing family card for '+id);
+    p.elegir(index);
+    const stage=p.etapas.findIndex(x=>x.dex===id);
+    if(stage<0)throw Error('Missing evolution tab for '+id);
+    p.irEtapa(stage);
+   },dex);
+   await dexPage.waitForFunction(id=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    return p.sprite?.dex===id&&p.anims.exists(id+'-Idle-0');
+   },dex,{timeout:22000});
+   const visual=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game.scene.getScene('pokedex');
+    return {stage:p.etapas?.[p.etapa]?.nombre,sprite:p.sprite?.texture?.key,
+     members:p.casillas[p.foco]?.p?.torre2DexFamilyMembers};
+   });
+   assert.equal(visual.stage,name);
+   assert.ok(visual.members.includes(dex));
+   assert.equal(visual.sprite,'pmd-'+dex+'-Idle');
+  }
   // Regression: the user's screenshots showed SPD NaN and blank moves
   // on Nidorino/Nidoking. Visit EVERY added Kanto evolution in the actual
   // Phaser Pokédex to catch the same failure across all new families.
@@ -222,7 +323,8 @@ const server=http.createServer(async(req,res)=>{
     if(!['nidoran-m','nidoran-f','pidgey','rattata','caterpie',
        'weedle','geodude','paras','clefairy','sandshrew','ekans',
        'staryu','psyduck','poliwag','oddish','bellsprout','meowth',
-       'diglett','voltorb','magnemite'].includes(scene.casillas[i].p.id))continue;
+       'diglett','voltorb','magnemite'].includes(
+        scene.casillas[i].p.torre2DexOriginId||scene.casillas[i].p.id))continue;
     scene.elegir(i);
     for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
      const stage=scene.etapas[stageIndex];
@@ -245,18 +347,19 @@ const server=http.createServer(async(req,res)=>{
    ['nidoran-m',[[1,'0033'],[2,'0034']]],
    ['nidoran-f',[[1,'0030'],[2,'0031']]]
   ]){
-   await dexPage.evaluate(base=>{
-    const scene=window.__pt2Game.scene.getScene('pokedex');
-    scene.elegir(scene.casillas.findIndex(x=>x.p.id===base));
-   },id);
    for(const [stage,dex] of stages){
-    await dexPage.evaluate(index=>{
-     window.__pt2Game.scene.getScene('pokedex').irEtapa(index);
-    },stage);
-    await dexPage.waitForFunction(([index,spriteDex])=>{
+    await dexPage.evaluate(dex=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
-     return scene.etapa===index&&scene.sprite?.dex===spriteDex;
-    },[stage,dex],{timeout:20000});
+     const card=scene.casillas.findIndex(x=>x.p.torre2DexFamilyMembers?.includes(dex));
+     if(card<0)throw Error('Missing Nidoran evolution family '+dex);
+     scene.elegir(card);
+     const tab=scene.etapas.findIndex(x=>x.dex===dex);
+     scene.irEtapa(tab);
+    },dex);
+    await dexPage.waitForFunction(spriteDex=>{
+     const scene=window.__pt2Game.scene.getScene('pokedex');
+     return scene.etapas?.[scene.etapa]?.dex===spriteDex&&scene.sprite?.dex===spriteDex;
+    },dex,{timeout:20000});
     const visible=await dexPage.evaluate(()=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
      return {
@@ -264,6 +367,7 @@ const server=http.createServer(async(req,res)=>{
       moves:scene.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text)
      };
     });
+    console.log('PHASER_NIDORAN_EVOLVED_MOVES',JSON.stringify({id,dex,visible}));
     assert.ok(!visible.labels.some(t=>String(t).includes('NaN')),
      id+' '+dex+' rendered an invalid numeric stat: '+JSON.stringify(visible.labels));
     for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
@@ -314,8 +418,11 @@ const server=http.createServer(async(req,res)=>{
     if(idx<0){results.push({base,error:'missing Pokédex card'});continue;}
     scene.elegir(idx);
     for(const species of evolutions){
-     const stage=scene.etapas.find(x=>x.nombre.toLowerCase()===species);
-     if(!stage){results.push({base,species,error:'missing evolved form'});continue;}
+     const stageIdx=scene.etapas.findIndex(x=>x.nombre.toLowerCase()===species);
+     if(stageIdx<0){results.push({base,species,error:'missing evolved family tab'});continue;}
+     scene.irEtapa(stageIdx);
+     const stage=scene.etapas[stageIdx];
+     if(!stage){results.push({base,species,error:'missing evolved stage'});continue;}
      const loadout=resolveLoadout({id:species,
       progression:{species,level:100}});
      const slots=['lmb','rmb','q','e'];
@@ -374,8 +481,9 @@ const server=http.createServer(async(req,res)=>{
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
-    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
-    if(item<0)throw Error('TRAINING disappeared from original menu');
+    // Alpha 0.70 presents TRAINING inside LOCAL rather than directly in PLAY.
+    const item=title.botones.findIndex(b=>b.o?.id==='cpu'||b.id==='cpu');
+    if(item<0)throw Error('LOCAL disappeared from native PLAY menu');
     title.elegir(item);
   });
   try{
@@ -401,6 +509,41 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/training-select-timeout.png',fullPage:true}).catch(()=>{});
    throw err;
   }
+  // Choose the actual TRAINING button in the native Phaser selection screen.
+  // Make a real browser pointer click instead of assigning scene.modo.
+  const trainingButton=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    if(!scene.botonesModo?.some(b=>b.id==='entreno'))
+      throw Error('TRAINING disappeared from native LOCAL picker');
+    const zone=scene.botonesModo.find(b=>b.id==='entreno').b.zona;
+    if(!zone?.active||!zone?.input?.enabled)throw Error('Native TRAINING button has no active hitbox');
+    const canvas=document.querySelector('#juego canvas');
+    const rect=canvas.getBoundingClientRect();
+    // The 640x360 world renders inside the 980x650 canvas with an
+    // approximately 49px TOP/BOTTOM letterbox. Mapping against rect.height
+    // directly clicked above TRAINING even though its Phaser hitbox was live.
+    const fit=Math.min(rect.width/640,rect.height/360);
+    return {x:rect.left+(rect.width-640*fit)/2+zone.x*fit,
+      y:rect.top+(rect.height-360*fit)/2+zone.y*fit};
+  });
+  await page.mouse.click(trainingButton.x,trainingButton.y);
+  try{
+    await page.waitForFunction(()=>
+      window.__pt2Game.scene.getScene('seleccion').modo==='entreno',null,{timeout:9000});
+  }catch(err){
+    const info=await page.evaluate(()=>{
+      const s=window.__pt2Game.scene.getScene('seleccion');
+      const z=s.botonesModo?.find(b=>b.id==='entreno')?.b?.zona;
+      return {mode:s.modo,enRed:s.enRed,active:s.scene.isActive(),
+        trainingZone:z?{x:z.x,y:z.y,visible:z.visible,enabled:z.input?.enabled,
+          width:z.input?.hitArea?.width,height:z.input?.hitArea?.height}:null,
+        canvas:document.querySelector('#juego canvas')?.getBoundingClientRect()?.toJSON?.(),
+        pointer:s.input.activePointer?{x:s.input.activePointer.x,y:s.input.activePointer.y}:null};
+    });
+    console.error('TRAINING_NATIVE_BUTTON_DIAGNOSTIC',JSON.stringify(info));
+    await page.screenshot({path:'test-evidence/native-training-hitbox-failure.png'}).catch(()=>{});
+    throw err;
+  }
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
@@ -414,12 +557,46 @@ const server=http.createServer(async(req,res)=>{
    'Selection cards must preload actual Pokémon portraits and animated sprites, including Zubat/Golbat: '+
    JSON.stringify(visiblePokemon));
   await page.screenshot({path:'test-evidence/pokearena-training-select-sprites-fixed.png',fullPage:true});
-  await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
-  await page.waitForTimeout(300);
-  await page.mouse.click(68,149); // Confirm Bulbasaur as Dummy after focus switches.
-  await page.waitForTimeout(350);
-  await page.mouse.click(864,544); // Fight! from original client.
-  await page.waitForTimeout(2450);
+  const clickSelectionCard=async index=>{
+   const xy=await page.evaluate(i=>{
+    const c=window.__pt2Game.scene.getScene('seleccion').casillas[i];
+    return window.aPantalla(c.x+c.w/2,c.y+c.h/2);
+   },index);
+   await page.mouse.click(...xy);
+  };
+  await clickSelectionCard(0);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('seleccion').paso===1,
+   null,{timeout:7000});
+  await clickSelectionCard(1);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('seleccion').paso===2,
+   null,{timeout:7000});
+  const fightXY=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('seleccion');
+   return window.aPantalla(s.posLuchar.x,s.posLuchar.y);
+  });
+  await page.mouse.click(...fightXY);
+  try{
+   await page.waitForFunction(()=>{
+    const g=window.__pt2Game,c=g?.scene.getScene('combate');
+    return g.scene.isActive('combate')&&c.luchadores?.length===2&&c.datos?.p1&&c.datos?.p2;
+   },null,{timeout:25000});
+  }catch(e){
+   const state=await page.evaluate(()=>{
+    const g=window.__pt2Game,s=g.scene.getScene('seleccion'),c=g.scene.getScene('combate');
+    return {active:g.scene.getScenes(true).map(x=>x.scene.key),
+     paso:s.paso,elegidos:s.eleccion,boton:s.botonLuchar?.active,
+     ayuda:s.ayuda?.text,combatData:c.datos};
+   });
+   console.error('ARENA_FIGHT_BUTTON_DID_NOT_START_COMBAT',JSON.stringify({
+    state,errors:errors.slice(-12),consoleFailures:consoleFailures.slice(-18),
+    requestFailures:requestFailures.slice(-10),notFound:notFound.slice(-10)
+   }));
+   throw e;
+  }
+  console.log('PHASER_ARENA_FIGHT_CLICK_STARTS_COMBAT',await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('combate');
+   return {mode:c.datos.modo,players:[c.datos.p1,c.datos.p2],fighters:c.luchadores.length};
+  }));
   await page.screenshot({path:'test-evidence/pokearena-training-battle.png',fullPage:true});
   // Regression: League has its own scene and initially displayed green
   // MISSING textures, even while the selection screen loaded correctly.
@@ -462,6 +639,43 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(leagueErrors.filter(x=>/ReferenceError|TypeError|SyntaxError/.test(x)),[]);
   assert.deepEqual(leagueMisses.filter(x=>/\/assets\/pmd\//.test(x)),[]);
   await league.screenshot({path:'test-evidence/pokearena-league-opponents-restored.png',fullPage:true});
+  const leagueFight=await league.evaluate(()=>{
+   const l=window.__pt2Game.scene.getScene('liga');
+   const index=l.celdas.findIndex(c=>c.rv&&c.estado!=='cerrado'&&!c.liga?.conConexion);
+   if(index<0)throw Error('No accessible offline League rival to test');
+   const rv=l.celdas[index];
+   l.vista='rivales';l.foco=index;l.focoPintado=index;
+   l.retar();
+   return {rival:rv.id,index};
+  });
+  await league.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:25000});
+  const leagueSelection=await league.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('seleccion');
+   const before={mode:s.modo,hasLeague:!!s.liga,rival:s.liga?.rival};
+   s.elegir(0);
+   before.ready=s.paso===2;
+   s.empezar();
+   return before;
+  });
+  try{
+   await league.waitForFunction(()=>{
+    const g=window.__pt2Game,c=g.scene.getScene('combate');
+    return g.scene.isActive('combate')&&c.luchadores?.length===2&&!!c.datos?.liga;
+   },null,{timeout:30000});
+  }catch(e){
+   const state=await league.evaluate(()=>{
+    const g=window.__pt2Game,s=g.scene.getScene('seleccion');
+    return {active:g.scene.getScenes(true).map(x=>x.scene.key),
+     step:s.paso,selected:s.eleccion,help:s.ayuda?.text,league:s.liga};
+   });
+   console.error('LEAGUE_FIGHT_BUTTON_DID_NOT_START_COMBAT',
+    JSON.stringify({state,leagueFight,leagueSelection,leagueErrors}));
+   throw e;
+  }
+  console.log('PHASER_LEAGUE_CHALLENGE_STARTS_COMBAT',JSON.stringify({
+   leagueFight,leagueSelection,active:true
+  }));
+  await league.screenshot({path:'test-evidence/pokearena-league-real-battle.png',fullPage:true});
   await league.close();
 
   // Android landscape: the real LOADING scene must complete before the
@@ -649,14 +863,23 @@ const server=http.createServer(async(req,res)=>{
     npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
-  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
+  // The approved map renderer intentionally supports 15 distinct trainer
+  // sheets at stage 0 (9 current road roles plus 6 map revisit roles).
+  // Still reject eagerly loading the full 47-sprite original FRLG catalog.
+  assert.ok(resourceCheck.npcs.length>0&&resourceCheck.npcs.length<=16,
+   'Battle Road must limit NPC GPU textures to the current approved atlas needs: '+
+    JSON.stringify(resourceCheck));
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
+  await offline.waitForFunction(()=>innerWidth===980&&innerHeight===420,null,{timeout:10000});
   // Trigger the ORIGINAL client's resize listener and wait for Phaser to
   // update its backing buffer; immediate reads can retain the prior 980×650.
   await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
   await offline.waitForFunction(async()=>{
+   // Playwright can signal a viewport transition before window.innerHeight
+   // changes; do not accept the OLD 980x650 canvas as the new 980x420 view.
+   if(innerWidth!==980||innerHeight!==420)return false;
    const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
    const canvas=document.querySelector('#juego canvas');
    if(!src||!canvas)return false;
@@ -669,6 +892,25 @@ const server=http.createServer(async(req,res)=>{
     Math.min(fh,Math.floor(cfg.VISTA.h*z));
    return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
   },null,{timeout:15000});
+  // Resize may be emitted more than once by Chromium (window and
+  // visualViewport). Confirm the state after their scheduled callbacks,
+  // rather than accepting a single transient matching RAF.
+  await offline.waitForTimeout(300);
+  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
+  await offline.waitForFunction(async()=>{
+    if(innerWidth!==980||innerHeight!==420)return false;
+    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
+    if(!main)return false;
+    const cfg=await import(new URL('./config.js',main).href);
+    const dpr=Math.min(4,devicePixelRatio||1);
+    const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
+    let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
+    if(z>=2&&Math.floor(z)/z>=.9)z=Math.floor(z);
+    const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
+      Math.min(fh,Math.floor(cfg.VISTA.h*z));
+    const cvs=document.querySelector('#juego canvas');
+    return cvs&&Math.abs(cvs.width/cvs.height-expected)<.035;
+  },null,{timeout:12000});
   const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
@@ -683,6 +925,9 @@ const server=http.createServer(async(req,res)=>{
     reparent:document.documentElement.classList.contains('torre2-edge-to-edge')||
       document.body.classList.contains('torre2-landscape-map'),
     rectWidth:rect?.width,rectHeight:rect?.height,
+    canvasBuffer:{w:canvas?.width,h:canvas?.height},nativeScale:{w:c.scale?.width,h:c.scale?.height},
+    visualViewport:{w:window.visualViewport?.width,h:window.visualViewport?.height},
+    documentViewport:{w:innerWidth,h:innerHeight},
     canvasRatio:canvas?.width/canvas?.height,
     displayRatio:rect?.width/rect?.height,
     viewportRatio:innerWidth/innerHeight,
@@ -709,7 +954,11 @@ const server=http.createServer(async(req,res)=>{
   // framebuffer follows Phaser's native medir() viewport-scale formula.
   // Validate both independently, including no CSS stretching or custom zoom.
   console.log('T31 NATIVE PHASER CANVAS GEOMETRY',JSON.stringify(nativeDisplay));
-  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:true});
+  // A fullPage screenshot temporarily expands the viewport to document height.
+  // That fires native Phaser resize and can leave the WebGL backing buffer
+  // at the OLD 980x650 resolution while window.innerHeight is 420.
+  // Capture the requested 980x420 viewport without changing browser height.
+  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:false});
   assert.ok(nativeDisplay.logicalRatio>1.77&&nativeDisplay.logicalRatio<1.79,
    'Original Kanto logical battlefield must remain 16:9');
   assert.ok(Number.isFinite(nativeDisplay.expectedRatio)&&

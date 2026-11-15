@@ -1,3 +1,4 @@
+import {preserveModernPokedex} from './torre2-pokedex-modern-compat.mjs';
 /* Build-only, fail-closed visual customization for four NONCOMBAT screens.
  * The native battle HUD, movement, moves, cooldowns, hitboxes and arena
  * fighting screens MUST NOT be modified by this adapter.
@@ -7,7 +8,7 @@ const once=(source,from,to,scope)=>{
  return source.replace(from,to);
 };
 
-export function skinMenuScene(source,scene){
+export function skinMenuScene(source,scene,officialAlpha=null){
  if(typeof source!=='string')throw TypeError('Expected captured Phaser JS');
  if(scene==='seleccion'||scene==='preparar'){
   const match=source.match(/import\{([^}]+)\}from"\.\.\/ui\.js";/);
@@ -34,6 +35,13 @@ export function skinMenuScene(source,scene){
   return once(source,old,pixels,'titulo pixel borders');
  }
  if(scene==='pokedex'){
+  // Alpha 0.71.3 owns an entirely new responsive Pokédex with trio forms.
+  // Keep the approved native cosmetics, rather than forcing old coordinates.
+  if(officialAlpha==='0.71.3'){
+   if(!preserveModernPokedex(source,officialAlpha))
+    throw Error('Unrecognized modern Pokédex pixel skin context');
+   return source;
+  }
   const old='marco(g,x0,PY+3,w,14,i===this.etapa?"oro":"azul");efectosBoton(g,luz,x0,PY+3,w,14,this.time.now)';
   const pixels='marco(g,x0,PY+3,w,14,i===this.etapa?"oro":"azul");'+
    'g.fillStyle(i===this.etapa?0xfff2ac:0x7bd3f3,1);'+

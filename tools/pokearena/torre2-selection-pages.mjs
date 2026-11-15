@@ -36,9 +36,18 @@ export function paginateSelectionSource(source){
  once('if(esTactil()&&this.paso<2&&this.foco!==i){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)',
   'if(this.paso<2)this.foco=i;this.elegir(i)');
  // User-approved offline roster is unlocked. Retain original ranked locks.
- once('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
-  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
- once('this.opciones();this.ayuda=', 'this.opciones();this.torre2Page=0;this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2));for(const [x,d,t] of [[72,-1,"◀"],[568,1,"▶"]])boton(this,x,26,t,()=>{this.torre2Page=(this.torre2Page+d+this.torre2Pages)%this.torre2Pages;this.foco=this.torre2Page*POR_FILA*2;this.refrescar()},{altoZona:26,anchoExtra:20});this.torre2PageLabel=texto(this,ANCHO-14,TY+FILAS*(TH+TGAP)/2,"",{tam:8,color:"#ffe3a7"}).setOrigin(1,.5);this.ayuda=');
+ // Preserve Alpha 0.70 challenge contracts (encargo) and ranked locks:
+ // only non-challenge/non-ranked local selections are open in solo Torre 2.
+ const oldLock='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ const currentLock='const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
+ if(source.includes(currentLock))once(currentLock,
+  'const bloqueado=this.encargo?!!this.encargo.bloqueado?.(p.id):this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+ else once(oldLock,'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+ if(source.includes('this.opciones();this.ayuda=')){
+ once('this.opciones();this.ayuda=','this.opciones();this.torre2Page=0;this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2));for(const [x,d,t] of [[72,-1,"◀"],[568,1,"▶"]])boton(this,x,26,t,()=>{this.torre2Page=(this.torre2Page+d+this.torre2Pages)%this.torre2Pages;this.foco=this.torre2Page*POR_FILA*2;this.refrescar()},{altoZona:26,anchoExtra:20});this.torre2PageLabel=texto(this,ANCHO-14,TY+FILAS*(TH+TGAP)/2,"",{tam:8,color:"#ffe3a7"}).setOrigin(1,.5);this.ayuda=');
+ }else if(source.includes('this.opciones();if(this.encargo?.azar)')){
+  once('this.opciones();if(this.encargo?.azar)','this.opciones();this.torre2Page=0;this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2));for(const [x,d,t] of [[72,-1,"◀"],[568,1,"▶"]])boton(this,x,26,t,()=>{this.torre2Page=(this.torre2Page+d+this.torre2Pages)%this.torre2Pages;this.foco=this.torre2Page*POR_FILA*2;this.refrescar()},{altoZona:26,anchoExtra:20});this.torre2PageLabel=texto(this,ANCHO-14,TY+FILAS*(TH+TGAP)/2,"",{tam:8,color:"#ffe3a7"}).setOrigin(1,.5);if(this.encargo?.azar)');
+ }else throw Error('Unknown upstream selection menu; refusing to lose page controls');
  // The native "casillaRetrato" draws __MISSING when a portrait is not cached.
  // Request only 8 PNGs of the visible page, then install its real pixel-art
  // scaled texture; do not allocate/reveal 189 placeholder textures at once.

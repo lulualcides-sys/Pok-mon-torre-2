@@ -2,6 +2,19 @@
 export function adaptArenaFamilySelectorSource(source){
  const start='const LW=44,LH=44,LG=2;',end='export{POR_FILA,SelectorPokemon};';
  const a=source.indexOf(start),b=source.indexOf(end,a);
+ // Alpha 0.71+ delegates choice to the native selection scene through
+ // abrirEleccion. Replacing SelectorPokemon would delete that public export
+ // and break the Phaser ES-module graph. Preserve the official choice bridge
+ // instead of applying the older family-grid rewrite on unknown structure.
+ const choiceBridge='export{POR_FILA,SelectorPokemon,abrirEleccion};';
+ if(source.includes('abrirEleccion')){
+  if(a<0||source.indexOf(start,a+1)>=0||
+   source.split('function abrirEleccion(').length!==2||
+   !source.includes('class SelectorPokemon{')||
+   !source.trimEnd().endsWith(choiceBridge))
+   throw Error('Unrecognized native 0.71 choice bridge; refusing unsafe patch');
+  return source;
+ }
  if(a<0||b<a||source.indexOf(start,a+1)>=0||source.slice(b+end.length).trim())
   throw Error('Unknown native SelectorPokemon; refusing unsafe patch');
  const imports='import{JOHTO_100_ROWS}from"./torre2/johto-100-data.js";'+

@@ -27,7 +27,12 @@ const sprites=await fs.readFile(path.join(root,client,'sprites.js'),'utf8');
 assert.match(aspects,/froakie:\["naranja","amarillo","blanco","azabache","azabacheaura"\]/);
 assert.match(aspects,/if\(id==="froakie"\)return todos\(id\)/);
 assert.match(aspects,/azabacheaura:"RED AURA",azabache:"BLACK"/);
-assert.match(selection,/for\(const dex of \["0656","0657","0658"\]\)/);
+if(version.officialAlpha==='0.71.3'){
+ assert.match(selection,/this.encargo\?!!this.encargo.bloqueado/);
+ assert.match(selection,/trioMenu/);
+ assert.match(selection,/ponerRetratoA/);
+ assert.ok(!selection.includes('this._torre2Selecao=soloFormas'));
+}else assert.match(selection,/for\(const dex of \["0656","0657","0658"\]\)/);
 assert.ok(
  selection.includes('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;')||
  selection.includes('["cpu","entreno","versus"]'),

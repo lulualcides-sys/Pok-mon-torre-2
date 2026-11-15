@@ -7,11 +7,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
+import {classifyPublicResourceFailures} from './rea-public-optional-resource.mjs';
 
 const root=path.resolve(process.argv[2]||'site-capture/pokearena-client');
 const staged=path.resolve(process.argv[3]||'site-capture/rea-public-0658');
 const manifestPath=path.join(staged,'rea-capture-summary.json');
-const expected='0.65.8';
+const configuredAlpha=process.env.POKEARENA_EXPECTED_ALPHA||'0.65.8';
 const digest=b=>createHash('sha256').update(b).digest('hex');
 const json=async p=>JSON.parse(await fs.readFile(p,'utf8'));
 function safePath(p){
@@ -21,10 +22,23 @@ function safePath(p){
 }
 const report=await json(manifestPath);
 const oldReport=await json(path.resolve('site-capture/CAPTURE-REPORT.json'));
+const expected=configuredAlpha==='auto'?report.observedAlpha:configuredAlpha;
+assert.match(expected,/^0\.\d+(?:\.\d+)?$/,'Official Alpha missing or malformed');
 assert.equal(report.observedAlpha,expected,'Official Alpha not verified via REA');
 assert.equal(report.selectedFromOfficialConfig,true,'Unverified release config');
 assert.ok(report.loadedScripts>=50&&report.fileCount>=75,'Incomplete REA capture');
-assert.equal(report.blocked.length,0,'Public resources blocked; stop, do not bypass');
+// Report only ordinary same-origin relative resource paths and HTTP statuses.
+// Keep the fail-closed gate below; diagnostics never authorize a 403 retry,
+// alternate origin, fake sprite, or incomplete client publication.
+if(report.blocked.length)console.error('REA_PUBLIC_RESOURCE_BLOCKERS',
+ JSON.stringify(report.blocked.slice(0,12).map(item=>({
+  path:safePath(item.path),status:item.status
+ }))));
+const publicFailures=classifyPublicResourceFailures(report.blocked);
+if(publicFailures.optional.length)console.warn('REA_OPTIONAL_NEWS_404',
+ JSON.stringify(publicFailures.optional.map(({path,status})=>({path,status}))));
+assert.equal(publicFailures.fatal.length,0,
+ 'Essential or unexpected public resources blocked; stop, do not bypass');
 assert.equal(report.errors.length,0,'Browser capture errors');
 const mod=report.sourceDir;
 assert.match(mod,/^src-[0-9a-f]{10}$/);
@@ -46,8 +60,9 @@ for(const item of report.saved){
 const html=stagedHashes.get('index.html')?.data.toString('utf8')||'';
 assert.ok(html.includes('src="'+mod+'/main.js"'),'Live index does not refer to verified source modules');
 const source=stagedHashes.get(mod+'/config.js')?.data.toString('utf8')||'';
-assert.match(source,/\b(?:let|const)\s+VERSION\s*=\s*["']0\.65\.8["']/,
- 'Cannot prove Alpha 0.65.8 using native config.js');
+const escaped=expected.replace(/\./g,'\\.');
+assert.match(source,new RegExp('\\b(?:let|const)\\s+VERSION\\s*=\\s*["\\\']'+escaped+'["\\\']'),
+ 'Cannot prove Alpha '+expected+' using native config.js');
 const required=['main.js','config.js','notas.js','datos.js','sprites.js',
  'habilidades.js','luchador.js','escenas/titulo.js','escenas/seleccion.js',
  'escenas/carga.js','escenas/combate.js','escenas/pokedex.js','escenas/jefe.js'];
@@ -87,7 +102,7 @@ await fs.writeFile(path.join(root,'version.json'),JSON.stringify(version));
 // as a fallback, never treats them as evidence of newly downloaded assets.
 const retained=oldReport.retrieved.filter(x=>!stagedHashes.has(x.path));
 const merged=[...retained,...changed.map(x=>({
- ...x,source:'official-public-browser-REA-0658'
+ ...x,source:'official-public-browser-REA-'+expected
 }))];
 const out={...oldReport,
  sourceVersions:{...oldReport.sourceVersions,selected:mod,discovered:[mod]},
