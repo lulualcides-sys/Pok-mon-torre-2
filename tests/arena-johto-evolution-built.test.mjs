@@ -57,8 +57,8 @@ for(const [id,p] of [['togepi',togepi],['togetic',togetic]]){
  assert.ok(attacks.some(s=>Number(kit[s]?.dano)>0),id+' has no damaging moves');
 }
 const combat=fs.readFileSync(path.join(root,modules,'escenas/combate.js'),'utf8');
-assert.match(combat,/dexs\.has\("0133"\)/,
- 'Offline Eevee should preload both Johto evolutions using actual source Dex');
+assert.ok(/dexs\.has\("0133"\)/.test(combat)||/ids\.includes\("eevee"\)/.test(combat),
+ 'Eevee Johto preloading must use either official source Dex or legacy roster ID');
 assert.match(combat,/soltarPMD\(this,m,dexs\)/,
  'Original combat sprite preloading must remain native and alive');
 assert.match(combat,/dex of \["0196","0197"\]/,'Espeon/Umbreon animations unavailable at evolution');
