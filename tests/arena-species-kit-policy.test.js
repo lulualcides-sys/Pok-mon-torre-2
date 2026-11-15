@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,enforceNativeHexCooldown,replaceGengarHyperBeam,chooseEeveeBranch,guardEeveeSingleEvolution,installArenaMovePolicy}
+import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,enforceNativeHexCooldown,replaceGengarHyperBeam,chooseEeveeBranch,guardEeveeSingleEvolution,guardTyrogueSingleEvolution,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
 import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
@@ -502,4 +502,72 @@ test('Reversal 3.5s in Arena/League while other moves remain unchanged',()=>{
   assert.equal(kit.rmb.cd,3.5,mode+' Psybeam');
  }
  assert.strictEqual(new Fighter('campaign').kitActual(),source);
+});
+
+test('Discharge cooldown is exactly 3s across native Arena/League and Johto, never campaign',()=>{
+ const kit={lmb:move('Discharge',16,1.5,'ELECTRIC'),
+  rmb:move('Descarga',16,9,'ELECTRIC'),
+  q:move('Thunderbolt',16,4,'ELECTRIC'),esp:move('Dodge',0,2)};
+ const native={id:'raikou',kit,evoluciones:[]};
+ const johto={id:'mareep',torre2ArenaAdded:true,torre2Johto100:true,kit,evoluciones:[]};
+ class Fighter{
+  constructor(def,mode){this.def=def;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(Fighter,[native,johto]);
+ for(const species of [native,johto])
+  for(const mode of ['arena','liga','league']){
+   const result=new Fighter(species,mode).kitActual();
+   assert.equal(result.lmb.cd,3,'Discharge '+species.id+' '+mode);
+   assert.equal(result.rmb.cd,3,'Descarga '+species.id+' '+mode);
+   assert.strictEqual(result.q,kit.q,'Thunderbolt must be unchanged');
+   assert.strictEqual(result.esp,kit.esp,'Dodge must be unchanged');
+  }
+ assert.equal(kit.lmb.cd,1.5,'Do not rewrite source client');
+ assert.equal(new Fighter(native,'campaign').kitActual().lmb.cd,1.5,
+  'Discharge campaign cooldown remains unchanged');
+});
+test('Tyrogue chooses each of three installed forms uniformly and only evolves once per Arena/League fight',()=>{
+ const nativeA={id:'hitmonchan',kit:{lmb:move('Mach Punch',12)}},
+  nativeB={id:'hitmonlee',kit:{lmb:move('Rolling Kick',14)}};
+ const tyrogue={id:'tyrogue',torre2Johto100:true,torre2ArenaAdded:true,
+  tipos:['FIGHTING'],kit:{lmb:move('Tackle',6)},evoluciones:[
+   {dex:'0107',nombre:'HITMONCHAN',tipos:['FIGHTING'],kit:nativeA.kit},
+   {dex:'0106',nombre:'HITMONLEE',tipos:['FIGHTING'],kit:nativeB.kit},
+   {dex:'0237',nombre:'HITMONTOP',tipos:['FIGHTING'],kit:{lmb:move('Revenge',15)}}
+  ]};
+ const before=JSON.stringify(tyrogue);
+ class Fighter{
+  constructor(mode){this.def=tyrogue;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ installArenaMovePolicy(Fighter,[tyrogue,nativeA,nativeB]);
+ const oldRandom=Math.random;
+ try{
+  for(const mode of ['arena','liga','league','cpu']){
+   for(const [value,chosen] of [[0,'HITMONCHAN'],[.40,'HITMONLEE'],[.99,'HITMONTOP']]){
+    Math.random=()=>value;
+    const fighter=new Fighter(mode);
+    assert.equal(fighter.puedeEvolucionar,true,'Tyrogue may evolve first time');
+    assert.strictEqual(guardTyrogueSingleEvolution(fighter),fighter);
+    fighter.etapa=1; // Native real evolution increments stage once.
+    assert.equal(fighter.forma.nombre,chosen,mode+' '+value);
+    assert.equal(fighter.forma.nombre,chosen,'Random outcome is stable on subsequent reads');
+    const chosenStage=fighter.etapa;
+    assert.equal(fighter.puedeEvolucionar,false,'Do not allow a second evolution');
+    fighter.etapa=chosenStage+1;assert.equal(fighter.etapa,chosenStage);
+    fighter.etapa=0;assert.equal(fighter.etapa,chosenStage);
+    assert.equal(new Fighter(mode).etapa,0,'Next battle begins with a fresh Tyrogue');
+   }
+  }
+ }finally{Math.random=oldRandom;}
+ assert.equal(JSON.stringify(tyrogue),before,'Original roster must remain immutable');
+ const story=new Fighter('campaign');story.etapa=1;story.etapa=2;
+ assert.equal(story.forma.nombre,'HITMONLEE','Campaign must not use Arena random evolution');
 });
