@@ -184,6 +184,24 @@ const server=http.createServer(async(req,res)=>{
   await battle('wobbuffet');
   const button=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
+   // Observe the real native frame path; do not inject or fabricate a cast.
+   window.__torre2WobbuffetFrames=[];
+   const nativeUpdate=w.update;
+   w.update=function(dt,input){
+    let failure=null;
+    try{return nativeUpdate.call(this,dt,input)}
+    catch(error){failure=String(error?.stack||error);throw error}
+    finally{
+     if(input?.lmb||failure){
+      const trace=window.__torre2WobbuffetFrames;
+      if(trace.length<80)trace.push({t:w.t,lmb:input?.lmb,
+       cd:w.cd.lmb,usos:w.stats?.usosSlot?.lmb||0,
+       estado:w.est?.torre2WobbuffetCounter,
+       pending:w.kit?.lmb?.pendiente,form:w.kit?.lmb?.forma,
+       active:s.scene.isActive(),phase:s.fase,error:failure});
+     }
+    }
+   };
    w.energia=100;w.accion=null;w.dash=null;w.cd.lmb=0;
    const p=s.panelTactil,b=p?.botones?.find(x=>x.slot==='lmb');
    if(!b)throw Error('Wobbuffet native ATK touch button missing');
@@ -205,6 +223,10 @@ const server=http.createServer(async(req,res)=>{
     const s=window.__pt2Game.scene.getScene('combate'),w=s.luchadores[0];
     return {phase:s.fase,form:w.kit?.lmb?.forma,cd:w.cd?.lmb,
      energy:w.energia,action:w.accion,status:w.est,
+     frames:window.__torre2WobbuffetFrames,
+     frameErrors:s.erroresFotograma||0,
+     controller:s.controles?.[0]?.tipo,autoEnabled:s.__torre2AutoMode?.enabled,
+     move:w.kit?.lmb,uses:w.stats?.usosSlot,
      buttons:s.panelTactil?.botones?.map(b=>b.slot)};
    });
    throw Error('Wobbuffet real native touch input did not cast Counter: '+
