@@ -44,3 +44,9 @@ Todos os caminhos sem prefixo na coluna «Código» permanecem em `tools/pokeare
 - Catálogo pesquisável: `reference-library/vfx-sources/catalog.json`; guia e disponibilidade real: `reference-library/vfx-sources/README.md`.
 - Comando: `node tools/dev/vfx-source-search.mjs "golpe/tipo"`.
 - Ver a política integral de quatro fontes antes de alterar VFX; o catálogo de 10 fornecedores é complemento, não substituição.
+
+## Estabilização do release e PRs históricas (15/11/2026)
+
+- Estado publicado, bloqueios externos, PRs pendentes e **procedimento obrigatório de próxima atualização**: [`docs/manutencao/ESTADO-E-PLAYBOOK-2026-11-15.md`](manutencao/ESTADO-E-PLAYBOOK-2026-11-15.md).
+- Testar T03/T17 na **Alpha 0.71.3 auditada**, sem recapturar a cada PR: `tools/pokearena/prepare-audited-qa.sh`; protegido por `tests/maintenance-qa-route.test.js`.
+- **Não confundir:** QA de release instalada pode passar enquanto uma captura externa da nova Alpha continua bloqueada por HTTP 403/manifest PMD. O bloqueio de novas capturas não é autorização para gerar sprites falsos nem afirmar versão nova.

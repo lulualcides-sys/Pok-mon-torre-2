@@ -30,16 +30,11 @@ jobs:
           npm run check
           npm run check:reuse
           npm test
-      - name: Captura e build Phaser/WebGL original
-        run: |
-          set -euo pipefail
-          for i in 1 2 3; do
-            if node tools/pokearena/capture-client.mjs; then break; fi
-            if [ "$i" -eq 3 ]; then exit 1; fi
-            sleep $((i * 5))
-          done
-          node tools/pokearena/build-preview.mjs
-          test -s _site/arena2d/version.json
+      - name: Restaurar release auditada com PMD completo e validar SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash tools/pokearena/prepare-audited-qa.sh
       - name: Verificar nível, três formas, evolução em PC e save
         run: |
           node --test tests/t03-eevee-branch-choice-built.test.mjs tests/t03-legacy-eevee-uid-built.test.mjs
@@ -47,10 +42,13 @@ jobs:
         run: |
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/t03-eevee-choice-ui-browser.cjs
-      - name: Suite oficial completa de regressão WebGL e interface
+      - name: Regressão WebGL e menus compatíveis com Alpha 0.71.3
         run: |
+          set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          npm run test:browser
+          node tests/alpha0713-hotfix-navigation-browser.cjs
+          node tests/arena-johto-evolutions-browser.cjs
+          node tests/arena-species-kit-browser.cjs
       - name: Preservar provas e imagens
         if: always()
         uses: actions/upload-artifact@v4

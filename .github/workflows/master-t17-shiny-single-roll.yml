@@ -29,17 +29,19 @@ jobs:
           npm test
           npm run check
           npm run check:reuse
-      - name: Build original Phaser client
-        run: |
-          set -euo pipefail
-          for i in 1 2 3 4; do
-            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
-            if [ "$i" -eq 4 ]; then exit 1; fi
-            sleep $((i*8))
+      - name: Restaurar release auditada com PMD completo e validar SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash tools/pokearena/prepare-audited-qa.sh
           done
       - name: Compiled saved Shiny, PC, evolution and denied write
         run: |
           node --test tests/t17-shiny-single-roll-built.test.mjs
-      - name: Original Phaser browser regression
+      - name: Browser regressions for the approved native 0.71.3 client
         run: |
-          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/alpha0713-hotfix-navigation-browser.cjs
+          node tests/arena-johto-evolutions-browser.cjs
+          node tests/arena-species-kit-browser.cjs
