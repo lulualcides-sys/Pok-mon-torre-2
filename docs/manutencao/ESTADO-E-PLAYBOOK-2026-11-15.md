@@ -68,3 +68,16 @@ O estado **aberto** de uma PR não prova que a funcionalidade esteja ausente; a 
 - Alterações **somente** em documentação, testes ou YAML de CI **não** disparam novo deploy do jogo. Isso evita gastar Actions e mudar o hash do jogo quando a jogabilidade está idêntica.
 - `tests/release-publish-triggers.test.js` confere em cada suíte Node que a lista real de overlays e os caminhos do workflow de publicação continuam sincronizados. Se um novo módulo for adicionado ao publicador sem gatilho correspondente, a verificação falha em vez de criar uma atualização silenciosamente ausente.
 - A conclusão do GitHub Actions **não substitui** ler o SHA real no CDN depois de um deploy. Nunca declarar atualização jogável apenas por merge.
+
+## Proteção do catálogo de golpes e capturas bloqueadas (15/11 — manutenção adicional)
+
+**Causa concreta de falha antiga:** o workflow `pokearena-native-moves-watch.yml` comparava o hash do catálogo histórico de golpes (`src-43a0198bd6`) ao site atual, concluía que precisava de captura e tentava baixar todos os PMD. O runner falhou com `Critical native PMD manifest unavailable`. A rotina de captura REA também podia tentar um download incompleto.
+
+**Fluxo corrigido:**
+
+- O `capture-gate.mjs` e o `catalog-preflight.mjs` consultam somente a origem pública legítima, o `config.js` oficial e o **manifesto PMD crítico** antes de tentar capturar muitos assets.
+- A resposta `blocked`/HTTP 403/404 fica registrada como artefato e alerta, mas não altera catálogo, golpes, jogo ou Pages e não é confundida com uma atualização validada.
+- Uma atualização efetivamente comprovada só é importada se o manifesto estiver legível e plausível; a captura completa ainda precisa provar **todos os arquivos**, direitos e QA. Não há bypass de restrição externa.
+- O catálogo nativo é **metadado de pesquisa**. O workflow novo não dá mais push automático no `main`: propõe PR DRAFT separada a partir de um hash oficial verificável. Antes de integrar, comparar kits do cliente base, preservar o padrão de golpes e executar testes Chromium/Phaser.
+- Os testes de rotina do catálogo usam a Alpha 0.71.3 auditada, evitando que uma falha de terceiros seja considerada regressão do jogo. Uma captura de Alpha nova **permanece pendente** se o manifesto oficial continuar inacessível.
+- Testes: `node --test tests/catalog-preflight.test.mjs tests/capture-gate-policy.test.js`; histórico do último resultado antes desta manutenção: captura REA `43748682357`, catálogo `43748635712` (ambos falharam por manifesto nativo ausente).
