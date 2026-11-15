@@ -83,12 +83,14 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
 
 // The pinned 0.71.3 pack index pre-dates installed fan-made Magmortar and
 // Johto PMD; it wrongly routes their Idle sprites to the old common .bin.
-// Use only already-hosted, verified loose PNGs for affected form IDs.\n// Native packed client remains untouched; never synthesize missing sprites.
+// Use only already-hosted, verified loose PNGs for affected form IDs.
+// Scizor #0212 is absent from the pinned binary pack index; its official
+// loose PMD files already exist and must bypass the obsolete common archive.\n// Native packed client remains untouched; never synthesize missing sprites.
 const packs=await read(path.join(original,'paquetes.js'));
 const packAnchor='const paqueteDe=ruta=>{const dex=ruta.split("/")[0];';
 exactly(packs,packAnchor,'native PMD package routing');
-const looseDex=['0467','0236','0237','0171','0198'];
-const packageOverride='if(["0467","0236","0237"].includes(dex)||'+
+const looseDex=['0467','0236','0237','0171','0198','0212'];
+const packageOverride='if(["0467","0236","0237","0212"].includes(dex)||'+
  '(["0171","0198"].includes(dex)&&/\\/Idle-Anim\\.png$/.test(ruta)))return null;';
 const packsPatched=packs.replace(packAnchor,packAnchor+packageOverride);
 
