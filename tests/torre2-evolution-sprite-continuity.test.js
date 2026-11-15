@@ -22,7 +22,7 @@ function fighter({dex='0212',target='0212',mode='cpu',campaign=false,stage=1}={}
   setTexture(key){calls.set++;this.texture.key=key;return this;}
  };
  const player={
-  escena:{datos:{modo,torre2:campaign},manifiesto:{'0212':{anims:{Idle:{},Walk:{},Attack:{}}}},
+  escena:{datos:{modo:mode,torre2:campaign},manifiesto:{'0212':{anims:{Idle:{},Walk:{},Attack:{}}}},
    textures:{exists:key=>key==='pmd-0212-Idle'}},
   def:{id:'scyther',torre2ArenaAdded:true},
   etapa:stage,dex,dexActual:target,spr,claveAnim:dex+'-Walk-0',
