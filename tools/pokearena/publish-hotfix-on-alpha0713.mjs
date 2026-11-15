@@ -167,7 +167,12 @@ console.log('P2_0713_DEX_SHAPE',JSON.stringify({
   choose:excerpt('elegir(i){'),
   paging:excerpt('torre2DexLoadPage(page){'),
   lazyPreload:excerpt('preload(){'),
-  familyMarker:originalDex.includes('TORRE2_DEX_FAMILIES')
+  familyMarker:originalDex.includes('TORRE2_DEX_FAMILIES'),
+  updatePage:excerpt('actualizarPaginaDex(){',2100),
+  loadPage:excerpt('torre2CargarPagina(',2100),
+  buttons:excerpt('controlesPaginaDex(){',1200),
+  directLocal:excerpt('torre2DirectLocal(',1200),
+  firstRow:excerpt('PAGE_SIZE=',500)
 }));
 const virtualDex=windowNativePokedex(originalDex);
 const perfScript=await read('tools/pokearena/torre2-performance-monitor.js');
