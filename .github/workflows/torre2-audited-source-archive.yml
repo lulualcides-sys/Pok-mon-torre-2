@@ -89,3 +89,22 @@ jobs:
             --notes 'Fonte, procedência e cliente homologados em 43657903565. Arquivo persistente para evitar expiração de artefatos temporários. Não substitui o deploy.' --latest=false
           gh release upload "$tag" "$asset" "$asset.sha256" --repo "$GH_REPO"
           echo "AUDITED_SOURCE_PERSISTED $tag"
+
+  persistent-restore-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force permanent release, validate SHA-256 and recover audited evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          TORRE2_FORCE_RELEASE=1 bash tools/pokearena/restore-audited-alpha0713.sh provenance "$RUNNER_TEMP/torre2-rea-permanent"
+          test "$(find "$RUNNER_TEMP/torre2-rea-permanent" -type f | wc -l)" -ge 1
+          echo 'PERSISTENT_REA_RESTORE_VERIFIED'
