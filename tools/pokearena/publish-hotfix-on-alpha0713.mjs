@@ -7,6 +7,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {removeNewsTitleOption} from './torre2-title-pokedex-fast.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
+import {loadNativeArenaPreviewIdle} from './torre2-native-arena-preview.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
 
 const site=path.resolve(process.env.TORRE2_SITE_ROOT||'_site');
@@ -149,14 +150,16 @@ const branchDexAnchor='get dexActual(){return this.alt?.dex??this.forma.dex}';
 exactly(fighter,branchDexAnchor,'native cosmetic-first dex getter');
 const branchDexGetter='get dexActual(){'+
  'if(!this.escena?.datos?.torre2&&this.escena?.datos?.modo!=="online"&&'+
- '(this.def?.id==="eevee"||this.def?.id==="tyrogue")&&this.etapa>0)'+
+ '((this.def?.id==="eevee"||this.def?.id==="tyrogue")||'+
+ 'this.def?.torre2ArenaAdded===true)&&this.etapa>0)'+
  'return this.forma.dex;return this.alt?.dex??this.forma.dex}';
 fighter=fighter.replace(branchDexAnchor,branchDexGetter);
 const spriteGraphicsAnchor='actualizarGraficos(dt=0){';
 exactly(fighter,spriteGraphicsAnchor,'native sprite update');
 const branchSpriteSync='if(!this.escena?.datos?.torre2&&'+
  'this.escena?.datos?.modo!=="online"&&'+
- '(this.def?.id==="eevee"||this.def?.id==="tyrogue")&&this.etapa>0){'+
+ '((this.def?.id==="eevee"||this.def?.id==="tyrogue")||'+
+ 'this.def?.torre2ArenaAdded===true)&&this.etapa>0){'+
  'const dex=this.dexActual;'+
  'if(dex&&this.dex!==dex&&this.escena.manifiesto?.[dex]){'+
  'this.cambiarForma(dex);this.kit=this.kitActual();'+
@@ -181,6 +184,12 @@ const combatPatched=combat.replace(nativeSpriteLoad,
 // hotfix tree. The original P2 client and battle roster are never modified.
 const originalDex=await read(path.join(original,'escenas/pokedex.js'));
 const virtualDex=windowNativePokedex(originalDex);
+const nativeArena=await read(path.join(original,'escenas/preparar.js'));
+const arenaPrepared=loadNativeArenaPreviewIdle(nativeArena);
+must(arenaPrepared.includes('this.__torre2PreviewQueued.delete(dex)')&&
+ arenaPrepared.includes('this.__torre2PreviewFailedAt.set(dex,this.time.now)')&&
+ arenaPrepared.includes('const count=cargarPMD(this,forms,["Idle"])'),
+ 'Arena sprite retry or single Idle preload not installed');
 const perfScript=await read('tools/pokearena/torre2-performance-monitor.js');
 must(perfScript.length>1500,'performance probe missing');
 const originalTitle=await read(path.join(original,'escenas/titulo.js'));
@@ -191,6 +200,9 @@ must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.
 await installJohtoSpriteCollabAssets(root);
 const manifest=JSON.parse(await read(manifestFile));
+for(const dex of ['0123','0212'])
+ must(manifest[dex]?.anims?.Idle?.file,
+  'Scyther/Scizor approved original PMD Idle missing: '+dex);
 for(const dex of looseDex){
  const f=manifest[dex]?.anims?.Idle?.file;
  must(f&&((await fs.stat(path.join(root,'assets/pmd',f))).size>128),
@@ -208,7 +220,8 @@ for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
 inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
-inputHash.update(virtualDex);inputHash.update(perfScript);
+inputHash.update(virtualDex);inputHash.update(arenaPrepared);
+inputHash.update(perfScript);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -221,6 +234,7 @@ await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
 await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
 await fs.writeFile(path.join(dest,'escenas/pokedex.js'),virtualDex);
+await fs.writeFile(path.join(dest,'escenas/preparar.js'),arenaPrepared);
 await fs.writeFile(path.join(root,'torre2-performance-monitor.js'),perfScript);
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
