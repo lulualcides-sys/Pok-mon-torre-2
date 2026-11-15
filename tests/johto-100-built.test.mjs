@@ -32,6 +32,12 @@ const {modules}=JSON.parse(fs.readFileSync(path.join(site,"version.json"),"utf8"
 const output=path.join(site,modules);
 const builtDatos=fs.readFileSync(path.join(output,"datos.js"),"utf8");
 assert.ok(manifest['0467']?.anims?.Idle,'Magmortar #0467 needs a real PMD Idle');
+for(const action of ['Attack','Shoot','SpAttack','Emit']){
+ const animation=manifest['0467']?.anims?.[action];
+ assert.ok(animation?.file,'Magmortar must have real '+action+' animation');
+ assert.ok(fs.existsSync(path.join(pmddir,animation.file)),
+  'Missing battle animation sheet for Magmortar '+action);
+}
 assert.ok(fs.existsSync(path.join(pmddir,'0467','portrait.png')),
  'Magmortar #0467 portrait must be a real asset, not a green placeholder');
 const builtPokedex=fs.readFileSync(path.join(output,"escenas/pokedex.js"),"utf8");
