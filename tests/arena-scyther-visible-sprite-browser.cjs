@@ -93,6 +93,15 @@ const server=http.createServer(async(req,res)=>{
   await dex.p.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex')&&
    window.__pt2Game.scene.getScene('pokedex').casillas?.length>25,
    null,{timeout:50000});
+  await dex.p.evaluate(async()=>{
+   const main=[...document.scripts].find(x=>x.src.includes('/main.js'));
+   const {ROSTER}=await import(new URL('./datos.js',main.src));
+   const index=ROSTER.findIndex(x=>x.id==='scyther');
+   if(index<0)throw Error('Scyther Pokédex entry absent');
+   window.__pt2Game.scene.getScene('pokedex').elegir(index);
+  });
+  await dex.p.waitForFunction(()=>window.__pt2Game.scene.getScene('pokedex')
+   .etapas?.some(x=>x.nombre==='SCIZOR'),null,{timeout:18000});
   await dex.p.waitForTimeout(1200);
   evidence.pokedex=await dex.p.evaluate(before=>{
    const s=window.__pt2Game.scene.getScene('pokedex');
@@ -101,7 +110,7 @@ const server=http.createServer(async(req,res)=>{
    return {total:s.casillas.length,visible:s.casillas.filter(c=>c.g&&c.zone&&c.img).length,
     stageNames:s.etapas?.map(e=>e.nombre)||[],newIdleDownloads:after-before};
   },before);
-  assert.ok(evidence.pokedex.total>=251);
+  assert.ok(evidence.pokedex.total>=100,'Root family count must remain intact (stages are nested)');
   assert.ok(evidence.pokedex.visible<=25&&evidence.pokedex.visible>0);
   assert.ok(evidence.pokedex.stageNames.includes('SCIZOR'),
    'Scyther Pokédex must offer the genuine Scizor evolution');
