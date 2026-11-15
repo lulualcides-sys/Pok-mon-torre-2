@@ -10,7 +10,7 @@ import {publicPmdPreflight,requireCriticalPmd} from './pmd-source-preflight.mjs'
 
 export function catalogDecision(observed,catalog){
  if(!observed?.observed||!/^src-[0-9a-f]{10}$/.test(observed.observed)||
-    !/^0\.\\d+(?:\.\\d+)?$/.test(observed.alpha||'')||!observed.alphaProof)
+    !/^0\.\d+(?:\.\d+)?$/.test(observed.alpha||'')||!observed.alphaProof)
   return {capture:false,attention:true,blocked:true,reason:'upstream-version-unverified'};
  if(observed.observed===catalog?.siteVersion)
   return {capture:false,attention:false,reason:'catalog-already-current'};
