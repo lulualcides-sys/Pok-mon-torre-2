@@ -6,12 +6,16 @@ on:
       - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
       - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tests/arena-species-kit-policy.test.js'
   push:
     branches: [main]
     paths:
       - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
       - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tests/arena-species-kit-policy.test.js'
   workflow_dispatch:
 
 permissions:
@@ -51,7 +55,7 @@ jobs:
           const m=path.join(root,v.modules),s=fs.readFileSync(m+'/habilidades.js','utf8');
           const p=fs.readFileSync(m+'/torre2/arena-move-policy.js','utf8');
           if(!s.includes('...TORRE2_WOBBUFFET_FORMS')||
-             !p.includes("'discharge':3")||!p.includes("'psybeam':3.5"))
+             !p.includes("'discharge':3")||!p.includes("'psybeam':3.5")||!p.includes("'hydro-pump':3.5")||!p.includes("'hidrobomba':3.5"))
             throw Error('Requested Discharge/Psybeam/Wobbuffet correction absent');
           if(!fs.existsSync(root+'/src-62269b459e/habilidades.js'))
             throw Error('Approved original source must remain for rollback');

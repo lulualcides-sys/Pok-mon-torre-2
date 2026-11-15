@@ -101,14 +101,14 @@ export function enforceArenaMoveCooldowns(kit){
  return output;
 }
 // Native Poké Arena fighters retain their original kits except for
-// explicitly requested Hex, Reversal, Psybeam and Discharge cooldowns outside campaign.
+// explicitly requested Hex, Reversal, Psybeam, Discharge and Hydro Pump cooldowns outside campaign.
 export function enforceNativeHexCooldown(kit){
  if(!kit||typeof kit!=='object')return kit;
  let output=kit;
  for(const slot of ATTACK_SLOTS){
   const h=kit[slot];
   const move=idOf(h?.nombre);
-  const target=['hex','reversal','psybeam','psy-beam'].includes(move)?3.5:
+  const target=['hex','reversal','psybeam','psy-beam','hydro-pump','hidrobomba'].includes(move)?3.5:
    ['discharge','descarga'].includes(move)?3:null;
   if(target===null||h.cd===target)continue;
   if(output===kit)output={...kit};
