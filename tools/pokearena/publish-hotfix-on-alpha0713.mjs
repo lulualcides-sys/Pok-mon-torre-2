@@ -59,6 +59,16 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  return {target,content};
 }));
 
+// The pinned 0.71.3 pack index pre-dates installed fan-made Magmortar and
+// Johto PMD; it wrongly routes their Idle sprites to the old common .bin.
+// Use existing verified loose PNG assets for these three added forms only.
+const packs=await read(path.join(original,'paquetes.js'));
+const packAnchor='const paqueteDe=ruta=>{const dex=ruta.split("/")[0];';
+exactly(packs,packAnchor,'native PMD package routing');
+const looseDex=['0467','0236','0237'];
+const packageOverride='if(["0467","0236","0237"].includes(dex))return null;';
+const packsPatched=packs.replace(packAnchor,packAnchor+packageOverride);
+
 const nativeSkills=await read(path.join(original,'habilidades.js'));
 const fxImport='import{TORRE2_FORMS}from"./torre2/signature-fx.js";';
 const fxSpread='const FORMAS={...TORRE2_FORMS,';
@@ -103,6 +113,11 @@ must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.
 await installJohtoSpriteCollabAssets(root);
 const manifest=JSON.parse(await read(manifestFile));
+for(const dex of looseDex){
+ const f=manifest[dex]?.anims?.Idle?.file;
+ must(f&&((await fs.stat(path.join(root,'assets/pmd',f))).size>128),
+   'verified loose Idle sheet absent for '+dex);
+}
 for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
  const file=manifest['0467']?.anims?.[name]?.file;
  must(file&&((await fs.stat(path.join(root,'assets/pmd',file))).size>128),
@@ -113,12 +128,14 @@ const inputHash=createHash('sha256');
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
+inputHash.update(packsPatched);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
 await fs.cp(original,dest,{recursive:true,force:false,errorOnExist:true});
 for(const {target,content} of overlays)await fs.writeFile(path.join(dest,target),content);
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
+await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
