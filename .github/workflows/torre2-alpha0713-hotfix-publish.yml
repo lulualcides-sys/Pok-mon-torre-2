@@ -62,14 +62,18 @@ jobs:
           VERIFY
       - name: Unit regressions
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/arena-johto-evolutions-browser.cjs
           node tests/arena-species-kit-browser.cjs
-          node tests/source-client-smoke.cjs
+          # This pinned 0.71.3 release intentionally replaced TRAINING with
+          # KANTO CAMPAIGN/LOCAL; the legacy source-client-smoke.cjs asserts
+          # TRAINING exists and is inapplicable to this approved snapshot.
+          # Preserve the existing native menus and test live Arena instead.
+          node tests/arena-family-selector-browser.cjs
       - if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
