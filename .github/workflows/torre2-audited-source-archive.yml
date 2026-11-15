@@ -1,0 +1,91 @@
+name: Torre 2 — arquivo permanente da fonte REA auditada
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/torre2-audited-source-archive.yml'
+      - 'tools/pokearena/restore-audited-alpha0713.sh'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/torre2-audited-source-archive.yml'
+      - 'tools/pokearena/restore-audited-alpha0713.sh'
+  workflow_dispatch:
+
+jobs:
+  source-script-qa:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax and provenance assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n tools/pokearena/restore-audited-alpha0713.sh
+          grep -Fq '43657903565' tools/pokearena/restore-audited-alpha0713.sh
+          grep -Fq 'sha256sum --check' tools/pokearena/restore-audited-alpha0713.sh
+
+  archive:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: source-script-qa
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve audited source in GitHub Release with checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=torre2-audited-source-alpha0713-20261115
+          asset=torre2-audited-source-alpha0713.tar.gz
+          if gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release view "$tag" --repo "$GH_REPO" --json assets --jq '.assets[].name' | grep -Fxq "$asset"
+            gh release view "$tag" --repo "$GH_REPO" --json assets --jq '.assets[].name' | grep -Fxq "$asset.sha256"
+            echo "AUDITED_SOURCE_ALREADY_ARCHIVED $tag"
+            exit 0
+          fi
+          run=43657903565
+          info="$(gh api "repos/$GH_REPO/actions/runs/$run")"
+          echo "$info" | jq -e '.conclusion=="success" and .head_sha=="7c89fb0e900702d03c4a9954c6d49311330ad1f7"' >/dev/null
+          data="$(gh api "repos/$GH_REPO/actions/runs/$run/artifacts?per_page=100")"
+          for proof in \
+            'pokearena-alpha070-homologated-site|sha256:130f60e5a9a5687d56f814fff7a92c55e3c960d48ecffe01362f7b4077507903' \
+            'current-rea-source-homolog-1|sha256:a5e4cca1be70819338ab408d0cdf1be5d08fec46435aafa0acaf2d5b7cf5867c' \
+            'current-rea-provenance-homolog-1|sha256:d9008396e9435093aabfb731e28714e58f372e257e2382d04764f927206c62ab'; do
+            name="${proof%%|*}"; digest="${proof#*|}"
+            echo "$data" | jq -e --arg n "$name" --arg d "$digest" \
+              'any(.artifacts[]; .name==$n and .digest==$d and .expired==false)' >/dev/null
+          done
+          mkdir -p archive/{site,source,provenance}
+          gh run download "$run" --repo "$GH_REPO" \
+            --name pokearena-alpha070-homologated-site --dir archive/site
+          gh run download "$run" --repo "$GH_REPO" \
+            --name current-rea-source-homolog-1 --dir archive/source
+          gh run download "$run" --repo "$GH_REPO" \
+            --name current-rea-provenance-homolog-1 --dir archive/provenance
+          test -s archive/site/arena2d/version.json
+          test -s archive/site/arena2d/rights-audit-0713.json
+          test "$(find archive/source -type f | wc -l)" -ge 30
+          test "$(find archive/provenance -type f | wc -l)" -ge 1
+          cat > archive/MANIFEST.txt <<'MANIFEST'
+          source-run=43657903565
+          source-commit=7c89fb0e900702d03c4a9954c6d49311330ad1f7
+          pokearena-alpha070-homologated-site=sha256:130f60e5a9a5687d56f814fff7a92c55e3c960d48ecffe01362f7b4077507903
+          current-rea-source-homolog-1=sha256:a5e4cca1be70819338ab408d0cdf1be5d08fec46435aafa0acaf2d5b7cf5867c
+          current-rea-provenance-homolog-1=sha256:d9008396e9435093aabfb731e28714e58f372e257e2382d04764f927206c62ab
+          MANIFEST
+          tar -czf "$asset" -C archive MANIFEST.txt site source provenance
+          sha256sum "$asset" > "$asset.sha256"
+          gh release create "$tag" --repo "$GH_REPO" --target "$GITHUB_SHA" \
+            --title 'Torre 2 — fonte REA auditada Alpha 0.71.3' \
+            --notes 'Fonte, procedência e cliente homologados em 43657903565. Arquivo persistente para evitar expiração de artefatos temporários. Não substitui o deploy.' --latest=false
+          gh release upload "$tag" "$asset" "$asset.sha256" --repo "$GH_REPO"
+          echo "AUDITED_SOURCE_PERSISTED $tag"
