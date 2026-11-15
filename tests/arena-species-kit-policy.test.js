@@ -199,7 +199,7 @@ test('Eevee branches to each of Vaporeon Jolteon Flareon using independently see
  assert.equal(chooseEeveeBranch(3,()=>.99),3);
  assert.equal(chooseEeveeBranch(3,()=>1),3);
 });
-test('Arena fighter modifications are conditional; campaign/native kits stay untouched',()=>{
+test('Arena fighter cooldowns are conditional; campaign and other native kits stay untouched',()=>{
  class Fighter{
   constructor(def,campaign=false){this.def=def;this.etapa=0;this.escena={datos:campaign?{torre2:true}:{modo:'cpu'}};}
   get forma(){const e=this.def.evoluciones[this.etapa-1];return this.etapa?{...this.def,...e}:this.def;}
@@ -223,7 +223,17 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.ok(['VAPOREON','JOLTEON','FLAREON'].includes(evolved.nombre));
  assert.equal(native.forma.nombre,evolved.nombre,'Evolution stable for one fighter');
  assert.equal(native.puedeEvolucionar,false,'Eevee cannot evolve again into another branch');
- assert.strictEqual(native.kitActual(),eevee.evoluciones[native.etapa-1].kit,'Native Eevee must keep original cooldown and kit');
+ const originalEvolutionKit=eevee.evoluciones[native.etapa-1].kit;
+ const tunedEvolutionKit=native.kitActual();
+ if(evolved.nombre==='VAPOREON'){
+  assert.equal(tunedEvolutionKit.lmb.cd,3.5,'Vaporeon Hydro Pump 3.5s in Arena');
+  assert.equal(originalEvolutionKit.lmb.cd,0,'Original Eevee stage metadata unchanged');
+  assert.equal(tunedEvolutionKit.lmb.forma,originalEvolutionKit.lmb.forma,'Keep native VFX');
+  assert.equal(tunedEvolutionKit.lmb.dano,originalEvolutionKit.lmb.dano,'Keep native damage');
+ }else{
+  assert.strictEqual(tunedEvolutionKit,originalEvolutionKit,
+   'Other Eevee evolution kits stay strictly native');
+ }
  const story=new Fighter(eevee,true);story.etapa=1;
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
