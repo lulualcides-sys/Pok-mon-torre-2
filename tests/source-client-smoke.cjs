@@ -205,11 +205,11 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
    }
   }
-  assert.equal(dexData.count,278,
-   'Each of the 278 verified national species must have its own Pokédex card');
+  assert.ok(dexData.count>=90&&dexData.count<278,
+   'Family cards must group the 278 species without losing the national catalog');
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Native P2 family cards cannot overlap the Pokémon pedestal');
-  assert.equal(dexData.visibleCount,25,'Independent Pokédex shows only 25 cards per page');
+  assert.equal(dexData.visibleCount,25,'Family Pokédex shows only 25 cards per page');
   if(!dexData.portraits.every(x=>x.exists&&x.idle)){
    const diag=await dexPage.evaluate(()=>{
     const p=window.__pt2Game?.scene?.getScene('pokedex');
@@ -228,46 +228,48 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
-  const independent=await dexPage.evaluate(()=>{
-   const p=window.__pt2Game.scene.getScene('pokedex'),map=new Map();
-   for(const c of p.casillas){
-    if(map.has(c.p.dex))throw Error('Duplicate independent Dex '+c.p.dex);
-    map.set(c.p.dex,c.p);
+  const groups=await dexPage.evaluate(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   const cards=p.casillas.map(c=>c.p),byDex=new Map();
+   for(const c of cards)for(const stage of c.torre2DexStages||[]){
+    if(!byDex.has(stage.dex))byDex.set(stage.dex,stage);
    }
-   const guardian=['0480','0481','0482'].map(d=>map.get(d));
-   const johto=['0152','0153','0154'].map(d=>map.get(d));
-   const tauros=map.get('0128'),ditto=map.get('0132');
-   return {
-    cards:map.size,
-    guardians:guardian.map(x=>({name:x?.nombre,dex:x?.dex,hasTrio:!!x?.trio?.length,
-      attack:x?.kit?.lmb?.nombre})),
-    johto:johto.map(x=>({name:x?.nombre,dex:x?.dex})),
-    tauros:tauros&&Object.fromEntries(['lmb','rmb','q','e','esp'].map(k=>[k,tauros.kit[k]?.nombre])),
-    ditto:ditto?.kit?.lmb?.nombre,
-    originalBattleCards:p.casillas.filter(c=>c.p.torre2DexOnly).length
-   };
+   const guardian=['0480','0481','0482'].map(id=>{
+    const card=cards.find(c=>c.torre2DexFamilyMembers?.includes(id));
+    return {name:byDex.get(id)?.nombre,alone:card?.torre2DexFamilyMembers.length===1,
+     attack:byDex.get(id)?.kit?.lmb?.nombre};
+   });
+   const ch=cards.find(c=>c.torre2DexFamilyMembers?.includes('0152'));
+   const mag=cards.find(c=>c.torre2DexFamilyMembers?.includes('0467'));
+   return {cards:cards.length,species:byDex.size,guardian,
+    ch:ch?.torre2DexFamilyMembers,mag:mag?.torre2DexFamilyMembers,
+    tauros:Object.fromEntries(['lmb','rmb','q','e','esp'].map(k=>
+      [k,byDex.get('0128')?.kit?.[k]?.nombre])),
+    ditto:byDex.get('0132')?.kit?.lmb?.nombre};
   });
-  console.log('PHASER_POKEDEX_INDEPENDENT_278',JSON.stringify(independent));
-  assert.equal(independent.cards,278);
-  assert.deepEqual(independent.guardians.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
-  assert.ok(independent.guardians.every(x=>x.attack==='Confusion'&&!x.hasTrio));
-  assert.deepEqual(independent.johto.map(x=>x.dex),['0152','0153','0154']);
-  assert.deepEqual(independent.tauros,{
+  console.log('PHASER_POKEDEX_FAMILY_278',JSON.stringify(groups));
+  assert.equal(groups.species,278,'All 278 native species must remain available in family tabs');
+  assert.ok(groups.cards>=90&&groups.cards<278,'Evolution families should share cards');
+  assert.deepEqual(groups.guardian.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
+  assert.ok(groups.guardian.every(x=>x.alone&&x.attack==='Confusion'));
+  assert.deepEqual(groups.ch,['0152','0153','0154']);
+  assert.deepEqual(groups.mag,['0240','0126','0467']);
+  assert.deepEqual(groups.tauros,{
    lmb:'Horn Attack',rmb:'Take Down',q:'Headbutt',e:'Giga Impact',esp:'Dodge'});
-  assert.equal(independent.ditto,'Pound');
+  assert.equal(groups.ditto,'Pound');
   // The Gen II source sprite sheets and all 100 local portraits are part of
   // the artifact and are preloaded, not fetched only after the page is shown.
   try{
    await dexPage.waitForFunction(()=>{
     const p=window.__pt2Game.scene.getScene('pokedex');
-    const cards=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
+    const cards=[...new Map(p.casillas.flatMap(c=>c.p.torre2DexStages||[]).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251).map(v=>[v.dex,v])).values()];
     return cards.length===100&&cards.every(v=>
      p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0'));
    },null,{timeout:20000});
   }catch(e){
    const missing=await dexPage.evaluate(()=>{
     const p=window.__pt2Game.scene.getScene('pokedex');
-    const johto=p.casillas.map(c=>c.p).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251);
+    const johto=[...new Map(p.casillas.flatMap(c=>c.p.torre2DexStages||[]).filter(v=>Number(v.dex)>=152&&Number(v.dex)<=251).map(v=>[v.dex,v])).values()];
     return {count:johto.length,ready:johto.filter(v=>
       p.textures.exists('retrato-'+v.dex)&&p.anims.exists(v.dex+'-Idle-0')).length,
       missing:johto.filter(v=>!p.textures.exists('retrato-'+v.dex)||
@@ -286,23 +288,29 @@ const server=http.createServer(async(req,res)=>{
    throw e;
   }
   for(const [dex,name] of [['0002','IVYSAUR'],['0003','VENUSAUR'],
-   ['0152','CHIKORITA'],['0153','BAYLEEF'],['0154','MEGANIUM']]){
+   ['0152','CHIKORITA'],['0153','BAYLEEF'],['0154','MEGANIUM'],
+   ['0240','MAGBY'],['0126','MAGMAR'],['0467','MAGMORTAR']]){
    await dexPage.evaluate(id=>{
     const p=window.__pt2Game.scene.getScene('pokedex');
-    p.elegir(p.casillas.findIndex(c=>c.p.dex===id));
+    const index=p.casillas.findIndex(c=>c.p.torre2DexFamilyMembers?.includes(id));
+    if(index<0)throw Error('Missing family card for '+id);
+    p.elegir(index);
+    const stage=p.etapas.findIndex(x=>x.dex===id);
+    if(stage<0)throw Error('Missing evolution tab for '+id);
+    p.irEtapa(stage);
    },dex);
    await dexPage.waitForFunction(id=>{
     const p=window.__pt2Game.scene.getScene('pokedex');
-    return p.etapa===0&&p.sprite?.dex===id;
-   },dex,{timeout:18000});
-   const visible=await dexPage.evaluate(()=>{
+    return p.sprite?.dex===id&&p.anims.exists(id+'-Idle-0');
+   },dex,{timeout:22000});
+   const visual=await dexPage.evaluate(()=>{
     const p=window.__pt2Game.scene.getScene('pokedex');
-    return {stage:p.etapas?.[0]?.nombre,picture:p.sprite?.texture?.key,
-      card:p.casillas[p.foco]?.p?.dex};
+    return {stage:p.etapas?.[p.etapa]?.nombre,sprite:p.sprite?.texture?.key,
+     members:p.casillas[p.foco]?.p?.torre2DexFamilyMembers};
    });
-   assert.equal(visible.stage,name);
-   assert.equal(visible.card,dex);
-   assert.equal(visible.picture,'pmd-'+dex+'-Idle');
+   assert.equal(visual.stage,name);
+   assert.ok(visual.members.includes(dex));
+   assert.equal(visual.sprite,'pmd-'+dex+'-Idle');
   }
   // Regression: the user's screenshots showed SPD NaN and blank moves
   // on Nidorino/Nidoking. Visit EVERY added Kanto evolution in the actual
@@ -341,11 +349,15 @@ const server=http.createServer(async(req,res)=>{
    for(const [stage,dex] of stages){
     await dexPage.evaluate(dex=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
-     scene.elegir(scene.casillas.findIndex(x=>x.p.dex===dex));
+     const card=scene.casillas.findIndex(x=>x.p.torre2DexFamilyMembers?.includes(dex));
+     if(card<0)throw Error('Missing Nidoran evolution family '+dex);
+     scene.elegir(card);
+     const tab=scene.etapas.findIndex(x=>x.dex===dex);
+     scene.irEtapa(tab);
     },dex);
     await dexPage.waitForFunction(spriteDex=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
-     return scene.etapa===0&&scene.sprite?.dex===spriteDex;
+     return scene.etapas?.[scene.etapa]?.dex===spriteDex&&scene.sprite?.dex===spriteDex;
     },dex,{timeout:20000});
     const visible=await dexPage.evaluate(()=>{
      const scene=window.__pt2Game.scene.getScene('pokedex');
@@ -405,10 +417,10 @@ const server=http.createServer(async(req,res)=>{
     if(idx<0){results.push({base,error:'missing Pokédex card'});continue;}
     scene.elegir(idx);
     for(const species of evolutions){
-     const stageIdx=scene.casillas.findIndex(x=>x.p.nombre.toLowerCase()===species);
-     if(stageIdx<0){results.push({base,species,error:'missing evolved card'});continue;}
-     scene.elegir(stageIdx);
-     const stage=scene.etapas[0];
+     const stageIdx=scene.etapas.findIndex(x=>x.nombre.toLowerCase()===species);
+     if(stageIdx<0){results.push({base,species,error:'missing evolved family tab'});continue;}
+     scene.irEtapa(stageIdx);
+     const stage=scene.etapas[stageIdx];
      if(!stage){results.push({base,species,error:'missing evolved stage'});continue;}
      const loadout=resolveLoadout({id:species,
       progression:{species,level:100}});
@@ -544,11 +556,24 @@ const server=http.createServer(async(req,res)=>{
    'Selection cards must preload actual Pokémon portraits and animated sprites, including Zubat/Golbat: '+
    JSON.stringify(visiblePokemon));
   await page.screenshot({path:'test-evidence/pokearena-training-select-sprites-fixed.png',fullPage:true});
-  await page.mouse.click(240,149); // Confirm visible Squirtle card for Player 1.
-  await page.waitForTimeout(300);
-  await page.mouse.click(103,149); // Confirm visible Bulbasaur as Dummy after focus switches.
-  await page.waitForTimeout(350);
-  await page.mouse.click(864,544); // Actual original FIGHT button.
+  const clickSelectionCard=async index=>{
+   const xy=await page.evaluate(i=>{
+    const c=window.__pt2Game.scene.getScene('seleccion').casillas[i];
+    return window.aPantalla(c.x+c.w/2,c.y+c.h/2);
+   },index);
+   await page.mouse.click(...xy);
+  };
+  await clickSelectionCard(0);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('seleccion').paso===1,
+   null,{timeout:7000});
+  await clickSelectionCard(1);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('seleccion').paso===2,
+   null,{timeout:7000});
+  const fightXY=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('seleccion');
+   return window.aPantalla(s.posLuchar.x,s.posLuchar.y);
+  });
+  await page.mouse.click(...fightXY);
   try{
    await page.waitForFunction(()=>{
     const g=window.__pt2Game,c=g?.scene.getScene('combate');
