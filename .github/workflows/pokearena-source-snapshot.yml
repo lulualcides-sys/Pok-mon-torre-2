@@ -1,17 +1,8 @@
 name: Pokémon Torre 2 — Captura do cliente Poké Arena (REA)
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'tools/pokearena/**'
-      - 'tests/source-client-smoke.cjs'
-      - 'tests/solo-kanto-built.test.mjs'
-      - 'tests/evolution-modes-built.test.mjs'
-      - 'data/kanto-new-phaser-moves.json'
-      - 'tests/public-phaser-preview.cjs'
-      - '.github/workflows/pokearena-source-snapshot.yml'
+  # An internal code push is not evidence that the external source changed.
+  # Independent upstream monitor remains scheduled every 4 hours.
   schedule:
-    # Daily fallback; the source branch may already have been captured today.
     - cron: '17 12 * * *'
   workflow_dispatch:
 
@@ -31,30 +22,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: Avoid duplicate source downloads on the same Sao Paulo date
+      - name: Sonda da versão oficial e fingerprint antes de capturar
         id: check
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo 'capture=true' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          today="$(TZ=America/Sao_Paulo date +%F)"
-          if git fetch --no-tags origin refs/heads/pokearena2d-cliente-phaser 2>/dev/null; then
-            provenance="$(git show FETCH_HEAD:capture-provenance.json 2>/dev/null || true)"
-            captured="$(printf '%s' "$provenance" | jq -r '.capturedAt // empty' 2>/dev/null || true)"
-            if [ -n "$captured" ]; then
-              captured_day="$(TZ=America/Sao_Paulo date -d "$captured" +%F 2>/dev/null || true)"
-              if [ "$captured_day" = "$today" ]; then
-                echo "Existing first-party capture on $today; skip redundant full download."
-                echo 'capture=false' >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-            fi
-          fi
-          echo "No verified capture on $today; full source check required."
-          echo 'capture=true' >> "$GITHUB_OUTPUT"
+        run: node tools/pokearena/capture-gate.mjs
+      - name: Registrar decisão e bloqueios mesmo sem nova captura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-source-daily-capture-decision
+          path: site-capture/capture-gate.json
+          if-no-files-found: warn
+          retention-days: 14
   capture:
     needs: daily-gate
     if: needs.daily-gate.outputs.capture == 'true'
