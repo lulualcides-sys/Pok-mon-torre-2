@@ -93,12 +93,14 @@ const server=http.createServer(async(req,res)=>{
   await dex.p.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex')&&
    window.__pt2Game.scene.getScene('pokedex').casillas?.length>25,
    null,{timeout:50000});
-  await dex.p.evaluate(async()=>{
-   const main=[...document.scripts].find(x=>x.src.includes('/main.js'));
-   const {ROSTER}=await import(new URL('./datos.js',main.src));
-   const index=ROSTER.findIndex(x=>x.id==='scyther');
-   if(index<0)throw Error('Scyther Pokédex entry absent');
-   window.__pt2Game.scene.getScene('pokedex').elegir(index);
+  // The Pokédex uses a grouped family roster (145 entries), not the 191
+  // battle roots from datos.js. Select using the mounted family card index.
+  await dex.p.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('pokedex');
+   const index=s.casillas.findIndex(c=>c?.p?.id==='scyther'||
+    c?.p?.torre2DexFamilyMembers?.includes('0123'));
+   if(index<0)throw Error('Scyther family absent from real Pokédex');
+   if(s.foco!==index)s.elegir(index);
   });
   await dex.p.waitForFunction(()=>window.__pt2Game.scene.getScene('pokedex')
    .etapas?.some(x=>x.nombre==='SCIZOR'),null,{timeout:18000});
