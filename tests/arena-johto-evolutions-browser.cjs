@@ -111,6 +111,9 @@ const server=http.createServer(async(req,res)=>{
      const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
      return {form:me.forma?.nombre,dex:me.dex,texture:me.spr?.texture?.key,
       available:s.textures.exists('pmd-0467-Idle'),
+      expectedPreload:window.__torre2HotfixPreloads,
+      manifest0467:s.registry.get('manifiesto')?.['0467']?.anims?.Idle,
+      load0467:s.load?.list?.get?.('pmd-0467-Idle')?.url,
       anim:me.spr?.anims?.currentAnim?.key,
       kit:['lmb','rmb','q','e'].map(slot=>me.kit?.[slot]?.nombre)};
     });
