@@ -13,9 +13,9 @@ on:
       - 'tests/catalog-preflight.test.mjs'
       - 'tests/pokearena-source-catalog.test.js'
       - '.github/workflows/pokearena-native-moves-watch.yml'
+# Pull-request QA may read the audited release, but must never write the repo.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 concurrency:
   group: pokearena-native-moves-watch
   cancel-in-progress: false
@@ -51,6 +51,9 @@ jobs:
           node tests/arena-species-kit-browser.cjs
   catalog:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
