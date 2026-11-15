@@ -63,13 +63,13 @@ test('Thunder cooldown is 3s in Arena without changing other electrical moves or
  const unavailable={q:move('Thunder Shock',10,5,'ELECTRIC')};
  assert.strictEqual(enforceArenaMoveCooldowns(unavailable),unavailable,'Different move remains unchanged');
 });
-test('Psybeam cooldown is 3s, while Psychic, Psywave and Confusion keep their original timing',()=>{
+test('Psybeam cooldown is 3.5s, while Psychic, Psywave and Confusion keep their original timing',()=>{
  const kit={lmb:move('Psybeam',18,12,'PSYCHIC'),
             rmb:move('Psychic',20,8.5,'PSYCHIC'),
             q:move('Psywave',12,4.7,'PSYCHIC'),
             e:move('Confusion',10,2.6,'PSYCHIC')};
  const out=enforceArenaMoveCooldowns(kit);
- assert.equal(out.lmb.cd,3);
+ assert.equal(out.lmb.cd,3.5);
  assert.equal(out.rmb.cd,8.5);
  assert.equal(out.q.cd,4.7);
  assert.equal(out.e.cd,2.6);
@@ -81,7 +81,7 @@ test('Psybeam cooldown is 3s, while Psychic, Psywave and Confusion keep their or
  assert.strictEqual(out.e,kit.e);
  assert.strictEqual(enforceArenaMoveCooldowns(out),out);
  const alternate={q:move('Psy Beam',16,0,'PSYCHIC')};
- assert.equal(enforceArenaMoveCooldowns(alternate).q.cd,3,'Psy Beam alternate spelling');
+ assert.equal(enforceArenaMoveCooldowns(alternate).q.cd,3.5,'Psy Beam alternate spelling');
 });
 test('Only Fire Blast and Charge gain 2–4s cooldowns; unrelated moves and source metadata are preserved',()=>{
  const raw={lmb:move('Fire Blast',23,12,'FIRE'),rmb:move('Charge',0,9,'ELECTRIC'),
@@ -230,13 +230,13 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.equal(story.puedeEvolucionar,true,'Campaign evolution rule unchanged');
 });
 
-test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX or campaign',()=>{
+test('Psybeam, Discharge and Hyper Beam take 3.5s / 3s / 4s without touching VFX or campaign',()=>{
  const base={lmb:move('Psybeam',14,0,'PSYCHIC'),
   rmb:move('Discharge',17,0,'ELECTRIC'),
   q:move('Hyper Beam',32,0,'NORMAL'),
   e:move('Shadow Ball',22,8,'GHOST')};
  const tuned=enforceArenaMoveCooldowns(base);
- assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3,3,4]);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3.5,3,4]);
  for(const slot of ['lmb','rmb','q']){
   assert.equal(base[slot].cd,0,'Original move must not be mutated');
   assert.equal(tuned[slot].forma,base[slot].forma,'Keep approved renderer');
@@ -245,7 +245,7 @@ test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX o
  assert.strictEqual(tuned.e,base.e,'Unrelated move remains native');
  assert.strictEqual(enforceArenaMoveCooldowns(tuned),tuned);
  const aliases={lmb:move('Psy Beam',15,0),rmb:move('Descarga',18,0),q:move('Hiperrayo',30,0)};
- assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3,3,4]);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3.5,3,4]);
 });
 test('Native Gengar drops only generic Hyper Beam in Arena and keeps approved Ghost/Poison VFX',()=>{
  const shadow=move('Shadow Ball',23,6,'GHOST'),sludge=move('Sludge Bomb',24,7,'POISON');
@@ -471,4 +471,35 @@ test('Eevee advances one stage only in each Arena or League battle, despite repe
  const campaign=new Fighter('campaign');
  campaign.etapa=1;campaign.etapa=2;
  assert.equal(campaign.etapa,2,'Campaign stage handling must remain unchanged');
+});
+
+test('Reversal 3.5s in Arena/League while other moves remain unchanged',()=>{
+ const source={lmb:move('Reversal',17,8,'FIGHTING'),
+  rmb:move('Psybeam',17,6,'PSYCHIC'),
+  q:move('Cross Chop',15,4,'FIGHTING'),
+  esp:move('Dodge',0,2)};
+ const actual=enforceArenaMoveCooldowns(source);
+ assert.equal(actual.lmb.cd,3.5);
+ assert.equal(actual.rmb.cd,3.5);
+ assert.strictEqual(actual.q,source.q);
+ assert.strictEqual(actual.esp,source.esp);
+ assert.equal(source.lmb.cd,8);
+ assert.equal(source.rmb.cd,6);
+ assert.strictEqual(enforceArenaMoveCooldowns(actual),actual);
+ const johto={id:'tyrogue',torre2Johto100:true,torre2ArenaAdded:true,
+  kit:source,evoluciones:[]};
+ class Fighter{
+  constructor(mode){this.def=johto;this.etapa=0;
+   this.escena={datos:mode==='campaign'?{torre2:true}:{modo:mode}};}
+  get forma(){return this.def;}
+  get puedeEvolucionar(){return false;}
+  kitActual(){return this.def.kit;}
+ }
+ installArenaMovePolicy(Fighter,[johto]);
+ for(const mode of ['arena','liga','league','cpu']){
+  const kit=new Fighter(mode).kitActual();
+  assert.equal(kit.lmb.cd,3.5,mode+' Reversal');
+  assert.equal(kit.rmb.cd,3.5,mode+' Psybeam');
+ }
+ assert.strictEqual(new Fighter('campaign').kitActual(),source);
 });
