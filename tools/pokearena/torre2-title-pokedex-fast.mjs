@@ -7,13 +7,17 @@ const replaceOnce=(src,from,to,label)=>{
  return src.replace(from,to);
 };
 
-export function removeCustomizeTitleOption(original){
+function removeTitleMenuOption(original,label){
+ if(!['CUSTOMIZE','NEWS'].includes(label))throw Error('Unknown title menu label');
+ const labelPattern=label==='NEWS'
+  ?/\btxt\s*:\s*(["'])NEWS\1/i
+  :/\btxt\s*:\s*(["'])CUSTOMIZE\1/i;
  let source=String(original);
- const found=[...source.matchAll(/\btxt\s*:\s*(["'])CUSTOMIZE\1/gi)];
+ const found=[...source.matchAll(new RegExp(labelPattern.source,'gi'))];
  if(!found.length)return source;
- if(found.length!==1)throw Error('Ambiguous CUSTOMIZE menu options');
+ if(found.length!==1)throw Error('Ambiguous '+label+' menu options');
  const at=found[0].index,start=source.lastIndexOf('{id:',at);
- if(start<0||at-start>220)throw Error('CUSTOMIZE not found in native menu');
+ if(start<0||at-start>220)throw Error(label+' not found in native menu');
  let depth=0,quote='',escaped=false,end=-1;
  for(let i=start;i<source.length;i++){
   const c=source[i];
@@ -27,20 +31,23 @@ export function removeCustomizeTitleOption(original){
   if(c==='{')depth++;
   else if(c==='}'&&!--depth){end=i;break;}
  }
- if(end<0||at>end)throw Error('Unknown CUSTOMIZE menu syntax');
+ if(end<0||at>end)throw Error('Unknown '+label+' menu syntax');
  const entry=source.slice(start,end+1);
- if(!/^\{id\s*:/.test(entry)||!/\btxt\s*:\s*(["'])CUSTOMIZE\1/i.test(entry))
-  throw Error('CUSTOMIZE is not a standalone button');
+ if(!/^\{id\s*:/.test(entry)||!labelPattern.test(entry))
+  throw Error(label+' is not a standalone button');
  let from=start,to=end+1;
  if(source[to]===',')to++;
  else if(source[from-1]===',')from--;
  else if(source[from-1]!=='['||source[to]!==']')
-  throw Error('Unknown CUSTOMIZE menu delimiter');
+  throw Error('Unknown '+label+' menu delimiter');
  source=source.slice(0,from)+source.slice(to);
- if(/\btxt\s*:\s*(["'])CUSTOMIZE\1/i.test(source))
-  throw Error('CUSTOMIZE menu entry survived patch');
+ if(labelPattern.test(source))
+  throw Error(label+' menu entry survived patch');
  return source;
 }
+
+export const removeCustomizeTitleOption=source=>removeTitleMenuOption(source,'CUSTOMIZE');
+export const removeNewsTitleOption=source=>removeTitleMenuOption(source,'NEWS');
 
 export function preloadPokedexOnePage(original){
  let source=String(original);
