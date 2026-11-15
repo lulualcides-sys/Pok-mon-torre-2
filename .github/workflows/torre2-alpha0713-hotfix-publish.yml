@@ -13,10 +13,17 @@ on:
       - 'tools/pokearena/torre2-gen3-status.js'
       - 'tools/pokearena/batch24/runtime.js'
       - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-pokedex-window.mjs'
+      - 'tools/pokearena/torre2-native-arena-preview.mjs'
       - 'tools/pokearena/torre2-trainer-cards.js'
       - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
       - 'tests/arena-species-kit-policy.test.js'
+      - 'tests/scyther-scizor-bridge.test.js'
+      - 'tests/arena-native-idle-loading.test.js'
+      - 'tests/torre2-pokedex-window.test.js'
+      - 'tests/arena-scyther-visible-sprite-browser.cjs'
+      - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tests/trainer-card-route-gym-pages.test.js'
   push:
     branches: [main]
@@ -31,6 +38,8 @@ on:
       - 'tools/pokearena/torre2-gen3-status.js'
       - 'tools/pokearena/batch24/runtime.js'
       - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-pokedex-window.mjs'
+      - 'tools/pokearena/torre2-native-arena-preview.mjs'
       - 'tools/pokearena/torre2-trainer-cards.js'
   workflow_dispatch:
 
@@ -78,6 +87,16 @@ jobs:
           const earth=fs.readFileSync(m+'/torre2/batch24/runtime.js','utf8');
           const campaign=fs.readFileSync(m+'/torre2/campaign-core.js','utf8');
           const cards=fs.readFileSync(m+'/torre2/trainer-cards.js','utf8');
+          const arena=fs.readFileSync(m+'/escenas/preparar.js','utf8');
+          const pokedex=fs.readFileSync(m+'/escenas/pokedex.js','utf8');
+          const fighter=fs.readFileSync(m+'/luchador.js','utf8');
+          const johto=fs.readFileSync(m+'/torre2/johto-100-species.js','utf8');
+          if(!arena.includes('this.__torre2PreviewQueued.delete(dex)')||
+             !arena.includes('this.__torre2PreviewFailedAt.set(dex,this.time.now)')||
+             !pokedex.includes('this.torre2PortraitOnly(this._torre2FirstForms)')||
+             !fighter.includes('this.def?.torre2ArenaAdded===true')||
+             !johto.includes('bridgeAddedScytherToScizor(original,result)'))
+            throw Error('Scyther/Scizor, Arena Idle or Pokédex release fix missing');
           if(!earth.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')||
              !earth.includes('for(const r of batch24AreaTargets(l))'))
             throw Error('Earth Power verified AoE release absent');
@@ -92,11 +111,12 @@ jobs:
           VERIFY
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/arena-johto-evolution-built.test.mjs
           node tests/arena-johto-evolutions-browser.cjs
           node tests/arena-species-kit-browser.cjs
           # This pinned 0.71.3 release intentionally replaced TRAINING with
@@ -105,6 +125,7 @@ jobs:
           # Verify actual 0.71.3 PLAY menu navigation in desktop and mobile
           node tests/alpha0713-hotfix-navigation-browser.cjs
           node tests/alpha0713-performance-browser.cjs
+          node tests/arena-scyther-visible-sprite-browser.cjs
       - name: Save real mobile/Pokedex performance samples
         if: always()
         uses: actions/upload-artifact@v4

@@ -9,6 +9,18 @@ const {ROSTER}=await import(pathToFileURL(path.join(root,modules,'datos.js')).hr
 const find=id=>ROSTER.find(p=>p.id===id);
 const magby=find('magby'),magmar=find('magmar'),eevee=find('eevee'),
  togepi=find('togepi'),togetic=find('togetic'),tyrogue=find('tyrogue');
+const scyther=find('scyther'),scizor=find('scizor');
+assert.ok(scyther?.torre2ArenaAdded&&scyther?.torre2Kanto151,
+ 'Scyther must be an added Kanto offline fighter, not native P2');
+assert.ok(scizor?.torre2ArenaAdded&&scizor?.torre2Johto100,
+ 'Scizor must be an already installed Johto fighter');
+assert.deepEqual(scyther.evoluciones.map(x=>[x.dex,x.nombre]),
+ [['0212','SCIZOR']], 'Scyther must evolve once into genuine #0212');
+assert.deepEqual(scyther.evoluciones[0].kit,scizor.kit,
+ 'Scizor stage must reuse approved installed Johto moves without new VFX');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'assets/pmd/manifest.json'),'utf8'));
+for(const dex of ['0123','0212'])
+ assert.ok(manifest[dex]?.anims?.Idle?.file,'Evolved Scyther idle sprite missing: '+dex);
 assert.ok(magby?.torre2ArenaAdded,'Missing added Magby');
 assert.ok(magmar,'Missing Kanto Magmar');
 assert.ok(eevee&&find('espeon')&&find('umbreon'),'Eevee has no installed Johto branch source');
@@ -45,9 +57,17 @@ for(const [id,p] of [['togepi',togepi],['togetic',togetic]]){
  assert.ok(attacks.some(s=>Number(kit[s]?.dano)>0),id+' has no damaging moves');
 }
 const combat=fs.readFileSync(path.join(root,modules,'escenas/combate.js'),'utf8');
-assert.match(combat,/ids\.includes\("eevee"\)/,'Offline Eevee must preload both Johto evolutions');
+assert.ok(/dexs\.has\("0133"\)/.test(combat)||/ids\.includes\("eevee"\)/.test(combat),
+ 'Eevee Johto preloading must use either official source Dex or legacy roster ID');
+assert.match(combat,/soltarPMD\(this,m,dexs\)/,
+ 'Original combat sprite preloading must remain native and alive');
 assert.match(combat,/dex of \["0196","0197"\]/,'Espeon/Umbreon animations unavailable at evolution');
 assert.match(combat,/d\.modo!=="online"/,'Never change online native battle preloading');
+// Generic Pages gates also build the unmodified upstream client. Only the
+// isolated 0.71.3 hotfix promises this new offline Scyther prefetch policy.
+if(fs.existsSync(path.join(path.dirname(root),'RELEASE-0713-HOTFIX.json')))
+ assert.ok(combat.includes('["0123",["0212"]]'),
+  'Hotfix Scyther combat must preload genuine Scizor texture before EVO');
 console.log('PASS_BUILT_ARENA_JOHTO',JSON.stringify({
  release:modules,magbyStages:stages.map(e=>e.nombre),
  tyrogueBranches:tyrogue.evoluciones.map(e=>e.nombre),
