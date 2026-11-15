@@ -160,9 +160,14 @@ const server=http.createServer(async(req,res)=>{
    if(!b)throw Error('Wobbuffet native ATK touch button missing');
    const at=p.pos(b),o=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
    p.abajo({id:88,x:(at.x-o.x)/(unit.x-o.x),y:(at.y-o.y)/(unit.y-o.y)});
-   return {move:w.kit?.lmb?.nombre,form:w.kit?.lmb?.forma,energy:w.energia};
+   // Match the native successful EVO test: flush the touch panel read.
+   const pressed=p.leer(v=>({ax:v.x,ay:v.y}));
+   return {move:w.kit?.lmb?.nombre,form:w.kit?.lmb?.forma,
+    energy:w.energia,pressed};
   });
   assert.equal(button.move,'Counter');
+  assert.equal(button.pressed?.lmb,true,
+   'Touch panel must register the actual Counter button');
   await page.waitForFunction(()=>{
    const w=window.__pt2Game.scene.getScene('combate').luchadores[0];
    return w.est?.torre2WobbuffetCounter?.hasta>w.t;
