@@ -13,9 +13,11 @@ on:
       - 'tools/pokearena/torre2-gen3-status.js'
       - 'tools/pokearena/batch24/runtime.js'
       - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
       - '.github/workflows/torre2-alpha0713-hotfix-publish.yml'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
       - 'tests/arena-species-kit-policy.test.js'
+      - 'tests/trainer-card-route-gym-pages.test.js'
   push:
     branches: [main]
     # Do not republish identical gameplay after docs/tests/CI-only changes.
@@ -29,6 +31,7 @@ on:
       - 'tools/pokearena/torre2-gen3-status.js'
       - 'tools/pokearena/batch24/runtime.js'
       - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
   workflow_dispatch:
 
 permissions:
@@ -74,17 +77,22 @@ jobs:
             throw Error('Approved original source must remain for rollback');
           const earth=fs.readFileSync(m+'/torre2/batch24/runtime.js','utf8');
           const campaign=fs.readFileSync(m+'/torre2/campaign-core.js','utf8');
+          const cards=fs.readFileSync(m+'/torre2/trainer-cards.js','utf8');
           if(!earth.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')||
              !earth.includes('for(const r of batch24AreaTargets(l))'))
             throw Error('Earth Power verified AoE release absent');
           if(!campaign.includes('const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind)')||
              !campaign.includes('const encounter=regionalTrainer(s.stage,s.trainer)'))
             throw Error('Regional campaign difficulty release absent');
+          if(!cards.includes('export function trainerCardSections(stage,total)')||
+             !cards.includes('const visibleEntries=sections[page].indices.map(index=>all[index])')||
+             !cards.includes('scenicBackdrop(scene,layer,state.stage)'))
+            throw Error('Campaign presentation backport absent from deployed source');
           console.log('HOTFIX_ALPHA0713_SOURCE_VERIFIED',v);
           VERIFY
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
-          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
