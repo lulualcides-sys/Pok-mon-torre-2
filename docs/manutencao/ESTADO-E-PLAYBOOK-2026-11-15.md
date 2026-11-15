@@ -61,3 +61,10 @@ O estado **aberto** de uma PR não prova que a funcionalidade esteja ausente; a 
 - Se a origem negar `config.js`, a captura é **não executada por falta de prova** e documentada em `site-capture/capture-gate.json` e no resumo do GitHub Actions. Isso é **bloqueio de origem**, jamais sucesso de atualização.
 - `.github/workflows/pokearena-source-snapshot.yml` não roda mais uma captura nova em cada push da `main`; permanece o gatilho agendado diário e a verificação manual. O monitor `pokearena-upstream-watch.yml` continua de quatro em quatro horas e pode registrar incidentes.
 - Tests: `tests/capture-gate-policy.test.js` bloqueia retorno ao padrão de recaptura cega ou alteração de versão sem fonte comprovada. Para aprovar uma Alpha posterior, atualizar o manifesto de aprovação **somente depois do deploy validado**, preservando o SHA antigo como rollback.
+
+## Impedir código integrado sem ir ao Pages
+
+- O workflow `torre2-alpha0713-hotfix-publish.yml` agora acompanha **todos os 7 arquivos de gameplay** que o publicador realmente sobrepõe (Arena, Johto, AUTO, Wobbuffet, status Gen III, Earth Power Batch24 e campanha). Uma alteração nessas fontes dispara QA no PR e, se validada/mesclada, o pipeline de publicação da Alpha auditada.
+- Alterações **somente** em documentação, testes ou YAML de CI **não** disparam novo deploy do jogo. Isso evita gastar Actions e mudar o hash do jogo quando a jogabilidade está idêntica.
+- `tests/release-publish-triggers.test.js` confere em cada suíte Node que a lista real de overlays e os caminhos do workflow de publicação continuam sincronizados. Se um novo módulo for adicionado ao publicador sem gatilho correspondente, a verificação falha em vez de criar uma atualização silenciosamente ausente.
+- A conclusão do GitHub Actions **não substitui** ler o SHA real no CDN depois de um deploy. Nunca declarar atualização jogável apenas por merge.
