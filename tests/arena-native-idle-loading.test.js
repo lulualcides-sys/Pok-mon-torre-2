@@ -14,6 +14,11 @@ test('every six-slot Arena card only loads its own approved native Idle sprite',
  assert.match(code,/this\.__torre2PreviewQueued\.delete\(dex\)/);
  assert.match(code,/this\.__torre2PreviewFailedAt\.set\(dex,this\.time\.now\)/);
  assert.match(code,/this\.time\.now-failedAt>8000/);
+ assert.match(code,/this\.load\.spritesheet\("pmd-"\+dex\+"-Idle","assets\/pmd\/"\+idle\.file/);
+ assert.match(code,/this\.__torre2PreviewLooseTried\.add\(dex\)/);
+ assert.match(code,/this\.load\.once\("complete",complete\)/);
+ assert.doesNotMatch(code,/sprite\.png|placeholder|fallback-avatar/,
+  'Do not substitute identity or invent image assets');
  assert.match(code,/SPRITE UNAVAILABLE/);
  assert.match(code,/for\(const card of this\.tarjetas\|\|\[\]\)/);
 });
