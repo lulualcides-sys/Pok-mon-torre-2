@@ -190,7 +190,10 @@ function projectile(l,h,extra){
    if(contact){
     b.done=true;self.clashBody.live=false;
     const result=strike(l,r,h,extra,iceFan?1/count:1);anyHit||=result.landed;
-    if(shouldPaintProjectileImpact(h,result))b.impact={...contact,time:age};
+    // Show the existing approved impact only after a real damaging native contact.
+    // This also protects non-Twister Batch24 moves; no changes to the renderer.
+    if(shouldPaintProjectileImpact(h,result)&&result.landed===true&&result.damage>0)
+      b.impact={...contact,time:age};
     b.refund=h.secondary==='drain'?result.damage*.5:0;
    }
   }

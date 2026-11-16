@@ -24,6 +24,8 @@ on:
       - 'tests/torre2-pokedex-window.test.js'
       - 'tests/arena-scyther-visible-sprite-browser.cjs'
       - 'tests/torre2-evolution-sprite-continuity.test.js'
+      - 'tests/alpha0713-projectile-contact-release.test.js'
+      - 'tests/alpha0713-projectile-contact-webgl-browser.cjs'
       - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tests/trainer-card-route-gym-pages.test.js'
   push:
@@ -98,6 +100,8 @@ jobs:
              !fighter.includes('this.def?.torre2ArenaAdded===true')||
              !johto.includes('bridgeAddedScytherToScizor(original,result)'))
             throw Error('Scyther/Scizor, Arena Idle or Pokédex release fix missing');
+          if(!earth.includes('shouldPaintProjectileImpact(h,result)&&result.landed===true&&result.damage>0'))
+            throw Error('Missing Batch24 true-contact projectile gate in approved release candidate');
           if(!earth.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')||
              !earth.includes('for(const r of batch24AreaTargets(l))'))
             throw Error('Earth Power verified AoE release absent');
@@ -113,6 +117,8 @@ jobs:
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
           node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/torre2-evolution-sprite-continuity.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
+      - name: Real Batch24 runtime blocked, missed and landed projectile regression
+        run: node --test tests/alpha0713-projectile-contact-release.test.js
       - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
         run: |
           set -euo pipefail
@@ -127,6 +133,7 @@ jobs:
           node tests/alpha0713-hotfix-navigation-browser.cjs
           node tests/alpha0713-performance-browser.cjs
           node tests/arena-scyther-visible-sprite-browser.cjs
+          node tests/alpha0713-projectile-contact-webgl-browser.cjs
       - name: Save real mobile/Pokedex performance samples
         if: always()
         uses: actions/upload-artifact@v4
