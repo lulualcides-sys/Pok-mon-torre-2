@@ -1,0 +1,66 @@
+name: Torre 2 — contato real dos projeteis Batch24 (homolog)
+on:
+  pull_request:
+    branches: [test/homologacao-kanto-20261103]
+    paths:
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tools/pokearena/batch24/verified-projectile-impact.js'
+      - 'tests/batch24-projectile-contact-proof.test.js'
+      - 'tests/batch24-projectile-contact-phaser-browser.cjs'
+      - '.github/workflows/batch24-projectile-contact-homolog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-and-guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and actual isolated runtime tests
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/batch24/runtime.js
+          node --check tools/pokearena/batch24/verified-projectile-impact.js
+          node --check tests/batch24-projectile-contact-phaser-browser.cjs
+          node --test tests/batch24-projectile-contact-proof.test.js
+      - name: Entire Node test suite and reuse guard
+        run: |
+          set -euo pipefail
+          npm test
+          npm run check:reuse
+      - name: Preserve approval scope and protect game assets
+        run: |
+          set -euo pipefail
+          if test "${{ github.event_name }}" = pull_request; then
+            git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD > /tmp/changed.txt
+            if grep -Eq '^(src/|assets/|reference-assets/|_site/|data/|tools/pokearena/torre2-approved-|\.github/workflows/pages)' /tmp/changed.txt; then
+              cat /tmp/changed.txt
+              echo 'Protected campaign, maps, saves, art or deployment changed'
+              exit 1
+            fi
+          fi
+  chromium-webgl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned test-only MIT Phaser and browser client
+        run: npm install --no-save --no-audit --no-fund phaser@3.90.0 playwright-core@1.56.1
+      - name: Test independent renderer and actual hitbox on Chromium WebGL
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/batch24-projectile-contact-phaser-browser.cjs
