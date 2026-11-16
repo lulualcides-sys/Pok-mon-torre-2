@@ -6,6 +6,7 @@ import {paintReworkedMove,paintReworkedImpact} from './visual-upgrades.js';
 import {clashAt} from '../clash-fx.js';
 import {contactDash} from '../early-route-fx.js';
 import {aleatorio} from '../../azar.js';
+import {shouldShowVerifiedProjectileImpact} from './verified-projectile-impact.js';
 const PI=Math.PI,clamp=n=>Math.max(0,Math.min(1,n));
 const center=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
 export function swept(a,b,r,radius=10){
@@ -188,7 +189,9 @@ function projectile(l,h,extra){
    if(contact){
     b.done=true;self.clashBody.live=false;
     const result=strike(l,r,h,extra,iceFan?1/count:1);anyHit||=result.landed;
-    b.impact={...contact,time:age};b.refund=h.secondary==='drain'?result.damage*.5:0;
+    b.impact={...contact,time:age};
+    if(!shouldShowVerifiedProjectileImpact(h,result))b.impact=null;
+    b.refund=h.secondary==='drain'?result.damage*.5:0;
    }
   }
   if(!active&&h.secondary==='fury'&&!anyHit)l.__batch24Fury=null;
