@@ -82,5 +82,5 @@ test('renderer is wired into the assembled Phaser arena, not metadata-only',asyn
  const runtime=await fs.readFile(path.join(root,'tools/pokearena/batch24/runtime.js'),'utf8');
  assert.match(build,/fs\.cp\('tools\/pokearena\/batch24'/);
  assert.match(runtime,/shouldPaintProjectileImpact/);
- assert.match(runtime,/result\\.landed===true\\&\\&result\\.damage>0/);
+ assert.ok(runtime.includes('result.landed===true&&result.damage>0'));
 });
