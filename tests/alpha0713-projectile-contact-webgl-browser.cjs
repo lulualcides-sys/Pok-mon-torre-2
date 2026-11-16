@@ -5,7 +5,7 @@ const http=require('node:http'),assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
 const {chromium}=require('playwright-core');
 const root=path.resolve(__dirname,'..');
-const phaser=path.join(root,'node_modules/phaser/dist/phaser.min.js');
+const phaser=path.join(root,'_site/arena2d/lib/phaser.min.js'); // Approved, audited Alpha 0.71.3 Phaser runtime
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'torre2-projectile-webgl-'));
 const app=path.join(dir,'app');
 const put=(name,contents)=>{const full=path.join(app,name);
@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
  catch{res.writeHead(404).end();}
 });
 (async()=>{
- if(!fs.existsSync(phaser))throw Error('Phaser MIT dependency unavailable');
+ if(!fs.existsSync(phaser))throw Error('Audited 0.71.3 Phaser MIT runtime is missing');
  const ice=(await import(pathToFileURL(path.join(root,'tools/pokearena/batch24/ice-shard.js')))).default;
  for(const name of ['runtime.js','hit-impacts.js','area-targets.js']){
   const dest=path.join(app,'client/batch24',name);
