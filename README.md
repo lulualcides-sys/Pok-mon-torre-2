@@ -1,92 +1,155 @@
-# Pokémon Torre 2 — Kanto Battle Engine
+# Pokémon Torre 2 — Guia de continuidade para IAs e colaboradores
 
-**🎮 [JOGAR POKÉMON TORRE 2 — GITHUB PAGES PERMANENTE](https://lulualcides-sys.github.io/Pok-mon-torre-2/)**
+> **Documento de passagem de contexto.** Leia este arquivo antes de alterar código, abrir PR, executar captura do cliente-base ou publicar qualquer versão. Ele registra o estado conhecido em **17/11/2026**. Como branches, PRs, hashes e workflows mudam, confirme os dados vivos no GitHub antes de agir.
 
-**PATCH 4 — PUBLICADO E TESTADO:** Swift com 5 estrelas pequenas, trajetórias fixas e **colisão individual** (5 acertos em alvo parado, 0 em alvo fora da linha, 1 após esquiva); Shadow Ball com núcleo sombrio e impacto apenas em acerto real, sem rastro persistente após erro; Lovely Kiss simplificado com três corações pequenos e sem coração inicial sobreposto. **Surf temporariamente retirado do catálogo e da campanha** por não ter sido aprovado. Tri Attack, Pay Day, Bonemerang e Bone Club seguem preservados. Mewtwo nível 50 mantém **160 movimentos selecionáveis**. [Testes completos no Phaser](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39530387882) · [Publicação GitHub Pages](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39530409870).
-
-**Jogo publicado na raiz do Pages:** o GitHub Pages está habilitado. O motor Phaser está em [`/arena2d/`](https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/), e o laboratório Pixi antigo fica em [`/lab.html`](https://lulualcides-sys.github.io/Pok-mon-torre-2/lab.html).
-
-
-
-**▶ [JOGAR — VERSÃO CORRIGIDA (CDN)](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)** — publicado e verificado em desktop e Android horizontal. [Link alternativo direto](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html).
-
-**Correção do Loading:** antes o cliente carregava os retratos de todas as 76 entradas do manifesto (e animações Idle/Walk) antes do menu. Agora carrega só as linhas iniciais necessárias; os demais sprites continuam disponíveis sob demanda durante a seleção e a batalha. Inclui mensagem recuperável após atraso de inicialização, sem excluir Pokémon nem golpes. Ambas as rotas públicas passaram pelo Chromium, inclusive Android simulado, no [teste 39517268452](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39517268452).
-
-**Hospedagem gratuita permanente:** GitHub Pages habilitado, implantado e testado na versão Phaser/Kanto. [Abrir jogo](https://lulualcides-sys.github.io/Pok-mon-torre-2/)
-
-
-
-## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
-
-**AUDITORIA REAL DOS GOLPES:** [inventário dos 160 golpes originais, por tipo, com o que já existe e o que falta](docs/AUDITORIA-160-GOLPES-POKEARENA2D.md). O catálogo do tipo Pedra **já contém Rock Slide, Rock Throw, Stone Edge, Smack Down e Rollout**. Conferência de todos os 26 personagens com evoluções e Megas: [GitHub Actions](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39510957595). Mewtwo de teste ampliado de **137 para 160 opções**, incluindo os quatro movimentos inéditos do Torre 2. Os novos quatro propostos, ainda não implementados: **Surf, Swift, Shadow Ball e Lovely Kiss**, que estão ausentes na versão capturada do site.
-
-**PATCH 1 CONCLUÍDO E TESTADO:** Bonemerang -50% de escala; Bone Club menor e +10% de alcance; Pay Day com nove moedas; Tri Attack refeito para apresentar três feixes simultâneos de fogo, gelo e eletricidade com uma formação triangular (pesquisa Bulbapedia/Pokémon Database); **Sumário dos golpes redesenhado** no Phaser com 4 slots 2×2, atributos, banco de seis movimentos por página, filtros de tipo e busca por nome. [Relatório](docs/PATCH-1-GOLPES-MENU-2026-10-20.md) · [Testes incluindo batalha e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39505390551).
-
-
-**Atualização testada:** quatro efeitos exclusivos novos em Phaser: **Bonemerang, Bone Club, Tri Attack e Pay Day**, Mewtwo de testes **nível 50 na equipe**, banco com **160 golpes selecionáveis (incluindo quatro novos)** e **Sumário interativo** com retrato, HP, ATK, DEF, SPD, quatro botões equipáveis e salvamento persistente. O clique em um Pokémon abre o Sumário. [Relatório e próximos refinamentos](docs/LOTE-4-GOLPES-MEWTWO-LV50.md) e [testes da batalha real e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39495106150). Golpes existentes no cliente Poké Arena, como Egg Bomb, High Jump Kick e Volt Tackle, não foram redesenhados. Os quatro VFX exclusivos são **primeira versão para aprovação visual**, não promessa de cópia idêntica.
-
-
-[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)
-
-**Só para um jogador:** menu inicial original do Poké Arena 2D com fontes, cores, logo e navegação preservados. Retirados ONLINE, 2 PLAYERS, bate-papo, Join/Discord, contagem de pessoas online e o botão EVO/MEGA **somente durante a campanha Kanto**. Training, Arena Mode, VS CPU e League mantêm evolução dinâmica sem exigir nível. PLAY → KANTO CAMPAIGN abre ginásios, capturas e evolução exclusivamente por nível após o combate. Botão MENU volta à abertura. Testado no Chromium, batalha original e Android horizontal: [execução verificada, incluindo evolução por modo e teste Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39488444410).
-
-O jogo permite acessar a seleção de Bulbasaur, Charmander ou Squirtle. Reusa os ataques, movimentação, sprites e cenas do motor Phaser de pokearena2d.com, com progressão própria do Torre 1: 13 treinadores antes de Brock e dificuldade crescente, oito líderes, Elite Four, insígnias, EXP, captura após vitória, equipe de 6 e PC, evolução exclusivamente por nível depois do combate e salvamento em localStorage. Sem conta, login, amigos, partidas online ou API de servidor. Testado em navegador Chromium e Android paisagem (landscape): [execução validada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39484160116).
-
-**IA corrigida:** na campanha, adversários que alcançarem o limiar de evolução continuam atacando, sem tentar o comando EVO bloqueado. A regressão automatizada forçou Onix elegível a evoluir e observou **26 ataques**, zero tentativas de evolução proibida e evolução preservada em outros modos. [Teste verificado](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39490102682). 
-
-**Biblioteca NOVA de golpes:** [regras, 14 ataques e 2 status por tipo, e sugestões de exclusivos](docs/EVOLUCOES-MODOS-E-BANCO-DE-GOLPES.md) · [269 efeitos Phaser inéditos planejados, 19 vagas em aberto](data/kanto-new-phaser-moves.json). **Nenhum efeito de golpe do Torre 1 será reutilizado neste projeto.** Todos os novos efeitos devem ser criados no padrão técnico e visual do pokearena2d.com. Os sprites dos Pokémon podem vir do material já disponível ou SpriteCollab com atribuição; nenhuma reenvio obrigatório. 
-
-**Cobertura:** catálogo de 151 Pokémon de Kanto incluído na Pokédex; só as espécies com animações e kits disponíveis no cliente recuperado são liberadas como lutadoras neste estágio. A campanha já usa os lutadores existentes do Poké Arena, ainda não todos os 151. A progressão é independente da versão de laboratório PixiJS V0.8 mantida no ramo principal. No celular, use a tela horizontal. O jogo funciona como página estática, sem serviços multiplayer; para abri-lo por URL é necessário acesso à hospedagem de arquivos estáticos.
-
-
-## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
-
-**[▶ JOGAR POKÉMON TORRE 2 — V0.8 validada no Android e WebGL](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3badc040242c9117b9c860f795412ac0e310493c/index.html)**
-
-Link fixado no commit V0.8 e verificado com Chromium WebGL e navegador móvel 390 px. Inclui 8 golpes com quadros independentes (4 de fogo e Water Gun, Bubble Beam, Vine Whip e Thunderbolt), colisões de ataques, laboratório com troca de conjuntos e botão de tela cheia.
-Na primeira visita, o serviço independente rawgit.hack pode pedir confirmação **Open the page**.
-
-O domínio permanente `https://lulualcides-sys.github.io/Pok-mon-torre-2/` permanece inativo
-até habilitar **Settings → Pages → Source: GitHub Actions** no repositório.
-Depois disso, `.github/workflows/pages.yml` já está preparado para publicar.
+- **Repositório:** https://github.com/lulualcides-sys/Pok-mon-torre-2
+- **Jogo publicado:** https://lulualcides-sys.github.io/Pok-mon-torre-2/
+- **Arena Phaser publicada:** https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/
+- **Cliente de referência:** https://www.pokearena2d.com/
+- **Issue de acompanhamento upstream:** [#615](https://github.com/lulualcides-sys/Pok-mon-torre-2/issues/615)
 
 ---
 
+## 1. Resumo executivo — estado atual
 
-**[CONTRATO DA CAMPANHA E EVOLUÇÃO SOMENTE POR NÍVEL](docs/CONTRATO_CAMPANHA.md)**: mesma estrutura de campanha do Pokémon Torre 1, com 13 treinadores antes do primeiro líder e Kanto completo; Poké Arena 2D é o objetivo de reconstrução completa da experiência de batalha; sua progressão não substitui Kanto do Torre 1. Evoluções exclusivamente por nível (inclusive pedra/troca/amizade convertidas para níveis), somente após a batalha, jamais no meio. A V0.8 ainda é laboratório e não implementa essa campanha ou a evolução.
+O projeto tem duas realidades que não podem ser confundidas:
 
-**[Inventário REA e especificação de reconstrução integral das batalhas](docs/REA-IMPLEMENTACAO-INTEGRAL.md)**.
+1. **Release do Torre 2:** a versão aprovada/publicada está baseada no cliente Phaser **Poké Arena 2D Alpha 0.71.3**. O último hotfix publicado foi integrado pela [PR #645](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/645), commit **`704c0d24f6d2c92371f7493271f2f6d2d9583bc8`**.
+2. **Cliente upstream:** a issue [#615](https://github.com/lulualcides-sys/Pok-mon-torre-2/issues/615) registra leitura pública de `config.js` com **Alpha 0.76.1**, fingerprint HTML `src-f9adddb65f`. Isso confirma a versão declarada pelo arquivo público observado, **não** significa que o cliente 0.76.1 esteja integralmente capturado, compilado, testado ou publicado no Torre 2.
 
-Novo jogo independente do Pokémon Torre original.
+Último estado conhecido da issue #615:
+- Fingerprint observado: `src-f9adddb65f`.
+- Fingerprint aprovado/publicado: `src-5ccc174cb8`.
+- Fingerprint do catálogo histórico: `src-43a0198bd6`.
+- Alpha upstream observada: **0.76.1**.
+- Alpha aprovada no Torre 2: **0.71.3**.
+- Workflows de snapshot e monitor de golpes reportados como concluídos com sucesso: [snapshot #44173552333](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/44173552333) e [moves watch #44173380982](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/44173380982).
+- Estado upstream: **new-fingerprint / atualização pendente de validação incremental**. Não chamar de atualização integrada.
 
-**Primeiro marco:** batalha jogável no Ginásio de Pewter (Brock), controles mobile/PC, combate 2D em PixiJS/WebGL, oito golpes de teste e 21 testes unitários aprovados com Chromium real. Não é a campanha completa.
+**Regra de linguagem:** versão detectada, código capturado, assets cobertos, build concluído, teste jogável e publicação são etapas diferentes. Só declarar cada etapa quando houver evidência correspondente.
 
-## Filosofia
-- Referências visuais: [capturas reais de Poké Arena 2D — 420 vídeos](https://github.com/lulualcides-sys/Pok-mon-torre/blob/rea-pokearena-all-visible-moves/docs/rea-pokearena/registro-real/evolucoes/INDEX.md), **somente para estudo**.
-- Sem copiar spritesheets, código, sons ou outros arquivos do jogo de referência.
-- Renderização dos efeitos com WebGL/PixiJS. Não usar Canvas 2D para desenhar golpes; golpes isolados e dano sincronizado.
-- Alterações e testes **neste repositório**, não no [Pokémon Torre original](https://github.com/lulualcides-sys/Pok-mon-torre).
-- Projeto independente de fã, não oficial. Pokémon e nomes associados pertencem aos respectivos titulares.
+## 2. Objetivo do produto
 
-## Controles
-PC: WASD ou setas para andar; 1–4 para golpes; Espaço para esquiva; mouse para direcionar a mira.
-Celular: joystick analógico, esquiva, botão de tela cheia e dois conjuntos de quatro golpes (Fogo e Laboratório elemental).
+Manter um jogo Pokémon solo com identidade visual e de combate inspirada no Poké Arena 2D, combinada com campanha própria Kanto/FireRed e progressão do Torre 2.
 
-## Testes
-`npm test` — regras do combate e progressão.
-`npm run check` — sintaxe dos módulos.
-O GitHub Actions também executa teste real de Chromium com verificação WebGL.
+Prioridades:
+- Combate real no motor **Phaser/WebGL** da Arena publicada.
+- Campanha Kanto, ginásios, treinadores, Elite Four, captura, evolução e saves próprios.
+- Compatibilidade por espécie/forma: só liberar como lutador o que tiver kit, animações e recursos gráficos utilizáveis.
+- Implementar diferenças upstream úteis de modo incremental e independente, sem assumir que metadados equivalem a comportamento jogável.
+- Manter controles, desempenho e QA desktop/mobile.
 
-## Estado
-Versão V0.8: estádio gramado, arquibancadas, personagens animados do PMD SpriteCollab com licença/créditos, Flamethrower contínuo, Fire Blast 大, projéteis de pedra do Brock, câmera móvel e joystick analógico; laboratório de oito ataques (incluindo água, planta e elétrico), 12/16 quadros próprios por golpe e colisão entre projéteis. O visual ainda não reproduz integralmente a qualidade, os 153 movimentos e o conteúdo do Poké Arena 2D.
+O projeto é de fã e não oficial. Não presumir que a licença de um sprite individual autoriza redistribuir código, áudio, imagens ou pacotes de terceiros. Respeitar licenças e atribuições.
 
-## Publicação
-GitHub Actions gera e testa o projeto. A publicação no GitHub Pages depende da configuração de Pages deste novo repositório.
+## 3. Regras invioláveis para qualquer IA
 
-## Cliente real Poké Arena 2D — cópia Phaser (corrigida)
+### Segurança de código e publicação
+- **Não fazer push/merge direto na `main` nem publicar GitHub Pages sem autorização expressa do proprietário para aquela publicação.**
+- Trabalhar em branch nova baseada no HEAD atual correto. Para trabalho experimental/upstream, usar a branch de homologação indicada na seção 5 somente após conferir seu HEAD e sua divergência em relação à main.
+- Criar PR como **DRAFT**; não marcar como pronta nem mesclar sem autorização e gates completos.
+- Nunca fazer force-push ou sobrescrever branch/PR de outra frente sem entender o estado e preservar o trabalho.
+- Não criar commits vazios, PR duplicada, catálogo duplicado ou alteração documental que alegue integração inexistente.
+- Não remover rollback, pacote de release, testes, Guardião ou gates para fazer CI ficar verde.
+- Não confundir sucesso de monitoramento com sucesso de build, nem sucesso de teste isolado com publicação.
 
-**[▶ TESTAR CÓPIA PHASER SEM TRAVAR NO LOADING](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/2f890ea81c5f6a01b9baed2c24a2180303164a97/index.html)**
+### Cliente-base e propriedade intelectual
+- REA é a ferramenta prioritária para inspecionar **somente arquivos e funcionalidades publicamente acessíveis** do Poké Arena 2D, quando disponível e permitido.
+- Primeiro conferir HTML/index, `config.js`, `VERSION`, fingerprint `src-*` e hashes de manifesto. O hash `src-*` identifica um conjunto de arquivos; **não é o número da Alpha**.
+- Se fingerprints e hashes não mudaram, não repetir captura completa. Fazer comparação incremental.
+- Usar navegador Chromium normal/CDP/REA e caminhos públicos legítimos. **Não contornar HTTP 403/401, autenticação, paywall, proteção, CORS ou bloqueios do servidor.** Registrar o erro real e continuar no backlog próprio.
+- Não copiar código, spritesheets, imagens, áudio ou outros ativos sem licença/permissão compatível. Preferir implementação própria do comportamento e arte original/licenciada.
+- Distinguir explicitamente: (a) confirmado em fonte pública; (b) catalogado/protótipo; (c) implementado no código; (d) jogável e testado; (e) publicado.
 
-Captura autorizada pelo usuário do site `pokearena2d.com`, sem ligação com qualquer outro jogo de nome parecido. **1.135 arquivos públicos identificados e recuperados**, 0 faltas no relatório de captura da atualização; inclui todos os sprites declarados no manifesto PMD da versão capturada. Correção no arranque: pré-carregamento inicial reduzido e demais animações carregadas quando necessário. Testes de Chromium para desktop, menu, Training e Android horizontal, além de verificação do link público fixado no commit. [Execução e evidências](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39481590980).
+### Preservação do jogo
+- Não alterar funcionalidades aprovadas do cliente-base sem motivo comprovado e escopo explícito.
+- Preservar campanha, saves, seleção, Pokédex, roster, sprites, animações, golpes e VFX aprovados.
+- Não substituir um golpe/efeito aprovado por outro inferior ou duplicado.
+- Não alterar a frente independente **Slash**, automação **T67+ / mapas**, Astra, 60 artes/mapas, saves ou PRs paralelas sem autorização específica.
+- Mudanças de combate devem preservar dano, precisão, colisão, KO, cooldown, slots, IA e modos que não fazem parte do escopo.
+- Não declarar um Pokémon jogável se faltar qualquer componente obrigatório: entrada de roster, kit funcional, animações/texture carregáveis e seleção/combate reais.
 
-Este link é **laboratório do cliente original Phaser**, ainda não a campanha Kanto do Pokémon Torre 2. A campanha Kanto e a evolução exclusivamente por nível, depois do combate, seguem em desenvolvimento separado. O jogo de origem requer orientação horizontal no celular. O código servidor e serviços online privados não são parte do pacote público capturado.
+## 4. Arquitetura e fontes de verdade
+
+O repositório contém histórico e mais de uma geração de laboratório. A raiz ainda possui arquivos/documentação antigos de PixiJS e versões experimentais. **Não use o README antigo, `package.json` ou laboratório Pixi isoladamente como prova da versão do jogo publicado.**
+
+Fontes para orientar a investigação:
+- `/arena2d/`: aplicação Phaser publicada.
+- `tools/pokearena/`: ferramentas de captura, transformação, catálogo, build e validação do cliente de referência.
+- `tests/`: testes unitários e testes reais de navegador/Phaser.
+- `.github/workflows/`: CI, Guardião, captura REA, validação e publicação.
+- `data/`: catálogos e diferenças estruturadas; dados catalogados não significam que o conteúdo está equipado.
+- `docs/`: contratos, auditorias e relatórios históricos. Conferir data, SHA e estado antes de confiar.
+- `assets/`: recursos locais; conferir créditos/licença e proveniência antes de reutilizar.
+
+Comandos registrados em `package.json` (verifique scripts atuais antes de executar):
+- `npm test` — testes Node.
+- `npm run check` — checagem sintática de módulos legados.
+- `npm run test:browser` — conjunto de testes Playwright/Chromium.
+- `npm run check:reuse` — política de reuso/duplicação de golpes.
+- `npm run test:campaign` — testes de navegador da campanha.
+
+O pacote npm ainda descreve uma base PixiJS antiga; isso não invalida o motor Phaser publicado, mas exige que a IA identifique o workflow/build efetivamente usado pelo release antes de escolher comandos.
+
+## 5. Branches, PRs e trabalho em andamento
+
+### Release principal
+- `main` no checkpoint: **`704c0d24f6d2c92371f7493271f2f6d2d9583bc8`**.
+- Último patch: [PR #645](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/645), merged em 16/11/2026.
+- O patch condiciona impacto visual de projéteis à confirmação de acerto real e dano positivo no runtime Batch24. Não altera o renderer aprovado nem o golpe Twister.
+- A PR #645 informa que os gates nativos, Chromium/Phaser e Guardião passaram. Consulte os checks e o Pages atual antes de qualquer nova publicação.
+
+### Homologação histórica
+- Branch: `test/homologacao-kanto-20261103`.
+- HEAD de referência em vários PRs antigos: `cff457edf879772a9a1b16901463889c2376bce0`.
+- Essa branch está muito atrás da main em alguns pontos. **Não assumir que é base atualizada**. Antes de usá-la, buscar o HEAD real, comparar com main e não tentar merge amplo/cherry-pick cego.
+
+### PRs abertas relevantes no último levantamento
+- [#644 — impactos confirmados em projéteis Batch24](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/644): DRAFT, branch `fix/pokearena-projectile-contact-proof-20261116`, head `72d9b043b78341189d4401daea3c8936d6b3e6a2`, base homologação antiga. A correção equivalente mínima já foi portada e publicada na main pela #645. Tratar #644 como histórico/experimento; não mesclar sobre main nem duplicar seu patch.
+- [#625 — Electro Ball/Raichu Alpha 0.70](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/625): DRAFT, baseado na homologação antiga. Protótipo próprio de Arena; não é cliente 0.70 integral nem release publicado.
+- [#626 — integração seletiva Alpha 0.70 na main](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/626): DRAFT e reportada como não mergeável no último levantamento. Não mesclar; revisar divergência e gates antes de qualquer ação.
+- Consulte PRs recentes e checks no GitHub; esta lista é um snapshot, não inventário garantido de todas as branches abertas.
+
+## 6. Próximas prioridades técnicas
+
+1. **Validar a Alpha upstream 0.76.1:** conferir novamente `config.js`, `VERSION`, fingerprint e hashes públicos via REA/Chromium autorizado. A issue #615 registra o novo fingerprint; fazer diff incremental em relação à fonte 0.71.3 aprovada.
+2. **Resolver cobertura de build com honestidade:** verificar manifesto PMD e pacotes gráficos exigidos. O histórico registra bloqueios HTTP 403 para `assets/pmd/manifest.json` e outros packs. Não dispensar sprites de combate, inventar PNG nem declarar cobertura completa sem arquivos reais e hashes.
+3. **Continuar lote funcional próprio:** enquanto a captura upstream estiver incompleta, escolher uma diferença comprovada ou backlog de combate com impacto real; implementar em branch isolada e testar.
+4. **Reconciliar PRs antigas:** #644/#625/#626 são baseadas em homologação antiga. Não aplicar sem comparação de diff e preservação dos commits posteriores da main.
+5. **Validar release somente com gates reais:** Node, build Phaser, Chromium/WebGL desktop e mobile, Pokédex/seleção, batalha, saves, Guardião e checks de publicação. Registrar o que não rodou e por quê.
+
+## 7. Processo recomendado para cada execução de IA
+
+1. Ler este README e verificar data/hora atual.
+2. Consultar estado real de `main`, branch de homologação, PRs abertas, issue #615 e workflows relevantes.
+3. Identificar o objetivo da tarefa e os arquivos mínimos que o implementam. Não fazer varredura completa sem necessidade.
+4. Para upstream: ler primeiro HTML/fingerprint e `config.js`; comparar hashes. Capturar apenas arquivos públicos alterados e necessários.
+5. Classificar cada achado como **oficial confirmado**, **catalogado**, **protótipo**, **jogável/testado** ou **publicado**.
+6. Preferir uma entrega funcional pequena a mais um relatório sem alteração, quando houver backlog seguro.
+7. Criar branch nova no HEAD adequado, implementar, adicionar testes de regressão e executar os gates proporcionais.
+8. Abrir PR DRAFT com resumo, base SHA, head SHA, testes PASS/FAIL/BLOCKED, evidências e riscos.
+9. Não mesclar nem publicar sem aprovação expressa e validação integral. Se houver bloqueio externo, documentar status HTTP/arquivo/workflow e avançar em trabalho independente seguro.
+
+## 8. Formato obrigatório de relatório da IA
+
+Ao concluir uma rodada, informar:
+- **Fonte/versão upstream:** Alpha, `src-*`, URL de `config.js`, SHA/hash e data da evidência.
+- **Alterações de código:** arquivos, comportamento, espécie/modo afetados e commit SHA.
+- **Classificação:** catalogado / protótipo / implementado / jogável testado / publicado.
+- **Testes:** comando ou workflow, resultado e link; identificar explicitamente testes bloqueados ou não executados.
+- **GitHub:** branch, PR, base SHA, head SHA e status dos checks.
+- **Preservação/regressões:** saves, campanha, VFX, mapas, sprites e demais frentes afetadas ou não afetadas.
+- **Pendências:** impedimento concreto, responsável externo quando aplicável e próxima ação.
+
+Não escrever “concluído”, “integrado”, “jogável” ou “publicado” sem a evidência específica dessa afirmação.
+
+## 9. Histórico e documentação
+
+Este README substitui as descrições antigas e contraditórias da raiz como **ponto inicial de contexto**; não apaga documentos históricos. Ao encontrar divergência, dê prioridade aos dados vivos do GitHub, aos arquivos executáveis e aos workflows atuais, registrando o conflito em vez de escolher silenciosamente uma versão antiga.
+
+Documentos e catálogos históricos devem ser consultados por assunto e SHA, não tratados como estado atual automaticamente. Atualize este README quando houver mudança material de release, arquitetura, regras de segurança ou prioridades; evite editar a cada commit trivial.
+
+---
+
+**Última revisão:** 17/11/2026.  
+**Base desta revisão:** main `704c0d24f6d2c92371f7493271f2f6d2d9583bc8`, issue #615 e metadados de PRs consultados nesta data.  
+**Esta alteração é documentação apenas:** não muda código do jogo, artefatos, versão, Pages ou workflows.
