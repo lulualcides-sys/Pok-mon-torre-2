@@ -118,6 +118,9 @@ class Campanha extends Phaser.Scene{
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   // Original Pokémon FireRed bag frames, bundled locally at build time.
+  // Center / Shop button icons: FireRed buildings (campaign-art, PROVENANCE.json).
+  for(const name of ['icon-center','icon-mart'])
+   if(!this.textures.exists('torre2-art-'+name))this.load.image('torre2-art-'+name,'assets/ui/torre2-campaign/'+name+'.png');
   if(!this.textures.exists('torre2-frlg-bag'))
    this.load.spritesheet('torre2-frlg-bag','assets/ui/frlg/items/bag-male.png',{frameWidth:64,frameHeight:64});
   const state=readCampaign();
@@ -146,8 +149,7 @@ class Campanha extends Phaser.Scene{
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
-  // nurse/clerk: FireRed sprites for the Center and Shop button icons.
-  const needed=new Set(['red_normal','nurse','clerk',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
+  const needed=new Set(['red_normal',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
