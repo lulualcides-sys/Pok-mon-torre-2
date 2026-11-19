@@ -35,7 +35,7 @@ import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,gymInterior,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -576,18 +576,16 @@ create(){
   this.screenBanner(20,300,state.stage<8?'Desafio do ginásio':'Desafio da Liga','badges');
   this.uiSection(8,40,624,262);
   // Left: the gym itself, with the leader and the leader's main Pokémon.
-  const stageLayer={add:o=>o.setDepth?.(2)};
-  const room=gymInterior(this,stageLayer,18,50,330,206,state.stage,0);
-  if(!room)ownerArt(this,stageLayer,'city-'+(state.stage>=8?'indigo':String(spec.city||'').toLowerCase()),18,50,330,206);
-  const frame=this.add.graphics().setDepth(3);
-  nativeAro(frame,17,49,332,208,ready?MENU_UI.oro:MENU_UI.panelBorde,6);
-  // Floor shadow so both figures stand on the same ground line.
-  // Leader and main Pokémon centred in the room (box centre x=183, y=153).
-  frame.fillStyle(0x000000,.28).fillEllipse(146,196,56,12).fillEllipse(224,196,80,14);
+  // Same neutral stage as the rematch, tinted by the gym type; the leader and
+  // the main Pokémon stand side by side with their feet on one ground line.
+  const st=this.stagePlatform(18,50,330,206,TIPOS[spec.type]??0x3f7ad8);
+  if(ready)nativeAro(st.g,16,48,334,210,MENU_UI.oro,7,.9);
+  st.g.fillStyle(0x000000,.25).fillEllipse(st.cx-40,st.ground+1,52,10).fillEllipse(st.cx+42,st.ground+1,72,12);
   const leaderKind=leaderSpriteKind(state.stage);
-  this.npcSprite(spriteIdForTrainer(leaderKind),146,198,3.4,5);
+  this.npcSprite(spriteIdForTrainer(leaderKind),st.cx-40,st.ground+3,3.4,5);
   const ace=spec.boss||spec.leaderTeam?.at(-1);
-  if(ace)this.pokemonIdleSprite(ace,224,196,92,5);
+  // PMD frame centre = ground point.
+  if(ace)this.pokemonIdleSprite(ace,st.cx+42,st.ground+1,100,5);
   // Right: who you face, the main Pokémon, the full team and the progress.
   const R=360;
   this.uiLabel(R,64,spec.leader||'Líder',14,MENU_UI.amarillo);
@@ -1109,6 +1107,26 @@ create(){
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  // VS Seeker on every previously cleared Kanto map without changing progress.
+ // Neutral stage with one round battle-style platform; returns the ground y.
+ stagePlatform(x,y,w,h,tint=0x3f7ad8){
+  const fr=this.add.graphics().setDepth(3);
+  nativeRect(fr,x,y,w,h,MENU_UI.contorno,7);
+  const top=Phaser.Display.Color.ValueToColor(0x2a4a8c),bottom=Phaser.Display.Color.ValueToColor(0x0c1d46);
+  for(let i=0;i<h-4;i++){
+   const c=Phaser.Display.Color.Interpolate.ColorWithColor(top,bottom,100,Math.round(i/(h-5)*100));
+   fr.fillStyle(Phaser.Display.Color.GetColor(c.r,c.g,c.b),1).fillRect(x+3,y+2+i,w-6,1);
+  }
+  const cx=x+w/2,ground=y+Math.round(h*.74),pw=Math.round(Math.min(w*.62,200)),ph=Math.round(pw*.21);
+  fr.fillStyle(0xffffff,.06).fillCircle(cx,ground-Math.round(h*.3),Math.round(h*.3));
+  fr.fillStyle(0xffffff,.04).fillCircle(cx,ground-Math.round(h*.3),Math.round(h*.22));
+  nativeAro(fr,x-1,y-1,w+2,h+2,MENU_UI.panelBorde,6);
+  const lite=Phaser.Display.Color.ValueToColor(tint).lighten(18).color;
+  fr.fillStyle(0x061433,.9).fillEllipse(cx,ground+6,pw+8,ph+8);
+  fr.fillStyle(tint,1).fillEllipse(cx,ground+2,pw,ph);
+  fr.fillStyle(lite,1).fillEllipse(cx,ground,pw-18,ph-8);
+  fr.lineStyle(2,0xffffff,.45).strokeEllipse(cx,ground,pw-18,ph-8);
+  return {g:fr,cx,ground};
+ }
  seekerBattery(x,y,charge){
   const g=this.add.graphics().setDepth(5);
   nativeRect(g,x,y,62,16,MENU_UI.contorno,4);nativeRect(g,x+62,y+4,4,8,MENU_UI.contorno,2);
@@ -1181,25 +1199,12 @@ create(){
   this.screenBanner(20,300,'REVANCHE · '+foe.name,'seeker');
   this.uiSection(8,40,624,170);
   // The trainer and their Pokémon on the route, as in the gym challenge.
-  // Neutral stage: soft vertical gradient and one round platform under both
-  // figures (battle-style), instead of a busy city picture.
-  const fr=this.add.graphics().setDepth(3);
-  nativeRect(fr,18,50,290,150,MENU_UI.contorno,7);
-  for(let i=0;i<146;i++){const t=i/145;
-   const c=Phaser.Display.Color.Interpolate.ColorWithColor(
-    Phaser.Display.Color.ValueToColor(0x2a4a8c),Phaser.Display.Color.ValueToColor(0x0c1d46),100,Math.round(t*100));
-   fr.fillStyle(Phaser.Display.Color.GetColor(c.r,c.g,c.b),1).fillRect(21,52+i,284,1);}
-  fr.fillStyle(0xffffff,.06).fillCircle(165,118,46);fr.fillStyle(0xffffff,.04).fillCircle(165,118,34);
-  nativeAro(fr,17,49,292,152,MENU_UI.panelBorde,6);
-  // Platform: dark rim, lit top and a highlight ring.
-  fr.fillStyle(0x061433,.9).fillEllipse(165,168,176,40);
-  fr.fillStyle(0x3f7ad8,1).fillEllipse(165,164,168,34);
-  fr.fillStyle(0x6c9fe8,1).fillEllipse(165,162,150,26);
-  fr.lineStyle(2,0xbcd6ff,.7).strokeEllipse(165,162,150,26);
-  fr.fillStyle(0x000000,.25).fillEllipse(132,163,40,8).fillEllipse(200,163,56,10);
-  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),130,164,3,5);
+  // Neutral stage and one round platform under both figures (feet aligned).
+  const st=this.stagePlatform(18,50,290,150);
+  st.g.fillStyle(0x000000,.25).fillEllipse(st.cx-33,st.ground+1,40,8).fillEllipse(st.cx+35,st.ground+1,56,10);
+  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),st.cx-33,st.ground+2,3,5);
   // PMD frame centre = ground point: stand on the platform, not above it.
-  this.pokemonIdleSprite(foe.id,200,163,110,5);
+  this.pokemonIdleSprite(foe.id,st.cx+35,st.ground+1,110,5);
   const R=328;
   this.uiLabel(R,64,foe.name,13,MENU_UI.amarillo);
   this.uiLabel(R,84,'Mapa de '+(STAGES[mapStage]?.city||'Kanto')+' · equipe Nv '+foe.level,8,MENU_UI.suave);
