@@ -109,7 +109,18 @@ const PIXEL_ICONS={
  fullscreen:['kkkk....kkkk','kwwk....kwwk','kwk......kwk','kk........kk','............','............',
   '............','............','kk........kk','kwk......kwk','kwwk....kwwk','kkkk....kkkk']
 };
+// Item icons use the original FireRed item sprites when they are loaded
+// (bag frame 0 = items pocket, Poké Ball icon); the pixel grid is a fallback.
+const ITEM_SPRITES={bag:['torre2-frlg-bag',0,50],capture:['torre2-frlg-mart-pokeball',null,18]};
 export function pixelIcon(scene,layer,kind,x,y,scale=2){
+ const sprite=ITEM_SPRITES[kind];
+ if(sprite&&scene.textures.exists(sprite[0])){
+  const [key,frame,content]=sprite;
+  const img=scene.add.image(x,y,key,frame??undefined).setScale(12*scale/content);
+  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  layer.add(img);img.setData('torre2-pixel-icon',kind);
+  return img;
+ }
  const grid=PIXEL_ICONS[kind];if(!grid)return null;
  const g=scene.add.graphics();layer.add(g);
  const ox=Math.round(x-6*scale),oy=Math.round(y-6*scale);

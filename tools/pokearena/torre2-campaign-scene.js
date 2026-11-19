@@ -8,10 +8,10 @@ import {WEATHER_NAMES} from './weather.js';
  * No login, network API or online match dependency.
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
-import {UI as MENU_UI,marco as nativeMarco,aro as nativeAro,rectRedondo as nativeRect,fondoMenu as nativeBackground} from '../ui.js';
+import {UI as MENU_UI,marco as nativeMarco,aro as nativeAro,rectRedondo as nativeRect,fondoMenu as nativeBackground,pastillaTipo} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
-import {ROSTER,buscar} from '../datos.js';
+import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -1273,16 +1273,38 @@ create(){
  // Pokémon Center: the city's real FireRed Center interior, the live team
  // with HP/status, and the native gold heal action. Heal/PC logic unchanged.
  centerInterior(state,x,y,w,h){
-  const city=String(STAGES[state.stage]?.city||'').toLowerCase();
-  const loc=ROOM_CROPS[city]?.center?city:'viridian',rect=ROOM_CROPS[loc].center;
+  // Every FireRed Pokémon Center interior is the same room. Some composite
+  // sheets (Celadon, Saffron) place it at offsets the shared crop table gets
+  // wrong, so the Center always uses the verified Viridian room.
+  const loc='viridian',rect=ROOM_CROPS[loc].center;
   const key='frlg-location-'+loc,frame='torre2-center-'+loc;
+  const nurseKey='frlg-npc-nurse';
   const draw=()=>{
    if(!this.scene.isActive()||!this.textures.exists(key))return;
    const tex=this.textures.get(key);if(!tex.has(frame))tex.add(frame,0,...rect);
    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-   const k=Math.min(w/rect[2],h/rect[3]);
-   this.add.image(x+w/2,y+h/2,key,frame).setDisplaySize(Math.round(rect[2]*k),Math.round(rect[3]*k))
+   const k=Math.min(w/rect[2],h/rect[3]),dw=Math.round(rect[2]*k),dh=Math.round(rect[3]*k);
+   const left=x+(w-dw)/2,topY=y+(h-dh)/2;
+   this.add.image(x+w/2,y+h/2,key,frame).setDisplaySize(dw,dh)
     .setDepth(2).setData('torre2-center-interior',loc);
+   // Nurse behind the counter (original FRLG overworld sprite).
+   const nurse=()=>{
+    if(!this.scene.isActive()||!this.textures.exists(nurseKey))return;
+    const t=this.textures.get(nurseKey);if(!t.has('torre2-front'))t.add('torre2-front',0,0,0,16,32);
+    t.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.add.image(left+121*k,topY+50*k,nurseKey,'torre2-front').setOrigin(.5,1)
+     .setScale(k).setDepth(2.5).setData('torre2-center-nurse',true);
+    // Redraw the counter front over her feet, as in the original room.
+    const counter='torre2-center-counter-'+loc;
+    if(!tex.has(counter))tex.add(counter,0,rect[0]+64,rect[1]+44,114,16);
+    this.add.image(left+64*k,topY+44*k,key,counter).setOrigin(0).setScale(k).setDepth(2.6);
+   };
+   if(this.textures.exists(nurseKey))nurse();
+   else{
+    this.load.once('filecomplete-image-'+nurseKey,nurse);
+    this.load.image(nurseKey,'assets/ui/frlg/npc/nurse.png');
+    if(!this.load.isLoading())this.load.start();
+   }
   };
   if(this.textures.exists(key))return draw();
   this.load.once('filecomplete-image-'+key,draw);
@@ -1437,130 +1459,188 @@ create(){
    wordWrap:{width:560}}).setOrigin(.5);
   if(errorText)notice.setData('torre2-mart-save-error',true);
  }
+ // --- Native-kit helpers shared by EQUIPE / BOLSA / CENTRO (presentation only).
+ uiLabel(x,y,value,size=9,color='#ffffff',origin=[0,.5],depth=6){
+  return textoMenu(this,x,y,value,{tam:size,color,borde:size>=10?4:3,
+   colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(...origin).setDepth(depth);
+ }
+ screenBanner(y,w,title,icon){
+  const g=this.add.graphics().setDepth(4);
+  nativeMarco(g,320-w/2,y-15,w,30,'panel',{borde:MENU_UI.panelLuz});
+  const layer={add:o=>o.setDepth(6)};
+  pixelIcon(this,layer,icon,320-w/2+18,y,1.5);pixelIcon(this,layer,icon,320+w/2-18,y,1.5);
+  return this.uiLabel(320,y,title,15,MENU_UI.amarillo,[.5,.5]);
+ }
+ memberInfo(member){
+  let types=[],name=member.id;
+  try{const s=pokemonStats(member);types=s.types||[];name=s.name||name}catch{}
+  const hp=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
+  const status=statusLabel({est:{[member.status?.kind]:true}});
+  const condition=hp===0?'Desmaiado':status||(member.confusion?'Confusão':'Pronto');
+  const tone=hp===0?'#ff8f8f':status||member.confusion?'#ffd47a':'#9ff0bf';
+  const nice=String(name).replace(/-/g,' ').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  return {types,name:nice,hp,condition,tone,
+   level:member.progression?.level??member.level??'?'};
+ }
+ hpBar(g,x,y,w,hp,h=6){
+  nativeRect(g,x,y,w,h,MENU_UI.contorno,3);
+  if(hp>0)g.fillStyle(hp>50?0x50cc84:hp>20?0xf2c34b:0xe85050,1)
+   .fillRect(x+1,y+1,Math.max(1,Math.round((w-2)*hp/100)),h-2);
+ }
+ portraitFrame(g,member,x,y,size,types=[]){
+  // Type-tinted "habitat" window behind the PMD portrait.
+  const col=TIPOS[types[0]]??0x5f86bd;
+  nativeRect(g,x-1,y-1,size+2,size+2,MENU_UI.contorno,6);
+  nativeRect(g,x,y,size,size,col,5,.55);
+  g.fillStyle(0x061433,.35).fillRect(x+2,y+Math.round(size*.62),size-4,Math.round(size*.34));
+  g.fillStyle(0xffffff,.28).fillRect(x+4,y+2,size-8,1);
+  this.drawPortrait(member,x+size/2,y+size/2,size-6,6);
+ }
  teamScreen(state){
   // EQUIPE is a full roster, not a shortcut to the active Pokémon's summary.
   this.__torre2SummaryFromTeam=false;
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
-  this.uiSection(9,66,622,229,0x5c9cba);
-  text(this,320,24,'MINHA EQUIPE · '+state.team.length+'/6',{
-   ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(6)
+  this.screenBanner(22,300,'Minha equipe · '+state.team.length+'/6','team')
    .setData('torre2-team-overview',true);
-  text(this,320,52,'TOQUE EM UM POKÉMON PARA VER SEU SUMÁRIO',{
-   fontSize:'11px',color:C.blue}).setOrigin(.5).setDepth(6);
-  state.team.slice(0,6).forEach((member,i)=>{
-   const x=111+(i%3)*209,y=119+Math.floor(i/3)*111;
+  this.uiLabel(320,49,'Toque em um Pokémon para ver o sumário',8,MENU_UI.suave,[.5,.5]);
+  const CW=198,CH=114,G=10,X0=320-(3*CW+2*G)/2;
+  this.uiSection(X0-6,56,3*CW+2*G+12,2*CH+20);
+  for(let i=0;i<6;i++){
+   const member=state.team[i],x=X0+(i%3)*(CW+G),y=62+Math.floor(i/3)*(CH+8);
    const active=i===state.active;
-   const tile=this.add.rectangle(x,y,196,98,active?0x294b65:0x1b344c)
-    .setStrokeStyle(2,active?0xf6c851:0x648eaa).setDepth(3)
+   const g=this.add.graphics().setDepth(3);
+   if(!member){
+    nativeMarco(g,x,y,CW,CH,'panel',{alfa:.55});
+    originalBallSprite(this,x+CW/2,y+CH/2-8,'pokeball',22,5).setAlpha(.35);
+    this.uiLabel(x+CW/2,y+CH/2+18,'Espaço livre',8,MENU_UI.tenue,[.5,.5]);
+    continue;
+   }
+   const info=this.memberInfo(member);
+   nativeMarco(g,x,y,CW,CH,'panel',active?{borde:MENU_UI.oro}:{});
+   if(active)nativeAro(g,x-2,y-2,CW+4,CH+4,MENU_UI.oro,8,.9);
+   this.portraitFrame(g,member,x+8,y+10,64,info.types);
+   // Slot number medal.
+   nativeRect(g,x+4,y+6,18,14,active?MENU_UI.oro:MENU_UI.panelBorde,4);
+   this.uiLabel(x+13,y+13,String(i+1),8,active?MENU_UI.textoOscuro:'#ffffff',[.5,.5],7);
+   estrechar(this.uiLabel(x+80,y+16,info.name,11,active?MENU_UI.amarillo:'#ffffff'),72);
+   this.uiLabel(x+CW-9,y+16,'Nv '+info.level,9,MENU_UI.suave,[1,.5]);
+   info.types.slice(0,2).forEach((t,k)=>{
+    pastillaTipo(g,x+80+k*55,y+29,t,52,13);
+    this.uiLabel(x+106+k*55,y+36,t[0]+t.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],7);
+   });
+   this.uiLabel(x+80,y+56,'HP',8,MENU_UI.suave);
+   this.hpBar(g,x+96,y+53,CW-140,info.hp);
+   this.uiLabel(x+CW-9,y+56,info.hp+'%',8,info.hp===0?'#ff8f8f':'#ffffff',[1,.5]);
+   // Bottom rail: condition + lead tag.
+   nativeRect(g,x+6,y+CH-30,CW-12,22,0x081436,5,.85);
+   this.uiLabel(x+14,y+CH-19,info.condition,8,info.tone);
+   if(active){
+    nativeRect(g,x+CW-92,y+CH-27,84,16,MENU_UI.oro,4);
+    estrechar(this.uiLabel(x+CW-50,y+CH-19,'Na frente',7,MENU_UI.textoOscuro,[.5,.5],7),76);
+   }
+   const tile=this.add.rectangle(x+CW/2,y+CH/2,CW,CH,0x000000,0).setDepth(8)
     .setInteractive({useHandCursor:true})
     .setData('torre2-team-overview-slot',i);
-   // Small engraved state rails; portraits remain above the frame.
-   const rail=this.add.graphics().setDepth(4);
-   rail.fillStyle(active?0xffe29b:0x80b9d2,.9)
-    .fillRect(x-94,y-47,188,2);
-   rail.fillStyle(0x0a2239,.9).fillRect(x-94,y+42,188,3);
-   rail.fillStyle(active?0xf6c851:0x5b89a9,.8)
-    .fillRect(x-94,y-44,3,84);
-   this.drawPortrait(member,x-68,y-3,43,5);
-   const name=(active?'◆ ':'')+member.id.toUpperCase();
-   estrechar(text(this,x-36,y-36,name,{
-    fontSize:'12px',fontStyle:'bold',color:active?'#ffe5a1':C.white
-   }).setDepth(6),123);
-   text(this,x-36,y-15,'NV. '+(member.progression?.level??'?'),{
-    fontSize:'11px',color:C.blue}).setDepth(6);
-   const hp=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
-   text(this,x-36,y+5,'HP '+hp+'%',{
-    fontSize:'11px',color:hp===0?'#ff9d9d':C.white}).setDepth(6);
-   const condition=hp===0?'DESMAIADO':
-    statusLabel({est:{[member.status?.kind]:true}})||
-    (member.confusion?'CONFUSÃO':'PRONTO');
-   estrechar(text(this,x-36,y+25,condition,{
-    fontSize:'10px',color:hp===0?'#ff9d9d':C.muted
-   }).setDepth(6),123);
    tile.on('pointerdown',(_p,_x,_y,event)=>{
     event?.stopPropagation?.();
     this.__torre2SummaryFromTeam=true;
     this.showSummary(state,i);
    });
-  });
-  text(this,320,299,'SELECIONE NO SUMÁRIO QUEM ENTRA EM BATALHA',{
-   fontSize:'10px',color:C.muted}).setOrigin(.5).setDepth(6);
-  this.button(320,330,250,31,'◀ VOLTAR AOS CARDS',()=>{
+  }
+  this.uiLabel(320,309,'No sumário, escolha quem entra primeiro na batalha',8,MENU_UI.tenue,[.5,.5]);
+  this.button(320,334,250,30,'◀ VOLTAR AOS CARDS',()=>{
    this.renderCampaign(state);
   }).setData('torre2-team-overview-back',true);
  }
  bagScreen(state,errorText=''){
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(13,81,614,241,0x428ea9);
-  text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
-   ...titleStyle,fontSize:'20px'}).setOrigin(.5);
   const inv=state.inventory||{};
   const target=Math.max(0,Math.min(state.team.length-1,
    Number.isInteger(this.bagMemberIndex)?this.bagMemberIndex:state.active));
   this.bagMemberIndex=target;
-  text(this,320,63,'PB '+(inv.pokeball||0)+' · GB '+(inv.greatball||0)+
-   ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+
-   ' · SUPER '+(inv.superpotion||0),{
-   fontSize:'11px',color:C.gold}).setOrigin(.5);
-  text(this,320,92,'ESCOLHA QUEM RECEBE O ITEM:',{
-   fontSize:'11px',color:C.blue}).setOrigin(.5);
+  this.screenBanner(22,220,'Bolsa','bag');
+  // Money chip.
+  const top=this.add.graphics().setDepth(4);
+  nativeMarco(top,512,8,118,28,'panel',{borde:MENU_UI.oro});
+  originalBallSprite(this,530,22,'pokeball',14,6);
+  this.uiLabel(620,22,'₽ '+Number(state.money||0).toLocaleString('pt-BR'),10,MENU_UI.amarillo,[1,.5]);
+  // Left pocket: inventory with the original FRLG item icons.
+  const L=this.add.graphics().setDepth(3);
+  this.uiSection(10,44,190,262);
+  pixelIcon(this,{add:o=>o.setDepth(6)},'bag',34,58,1.4);
+  this.uiLabel(112,58,'Itens',10,MENU_UI.amarillo,[.5,.5]);
+  const statusIds=MART_ITEMS.filter(i=>i.kind==='status').map(i=>i.id);
+  const pocket=[
+   ['pokeball','Poké Ball'],['greatball','Great Ball'],['ultraball','Ultra Ball'],
+   ['potion','Poção'],['superpotion','Super Poção'],
+   ['status','Remédios',statusIds.reduce((n,id)=>n+(inv[id]||0),0)]];
+  pocket.forEach(([id,name,count],k)=>{
+   const y=72+k*37,n=count??(inv[id]||0);
+   nativeRect(L,18,y,174,32,n?0x0a1a46:0x081232,5,n?.85:.6);
+   const item=MART_ITEMS.find(i=>i.id===(id==='status'?'fullheal':id));
+   if(item)this.add.image(36,y+16,shopItemSprite(this,item)).setDisplaySize(24,24).setDepth(6).setAlpha(n?1:.45);
+   this.uiLabel(54,y+16,name,9,n?'#ffffff':MENU_UI.tenue);
+   this.uiLabel(184,y+16,'×'+n,10,n?MENU_UI.amarillo:MENU_UI.tenue,[1,.5]);
+  });
+  // Right pocket: who receives the item, then actions and TMs.
+  const R=this.add.graphics().setDepth(3);
+  this.uiSection(208,44,422,262);
+  this.uiLabel(220,58,'Usar em',10,MENU_UI.amarillo);
+  this.button(584,58,80,20,'SUMÁRIO',()=>this.showSummary(state,target),false,8);
   state.team.slice(0,6).forEach((member,i)=>{
-   const x=161+(i%3)*160,y=127+Math.floor(i/3)*40;
-   const chosen=i===target;
-   const hit=this.add.rectangle(x,y,149,33,chosen?0x35566e:0x213950)
-    .setStrokeStyle(2,chosen?0xffd479:0x567994)
+   const x=216+(i%3)*138,y=70+Math.floor(i/3)*44,chosen=i===target;
+   const info=this.memberInfo(member);
+   const g=this.add.graphics().setDepth(4);
+   nativeRect(g,x,y,132,40,chosen?MENU_UI.oro:MENU_UI.panelBorde,6);
+   nativeRect(g,x+2,y+2,128,36,chosen?0x2a3f78:0x0a1a46,5);
+   this.portraitFrame(g,member,x+5,y+5,30,info.types);
+   estrechar(this.uiLabel(x+40,y+12,info.name,8,chosen?MENU_UI.amarillo:'#ffffff'),56);
+   this.uiLabel(x+127,y+12,'Nv '+info.level,7,MENU_UI.suave,[1,.5]);
+   this.hpBar(g,x+40,y+22,64,info.hp,5);
+   this.uiLabel(x+127,y+25,info.hp===0?'KO':info.condition==='Pronto'?info.hp+'%':info.condition,7,info.tone,[1,.5]);
+   const hit=this.add.rectangle(x+66,y+20,132,40,0x000000,0).setDepth(8)
     .setInteractive({useHandCursor:true});
    hit.on('pointerdown',()=>{
     this.bagMemberIndex=i;this.bagScreen(state);
    });
-   this.drawPortrait(member,x-55,y,27);
-   text(this,x-34,y-12,(chosen?'◆ ':'')+member.id.toUpperCase().slice(0,12),{
-    fontSize:'10px',color:chosen?'#ffe4a1':'#e4f2ff'});
-   text(this,x-33,y+3,'NV.'+(member.progression?.level??'?')+
-    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'% '+statusLabel({est:{[member.status?.kind]:true}}),{fontSize:'9px',color:C.muted});
   });
-  this.button(320,198,210,24,'REMÉDIOS DE STATUS',()=>this.statusMedicineScreen(state,target)).setData('torre2-status-medicine-open',true);
-  this.button(157,231,170,37,'POÇÃO +25 HP',()=>{
+  const heal=(kind,label)=>()=>{
    try{
-    const result=usePotion(state,'potion',target);
+    const result=usePotion(state,kind,target);
     if(!result.ok)state.lastMessage=result.reason;
     this.bagScreen(state);
    }catch(error){
-    console.warn('Torre 2: Potion not saved',error);
+    console.warn('Torre 2: '+label+' not saved',error);
     this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
    }
-  },true).setData('torre2-bag-use','potion');
-  this.button(340,231,170,37,'SUPER +60 HP',()=>{
-   try{
-    const result=usePotion(state,'superpotion',target);
-    if(!result.ok)state.lastMessage=result.reason;
-    this.bagScreen(state);
-   }catch(error){
-    console.warn('Torre 2: Super Potion not saved',error);
-    this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
-   }
-  },true).setData('torre2-bag-use','superpotion');
-  this.button(517,231,166,37,'SUMÁRIO',()=>this.showSummary(state,target));
+  };
+  this.button(286,176,138,30,'POÇÃO +25 HP',heal('potion','Potion'),true,9)
+   .setData('torre2-bag-use','potion');
+  this.button(430,176,138,30,'SUPER +60 HP',heal('superpotion','Super Potion'),true,9)
+   .setData('torre2-bag-use','superpotion');
+  this.button(565,176,118,30,'REMÉDIOS',()=>this.statusMedicineScreen(state,target),false,9)
+   .setData('torre2-status-medicine-open',true);
+  R.fillStyle(MENU_UI.panelBorde,1).fillRect(216,197,406,1);
   const tms=inv.tms||[];
   const pages=Math.max(1,Math.ceil(tms.length/3));
   this.bagTmPage=Math.max(0,Math.min(pages-1,this.bagTmPage||0));
-  if(tms.length)text(this,292,269,'ENSINAR TM PARA '+state.team[target].id.toUpperCase().slice(0,11),{
-   fontSize:'11px',color:C.gold}).setOrigin(.5);
-  else text(this,292,269,'Nenhuma TM. Compre no Mart.',{
-   fontSize:'11px',color:C.muted}).setOrigin(.5);
-  if(pages>1)this.button(561,269,117,22,
+  const who=this.memberInfo(state.team[target]).name;
+  if(tms.length)estrechar(this.uiLabel(220,211,'Ensinar TM para '+who,9,MENU_UI.amarillo),300);
+  else this.uiLabel(220,211,'Nenhuma TM ainda. Compre na Loja.',9,MENU_UI.tenue);
+  if(pages>1)this.button(578,211,92,20,
    'TM '+(this.bagTmPage+1)+'/'+pages+'  ›',()=>{
     this.bagTmPage=(this.bagTmPage+1)%pages;this.bagScreen(state);
-   },false,9);
+   },false,8);
   tms.slice(this.bagTmPage*3,this.bagTmPage*3+3).forEach((id,i)=>{
    const item=MART_ITEMS.find(x=>x.id===id);
    if(!item)return;
    const compatible=!Array.isArray(item.compatible)||
     item.compatible.includes(state.team[target].id);
-   this.button(144+i*181,302,173,27,
-    compatible?item.name:'INCOMP. '+item.name.slice(0,12),()=>{
+   const cx=285+i*138;
+   const caption=compatible?item.name:item.name.split(' ')[0]+' · NÃO APRENDE';
+   this.button(cx,244,132,32,caption,()=>{
     try{
      const result=teachTM(state,id,target);
      if(!result.ok)state.lastMessage=result.reason;
@@ -1569,16 +1649,17 @@ create(){
      console.warn('Torre 2: TM teaching not saved',error);
      this.bagScreen(state,'TM NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   },compatible,9,null,32).setData('torre2-bag-teach-tm',id);
-   drawShopItem(this.add.graphics().setDepth(6),76+i*181,303,item,.65);
+   },compatible,8,null,32).setData('torre2-bag-teach-tm',id);
+   this.add.image(cx-50,244,shopItemSprite(this,item)).setDisplaySize(22,22).setDepth(9)
+    .setAlpha(compatible?1:.5).setData('torre2-bag-tm-sprite',id);
   });
   if(errorText||state.lastMessage){
-   const notice=text(this,320,324,(errorText||state.lastMessage).slice(0,100),{
+   const notice=text(this,419,284,(errorText||state.lastMessage).slice(0,100),{
     fontSize:'9px',color:errorText?'#ff9d9d':C.gold,
-    wordWrap:{width:585}}).setOrigin(.5);
+    wordWrap:{width:400}}).setOrigin(.5).setDepth(6);
    if(errorText)notice.setData('torre2-bag-save-error',true);
   }
-  this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.button(320,334,230,28,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  statusMedicineScreen(state,target,errorText=''){
   this.children.removeAll(true);this.backdrop();
