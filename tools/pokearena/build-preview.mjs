@@ -294,6 +294,8 @@ await Promise.all([
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
+ // Permanent legacy (titles, completions, Hall history) imported by campanha.js.
+ ['tools/pokearena/torre2-legacy.js','legacy.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
