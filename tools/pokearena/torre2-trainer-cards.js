@@ -109,7 +109,29 @@ const PIXEL_ICONS={
  fullscreen:['kkkk....kkkk','kwwk....kwwk','kwk......kwk','kk........kk','............','............',
   '............','............','kk........kk','kwk......kwk','kwwk....kwwk','kkkk....kkkk']
 };
+// Item icons use the original FireRed item sprites when they are loaded
+// (bag frame 0 = items pocket, Poké Ball icon); the pixel grid is a fallback.
+// [texture, frame, visible content height, optional frame rect to register]
+const ITEM_SPRITES={
+ team:['torre2-frlg-mart-pokeball',null,18],
+ capture:['torre2-frlg-mart-greatball',null,18],
+ bag:['torre2-frlg-bag',0,50],
+ heal:['torre2-frlg-mart-potion',null,20],
+ // FireRed Center / Mart buildings cut from the Viridian town sheet.
+ center:['torre2-art-icon-center',null,96,null,true],
+ shop:['torre2-art-icon-mart',null,78,null,true],
+ badges:['torre2-frlg-badges',0,14]};
 export function pixelIcon(scene,layer,kind,x,y,scale=2){
+ const sprite=ITEM_SPRITES[kind];
+ if(sprite&&scene.textures.exists(sprite[0])){
+  const [key,frame,content,rect,smooth]=sprite;
+  const tex=scene.textures.get(key);
+  if(rect&&!tex.has(frame))tex.add(frame,0,...rect);
+  const img=scene.add.image(x,y,key,frame??undefined).setScale(12*scale/content);
+  tex.setFilter(smooth?Phaser.Textures.FilterMode.LINEAR:Phaser.Textures.FilterMode.NEAREST);
+  layer.add(img);img.setData('torre2-pixel-icon',kind);
+  return img;
+ }
  const grid=PIXEL_ICONS[kind];if(!grid)return null;
  const g=scene.add.graphics();layer.add(g);
  const ox=Math.round(x-6*scale),oy=Math.round(y-6*scale);

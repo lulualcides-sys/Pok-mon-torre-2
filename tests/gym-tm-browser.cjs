@@ -47,7 +47,11 @@ const server=http.createServer(async(req,res)=>{
  await page.evaluate(()=>{const s=core.createCampaign('squirtle');s.stage=2;s.badges=['Rocha','Cascata'];delete s.gymTMClaims;core.saveCampaign(s);window.fixture=core.readCampaign();window.__pt2Game.scene.getScene('campanha').bagScreen(fixture)});
  const rect=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}});
  await page.screenshot({path:'test-evidence/gym-tm-bag.png'});
- await page.mouse.click(rect.x+rect.w*144/640,rect.y+rect.h*302/360);
+ // Real mouse click on the Water Pulse TM button wherever the bag layout puts it.
+ const tm=await page.evaluate(()=>{const z=window.__pt2Game.scene.getScene('campanha').children.list
+  .find(o=>o.getData?.('torre2-bag-teach-tm')==='tm-water-pulse');return z&&{x:z.x,y:z.y}});
+ assert.ok(tm,'Water Pulse TM button missing from the bag');
+ await page.mouse.click(rect.x+rect.w*tm.x/640,rect.y+rect.h*tm.y/360);
  await page.waitForFunction(()=>core.readCampaign().team[0].tmMoves?.includes('Water Pulse'));
  const result=await page.evaluate(async()=>{
   const s=core.readCampaign();const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;

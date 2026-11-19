@@ -24,6 +24,30 @@
   "emblem-indigo.png": "e1ae914ec563e1b18ac91a710a91a5c99e069987dc2da5e87611b4b8f70ca07a",
   "route-card.png": "e5ea71c65e57050b67befeab7e3cffdd9402462067672a288757877bcefc8375",
   "route-detail.png": "c6fb5aacea0eb4d9871e9a8afc816a2891c97df4e7d4085ea734ad45a91591ae",
-  "journey-bg.png": "f81468f466eca171ec46db834ae26f1a52ad3406934a1170d9acb16747f477df"
+  "journey-bg.png": "f81468f466eca171ec46db834ae26f1a52ad3406934a1170d9acb16747f477df",
+  "icon-center.png": "43c32f12d67ce69bb413127ba085448dc15e81b7968e9e7c726a42b504d98730",
+  "icon-mart.png": "63fda8451f83aa6527ab4d61669e4e13714e5b9fc885a0d3b6b015dcdd3d0af4"
+ },
+ "derived": {
+  "icon-center.png": {
+   "source": "assets/ui/frlg/viridian.png (folha FireRed já creditada)",
+   "rect": [
+    386,
+    380,
+    92,
+    82
+   ],
+   "note": "Prédio do Centro Pokémon, fundo removido; ícone do botão Centro."
+  },
+  "icon-mart.png": {
+   "source": "assets/ui/frlg/viridian.png (folha FireRed já creditada)",
+   "rect": [
+    546,
+    278,
+    76,
+    72
+   ],
+   "note": "Prédio da Poké Mart, fundo removido; ícone do botão Loja."
+  }
  }
 }
