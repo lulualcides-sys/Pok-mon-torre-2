@@ -30,12 +30,12 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,AVAILABLE_OAK_INTRO} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC,playerSpriteId} from './frlg-npc.js';
 import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -149,7 +149,7 @@ class Campanha extends Phaser.Scene{
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
-  const needed=new Set(['red_normal',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
+  const needed=new Set(['red_normal',playerSpriteId(),...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
@@ -783,31 +783,68 @@ create(){
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(24,64,592,239,0x9c9f71);
   const index=Math.max(0,Math.min(7,selected));
-  text(this,320,28,'ESTOJO DE INSÍGNIAS',titleStyle).setOrigin(.5);
-  text(this,320,52,'KANTO  ·  '+GYMS.filter(g=>state.badges.includes(g.badge)).length+' / 8',statusStyle).setOrigin(.5);
+  const got=GYMS.filter(g=>state.badges.includes(g.badge)).length;
+  this.screenBanner(20,300,'Estojo de insígnias','badges');
+  this.uiLabel(320,46,'Kanto · '+got+' / 8 insígnias',8,MENU_UI.suave,[.5,.5]);
+  // Left: the eight original FireRed badges in a velvet case.
+  this.uiSection(8,56,376,246);
   const cards=this.add.graphics().setDepth(2);
+  nativeRect(cards,18,66,356,226,0x2a1446,8,.65);
   GYMS.forEach((gym,i)=>{
-   const x=110+(i%4)*140,y=107+Math.floor(i/4)*89,earned=state.badges.includes(gym.badge);
-   cards.fillStyle(i===index?0x29485c:0x0a2135);cards.fillRect(x-61,y-37,122,76);
-   cards.lineStyle(i===index?2:1,i===index?0xf5cf76:0x436480);cards.strokeRect(x-61,y-37,122,76);
-   drawBadgeIcon(this,i,x,y-9,earned,2);
-   text(this,x,y+14,gym.badge.toUpperCase(),{fontSize:'10px',color:earned?C.white:C.muted}).setOrigin(.5).setDepth(4);
-   text(this,x,y+29,earned?'CONQUISTADA':'NÃO CONQUISTADA',{fontSize:'8px',color:earned?'#8be2b3':'#71899e'}).setOrigin(.5).setDepth(4);
-   this.add.zone(x,y,122,76).setDepth(8).setInteractive({useHandCursor:true})
+   const x=62+(i%4)*89,y=120+Math.floor(i/4)*104,earned=state.badges.includes(gym.badge);
+   const current=i===index;
+   nativeRect(cards,x-41,y-46,82,92,current?MENU_UI.oro:earned?MENU_UI.oroBorde:MENU_UI.apagadoBorde,7);
+   nativeRect(cards,x-39,y-44,78,88,current?0x2a3f78:earned?0x1d2f63:0x0a1638,6);
+   if(earned){cards.fillStyle(MENU_UI.oroLuz,.18).fillCircle(x,y-10,26);}
+   nativeRect(cards,x-26,y-36,52,52,earned?0x3b2a12:0x0c1428,26,earned?.55:.8);
+   drawBadgeIcon(this,i,x,y-10,earned,3);
+   this.uiLabel(x,y+24,gym.badge,8,earned?'#ffffff':MENU_UI.tenue,[.5,.5]);
+   this.uiLabel(x,y+36,earned?'Conquistada':'Bloqueada',7,earned?'#9ff0bf':MENU_UI.apagadoTexto,[.5,.5]);
+   this.add.zone(x,y,82,92).setDepth(8).setInteractive({useHandCursor:true})
     .setData('torre2-badge-index',i).on('pointerdown',()=>this.badgeCaseScreen(state,i));
   });
+  // Right: the selected gym — city illustration, leader sprite and reward.
   const gym=GYMS[index],earned=state.badges.includes(gym.badge),reward=GYM_TM_REWARDS[index];
   const item=MART_ITEMS.find(i=>i.id===reward),claimed=earned&&!!reward&&state.gymTMClaims?.includes(reward);
-  text(this,320,253,gym.leader+'  ·  GINÁSIO DE '+gym.city.toUpperCase(),{fontSize:'14px',color:C.gold}).setOrigin(.5);
+  this.uiSection(390,56,242,246);
+  const city=String(gym.city).toLowerCase();
+  const layer={add:o=>o.setDepth?.(3)};
+  ownerArt(this,layer,'city-'+city,400,66,222,108);
+  const ring=this.add.graphics().setDepth(4);nativeAro(ring,399,65,224,110,earned?MENU_UI.oro:MENU_UI.panelBorde,6);
+  // Big badge medal (no badge-sprite data: the case grid keeps exactly eight).
+  const medal=this.add.graphics().setDepth(5);
+  nativeRect(medal,408,140,52,52,MENU_UI.contorno,26);nativeRect(medal,410,142,48,48,earned?MENU_UI.oro:MENU_UI.apagado,24);
+  this.add.image(434,166,'torre2-frlg-badges',index).setScale(2.4).setDepth(6)
+   .setTint(earned?0xffffff:0x718293).setAlpha(earned?1:.6);
+  const leaderId=['brock','misty','lt_surge','erika','koga','sabrina','blaine','giovanni'][index];
+  const npcKey='frlg-npc-'+leaderId;
+  const showLeader=()=>{
+   if(!this.scene.isActive()||!this.textures.exists(npcKey)||this.__torre2BadgeCase?.selected!==index)return;
+   const t=this.textures.get(npcKey);if(!t.has('torre2-front'))t.add('torre2-front',0,0,0,16,32);
+   t.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   this.add.image(590,172,npcKey,'torre2-front').setOrigin(.5,1).setScale(2.4).setDepth(6)
+    .setData('torre2-badge-leader',leaderId);
+  };
+  this.uiLabel(511,190,gym.leader,12,MENU_UI.amarillo,[.5,.5]);
+  this.uiLabel(511,206,'Ginásio de '+gym.city,8,MENU_UI.suave,[.5,.5]);
+  const typeCol=TIPOS[gym.type];
+  if(typeCol!==undefined){const tg=this.add.graphics().setDepth(5);pastillaTipo(tg,481,216,gym.type,60,13);
+   this.uiLabel(511,223,gym.type[0]+gym.type.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],7);}
   const rewardText=item?item.name+'  ·  '+(claimed?'RECEBIDA':earned?'A RECEBER':'RECOMPENSA DO GINÁSIO'):
    'TM06 TOXIC  ·  INDISPONÍVEL NESTA VERSÃO';
-  text(this,320,278,rewardText,{fontSize:'11px',color:C.white}).setOrigin(.5);
-  text(this,320,297,'Selecione uma insígnia para consultar o ginásio e a recompensa.',{fontSize:'9px',color:C.muted}).setOrigin(.5);
-  this.button(320,332,230,29,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+  const rg=this.add.graphics().setDepth(4);nativeRect(rg,400,238,222,40,0x081436,6,.85);
+  if(item)this.add.image(418,258,shopItemSprite(this,item)).setDisplaySize(22,22).setDepth(6);
+  estrechar(this.uiLabel(item?434:511,252,rewardText,8,'#ffffff',item?[0,.5]:[.5,.5]),item?182:212);
+  this.uiLabel(item?434:511,266,'Recompensa do ginásio',7,MENU_UI.tenue,item?[0,.5]:[.5,.5]);
+  this.uiLabel(511,292,'Toque numa insígnia para ver o ginásio',7,MENU_UI.tenue,[.5,.5]);
+  this.button(320,334,230,28,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
    .setData('torre2-badge-case-back',true);
   this.__torre2BadgeCase={selected:index,earned,claimed,reward:reward||null};
+  if(this.textures.exists(npcKey))showLeader();
+  else{this.load.once('filecomplete-image-'+npcKey,showLeader);
+   this.load.image(npcKey,'assets/ui/frlg/npc/'+leaderId+'.png');
+   if(!this.load.isLoading())this.load.start();}
  }
  // Reset is intentionally a two-step action; a single stray tap may
  // never erase the campaign, team, PC, badges or saved inventory.
@@ -1666,14 +1703,30 @@ create(){
  }
  statusMedicineScreen(state,target,errorText=''){
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(13,82,614,215,0x5b9db6);
   const member=state.team[target];
-  text(this,320,25,'REMÉDIOS DE STATUS',{...titleStyle,fontSize:'20px'}).setOrigin(.5);
+  const info=this.memberInfo(member);
+  this.screenBanner(20,300,'Remédios de status','bag');
+  // Who is being treated, with the problem highlighted.
+  this.uiSection(8,42,624,62);
+  const top=this.add.graphics().setDepth(3);
+  this.portraitFrame(top,member,18,48,50,info.types);
+  this.uiLabel(78,62,info.name,12,MENU_UI.amarillo);
+  this.uiLabel(78,80,'Nv '+info.level,8,MENU_UI.suave);
+  this.hpBar(top,124,77,150,info.hp);
+  this.uiLabel(282,80,info.hp+'%',8,'#ffffff');
   const status=statusLabel({est:{[member.status?.kind]:true}})||(member.confusion?'CONFUSÃO':'SEM STATUS');
-  text(this,320,59,member.id.toUpperCase()+' · '+(member.hp<=0?'DESMAIADO':status),{fontSize:'12px',color:C.gold}).setOrigin(.5);
+  const problem=member.hp<=0?'DESMAIADO':status,healthy=problem==='SEM STATUS';
+  nativeRect(top,420,58,200,30,healthy?0x1b5a3a:0x6b2430,6);
+  this.uiLabel(520,73,healthy?'Sem problemas de status':'Problema: '+problem,9,healthy?'#9ff0bf':'#ffd0d0',[.5,.5]);
+  // Six remedies with their original FireRed item sprites.
+  this.uiSection(8,108,624,190);
   MART_ITEMS.filter(i=>i.kind==='status').forEach((item,i)=>{
-   const x=167+(i%2)*306,y=105+Math.floor(i/2)*65;
-   this.button(x,y,275,38,item.name+' ×'+(state.inventory[item.id]||0),()=>{
+   const x=114+(i%3)*206,y=140+Math.floor(i/3)*76,n=state.inventory[item.id]||0;
+   const helps=item.cures.includes(member.status?.kind)||(item.cureConfusion&&member.confusion);
+   const g=this.add.graphics().setDepth(2);
+   nativeRect(g,x-98,y-26,196,68,helps&&n?MENU_UI.oro:MENU_UI.panelBorde,7);
+   nativeRect(g,x-96,y-24,192,64,0x0a1a46,6);
+   this.button(x+18,y-6,150,28,item.name+' ×'+n,()=>{
     try{
      const result=useStatusCure(state,item.id,target);
      if(!result.ok)state.lastMessage=result.reason;
@@ -1683,15 +1736,18 @@ create(){
      this.statusMedicineScreen(state,target,
       'REMÉDIO NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   }).setData('torre2-status-medicine',item.id);
-   text(this,x,y+25,item.cureConfusion?'Cura todos os status e confusão':'Cura '+statusLabel({est:{[item.cures[0]]:true}}),{fontSize:'10px',color:C.muted}).setOrigin(.5);
+   },helps&&n>0,8).setData('torre2-status-medicine',item.id);
+   this.add.image(x-76,y-4,shopItemSprite(this,item)).setDisplaySize(28,28).setDepth(9).setAlpha(n?1:.45)
+    .setData('torre2-status-medicine-sprite',item.id);
+   this.uiLabel(x,y+22,item.cureConfusion?'Cura todos os status e confusão':'Cura '+statusLabel({est:{[item.cures[0]]:true}}),
+    7,helps?'#9ff0bf':MENU_UI.tenue,[.5,.5]);
   });
-  const notice=text(this,320,285,errorText||state.lastMessage||
+  const notice=text(this,320,306,errorText||state.lastMessage||
    'Selecione o remédio para este Pokémon.',{
    fontSize:'10px',color:errorText?'#ff9d9d':C.gold,wordWrap:{width:570}}).setOrigin(.5);
   if(errorText)notice.setData('torre2-status-save-error',true);
-  this.button(175,330,260,32,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
-  this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
+  this.button(175,334,260,28,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
+  this.button(465,334,260,28,'POKÉ MART',()=>this.martScreen(state));
  }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
@@ -1735,12 +1791,32 @@ create(){
     STEEL:0xa4bbc6,FAIRY:0xe5a8d6};
   const hex=(type)=>'#'+(types[type]??0x9db1c7).toString(16).padStart(6,'0');
   const ncol=type=>types[type]??0x9db1c7;
+  // Native-kit look for every summary panel: rounded pixel frame drawn in a
+  // Graphics layer under an (invisible) Rectangle that keeps the original
+  // input, depth, hover (setFillStyle) and data contract unchanged.
   const box=(x,y,w,h,fill=0x14243b,stroke=0x375371)=>{
-   const rect=this.add.rectangle(x+w/2,y+h/2,w,h,fill,.98).setStrokeStyle(1,stroke);
+   const g=this.add.graphics();
+   const r=Math.max(1,Math.min(6,Math.floor(h/2)));
+   const paint=f=>{
+    g.clear();
+    if(h<12){nativeRect(g,x,y,w,h,MENU_UI.contorno,r);nativeRect(g,x+1,y+1,w-2,h-2,f,Math.max(1,r-1));return}
+    nativeRect(g,x,y,w,h,MENU_UI.contorno,r);
+    nativeRect(g,x+1,y+1,w-2,h-2,stroke,Math.max(1,r-1));
+    nativeRect(g,x+2,y+2,w-4,h-4,f,Math.max(1,r-2));
+    g.fillStyle(0xffffff,.08).fillRect(x+r+2,y+3,Math.max(0,w-2*r-4),1);
+   };
+   paint(fill);
+   const rect=this.add.rectangle(x+w/2,y+h/2,w,h,0x000000,.001);
+   const setDepth=rect.setDepth.bind(rect);
+   rect.setDepth=d=>{g.setDepth(d-.01);return setDepth(d)};
+   rect.setFillStyle=f=>{paint(f);return rect};
+   rect.once('destroy',()=>g.destroy());
    return rect;
   };
-  const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
-   fontSize:size+'px',color}).setDepth(16);
+  // Native Cifras font; captions are kept literally (tests read them).
+  const label=(x,y,caption,color='#dceaff',size=11)=>textoMenu(this,x,y,String(caption),{
+   tam:Math.max(7,Math.round(size*.82)),color,borde:size>=12?4:3,colorBorde:MENU_UI.bordeTexto,literal:true})
+   .setDepth(16);
   const button=(x,y,w,h,caption,click,selected=false)=>{
    const bg=box(x,y,w,h,selected?0x28465f:0x1b314a,selected?0xe7c56a:0x52718f);
    bg.setDepth(12).setInteractive({useHandCursor:true});
@@ -2035,6 +2111,36 @@ create(){
    });
   });
  }
+ pcRow(member,cx,cy,w,{selected=false,active=false,onTap,dataKey,dataValue}){
+  const x=Math.round(cx-w/2),y=Math.round(cy-14),h=29;
+  const info=this.memberInfo(member);
+  const g=this.add.graphics().setDepth(4);
+  nativeRect(g,x,y,w,h,selected?MENU_UI.oro:MENU_UI.panelBorde,6);
+  nativeRect(g,x+1,y+1,w-2,h-2,selected?0x2a3f78:0x0a1a46,5);
+  // Portrait window (original PMD portrait, loaded on demand).
+  const col=TIPOS[info.types[0]]??0x5f86bd;
+  nativeRect(g,x+3,y+2,25,25,col,4,.55);
+  originalBallSprite(this,x+15,y+15,'pokeball',10,5).setAlpha(.5);
+  const key=portraitKey(member);
+  requestCardPortrait(this,key,'assets/pmd/'+portraitId(member)+'/portrait.png',()=>{
+   if(!g.active)return; // A late request must not paint another screen.
+   this.add.image(x+15,y+15,key).setDisplaySize(23,23).setDepth(7);
+  });
+  const name=(active?'◆ ':'')+info.name+(member.shiny?' ✦':'');
+  estrechar(this.uiLabel(x+34,y+10,name,8,selected||active?MENU_UI.amarillo:'#ffffff'),w-104);
+  this.uiLabel(x+w-8,y+10,'Nv '+info.level,7,MENU_UI.suave,[1,.5]);
+  this.hpBar(g,x+34,y+18,w-110,info.hp,5);
+  this.uiLabel(x+w-8,y+21,info.hp===0?'KO':info.condition==='Pronto'?info.hp+'%':info.condition,7,info.tone,[1,.5]);
+  const zone=this.add.zone(cx,cy,w,Math.max(h,27)).setDepth(8)
+   .setInteractive({useHandCursor:true}).setData(dataKey,dataValue)
+   .setData('torre2-pc-caption',pcMemberLabel(member,{active,selected}));
+  let last=-Infinity;
+  zone.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   const now=Date.now();if(now-last<190)return;last=now;onTap();
+  });
+  return zone;
+ }
  pcScreen(state,page=0){
   // Read-only filtered PC presentation; all transfers address original box
   // indexes, not filtered row indexes. Saves and team order never change here.
@@ -2051,54 +2157,37 @@ create(){
   };
   this.children.removeAll(true);this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
-  this.uiSection(10,62,310,223,0x5e9ab9);
-  this.uiSection(323,62,308,223,0x6cabc4);
   this.pcFilter=PC_FILTERS.includes(this.pcFilter)?this.pcFilter:'ALL';
   const boxView=pcPageModel(state,page,this.pcFilter);
   const {page:safePage,pages:totalPages}=boxView;
-  text(this,20,13,'CENTRO POKÉMON · PC',{...titleStyle,fontSize:'19px'});
-  this.button(549,21,155,28,'◀ CAMPANHA',()=>{
+  this.screenBanner(20,260,'PC do Centro Pokémon','team');
+  this.button(588,20,90,24,'◀ VOLTAR',()=>{
    this.pcSelected=null;this.__torre2PcNotice=null;this.scene.restart()
-  });
-  text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
-  text(this,330,52,'ARMAZENAMENTO '+boxView.total+' · ✦ '+boxView.shiny,{
-   color:C.gold,fontSize:'12px'});
-  // PC-only terminal furniture. No shared button, roster or transfer changes.
-  const slots=this.add.graphics();
-  for(let i=0;i<6;i++)for(const x of [22,334]){
-   const y=65+i*34;
-   slots.fillStyle(0x0a2134).fillRect(x,y,284,29);
-   slots.fillStyle(0x365e70).fillRect(x,y,284,1);
-   slots.fillStyle(0x173e50).fillRect(x+1,y+1,31,27);
-   slots.fillStyle(0x567d86).fillRect(x+4,y+4,24,1);
-   if(!(x===334&&i===5&&!boxView.rows.length))text(this,x+43,y+8,'— SLOT LIVRE —',{fontSize:'10px',color:'#628597'});
-   if(!(x===334&&i===5&&!boxView.rows.length))text(this,x+17,y+14,String(i+1).padStart(2,'0'),{
-    fontSize:'10px',color:'#8caeb4'}).setOrigin(.5);
+  },false,8);
+  // Two native panels: party on the left, storage box on the right.
+  this.uiSection(8,40,312,250);this.uiSection(324,40,308,250);
+  this.uiLabel(20,54,'Equipe '+state.team.length+'/6',10,MENU_UI.amarillo);
+  this.uiLabel(310,54,'Toque para selecionar',7,MENU_UI.tenue,[1,.5]);
+  this.uiLabel(336,54,'Caixa · '+boxView.total+' Pokémon'+(boxView.shiny?' · ✦ '+boxView.shiny:''),10,MENU_UI.amarillo);
+  const empty=this.add.graphics().setDepth(3);
+  for(let i=0;i<6;i++){
+   const y=79+i*34;
+   if(!state.team[i]){nativeRect(empty,24,y-14,281,29,0x081232,5,.7);
+    this.uiLabel(164,y,'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
+   if(!boxView.rows[i]&&(boxView.rows.length||i<5)){nativeRect(empty,328,y-14,277,29,0x081232,5,.7);
+    this.uiLabel(466,y,'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
   }
-  // Portraits are original PMD textures, drawn above each occupied row only.
-  const pcPortrait=(member,x,y)=>{
-   const backing=this.add.graphics().setDepth(6);
-   backing.fillStyle(0x173e50).fillRect(x-13,y-13,26,26);
-   ball(backing,x,y,7);
-   const key=portraitKey(member);
-   requestCardPortrait(this,key,'assets/pmd/'+portraitId(member)+'/portrait.png',()=>{
-    if(!backing.active)return; // A late request must not paint another screen.
-    this.add.image(x,y,key).setDisplaySize(24,24).setDepth(7);
-   });
-  };
   state.team.forEach((member,i)=>{
    const y=79+i*34,selected=this.pcSelected===i;
-   this.button(164,y,281,29,pcMemberLabel(member,{
-    active:i===state.active,selected
-   }),()=>{
-    this.pcSelected=i===this.pcSelected?null:i;
-    this.__torre2PcNotice=null;this.pcScreen(state,safePage);
-   },selected,null,null,36).setData('torre2-pc-team-index',i);
-   pcPortrait(member,39,y);
+   this.pcRow(member,164,y,281,{selected,active:i===state.active,
+    dataKey:'torre2-pc-team-index',dataValue:i,onTap:()=>{
+     this.pcSelected=i===this.pcSelected?null:i;
+     this.__torre2PcNotice=null;this.pcScreen(state,safePage);
+    }});
   });
   boxView.rows.forEach(({member,actualIndex},i)=>{
    const y=79+i*34;
-   this.button(466,y,277,29,pcMemberLabel(member),()=>{
+   this.pcRow(member,466,y,277,{dataKey:'torre2-pc-box-index',dataValue:actualIndex,onTap:()=>{
     const result=attemptTransfer(()=>{
      if(state.team.length<6)return withdrawPokemon(state,actualIndex);
      if(Number.isInteger(this.pcSelected))
@@ -2110,76 +2199,90 @@ create(){
      this.__torre2PcNotice='EQUIPE CHEIA · SELECIONE UM POKÉMON À ESQUERDA';
     this.pcScreen(state,Math.min(safePage,Math.max(0,
      Math.ceil(boxView.matched/6)-1)));
-   },false,null,null,36).setData('torre2-pc-box-index',actualIndex);
-   pcPortrait(member,351,y);
+   }});
   });
-  if(!boxView.rows.length)text(this,387,247,boxView.total?
-   'NENHUM POKÉMON NESTE FILTRO':'CAPTURE PARA PREENCHER O PC',{...statusStyle,fontSize:'10px'});
-  if(!boxView.rows.length)premiumSprite(this,'terminal',340,235);
-  // Four one-tap filters on the native Phaser screen; never alter box order.
+  if(!boxView.rows.length){
+   premiumSprite(this,'terminal',350,249);
+   this.uiLabel(372,249,boxView.total?'Nenhum Pokémon neste filtro':'Capture Pokémon para preencher o PC',8,MENU_UI.suave);
+  }
+  // Four one-tap filter tabs on the native Phaser screen; never alter box order.
   for(const [i,filter] of PC_FILTERS.entries()){
    const buttonLabel={ALL:'TODOS',SHINY:'✦ SHINY',KO:'KO',STATUS:'STATUS'}[filter];
-   this.button(363+i*69,282,65,26,buttonLabel,()=>{
+   this.button(363+i*69,275,65,22,buttonLabel,()=>{
     this.pcFilter=filter;this.__torre2PcNotice=null;this.pcScreen(state,0);
-   },boxView.filter===filter,9).setData('torre2-pc-filter',filter);
+   },boxView.filter===filter,8).setData('torre2-pc-filter',filter);
   }
-  this.button(121,310,195,29,'GUARDAR SELECIONADO',()=>{
+  this.button(121,306,195,26,'GUARDAR SELECIONADO',()=>{
    const result=attemptTransfer(()=>storePokemon(state,this.pcSelected));
    if(!result.done&&!result.blocked)
     this.__torre2PcNotice='SELECIONE UM POKÉMON · MANTENHA UM NA EQUIPE';
    if(result.done)this.pcSelected=null;
    this.pcScreen(state,safePage);
-  }).setData('torre2-pc-store',true);
-  this.button(337,310,111,29,'◀ ANTERIOR',()=>
+  },Number.isInteger(this.pcSelected)).setData('torre2-pc-store',true);
+  this.button(337,306,111,26,'◀ ANTERIOR',()=>
    this.pcScreen(state,(safePage-1+totalPages)%totalPages))
    .setData('torre2-pc-prev',true);
-  this.button(451,310,104,29,(safePage+1)+' / '+totalPages,()=>
+  this.button(451,306,104,26,(safePage+1)+' / '+totalPages,()=>
    this.pcScreen(state,0)).setData('torre2-pc-page',safePage);
-  this.button(568,310,119,29,'PRÓXIMA ▶',()=>
+  this.button(568,306,119,26,'PRÓXIMA ▶',()=>
    this.pcScreen(state,(safePage+1)%totalPages))
    .setData('torre2-pc-next',true);
   const notice=this.__torre2PcSaveError||this.__torre2PcNotice||
    (boxView.filter==='ALL'?
     'EQUIPE CHEIA? SELECIONE À ESQUERDA E TROQUE PELO PC.':
     boxView.matched+' DE '+boxView.total+' NO FILTRO '+boxView.filter);
-  text(this,20,345,notice,{
+  text(this,320,340,notice,{
    fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':
-    this.__torre2PcNotice?'#ffdb94':C.muted});
+    this.__torre2PcNotice?'#ffdb94':C.muted}).setOrigin(.5,.5);
  }
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
-  this.uiSection(20,69,598,243,0x5a9cb6);
   const supported=ROSTER.flatMap(p=>[p.id,
    ...(p.evoluciones||[]).map(x=>x.nombre)]);
-  const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0);
+  // 24 per page (6×4 grid). Page boundaries match the previous list layout
+  // for every species that the T25 regression checks (Mr. Mime / Mew).
+  const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0,24);
   this.dexPage=view.page;
-  text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+view.totals.all+' ESPÉCIES',
-   {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
-  text(this,ANCHO/2,47,'VISTOS '+view.totals.seen+
-   ' · CAPTURADOS '+view.totals.caught+
-   ' · Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
-  if(view.totals.shinySeen)
-   text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
-    ' · CAPTURADOS '+view.totals.shinyCaught,{
-    ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
+  this.screenBanner(20,330,'Pokédex de Kanto','dex');
+  const info=this.uiLabel(320,46,'Vistos '+view.totals.seen+' · Capturados '+view.totals.caught+
+   ' de '+view.totals.all+(view.totals.shinySeen?'  ·  ✦ Shiny '+view.totals.shinyCaught+'/'+view.totals.shinySeen:''),
+   8,MENU_UI.suave,[.5,.5]);
+  info.setData('torre2-dex-totals',view.totals);
+  this.uiSection(8,56,624,256);
+  const CW=100,CH=58,GX=3,GY=3,X0=320-(6*CW+5*GX)/2,Y0=62;
   view.rows.forEach((row,i)=>{
-   const x=35+(i>=11?295:0),y=75+(i%11)*21;
-   const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':
-    row.caught?' ★':row.seen?' ◦':row.ready?' ✓':'';
-   text(this,x,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
-    fontSize:'11px',color:row.shinyCaught?'#f5db86':
-     row.caught?C.gold:row.seen?C.blue:C.muted
-   }).setData('torre2-dex-id',row.id);
+   const x=X0+(i%6)*(CW+GX),y=Y0+Math.floor(i/6)*(CH+GY);
+   const dex=String(row.index+1).padStart(4,'0'),key='torre2-portrait-'+dex;
+   const g=this.add.graphics().setDepth(3);
+   const tone=row.shinyCaught?MENU_UI.oro:row.caught?0x50cc84:row.seen?MENU_UI.panelLuz:MENU_UI.apagadoBorde;
+   nativeRect(g,x,y,CW,CH,MENU_UI.contorno,6);
+   nativeRect(g,x+1,y+1,CW-2,CH-2,tone,5);
+   nativeRect(g,x+2,y+2,CW-4,CH-4,row.seen?0x0f2352:0x0a1638,4);
+   // Portrait window; unseen species are a dark silhouette.
+   nativeRect(g,x+5,y+5,40,40,row.seen?0x1d3c7a:0x081232,4);
+   requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
+    if(!g.active)return;
+    const img=this.add.image(x+25,y+25,key).setDisplaySize(36,36).setDepth(4);
+    if(!row.seen)img.setTintFill(0x2a4384).setAlpha(.9);
+   });
+   this.uiLabel(x+50,y+11,'Nº '+String(row.index+1).padStart(3,'0'),7,MENU_UI.tenue);
+   const marker=row.shinyCaught?' ✦':row.shinySeen?' ✦':'';
+   estrechar(this.uiLabel(x+50,y+25,row.name+marker,8,row.shinyCaught?MENU_UI.amarillo:
+    row.seen?'#ffffff':MENU_UI.tenue),CW-54).setData('torre2-dex-id',row.id);
+   const state2=row.caught?'Capturado':row.seen?'Visto':'?????';
+   this.uiLabel(x+50,y+39,state2,7,row.caught?'#9ff0bf':row.seen?MENU_UI.suave:MENU_UI.apagadoTexto);
+   if(row.caught)originalBallSprite(this,x+CW-10,y+10,'pokeball',12,6);
+   if(row.ready){nativeRect(g,x+4,y+CH-13,40,9,0x0a1a46,3);
+    this.uiLabel(x+24,y+CH-8,'Arena',6,'#9ddcf0',[.5,.5]);}
   });
-  this.button(82,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
-  this.button(236,329,133,31,'◀ ANTERIOR',()=>{
+  this.button(82,334,140,28,'◀ VOLTAR',()=>this.scene.restart());
+  this.button(236,334,133,28,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);
   }).setData('torre2-dex-prev',true);
-  text(this,382,328,'PÁG. '+(view.page+1)+'/'+view.pages,{
-   color:C.gold,fontSize:'12px'}).setOrigin(.5,0);
-  this.button(543,329,141,31,'PRÓXIMA ▶',()=>{
+  this.uiLabel(382,334,'Pág. '+(view.page+1)+'/'+view.pages,9,MENU_UI.amarillo,[.5,.5]);
+  this.button(543,334,141,28,'PRÓXIMA ▶',()=>{
    this.dexPage=(view.page+1)%view.pages;this.dexScreen(state);
   }).setData('torre2-dex-next',true);
  }

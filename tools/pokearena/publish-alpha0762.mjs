@@ -51,7 +51,9 @@ const overlayNames=[
  // Audited presentation-only #600 backport; preserves sprites and campaign save order.
  ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js'],
  // Campaign menus (native buttons/panels, Pokémon Center): presentation only.
- ['tools/pokearena/torre2-campaign-scene.js','torre2/campanha.js']
+ ['tools/pokearena/torre2-campaign-scene.js','torre2/campanha.js'],
+ // Player character (Red/Leaf) chosen on the trainer-name screen.
+ ['tools/pokearena/torre2-frlg-npc.js','torre2/frlg-npc.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
