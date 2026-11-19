@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {removeCustomizeTitleOption,removeNewsTitleOption,preloadPokedexOnePage} from '../tools/pokearena/torre2-title-pokedex-fast.mjs';
+import {removeCustomizeTitleOption,removeNewsTitleOption,removeUpdatesTitleButton,preloadPokedexOnePage} from '../tools/pokearena/torre2-title-pokedex-fast.mjs';
 
 test('remove only CUSTOMIZE menu tile, keep settings and other buttons',()=>{
  const src='const MENUS={principal:[{id:"jugar",txt:"PLAY",menu:"jugar"},'+
@@ -59,4 +59,19 @@ test('remove only NEWS from the home sidebar and preserve PLAY/SETTINGS',()=>{
  assert.equal(removeNewsTitleOption(quoted),"[{id:'x',txt:'PLAY'}]");
  assert.equal(removeNewsTitleOption('[{id:"news",txt:"NEWS"}]'),'[]');
  assert.throws(()=>removeNewsTitleOption('{id:"news",txt:"NEWS"}'),/delimiter/);
+});
+
+test('title loses the UPDATES (News) button, its U shortcut and the STREAMER MODE toggle',()=>{
+ const native='create(){const verNovedades=this.verNovedades=()=>{if(this.menu==="principal"){sfx("confirmar");this.scene.start("novedades")}};'+
+  'this.esquinaMisiones();this.esquinaStreamer();}'+
+  'alinear(){const w=this.subtitulo.width,wb=this.botonNovedades.zona.width;this.subtitulo.setX(BX-(wb+8)/2);this.botonNovedades.mover(BX+w/2-(wb+8)/2+8+wb/2,98+BAJA);this.botonNovedades.mostrar(true);if(!novedadesVistas())this.chapaNovedades=this.chapa(BX+w/2+(wb+8)/2+4,102+BAJA,"NEW!");return}}'+
+  'esquinaStreamer(){this.botonStreamer=boton(this,0,0,textoStreamer())}';
+ const out=removeUpdatesTitleButton(native);
+ assert.doesNotMatch(out,/scene\.start\("novedades"\)/);
+ assert.doesNotMatch(out,/botonNovedades\.mostrar\(true\)/);
+ assert.doesNotMatch(out,/"NEW!"/);
+ assert.doesNotMatch(out,/this\.esquinaStreamer\(\);/);
+ assert.match(out,/this\.subtitulo\.setX\(BX\);this\.botonNovedades\.mostrar\(false\)/);
+ assert.match(out,/this\.esquinaMisiones\(\);if\(streamerActivo\(\)\)\{activarStreamer\(false\)/,'MISSIONS stays; streamer forced off');
+ assert.throws(()=>removeUpdatesTitleButton('changed upstream'),/upstream changed/);
 });

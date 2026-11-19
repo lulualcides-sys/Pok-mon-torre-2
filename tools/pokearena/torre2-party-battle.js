@@ -213,6 +213,18 @@ export function installPartyBattle(scene){
   return result;
  };
  scene.events.once('shutdown',()=>{scene.paso=nativeStep});
+ // When the round timer runs out the native client starts a NEW round
+ // (empezarRonda). The 3-switch limit is per round: without this reset a
+ // player who already switched 3 times could never pick a Pokémon again.
+ const nativeRound=scene.empezarRonda;
+ scene.empezarRonda=function(...args){
+  const result=nativeRound.apply(this,args);
+  this.__torre2PlayerSwitches=0;
+  this.__torre2Changing=false;
+  this.__torre2RoundResets=(this.__torre2RoundResets||0)+1;
+  return result;
+ };
+ scene.events.once('shutdown',()=>{scene.empezarRonda=nativeRound});
  for(const [side,member]of [[0,party.friend[party.playerIndex]],
                             [1,party.foes[party.enemyIndex]]]){
   if(member&&member.hp>0)actors[side].hp=Math.max(1,
