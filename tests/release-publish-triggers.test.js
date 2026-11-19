@@ -23,7 +23,9 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   // Reviewed: identical to the built module plus playerSpriteId (Red/Leaf).
   'tools/pokearena/torre2-frlg-npc.js',
   // Reviewed: identical to the built module, restyled with the native kit.
-  'tools/pokearena/torre2-battle-report.js'
+  'tools/pokearena/torre2-battle-report.js',
+  // Reviewed NEW module (not in the audited build): legacy, rewards, ranking.
+  'tools/pokearena/torre2-legacy.js'
  ],'Any changed or added release overlay must be reviewed explicitly');
  const pull=workflow.slice(workflow.indexOf('  pull_request:'),workflow.indexOf('  push:'));
  const push=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('  workflow_dispatch:'));
