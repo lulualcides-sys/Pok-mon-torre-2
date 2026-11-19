@@ -282,12 +282,20 @@ create(){
   }
   if(!state)return this.starterSelection();
   this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
+  if(this.__torre2ShowEvolution){
+   const list=this.__torre2ShowEvolution;this.__torre2ShowEvolution=null;
+   this.evolutionScene(list);
+  }
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
    // Offer choices only AFTER the battle report has been acknowledged.
    // The save remains pending on reload if the player leaves meanwhile.
    panel.button.on('pointerdown',()=>{
-    if(this.scene.isActive())this.promptPendingEeveeEvolution(readCampaign());
+    if(!this.scene.isActive())return;
+    // Evolutions from this battle get their own cutscene, then Eevee's choice.
+    this.evolutionScene(battleReport.evolutions,()=>{
+     if(this.scene.isActive())this.promptPendingEeveeEvolution(readCampaign());
+    });
    });
   }
  }
@@ -340,63 +348,58 @@ create(){
  }
  professorOakIntro(){
   // Full-body FRLG lecture portrait (not the overworld NPC): original crisp
-  // pixels, on a light teal presentation stage with a dialogue box.
+  // pixels, on a native-kit stage with a dialogue box.
   // The starter and save are created only after all four dialogue pages.
+  this.backdrop();
+  this.screenBanner(20,320,'Pokémon Torre 2 · Kanto','dex');
   const g=this.add.graphics().setDepth(1);
-  g.fillStyle(0xf0f3e8).fillRect(0,0,640,360);
-  g.fillStyle(0xe2eee9).fillRect(0,0,640,156);
-  g.fillStyle(0xc9e6e0).fillRect(0,156,640,24);
-  g.fillStyle(0xa3d9d1).fillRect(0,180,640,34);
-  g.fillStyle(0x5da9a6).fillRect(0,214,640,36);
-  g.fillStyle(0x2a8889).fillRect(0,250,640,110);
-  for(let x=0;x<640;x+=64){
-   g.fillStyle(0xffffff,.1).fillRect(x+6,192,33,3);
-  }
-  const hasPlatform=this.textures.exists('frlg-oak-intro-platform');
-  if(hasPlatform){
-   const platform=this.add.image(320,237,'frlg-oak-intro-platform').setDepth(1.5);
-   platform.setScale(Math.min(2.6,190/platform.width,62/platform.height));
-   if(typeof Phaser!=='undefined')
-    platform.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  }else{
-   g.fillStyle(0xb9dfbd).fillEllipse(320,240,202,45);
-   g.lineStyle(3,0x5bafab).strokeEllipse(320,240,202,45);
-  }
+  // Soft lab stage: light gradient, glow and floor band behind Oak.
+  const C3=Phaser.Display.Color;
+  nativeRect(g,8,40,624,214,MENU_UI.contorno,9);
+  for(let i=0;i<210;i++){const c=C3.Interpolate.ColorWithColor(C3.ValueToColor(0xe9f4ef),C3.ValueToColor(0x8fcfc6),100,Math.round(i/209*100));
+   g.fillStyle(C3.GetColor(c.r,c.g,c.b),1).fillRect(11,42+i,618,1);}
+  g.fillStyle(0xffffff,.35).fillCircle(320,150,86);g.fillStyle(0xffffff,.25).fillCircle(320,150,60);
+  g.fillStyle(0x2a8889,.25).fillRect(11,214,618,38);
+  nativeAro(g,7,39,626,216,MENU_UI.panelBorde,8);
+  // Round lab platform under Oak (drawn: the FRLG platform art is all backdrop colour).
+  g.fillStyle(0x1f6f72,.9).fillEllipse(320,236,214,46);
+  g.fillStyle(0x5bafab,1).fillEllipse(320,232,204,38);
+  g.fillStyle(0xb9dfd2,1).fillEllipse(320,229,176,26);
+  g.lineStyle(2,0xffffff,.6).strokeEllipse(320,229,176,26);
   if(this.textures.exists('frlg-oak-intro-oak')){
-   const oak=this.add.image(320,238,'frlg-oak-intro-oak')
+   const oak=this.add.image(320,232,this.keyedTexture('frlg-oak-intro-oak'))
     .setOrigin(.5,1).setDepth(2);
-   oak.setScale(Math.min(2.6,126/oak.width,174/oak.height));
+   oak.setScale(Math.min(2.6,126/oak.width,170/oak.height));
    if(typeof Phaser!=='undefined')
     oak.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
    oak.setData('torre2-professor-oak-lecture',true);
   }else{
-   const npc=addFireRedNPC(this,'oak',320,240,{scale:4.9,depth:2});
+   const npc=addFireRedNPC(this,'oak',320,234,{scale:4.9,depth:2});
    npc?.setData('torre2-professor-oak-lecture-fallback',true);
   }
-  text(this,320,23,'POKÉMON TORRE 2 · KANTO',{
-   fontSize:'19px',fontStyle:'bold',color:'#153a4f',
-   stroke:'#e0efe8',strokeThickness:2
-  }).setOrigin(.5).setDepth(3);
-  g.fillStyle(0x153b58).fillRect(22,266,596,84);
-  g.fillStyle(0xfff9e5).fillRect(26,270,588,76);
-  g.fillStyle(0x264363).fillRect(29,273,582,70);
-  g.fillStyle(0xe5f3fa).fillRect(32,276,576,64);
+  let player=null;try{player=localStorage.getItem('torre2-trainer-name')}catch{}
   const dialogue=[
-   'Olá! Bem-vindo ao mundo dos Pokémon!',
+   'Olá'+(player?', '+player:'')+'! Bem-vindo ao mundo dos Pokémon!',
    'Sou o Professor Oak. Estudo as criaturas que vivem por toda Kanto.',
    'Você conhecerá treinadores, rotas e os oito líderes de ginásio.',
    'Sua jornada começa agora. Escolha um Pokémon para ser seu parceiro!'
   ];
-  text(this,48,281,'PROF. OAK',{
-   fontSize:'12px',fontStyle:'bold',color:'#1b3d65'
-  }).setDepth(4).setData('torre2-oak-dialogue',true);
+  // Native dialogue box with the speaker tag and page dots.
+  const box=this.add.graphics().setDepth(3);
+  nativeMarco(box,14,262,612,90,'panel',{borde:MENU_UI.panelLuz});
+  nativeRect(box,28,254,96,18,MENU_UI.oro,5);
+  this.uiLabel(76,263,'Prof. Oak',8,MENU_UI.textoOscuro,[.5,.5],4).setData('torre2-oak-dialogue',true);
   let index=0;
-  const message=text(this,48,302,dialogue[index],{
-   fontSize:'13px',color:'#15243c',wordWrap:{width:472}
-  }).setDepth(4);
-  this.button(539,328,120,26,'CONTINUAR',()=>{
+  const message=textoMenu(this,36,286,dialogue[index],{tam:10,color:'#ffffff',borde:3,
+   colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(0,0).setDepth(4);
+  message.setWordWrapWidth?.(440);
+  const dots=this.add.graphics().setDepth(4);
+  const paintDots=()=>{dots.clear();for(let i=0;i<dialogue.length;i++)
+   nativeRect(dots,40+i*14,334,9,9,i<=index?MENU_UI.oro:MENU_UI.apagado,3);};
+  paintDots();
+  this.button(548,328,120,26,'CONTINUAR ▶',()=>{
    index++;
-   if(index<dialogue.length){message.setText(dialogue[index]);return;}
+   if(index<dialogue.length){message.setText(dialogue[index]);paintDots();return;}
    this.__torre2OakIntroSeen=true;
    this.children.removeAll(true);
    this.starterSelection();
@@ -404,19 +407,38 @@ create(){
  }
  starterSelection(){
   if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
-  text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
-  text(this,ANCHO/2,101,'Escolha o companheiro que Oak entregará para sua jornada.',statusStyle).setOrigin(.5);
+  this.backdrop();
+  this.screenBanner(20,330,'Escolha seu primeiro Pokémon','team');
+  this.uiLabel(ANCHO/2,46,'O companheiro que o Professor Oak entrega para a sua jornada',8,MENU_UI.suave,[.5,.5]);
   // A blocked first write must not crash Phaser or leave a phantom journey.
   // Keep the three native choices available for retry when storage returns.
   const saveError=text(this,ANCHO/2,326,'NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE',{
    fontSize:'11px',color:'#ff9d9d'
-  }).setOrigin(.5).setVisible(false).setData('torre2-starter-save-error',true);
+  }).setOrigin(.5).setVisible(false).setData('torre2-starter-save-error',true).setDepth(9);
+  const blurbs={bulbasaur:'Resistente e versátil',charmander:'Ataque forte e veloz',squirtle:'Defesa sólida'};
   STARTERS.forEach((id,i)=>{
-   const x=135+i*185;
-   const key='torre2-portrait-'+['0001','0004','0007'][i];
-   if(this.textures.exists(key))this.add.image(x,131,key)
-    .setDisplaySize(36,36).setDepth(4);
-   this.button(x,180,166,58,id.toUpperCase(),()=>{
+   const x=125+i*195,y=58;
+   let types=[];try{types=buscar(id).def.tipos||[]}catch{}
+   const col=TIPOS[types[0]]??0x5f86bd;
+   const g=this.add.graphics().setDepth(3);
+   nativeRect(g,x-88,y,176,220,MENU_UI.contorno,9);nativeRect(g,x-86,y+2,172,216,col,8,.9);
+   nativeRect(g,x-83,y+5,166,210,0x0f2352,7);
+   // Type-coloured platform; the Pokémon stands on it (animated, like in battle).
+   const lite=Phaser.Display.Color.ValueToColor(col).lighten(18).color;
+   g.fillStyle(0xffffff,.06).fillCircle(x,y+70,46);
+   g.fillStyle(0x061433,.9).fillEllipse(x,y+118,128,30);
+   g.fillStyle(col,1).fillEllipse(x,y+114,120,26);
+   g.fillStyle(lite,1).fillEllipse(x,y+112,100,18);
+   if(!this.pokemonIdleSprite(id,x,y+114,96,5)){
+    const key='torre2-portrait-'+['0001','0004','0007'][i];
+    if(this.textures.exists(key))this.add.image(x,y+80,key).setDisplaySize(48,48).setDepth(5);
+   }
+   const nice=id[0].toUpperCase()+id.slice(1);
+   this.uiLabel(x,y+142,nice,13,MENU_UI.amarillo,[.5,.5]);
+   types.slice(0,2).forEach((t,k)=>{const n=Math.min(2,types.length),px=x-(n*56-4)/2+k*56;
+    pastillaTipo(g,px,y+154,t,52,13);this.uiLabel(px+26,y+161,t[0]+t.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],7)});
+   this.uiLabel(x,y+180,blurbs[id]||'',8,MENU_UI.suave,[.5,.5]);
+   this.button(x,y+200,150,28,'ESCOLHER',()=>{
     try{
      saveCampaign(createPlayerCampaign(id));
     }catch(error){
@@ -425,10 +447,27 @@ create(){
      return;
     }
     this.scene.restart();
-   },true).setData('torre2-starter-select',id);
+   },true,10).setData('torre2-starter-select',id);
   });
-  text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
-  text(this,ANCHO/2,294,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',statusStyle).setOrigin(.5);
+  this.uiLabel(ANCHO/2,294,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',7,MENU_UI.tenue,[.5,.5]);
+  this.uiLabel(ANCHO/2,308,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',7,MENU_UI.tenue,[.5,.5]);
+ }
+ // FireRed intro art ships with an opaque backdrop colour: key it out once
+ // (the corner pixel's colour becomes transparent) so it sits on our stage.
+ keyedTexture(key){
+  const out=key+'-keyed';
+  if(this.textures.exists(out))return out;
+  try{
+   const src=this.textures.get(key).getSourceImage();
+   const cv=document.createElement('canvas');cv.width=src.width;cv.height=src.height;
+   const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0);
+   const img=cx.getImageData(0,0,cv.width,cv.height),d=img.data;
+   const r0=d[0],g0=d[1],b0=d[2];
+   for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-r0)<6&&Math.abs(d[i+1]-g0)<6&&Math.abs(d[i+2]-b0)<6)d[i+3]=0;
+   cx.putImageData(img,0,0);
+   this.textures.addCanvas(out,cv);
+   return out;
+  }catch{return key}
  }
  backdrop(){
   // Native checkered menu background of the base client.
@@ -522,7 +561,7 @@ create(){
  }
  // Animated full-body PMD Idle sprite (the same art as in battle), facing
  // the player. Loaded on demand and released when the scene shuts down.
- pokemonIdleSprite(id,x,y,maxSize=88,depth=6){
+ pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null){
   const dex=portraitId({id});
   const idle=this.registry.get('manifiesto')?.[dex]?.anims?.Idle;
   if(!idle)return null;
@@ -550,8 +589,9 @@ create(){
     }catch{}
     feet.set(key,(row+1)/idle.fh);
    }
-   this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
+   const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
+   onReady?.(sprite);
   };
   if(this.textures.exists(key))show();
   else{
@@ -898,6 +938,63 @@ create(){
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   return path;
  }
+ // Evolution cutscene, FireRed style: "What? X is evolving!", the two
+ // forms flashing faster and faster, then "Congratulations!". Pure
+ // presentation: the evolution was already resolved and saved.
+ evolutionScene(list,onDone=null){
+  const queue=(list||[]).filter(e=>e?.from&&e?.to&&e.from!==e.to);
+  if(!queue.length){onDone?.();return}
+  const {from,to}=queue.shift();
+  const nice=id=>String(id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  const objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const D=9500;
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive().setData('torre2-evolution-scene',true));
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.92).fillRect(0,0,640,360);
+  nativeMarco(g,110,40,420,280,'panel',{borde:MENU_UI.oro});
+  g.fillStyle(0xffffff,.05).fillCircle(320,150,90);g.fillStyle(0xffffff,.05).fillCircle(320,150,62);
+  g.fillStyle(0x061433,.9).fillEllipse(320,206,150,30);g.fillStyle(MENU_UI.oro,1).fillEllipse(320,202,138,22);
+  g.fillStyle(MENU_UI.oroLuz,.7).fillEllipse(320,200,100,10);
+  const line=keep(this.uiLabel(320,244,'O quê? '+nice(from)+' está evoluindo!',11,'#ffffff',[.5,.5],D+4));
+  let before=null,after=null,done=false;
+  const glow=keep(this.add.graphics().setDepth(D+2));
+  const ready=()=>{
+   if(!before||!after)return;
+   after.setVisible(false);
+   let t=0,flip=false,period=420;
+   const tick=()=>{
+    if(!before.active||!after.active)return;
+    flip=!flip;before.setVisible(!flip);after.setVisible(flip);
+    before.setTintFill(0xffffff);after.setTintFill(0xffffff);
+    t+=period;period=Math.max(60,Math.round(period*.78));
+    if(t<2600)this.time.delayedCall(period,tick);
+    else finish();
+   };
+   this.time.delayedCall(500,tick);
+  };
+  const finish=()=>{
+   if(done)return;done=true;
+   before.setVisible(false);after.setVisible(true).clearTint();
+   glow.fillStyle(0xffffff,.22).fillCircle(320,150,70);
+   this.tweens.add({targets:glow,alpha:0,duration:700});
+   line.setText('Parabéns! '+nice(from)+' evoluiu para '+nice(to)+'!').setColor(MENU_UI.amarillo);
+   const btn=this.button(320,288,180,28,'CONTINUAR ▶',()=>{
+    objs.forEach(o=>o.active&&o.destroy());btn.active&&btn.destroy();
+    this.children.list.filter(o=>o.getData?.('torre2-evolution-ui')).forEach(o=>o.destroy());
+    this.evolutionScene(queue,onDone);
+   },true,10).setDepth(D+6).setData('torre2-evolution-continue',true);
+   // Lift the button visuals above the cutscene too.
+   this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+5);o.setData?.('torre2-evolution-ui',true)}});
+  };
+  const fallback=this.time.delayedCall(6000,()=>{if(!before||!after){
+   // Sprites unavailable offline: still announce the evolution.
+   line.setText('Parabéns! '+nice(from)+' evoluiu para '+nice(to)+'!').setColor(MENU_UI.amarillo);
+   before=before||{active:true,setVisible(){return this},setTintFill(){return this},clearTint(){return this}};
+   after=after||before;finish();}});
+  keep(fallback);
+  keep(this.pokemonIdleSprite(from,320,203,120,D+3,sp=>{if(done){sp.destroy();return}before=keep(sp);ready()}));
+  keep(this.pokemonIdleSprite(to,320,203,120,D+3,sp=>{if(done){sp.destroy();return}after=keep(sp);sp.setVisible(false);ready()}));
+ }
  // Post-battle evolution: one random legal Kanto form, chosen exactly once
  // per Eevee UID through the existing primary/backup atomic save path.
  promptPendingEeveeEvolution(state){
@@ -910,6 +1007,8 @@ create(){
    if(!current)return false;
    const result=chooseEeveeEvolution(current,pending.uid,'random');
    if(!result.ok)return false;
+   // Show Eevee's evolution cutscene once the scene has restarted.
+   this.__torre2ShowEvolution=[{from:result.from,to:result.to}];
    // Do not restart during Scene.create; defer to the next Phaser frame.
    this.time.delayedCall(0,()=>{if(this.scene.isActive())this.scene.restart()});
    return true;
@@ -1711,25 +1810,51 @@ create(){
  }
  martScreen(state,page=0,errorText=''){
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(9,50,622,236,0x478dbb);
-  text(this,320,23,'POKÉ MART · $'+state.money,{
-   ...titleStyle,fontSize:'19px'}).setOrigin(.5);
+  this.screenBanner(20,240,'POKÉ MART','shop');
+  const top=this.add.graphics().setDepth(4);
+  nativeMarco(top,512,8,118,28,'panel',{borde:MENU_UI.oro});
+  originalBallSprite(this,530,22,'pokeball',14,6);
+  this.uiLabel(620,22,'₽ '+Number(state.money||0).toLocaleString('pt-BR'),10,MENU_UI.amarillo,[1,.5]);
+  // Left: the FireRed clerk behind the counter, with a greeting.
+  this.uiSection(8,40,180,250,0x478dbb);
+  const shop=this.add.graphics().setDepth(3);
+  nativeRect(shop,16,48,164,46,MENU_UI.contorno,7);nativeRect(shop,18,50,160,42,0xf4f1e6,6);
+  shop.fillStyle(0xf4f1e6,1).fillTriangle(86,92,100,92,93,102);
+  // Dark text on the light speech bubble: no outline (it smudged the letters).
+  textoMenu(this,98,64,'Bem-vindo!',{tam:9,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(4);
+  textoMenu(this,98,79,'Em que posso ajudar?',{tam:7,color:'#36507a',borde:0,literal:true}).setOrigin(.5).setDepth(4);
+  shop.fillStyle(0x7fb2e8,.35).fillRect(16,110,164,92);
+  for(let sx=22;sx<176;sx+=26)shop.fillStyle(0x5b8bc8,.55).fillRect(sx,116,20,30);
+  this.npcSprite('clerk',98,214,3.2,5);
+  const counter=this.add.graphics().setDepth(6);
+  nativeRect(counter,16,196,164,30,0x1f3f7a,5);nativeRect(counter,16,196,164,8,0x6c9fe8,4);
+  counter.fillStyle(0xffffff,.25).fillRect(20,197,156,1);
+  pixelIcon(this,{add:o=>o.setDepth(7)},'shop',98,252,2);
+  this.uiLabel(98,276,'Poké Mart de '+(STAGES[state.stage]?.city||'Kanto'),7,MENU_UI.suave,[.5,.5],7);
+  // Right: six items per page as cards (original FRLG icon at native size).
+  this.uiSection(194,40,438,250,0x478dbb);
   const items=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
   const count=Math.max(1,Math.ceil(items.length/6));
   const pageNum=Math.min(count-1,Math.max(0,page));
+  const inv=state.inventory||{};
+  const cards=this.add.graphics().setDepth(3);
   items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
-   const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
-   this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
-   const art=this.add.image(x-118,y+6,shopItemSprite(this,item));
+   const x=203+(i%3)*143,y=49+Math.floor(i/3)*120;
+   const afford=state.money>=item.price;
+   nativeRect(cards,x,y,138,114,afford?MENU_UI.panelBorde:0x5a3a52,7);
+   nativeRect(cards,x+2,y+2,134,110,0x0a1a46,6);
+   nativeRect(cards,x+50,y+8,38,38,MENU_UI.contorno,6);nativeRect(cards,x+52,y+10,34,34,0x1d3c7a,5);
+   const art=this.add.image(x+69,y+27,shopItemSprite(this,item));
    // Original FRLG indexed icon at its native pixel resolution (no serrated
    // fractional upscaling), with GBA palette-zero transparency preserved.
    const w=art.frame?.width||24,h=art.frame?.height||24;
    art.setDisplaySize(Math.min(28,w),Math.min(28,h)).setDepth(5)
     .setData('torre2-mart-item-sprite',item.id);
-   text(this,x-98,y-9,item.name,{fontSize:'11px',color:C.white});
-   text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
-    fontSize:'10px',color:C.muted});
-   this.button(x+100,y+6,70,30,'COMPRAR',()=>{
+   estrechar(this.uiLabel(x+69,y+56,item.name,8,'#ffffff',[.5,.5]),128);
+   this.uiLabel(x+69,y+70,'₽ '+Number(item.price).toLocaleString('pt-BR'),9,afford?MENU_UI.amarillo:'#ff9daa',[.5,.5]);
+   const owned=item.kind==='tm'?(inv.tms||[]).includes(item.id)?'Na bolsa':'TM':'Na bolsa: ×'+(inv[item.id]||0);
+   this.uiLabel(x+69,y+83,owned,7,MENU_UI.tenue,[.5,.5]);
+   this.button(x+69,y+100,112,20,'COMPRAR',()=>{
     try{
      purchaseItem(state,item.id);
      this.martScreen(state,pageNum);
@@ -1740,14 +1865,14 @@ create(){
      this.martScreen(state,pageNum,
       'COMPRA NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   },state.money>=item.price).setData('torre2-mart-buy',item.id);
+   },afford,8).setData('torre2-mart-buy',item.id);
   });
-  this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
-  this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
-  this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
-  const notice=text(this,320,281,errorText||state.lastMessage||'Compre Pokébolas, poções e TM',{
+  this.button(140,320,177,30,'◀ MAPA',()=>this.scene.restart());
+  this.button(346,320,205,30,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
+  this.button(543,320,176,30,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
+  const notice=text(this,412,298,errorText||state.lastMessage||'Compre Poké Balls, poções e TMs',{
    fontSize:'10px',color:errorText?'#ff9d9d':C.gold,
-   wordWrap:{width:560}}).setOrigin(.5);
+   wordWrap:{width:420}}).setOrigin(.5).setDepth(7);
   if(errorText)notice.setData('torre2-mart-save-error',true);
  }
  // --- Native-kit helpers shared by EQUIPE / BOLSA / CENTRO (presentation only).
