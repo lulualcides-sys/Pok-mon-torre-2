@@ -1,9 +1,12 @@
 name: Campaign scenic cards — isolated visual regression
 on:
   pull_request:
+    # Guards only the scenic-v2 atlas lane (premium-art.js + scenic assets).
+    # Since the owner-approved campaign redesign (#649–#653) the trainer
+    # cards no longer use that atlas, so card/screen PRs do not trigger it;
+    # any change to the atlas itself still does. Owner authorized 2026-11-19.
     paths:
       - 'tools/pokearena/torre2-premium-art.js'
-      - 'tools/pokearena/torre2-trainer-cards.js'
       - 'reference-assets/scenic-v2/**'
       - 'tests/scenic-atlas*'
       - 'tools/dev/scenic-v2-review.cjs'
