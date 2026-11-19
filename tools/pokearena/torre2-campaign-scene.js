@@ -570,7 +570,7 @@ create(){
  }
  // Animated full-body PMD Idle sprite (the same art as in battle), facing
  // the player. Loaded on demand and released when the scene shuts down.
- pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null){
+ pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null,fitContent=false){
   const dex=portraitId({id});
   const idle=this.registry.get('manifiesto')?.[dex]?.anims?.Idle;
   if(!idle)return null;
@@ -582,7 +582,7 @@ create(){
    const n=Math.max(1,idle.durations?.length||1);
    if(!this.anims.exists(anim))this.anims.create({key:anim,repeat:-1,
     frames:Array.from({length:n},(_,i)=>({key,frame:i,duration:Math.round((idle.durations?.[i]||8)*1000/60)}))});
-   const s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
+   let s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
    // y is the GROUND line: measure the lowest visible pixel row of the first
    // frame (the feet) and anchor there, so the Pokémon stands exactly on the
    // same line as the trainer instead of floating or sinking.
@@ -595,9 +595,15 @@ create(){
      const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0,idle.fw,idle.fh,0,0,idle.fw,idle.fh);
      const data=cx.getImageData(0,0,idle.fw,idle.fh).data;
      find:for(let r=idle.fh-1;r>=0;r--)for(let c=0;c<idle.fw;c++)if(data[(r*idle.fw+c)*4+3]>40){row=r;break find}
+     // Visible bounding box of the frame, to size small windows by content.
+     let x0=idle.fw,x1=-1,y0=idle.fh;
+     for(let r=0;r<=row;r++)for(let c=0;c<idle.fw;c++)if(data[(r*idle.fw+c)*4+3]>40){if(c<x0)x0=c;if(c>x1)x1=c;if(r<y0)y0=r}
+     (this.__torre2Box??=new Map()).set(key,{w:Math.max(1,x1-x0+1),h:Math.max(1,row-y0+1)});
     }catch{}
     feet.set(key,(row+1)/idle.fh);
    }
+   const box=this.__torre2Box?.get(key);
+   if(fitContent&&box)s=Math.min(3,maxSize/Math.max(box.w,box.h));
    const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
    onReady?.(sprite);
@@ -2027,7 +2033,7 @@ create(){
   g.fillStyle(0x061433,.35).fillRect(x+2,y+Math.round(size*.62),size-4,Math.round(size*.34));
   g.fillStyle(0xffffff,.28).fillRect(x+4,y+2,size-8,1);
   g.fillStyle(0x000000,.25).fillEllipse(x+size/2,y+size-8,size*.6,6);
-  if(!this.pokemonIdleSprite(member.id,x+size/2,y+size-7,size-6,6))
+  if(!this.pokemonIdleSprite(member.id,x+size/2,y+size-7,size-12,6,null,true))
    this.drawPortrait(member,x+size/2,y+size/2,size-6,6);
  }
  teamScreen(state){
@@ -2350,7 +2356,7 @@ create(){
   };
   // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
   const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.3).fillEllipse(66,175,50,8);
-  if(!this.pokemonIdleSprite(member.id,66,176,74,18)){
+  if(!this.pokemonIdleSprite(member.id,66,176,64,18,null,true)){
    if(this.textures.exists(key))portrait();
    else{
     this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
