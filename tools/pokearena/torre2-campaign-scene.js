@@ -35,7 +35,7 @@ import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,gymInterior,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -591,14 +591,12 @@ create(){
   this.screenBanner(20,300,state.stage<8?'Desafio do ginásio':'Desafio da Liga','badges');
   this.uiSection(8,40,624,262);
   // Left: the gym itself, with the leader and the leader's main Pokémon.
-  // Left: the gym's own FireRed interior (owner approved), with the leader and
-  // the main Pokémon centred in the room, feet on one ground line, side by side.
-  const stageLayer={add:o=>o.setDepth?.(2)};
-  const room=gymInterior(this,stageLayer,18,50,330,206,state.stage,0);
-  if(!room)ownerArt(this,stageLayer,'city-'+(state.stage>=8?'indigo':String(spec.city||'').toLowerCase()),18,50,330,206);
+  // Left: the leader's room (pixel-art hall in the gym type colour), with the
+  // leader and the main Pokémon centred, feet on one ground line, side by side.
+  this.leaderRoom(18,50,330,206,state.stage,spec.type||(state.stage>=8?'DRAGON':'NORMAL'));
   const frame=this.add.graphics().setDepth(3);
   nativeAro(frame,17,49,332,208,ready?MENU_UI.oro:MENU_UI.panelBorde,6);
-  const cx=183,ground=198;
+  const cx=183,ground=206;
   frame.fillStyle(0x000000,.28).fillEllipse(cx-26,ground,50,11).fillEllipse(cx+36,ground,58,12);
   const leaderKind=leaderSpriteKind(state.stage);
   this.npcSprite(spriteIdForTrainer(leaderKind),cx-26,ground+2,3.4,5);
@@ -1126,6 +1124,48 @@ create(){
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  // VS Seeker on every previously cleared Kanto map without changing progress.
+ // The leader's own room: simple pixel-art gym hall in the gym type colour —
+ // panelled wall with banners and the gym badge, tiled battle-court floor.
+ leaderRoom(x,y,w,h,stage,type){
+  const C3=Phaser.Display.Color,base=C3.ValueToColor(TIPOS[type]??0x5f86bd);
+  const shade=n=>base.clone().darken(n).color,light=n=>base.clone().lighten(n).color;
+  const g=this.add.graphics().setDepth(2);
+  const wallH=Math.round(h*.46),fy=y+wallH;
+  // Wall: dark panels, gold trim and baseboard.
+  g.fillStyle(shade(38),1).fillRect(x,y,w,wallH);
+  for(let px=x+6;px<x+w-6;px+=30){g.fillStyle(shade(30),1).fillRect(px,y+14,24,wallH-26);
+   g.fillStyle(shade(22),1).fillRect(px,y+14,24,2);}
+  g.fillStyle(MENU_UI.oro,1).fillRect(x,y+8,w,3);g.fillStyle(MENU_UI.oroLuz,1).fillRect(x,y+8,w,1);
+  g.fillStyle(shade(55),1).fillRect(x,fy-8,w,8);g.fillStyle(shade(20),1).fillRect(x,fy-8,w,1);
+  // Two hanging banners in the type colour.
+  for(const bx of [x+34,x+w-34]){
+   g.fillStyle(MENU_UI.oroBorde,1).fillRect(bx-14,y+12,28,3);
+   g.fillStyle(base.color,1).fillRect(bx-11,y+15,22,wallH-40);
+   g.fillTriangle(bx-11,y+wallH-25,bx+11,y+wallH-25,bx,y+wallH-14);
+   g.fillStyle(light(25),1).fillRect(bx-11,y+15,3,wallH-40);
+   g.fillStyle(0xffffff,.9).fillCircle(bx,y+34,6);g.fillStyle(base.color,1).fillCircle(bx,y+34,3);
+  }
+  // Badge medallion in the middle of the wall.
+  const mx=x+w/2,my=y+Math.round(wallH*.48);
+  g.fillStyle(MENU_UI.contorno,1).fillCircle(mx,my,19);g.fillStyle(MENU_UI.oroBorde,1).fillCircle(mx,my,17);
+  g.fillStyle(MENU_UI.oro,1).fillCircle(mx,my,15);g.fillStyle(shade(40),1).fillCircle(mx,my,12);
+  if(stage<8&&this.textures.exists('torre2-frlg-badges'))
+   this.add.image(mx,my,'torre2-frlg-badges',stage).setScale(1.4).setDepth(2.1);
+  else originalBallSprite(this,mx,my,'pokeball',18,2.1);
+  // Floor: light tiles with a battle-court outline and centre circle.
+  // Floor colour: the type colour softened towards warm stone.
+  const stone=C3.ValueToColor(0xd9d2c3),mix=t=>{const c=C3.Interpolate.ColorWithColor(base,stone,100,t);return C3.GetColor(c.r,c.g,c.b)};
+  g.fillStyle(mix(62),1).fillRect(x,fy,w,h-wallH);
+  for(let ty=fy;ty<y+h;ty+=14)for(let tx=x+((ty-fy)/14%2?7:0);tx<x+w;tx+=14)
+   g.fillStyle(mix(50),1).fillRect(tx,ty,7,7);
+  g.fillStyle(0x000000,.18).fillRect(x,fy,w,5);
+  g.lineStyle(2,0xffffff,.55).strokeRect(x+16,fy+10,w-32,h-wallH-18);
+  g.lineBetween(x+w/2,fy+10,x+w/2,y+h-8);
+  g.strokeEllipse(x+w/2,fy+(h-wallH)/2+1,70,26);
+  // Soft spotlight where the leader and the Pokémon stand.
+  g.fillStyle(0xffffff,.10).fillEllipse(x+w/2,fy+(h-wallH)*.62,170,46);
+  return g;
+ }
  // Neutral stage with one round battle-style platform; returns the ground y.
  stagePlatform(x,y,w,h,tint=0x3f7ad8){
   const fr=this.add.graphics().setDepth(3);
