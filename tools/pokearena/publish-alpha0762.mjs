@@ -7,7 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {removeNewsTitleOption} from './torre2-title-pokedex-fast.mjs';
+import {removeNewsTitleOption,removeUpdatesTitleButton} from './torre2-title-pokedex-fast.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
 import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.mjs';
@@ -55,7 +55,11 @@ const overlayNames=[
  // Player character (Red/Leaf) chosen on the trainer-name screen.
  ['tools/pokearena/torre2-frlg-npc.js','torre2/frlg-npc.js'],
  // Post-battle report restyled with the native kit (texts and hit zones unchanged).
- ['tools/pokearena/torre2-battle-report.js','torre2/battle-report.js']
+ ['tools/pokearena/torre2-battle-report.js','torre2/battle-report.js'],
+ // Campaign battles only: 3-switch limit resets with each new round (time-out).
+ ['tools/pokearena/torre2-party-battle.js','torre2/party-battle.js'],
+ // Campaign-only cooldown table (Arena/VS kits untouched).
+ ['tools/pokearena/torre2-move-pool.js','torre2/move-pool.js']
 ];
 // New Torre 2 modules (not in the audited build): written next to the
 // overlays; refused if the audited build already has a file with that name.
@@ -89,6 +93,12 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
    content.includes('scenicBackdrop(scene,layer,state.stage)')&&
    content.includes("setData('torre2-trainer-card-index',entry.index)"),
    'Safe campaign route/gym card partition or approved touch hitboxes absent');
+ if(target==='torre2/party-battle.js')
+  must(content.includes('scene.__torre2PlayerSwitchLimit=3;')&&content.includes('this.__torre2PlayerSwitches=0;'),
+   'Party battle switch limit or per-round reset missing');
+ if(target==='torre2/move-pool.js')
+  must(content.includes('export function balanceCampaignQuickCooldown(move)')&&content.includes("'cross-poison':5"),
+   'Campaign-only cooldown table missing');
  if(target==='torre2/arena-move-policy.js'){
   for(const [before,after] of [
    ["from './torre2-frlg-learnsets.js'","from './frlg-learnsets.js'"],
@@ -230,8 +240,10 @@ const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 // Offline game: the mandatory online-account screen becomes a trainer-name screen.
 const redPatched=patchAccountRequirement(await read(path.join(original,'red.js')));
 const accountPatched=patchAccountScene(await read(path.join(original,'escenas/cuenta.js')));
-const title=removeNewsTitleOption(originalTitle);
+const title=removeUpdatesTitleButton(removeNewsTitleOption(originalTitle));
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
+must(!title.includes('this.scene.start("novedades")'),'UPDATES/News shortcut remains in title');
+must(!title.includes('this.esquinaStreamer();'),'STREAMER MODE toggle remains in title');
 
 // Update exclusively missing artist-sourced Magmortar combat animations.
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.

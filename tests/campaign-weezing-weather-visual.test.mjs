@@ -10,7 +10,9 @@ test('both campaign abilities are explicitly 4s; native attacks are copied',()=>
  const src=readFileSync('tools/pokearena/torre2-move-pool.js','utf8');
  assert.match(src,/'seismic-toss':4,/);
  assert.match(src,/'egg-bomb':4,/);
- assert.match(src,/gust:0\.7/);
+ assert.match(src,/gust:1\.2,/);
+ assert.match(src,/hypnosis:3\.5,/);
+ assert.match(src,/'cross-poison':5\n/);
  assert.match(src,/return Number\.isFinite\(cd\)\?\{\.\.\.move,cd\}:move;/,
   'Campaign must create a balanced copy instead of mutating native moves');
 });

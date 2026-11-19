@@ -24,6 +24,10 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-frlg-npc.js',
   // Reviewed: identical to the built module, restyled with the native kit.
   'tools/pokearena/torre2-battle-report.js',
+  // Reviewed 2026-11-19: byte-identical to the pinned build module before
+  // the per-round switch reset / campaign-only cooldown table.
+  'tools/pokearena/torre2-party-battle.js',
+  'tools/pokearena/torre2-move-pool.js',
   // Reviewed NEW module (not in the audited build): legacy, rewards, ranking.
   'tools/pokearena/torre2-legacy.js'
  ],'Any changed or added release overlay must be reviewed explicitly');

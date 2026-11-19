@@ -1169,7 +1169,10 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  hex:6.5,
  discharge:4,
  thunderbolt:2,
- gust:0.7
+ // Owner request 2026-11-19, campaign only (Arena/VS keep native values).
+ gust:1.2,
+ hypnosis:3.5,
+ 'cross-poison':5
 });
 export function balanceCampaignQuickCooldown(move){
  // Lv8 practice ULTs keep their >=8s cooldown. Only Gust/Thunderbolt
