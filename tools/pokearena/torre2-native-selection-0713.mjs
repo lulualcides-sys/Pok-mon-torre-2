@@ -11,7 +11,8 @@ const PRELOADED=BASE.replace('create(){',
  'crearAnimsPMD(this,this._torre2InitialSelectionForms,["Idle"]);';
 
 // 0.76.2: same preload over the native grid's visible rows.
-const PRELOADED_0762=PRELOADED.replace('ROSTER.slice(0,8)','ROSTER.slice(0,POR_FILA*FILAS)');
+const PRELOADED_0762=PRELOADED
+ .replace('this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(','this._torre2InitialSelectionForms=soloFormas(m,ids);registrar(this,Object.keys(this._torre2InitialSelectionForms));cargarPMD(');
 const ORIGINAL='const h=p.kit[slot];const ky=';
 const GUARDED='const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=';
 export function adaptModernSelection(source,alpha){

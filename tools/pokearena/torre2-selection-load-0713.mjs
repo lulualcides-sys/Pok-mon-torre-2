@@ -37,14 +37,20 @@ export function loadNativeSelectionPage0713(source,alpha){
  if(alpha==='0.76.2'){
   if(typeof source!=='string'||source.split('torre2LoadVisiblePortraits(){').length!==2)
    throw Error('Unrecognized Alpha 0.76.2 native selection grid');
-  // Same initial Idle preload as 0.71.3 (Zubat/Golbat included), covering
-  // every card of the native grid's visible rows (POR_FILA*FILAS).
+  // Same initial Idle preload as 0.71.3: first 8 cards + Zubat/Golbat (10
+  // forms, well under the native per-scene cap POR_ESCENA=24, so native
+  // pedirBasicas() calls never evict them).
   let m=add(source,
    'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetratoA,encajarSprite,retratoA,trioMenu,pedirBasicas,formasDe}from"../sprites.js";',
-   'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetratoA,encajarSprite,retratoA,trioMenu,pedirBasicas,formasDe,cargarPMD,crearAnimsPMD,soloFormas}from"../sprites.js";');
+   'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetratoA,encajarSprite,retratoA,trioMenu,pedirBasicas,formasDe,cargarPMD,crearAnimsPMD,soloFormas,registrar}from"../sprites.js";');
   return add(m,START,START.replace('create(){',
-   'preload(){const m=this.registry.get("manifiesto"),ids=new Set(ROSTER.slice(0,POR_FILA*FILAS).map(p=>p.dex));for(const d of ["0041","0042"])if(m[d])ids.add(d);this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(this,this._torre2InitialSelectionForms,["Idle"])}create(){')+
-   'crearAnimsPMD(this,this._torre2InitialSelectionForms,["Idle"]);');
+   'preload(){const m=this.registry.get("manifiesto"),ids=new Set(ROSTER.slice(0,8).map(p=>p.dex));for(const d of ["0041","0042"])if(m[d])ids.add(d);this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(this,this._torre2InitialSelectionForms,["Idle"])}create(){')+
+   'crearAnimsPMD(this,this._torre2InitialSelectionForms,["Idle"]);')
+   // 0.76.2 releases atlases no live scene has reserved when a scene shuts
+   // down (registrar/liberar). Reserve the initial cards in preload, before
+   // the title's release runs.
+   .replace('this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(',
+    'this._torre2InitialSelectionForms=soloFormas(m,ids);registrar(this,Object.keys(this._torre2InitialSelectionForms));cargarPMD(');
  }
  if(typeof source!=='string'||!source.includes('torre2LoadPortraitPage(page){')||
   !source.includes('this.torre2PageLabel?.setText(')||

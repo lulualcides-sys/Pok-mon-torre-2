@@ -551,6 +551,12 @@ const server=http.createServer(async(req,res)=>{
     await page.screenshot({path:'test-evidence/native-training-hitbox-failure.png'}).catch(()=>{});
     throw err;
   }
+  // Sprite loading is asynchronous (0.76.2 releases menu atlases between
+  // scenes): give the native loader a bounded window before asserting.
+  await page.waitForFunction(()=>{
+    const s=window.__pt2Game.scene.getScene('seleccion');
+    return ['0001','0004','0007','0025','0041','0042'].every(d=>s.anims.exists(d+'-Idle-2'));
+  },null,{timeout:15000}).catch(()=>{});
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
