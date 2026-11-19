@@ -28,22 +28,8 @@ on:
       - 'tests/alpha0713-projectile-contact-webgl-browser.cjs'
       - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tests/trainer-card-route-gym-pages.test.js'
-  push:
-    branches: [main]
-    # Do not republish identical gameplay after docs/tests/CI-only changes.
-    # A runtime overlay change always triggers the auditable Pages pipeline.
-    paths:
-      - 'tools/pokearena/publish-hotfix-on-alpha0713.mjs'
-      - 'tools/pokearena/torre2-arena-move-policy.js'
-      - 'tools/pokearena/torre2-johto-100-species.js'
-      - 'tools/pokearena/torre2-auto-battle.js'
-      - 'tools/pokearena/torre2-wobbuffet-native.js'
-      - 'tools/pokearena/torre2-gen3-status.js'
-      - 'tools/pokearena/batch24/runtime.js'
-      - 'tools/pokearena/torre2-campaign-core.js'
-      - 'tools/pokearena/torre2-pokedex-window.mjs'
-      - 'tools/pokearena/torre2-native-arena-preview.mjs'
-      - 'tools/pokearena/torre2-trainer-cards.js'
+  # Alpha 0.76.2 is now the published release (torre2-alpha0762-publish.yml).
+  # This 0.71.3 pipeline stays as PR QA and as a MANUAL rollback (dispatch).
   workflow_dispatch:
 
 permissions:
@@ -158,7 +144,7 @@ jobs:
           retention-days: 5
 
   publish:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: qa
     runs-on: ubuntu-24.04
     timeout-minutes: 20

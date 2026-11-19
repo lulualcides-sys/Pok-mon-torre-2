@@ -1,0 +1,233 @@
+name: Torre 2 — Alpha 0.76.2 (cliente-base atualizado) — QA e publicação
+
+on:
+  pull_request:
+    # Any candidate affecting an installed release overlay must run the real
+    # approved-alpha QA, not just unit tests.
+    paths:
+      - 'tools/pokearena/publish-alpha0762.mjs'
+      - 'tools/pokearena/restore-audited-alpha0762.sh'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-auto-battle.js'
+      - 'tools/pokearena/torre2-wobbuffet-native.js'
+      - 'tools/pokearena/torre2-gen3-status.js'
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-pokedex-window.mjs'
+      - 'tools/pokearena/torre2-native-arena-preview.mjs'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+      - '.github/workflows/torre2-alpha0762-publish.yml'
+      - 'tests/alpha0762-new-species-moves-browser.cjs'
+      - 'tests/alpha0713-hotfix-navigation-browser.cjs'
+      - 'tests/arena-species-kit-policy.test.js'
+      - 'tests/scyther-scizor-bridge.test.js'
+      - 'tests/arena-native-idle-loading.test.js'
+      - 'tests/torre2-pokedex-window.test.js'
+      - 'tests/arena-scyther-visible-sprite-browser.cjs'
+      - 'tests/torre2-evolution-sprite-continuity.test.js'
+      - 'tests/alpha0713-projectile-contact-release.test.js'
+      - 'tests/alpha0713-projectile-contact-webgl-browser.cjs'
+      - 'tests/arena-johto-evolution-built.test.mjs'
+      - 'tests/trainer-card-route-gym-pages.test.js'
+  push:
+    branches: [main]
+    # Do not republish identical gameplay after docs/tests/CI-only changes.
+    # A runtime overlay change always triggers the auditable Pages pipeline.
+    paths:
+      - 'tools/pokearena/publish-alpha0762.mjs'
+      - 'tools/pokearena/restore-audited-alpha0762.sh'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-auto-battle.js'
+      - 'tools/pokearena/torre2-wobbuffet-native.js'
+      - 'tools/pokearena/torre2-gen3-status.js'
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-pokedex-window.mjs'
+      - 'tools/pokearena/torre2-native-arena-preview.mjs'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+# Audited Torre 2 build of the Alpha 0.76.2 base client (PR #647).
+env:
+  TORRE2_ALPHA0762_RUN: '44451995630'
+  TORRE2_ALPHA0762_COMMIT: '6caf5329280a351e86b33bcfa6d20db1e8b9dba1'
+  TORRE2_ALPHA0762_DIGEST: 'sha256:b2696a5f7d4366db3799311b6ad26f0499fffe39c4ac399ad2137f849c23bae7'
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install project-declared test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Recover audited 0.76.2 build from pinned Actions artifact or release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/pokearena/restore-audited-alpha0762.sh _site
+      - name: Keep the audited 0.76.2 build as a permanent release (artifact expires)
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=torre2-audited-site-alpha0762
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "release exists"; exit 0; fi
+          pkg="$RUNNER_TEMP/pkg"; mkdir -p "$pkg/site"
+          cp -a _site/. "$pkg/site/"
+          printf 'run=%s\ncommit=%s\ntorre2-alpha0762-port=%s\n' "$TORRE2_ALPHA0762_RUN" "$TORRE2_ALPHA0762_COMMIT" "$TORRE2_ALPHA0762_DIGEST" > "$pkg/MANIFEST.txt"
+          tar -czf "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz" -C "$pkg" MANIFEST.txt site
+          (cd "$RUNNER_TEMP" && sha256sum torre2-audited-site-alpha0762.tar.gz > torre2-audited-site-alpha0762.tar.gz.sha256)
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Torre 2 — build auditado da Alpha 0.76.2 (antes do overlay)" \
+            --notes "Build do Torre 2 sobre o cliente-base Alpha 0.76.2 (run $TORRE2_ALPHA0762_RUN, commit $TORRE2_ALPHA0762_COMMIT). Uso não comercial; créditos em arena2d/." \
+            "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz" "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz.sha256"
+      - name: Overlay current main gameplay and verify the 0.76.2 release tree
+        run: |
+          set -euo pipefail
+          node tools/pokearena/publish-alpha0762.mjs
+          node --input-type=module <<'VERIFY'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json'));
+          const rel=JSON.parse(fs.readFileSync('_site/RELEASE-0762.json','utf8'));
+          if(v.src!=='src-5bf1a1a788'||rel.alpha!=='0.76.2'||v.modules!==rel.modules||v.modules===rel.baseModules)
+            throw Error('Pinned 0.76.2 client not incremented');
+          const cfg=fs.readFileSync(path.join(root,v.modules,'config.js'),'utf8');
+          if(!/VERSION="0\.76\.2"/.test(cfg))throw Error('Not official Alpha 0.76.2 config.js');
+          const m=path.join(root,v.modules),s=fs.readFileSync(m+'/habilidades.js','utf8');
+          const p=fs.readFileSync(m+'/torre2/arena-move-policy.js','utf8');
+          if(!s.includes('...TORRE2_WOBBUFFET_FORMS')||
+             !p.includes("'discharge':3")||!p.includes("'psybeam':3.5")||!p.includes("'hydro-pump':3.5")||!p.includes("'hidrobomba':3.5"))
+            throw Error('Requested Discharge/Psybeam/Wobbuffet correction absent');
+          if(!fs.existsSync(path.join(root,rel.baseModules,'habilidades.js')))
+            throw Error('Pre-overlay 0.76.2 source must remain for rollback');
+          const earth=fs.readFileSync(m+'/torre2/batch24/runtime.js','utf8');
+          const campaign=fs.readFileSync(m+'/torre2/campaign-core.js','utf8');
+          const cards=fs.readFileSync(m+'/torre2/trainer-cards.js','utf8');
+          const arena=fs.readFileSync(m+'/escenas/preparar.js','utf8');
+          const pokedex=fs.readFileSync(m+'/escenas/pokedex.js','utf8');
+          const fighter=fs.readFileSync(m+'/luchador.js','utf8');
+          const johto=fs.readFileSync(m+'/torre2/johto-100-species.js','utf8');
+          if(!arena.includes('if(pedirBasicas(this,[p.dex,dex,')||
+             !pokedex.includes('this.torre2PortraitOnly(this._torre2FirstForms)')||
+             !fighter.includes('this.def?.torre2ArenaAdded===true')||
+             !johto.includes('bridgeAddedScytherToScizor(original,result)'))
+            throw Error('Scyther/Scizor, Arena Idle or Pokédex release fix missing');
+          if(!earth.includes('shouldPaintProjectileImpact(h,result)&&result.landed===true&&result.damage>0'))
+            throw Error('Missing Batch24 true-contact projectile gate in approved release candidate');
+          if(!earth.includes('if(hit.landed)hitPoints.push({x:contact.x,y:contact.y})')||
+             !earth.includes('for(const r of batch24AreaTargets(l))'))
+            throw Error('Earth Power verified AoE release absent');
+          if(!campaign.includes('const tier=campaignDifficultyTier(s.stage,opponent.leader,opponent.kind)')||
+             !campaign.includes('const encounter=regionalTrainer(s.stage,s.trainer)'))
+            throw Error('Regional campaign difficulty release absent');
+          if(!cards.includes('export function trainerCardSections(stage,total)')||
+             !cards.includes('const visibleEntries=sections[page].indices.map(index=>all[index])')||
+             !cards.includes('scenicBackdrop(scene,layer,state.stage)'))
+            throw Error('Campaign presentation backport absent from deployed source');
+          console.log('ALPHA0762_RELEASE_SOURCE_VERIFIED',v);
+          VERIFY
+      - name: Unit regressions, diagnostics and Pokédex virtualization
+        run: |
+          node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/torre2-evolution-sprite-continuity.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
+      - name: Real Batch24 runtime blocked, missed and landed projectile regression
+        run: node --test tests/alpha0713-projectile-contact-release.test.js
+      - name: Real mobile Phaser Tyrogue and Wobbuffet, plus battle smoke
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/arena-johto-evolution-built.test.mjs
+          node tests/arena-johto-evolutions-browser.cjs
+          node tests/arena-species-kit-browser.cjs
+          # As in 0.71.3, this release replaces TRAINING with
+          # KANTO CAMPAIGN/LOCAL; the legacy source-client-smoke.cjs asserts
+          # TRAINING exists and is inapplicable to this approved snapshot.
+          # Verify actual 0.71.3 PLAY menu navigation in desktop and mobile
+          node tests/alpha0713-hotfix-navigation-browser.cjs
+          node tests/alpha0713-performance-browser.cjs
+          node tests/arena-scyther-visible-sprite-browser.cjs
+          node tests/alpha0713-projectile-contact-webgl-browser.cjs
+          node tests/alpha0762-new-species-moves-browser.cjs _site test-evidence/alpha0762
+      - name: Save real mobile/Pokedex performance samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-performance-0762-measurements
+          path: test-evidence/torre2-pokedex-performance-0713.json
+          if-no-files-found: warn
+          retention-days: 14
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-alpha0762-release-site
+          path: _site/
+          retention-days: 5
+          if-no-files-found: error
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-alpha0762-failure-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 5
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: qa
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pokemon-torre-2-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: torre2-alpha0762-release-site
+          path: _site/
+      - name: Preserve lab and link official game at root
+        run: |
+          set -euo pipefail
+          test -s _site/arena2d/index.html
+          test -s _site/RELEASE-0762.json
+          if [ -s _site/index.html ]; then cp _site/index.html _site/lab.html; fi
+          cat > _site/index.html <<'HTML'
+          <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Pokémon Torre 2 — Alpha 0.76.2</title>
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-alpha=0.76.2">
+          <script>location.replace('./arena2d/index.html?torre2-alpha=0.76.2'+location.hash)</script>
+          </head><body><a href="./arena2d/index.html?torre2-alpha=0.76.2">Abrir jogo</a></body></html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site/
+      - id: deploy
+        uses: actions/deploy-pages@v4
+      - name: Release URL
+        run: echo "Published Alpha 0.76.2 at ${{ steps.deploy.outputs.page_url }}"
