@@ -1810,7 +1810,7 @@ create(){
  }
  martScreen(state,page=0,errorText=''){
   this.children.removeAll(true);this.backdrop();
-  this.screenBanner(20,240,'Poké Mart','shop');
+  this.screenBanner(20,240,'POKÉ MART','shop');
   const top=this.add.graphics().setDepth(4);
   nativeMarco(top,512,8,118,28,'panel',{borde:MENU_UI.oro});
   originalBallSprite(this,530,22,'pokeball',14,6);
