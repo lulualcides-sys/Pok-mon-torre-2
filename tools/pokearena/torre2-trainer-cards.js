@@ -131,6 +131,129 @@ function gymCrop(stage){
  const loc=String(STAGES[stage]?.city||'').toLowerCase();
  return GYM_CROPS[loc]?{loc,rect:GYM_CROPS[loc]}:null;
 }
+// ---------------------------------------------------------------------------
+// Hand-made pixel art (drawn in "art pixels", integer scale, nearest).
+// A standard FireRed-style ROUTE scene for every route card, and one city
+// landmark emblem per Kanto city. Presentation only.
+function pixelCanvas(scene,layer,x,y,w,h,scale){
+ const g=scene.add.graphics();layer.add(g);
+ const W=Math.floor(w/scale),H=Math.floor(h/scale);
+ const ox=Math.round(x+(w-W*scale)/2),oy=Math.round(y+(h-H*scale)/2);
+ // Clipped to the canvas: art never spills over the card frame.
+ const px=(c,i,j,ww=1,hh=1)=>{
+  const i0=Math.max(0,i),j0=Math.max(0,j),i1=Math.min(W,i+ww),j1=Math.min(H,j+hh);
+  if(i1>i0&&j1>j0)g.fillStyle(c,1).fillRect(ox+i0*scale,oy+j0*scale,(i1-i0)*scale,(j1-j0)*scale);
+ };
+ return {g,W,H,px};
+}
+const RT={sky:0x8cd0f8,skyLow:0xc4e8f8,cloud:0xf8f8f8,cloudShade:0xd2eaf8,hill:0x6cb46c,hillDark:0x559c5a,
+ leaf:0x3a9c46,leafDark:0x22743a,leafLight:0x70cc60,trunk:0x7a5230,grass:0x80cc58,grassDark:0x64b440,
+ tall:0x3c9a3c,tallDark:0x2a7430,tallTip:0x9ae070,path:0xe8d098,pathEdge:0xc8a868,pathDark:0xb8945c,
+ wood:0xb07840,woodDark:0x6c4422,board:0xf0e0b0,fence:0xf4ecd8,fenceDark:0x8a6a48,red:0xe85858,white:0xf8f8f8,yellow:0xf8d848};
+function routeScene(scene,layer,x,y,w,h,variant=0){
+ const scale=w>150?4:2;
+ const {W,H,px}=pixelCanvas(scene,layer,x,y,w,h,scale);
+ const horizon=Math.round(H*.48);
+ // Sky with two soft clouds.
+ px(RT.sky,0,0,W,Math.round(horizon*.55));px(RT.skyLow,0,Math.round(horizon*.55),W,horizon);
+ const cloud=(cx,cy)=>{px(RT.cloud,cx+1,cy,5,1);px(RT.cloud,cx,cy+1,8,2);px(RT.cloudShade,cx+1,cy+3,6,1)};
+ cloud(3+(variant*5)%6,2);cloud(W-14-(variant*3)%5,5);
+ // Rolling hills.
+ for(let i=0;i<W;i++){const top=horizon-3-Math.round(2*Math.sin((i+variant*3)/6));
+  px(RT.hill,i,top,1,horizon-top);px(RT.hillDark,i,horizon-1,1,1)}
+ // Tree line on the horizon (round FRLG-like canopies).
+ for(let t=-2;t<W;t+=7){
+  const cx=t+3,cy=horizon+1;
+  px(RT.leafDark,cx-3,cy-2,7,5);px(RT.leaf,cx-2,cy-3,5,6);px(RT.leaf,cx-3,cy-1,7,3);
+  px(RT.leafLight,cx-1,cy-2,2,1);px(RT.leafLight,cx-2,cy-1,1,1);px(RT.trunk,cx,cy+3,1,2);
+ }
+ const ground=horizon+5;
+ // Grass with a light checker texture.
+ px(RT.grass,0,ground,W,H-ground);
+ for(let j=ground;j<H;j++)for(let i=(j%2)*2;i<W;i+=4)if((i+j*3)%7===0)px(RT.grassDark,i,j,1,1);
+ // Dirt path in perspective, centred (the trainer stands on it).
+ for(let j=ground;j<H;j++){
+  const half=2+Math.round((j-ground)*.45),c=Math.floor(W/2);
+  px(RT.path,c-half,j,half*2,1);px(RT.pathEdge,c-half-1,j,1,1);px(RT.pathEdge,c+half,j,1,1);
+  if((j+variant)%5===0)px(RT.pathDark,c-1+((j*7)%3),j,1,1);
+ }
+ // Tall grass patches on both sides.
+ const tuft=(tx,ty)=>{px(RT.tallDark,tx,ty+2,4,1);px(RT.tall,tx,ty+1,1,1);px(RT.tall,tx+2,ty+1,1,1);
+  px(RT.tall,tx+1,ty,1,2);px(RT.tall,tx+3,ty,1,2);px(RT.tallTip,tx+1,ty,1,1);px(RT.tallTip,tx+3,ty,1,1)};
+ for(let j=ground+Math.round((H-ground)*.45);j<H-2;j+=3)
+  for(let i=1;i<Math.floor(W/2)-7-Math.round((j-ground)*.45);i+=4){tuft(i,j);tuft(W-i-4,j)}
+ // Route sign (left) and a short fence (right).
+ const sx=2,sy=ground+1;
+ px(RT.woodDark,sx+3,sy+4,1,4);px(RT.woodDark,sx,sy,8,5);px(RT.board,sx+1,sy+1,6,3);
+ px(RT.woodDark,sx+2,sy+2,1,1);px(RT.woodDark,sx+4,sy+2,2,1);
+ for(let i=W-12;i<W-1;i+=3){px(RT.fenceDark,i,ground+1,1,4);px(RT.fence,i,ground,1,4)}
+ px(RT.fence,W-12,ground+1,11,1);px(RT.fenceDark,W-12,ground+2,11,1);
+ // A few flowers (the only per-card variation).
+ for(let k=0;k<4;k++){const fx=(variant*11+k*13)%(W-4)+2,fy=ground+2+((variant*5+k*7)%Math.max(1,H-ground-4));
+  const c=Math.floor(W/2),half=2+Math.round((fy-ground)*.45);
+  if(Math.abs(fx-c)<=half+1)continue;
+  px(k%2?RT.red:RT.white,fx,fy,1,1);px(RT.yellow,fx,fy+1,1,1)}
+ return true;
+}
+// City landmark emblems (FireRed references), 28x28 art pixels at 2x.
+const LM={sky:0x90d0f8,skyLow:0xc8ecf8,sea:0x3a88d8,seaLight:0x78b8f0,ground:0x78c058,groundDark:0x58a040,
+ rock:0x9c9c9c,rockDark:0x6c6c74,rockLight:0xc8c8c8,snow:0xf0f0f0,wood:0xa86c38,woodDark:0x6c4422,
+ white:0xf8f8f8,red:0xd84848,redDark:0x983030,gold:0xf0c040,blue:0x4878c8,blueDark:0x2c4c88,
+ glass:0x98d0f0,pink:0xf090b0,lava:0xf87830,lavaLight:0xf8d040,smoke:0xc8c8d0,leaf:0x3a9c46,leafDark:0x22743a,leafLight:0x70cc60,
+ purple:0x8858c0,dark:0x283048};
+function cityLandmark(scene,layer,x,y,size,stage){
+ const city=String(STAGES[stage]?.city||'').toLowerCase();
+ const {W,H,px}=pixelCanvas(scene,layer,x,y,size,size,2);
+ px(LM.sky,0,0,W,Math.round(H*.5));px(LM.skyLow,0,Math.round(H*.5),W,H);
+ const ground=(c=LM.ground,top=H-6)=>{px(c,0,top,W,H-top);px(LM.groundDark,0,top,W,1)};
+ const tree=(cx,cy,r=4)=>{px(LM.leafDark,cx-r,cy-r+1,r*2+1,r*2);px(LM.leaf,cx-r+1,cy-r,r*2-1,r*2);
+  px(LM.leafLight,cx-r+2,cy-r+1,2,1);px(LM.woodDark,cx,cy+r,1,3)};
+ const window=(wx,wy,cols,rows,c=LM.glass)=>{for(let a=0;a<cols;a++)for(let b=0;b<rows;b++)px(c,wx+a*2,wy+b*2,1,1)};
+ if(city==='pewter'){ // grey boulder mountain (Mt. Moon / Pewter stone)
+  ground();for(let j=0;j<16;j++){const half=Math.round(j*.85);px(LM.rockDark,14-half,6+j,half*2+1,1);px(LM.rock,14-half+1,6+j,Math.max(1,half*2-2),1)}
+  px(LM.snow,13,6,3,1);px(LM.snow,12,7,5,1);px(LM.rockLight,10,13,2,2);px(LM.rockLight,17,16,2,2);
+  px(LM.rockDark,3,H-9,6,3);px(LM.rock,4,H-10,4,2);px(LM.rockDark,20,H-8,5,2);
+ }else if(city==='cerulean'){ // Nugget Bridge over the river
+  px(LM.sea,0,15,W,H-15);for(let i=1;i<W;i+=4)px(LM.seaLight,i,18+(i%3),2,1);
+  px(LM.woodDark,0,12,W,1);px(LM.wood,0,13,W,2);for(let i=1;i<W;i+=3)px(LM.woodDark,i,13,1,2);
+  for(let i=2;i<W;i+=6){px(LM.woodDark,i,8,1,5);px(LM.wood,i,8,1,1)}px(LM.wood,0,9,W,1);
+  tree(4,6,3);
+ }else if(city==='vermilion'){ // S.S. Anne at the harbour
+  px(LM.sea,0,18,W,H-18);for(let i=0;i<W;i+=5)px(LM.seaLight,i+1,20+(i%2)*2,3,1);
+  px(LM.dark,3,15,22,1);px(LM.white,4,12,20,3);px(LM.red,4,15,20,2);px(LM.white,8,9,12,3);
+  window(9,10,6,1,LM.blue);px(LM.red,16,4,3,5);px(LM.dark,16,4,3,1);px(LM.smoke,18,1,3,2);
+ }else if(city==='celadon'){ // department store and flowers
+  ground();px(LM.dark,6,3,16,H-9);px(LM.white,7,4,14,H-11);window(9,6,6,6);
+  px(LM.blue,12,H-9,4,3);px(LM.red,6,2,16,2);
+  for(let i=1;i<W;i+=3)px(i%2?LM.pink:LM.red,i,H-4,1,1);
+ }else if(city==='fuchsia'){ // Safari Zone: gate hut, palm trees and pond
+  ground();px(LM.sea,15,H-8,10,3);px(LM.seaLight,17,H-7,4,1);
+  const palm=(cx,top,hgt)=>{
+   for(let j=0;j<hgt;j++)px(j%2?LM.wood:LM.woodDark,cx+(j>hgt*.6?1:0),top+j,2,1);
+   px(LM.leafDark,cx-5,top-1,12,2);px(LM.leaf,cx-4,top-2,10,2);px(LM.leafLight,cx-2,top-2,3,1);
+   px(LM.leaf,cx-6,top+1,3,1);px(LM.leaf,cx+5,top+1,3,1);px(LM.leafDark,cx-1,top-4,4,2);
+   px(LM.gold,cx,top,2,1);
+  };
+  palm(6,8,H-14);palm(21,5,H-17);
+  px(LM.woodDark,10,H-11,9,5);px(LM.gold,10,H-12,9,2);px(LM.white,11,H-10,7,3);px(LM.woodDark,13,H-9,3,3);
+ }else if(city==='saffron'){ // Silph Co. tower
+  ground();px(LM.dark,9,2,10,H-8);px(LM.blueDark,10,3,8,H-10);window(11,4,4,9);
+  px(LM.dark,13,0,2,2);px(LM.red,13,0,2,1);px(LM.blue,12,H-9,4,3);
+  px(LM.rockDark,2,H-14,5,8);window(3,H-12,2,3);px(LM.rockDark,21,H-12,5,6);window(22,H-10,2,2);
+ }else if(city==='cinnabar'){ // volcano with lava
+  px(LM.sea,0,H-6,W,6);px(LM.seaLight,2,H-4,4,1);px(LM.seaLight,18,H-3,5,1);
+  for(let j=0;j<15;j++){const half=4+Math.round(j*.75);px(LM.rockDark,14-half,7+j,half*2,1);px(LM.rock,14-half+1,7+j,Math.max(1,half-1),1)}
+  px(LM.lava,11,7,6,2);px(LM.lavaLight,12,7,4,1);px(LM.lava,13,9,2,4);px(LM.lava,15,12,1,3);
+  px(LM.smoke,10,3,3,2);px(LM.smoke,14,1,4,2);px(LM.smoke,17,3,3,2);
+ }else if(city==='viridian'){ // Viridian Forest
+  ground();tree(6,10,5);tree(20,9,5);tree(13,14,4);
+ }else{ // Indigo Plateau
+  ground();px(LM.dark,4,9,20,H-15);px(LM.white,5,10,18,H-17);px(LM.red,3,7,22,3);
+  px(LM.redDark,3,9,22,1);window(7,12,6,2);px(LM.blue,12,H-9,4,3);
+  px(LM.dark,13,1,1,6);px(LM.gold,14,1,4,3);
+ }
+ return true;
+}
 const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // Draws one window of an official FireRed location sheet (nearest filter).
 // The sheet loads on demand; the approved diorama shows until it arrives.
@@ -401,20 +524,14 @@ export function trainerCardSections(stage,total){
 function cityPanel(scene,layer,state,all){
  const spec=STAGES[state.stage]||{},x=8,y=34,w=150,h=266;
  box(scene,layer,x,y,w,h);
- // City medallion: the approved regional diorama in a native gold ring.
- // City emblem: the gym's own badge on a gold medallion (Elite: Poké Ball).
+ // City emblem: a pixel-art landmark of the city in a gold frame.
  const plate=scene.add.graphics();layer.add(plate);
- rectRedondo(plate,x+6,y+6,60,60,UI.contorno,14);
- rectRedondo(plate,x+7,y+7,58,58,UI.oroBorde,13);
- rectRedondo(plate,x+9,y+9,54,54,UI.oro,11);
- rectRedondo(plate,x+12,y+12,48,48,0x163a78,9);
- rectRedondo(plate,x+12,y+12,48,22,0x2a5aa8,9,.55);
- plate.fillStyle(UI.oroLuz,1).fillRect(x+18,y+8,36,1);
- if(state.stage<8){
-  const icon=drawBadgeIcon(scene,state.stage,x+36,y+36,true,2.5);layer.add(icon);
- }else pixelIcon(scene,layer,'team',x+36,y+36,3);
- if(state.stage<8&&spec.badge)
-  if(!MOVIL.activo)text(scene,layer,x+108,y+63,'Insígnia '+spec.badge,8,UI.suave);
+ rectRedondo(plate,x+6,y+6,60,60,UI.contorno,8);
+ rectRedondo(plate,x+7,y+7,58,58,UI.oroBorde,7);
+ rectRedondo(plate,x+8,y+8,56,56,UI.oro,6);
+ cityLandmark(scene,layer,x+10,y+10,52,state.stage);
+ const shine=scene.add.graphics();layer.add(shine);
+ shine.fillStyle(UI.oroLuz,1).fillRect(x+14,y+8,44,1);
  const league=state.stage>=8;
  text(scene,layer,x+108,y+18,(league?'LIGA ÍNDIGO':(spec.city||'KANTO')).toUpperCase(),12,UI.amarillo);
  text(scene,layer,x+108,y+34,(league?(spec.leader||'ELITE'):'LÍDER '+(spec.leader||'')).toUpperCase(),9,UI.suave);
@@ -542,7 +659,7 @@ function cardsPage(scene,state,handlers){
    entry.leader?UI.amarillo:entry.locked?UI.tenue:UI.texto);
   // Regional diorama in a native ring; the FRLG trainer stands in front.
   const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,92,state.stage,entry.leader?0:entry.index+1):
-   kind==='route'&&townView(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+   routeScene(scene,layer,x+7,y+22,w-14,92,entry.index);
   if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
   aro(ring,x+6,y+21,w-12,94,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
@@ -617,13 +734,13 @@ function detailPage(scene,state,handlers,entry){
  const g=scene.add.graphics();
  marco(g,8,40,236,298,'panel',entry.leader?{borde:UI.oro}:{});
  marco(g,252,52,380,234,'panel');
- aro(g,13,76,226,183,entry.leader?UI.oro:UI.panelBorde,6);
+ aro(g,13,47,226,214,entry.leader?UI.oro:UI.panelBorde,6);
  layer.add(g);
  const inGym=trainerCardSections(state.stage,TRAINERS_PER_GYM(state.stage))
   .find(sec=>sec.indices.includes(entry.index))?.kind==='gym';
- const viewOk=inGym?gymInterior(scene,layer,14,77,222,175,state.stage,0):
-  state.stage<8&&townView(scene,layer,14,77,222,175,state.stage,entry.index);
- if(!viewOk)scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
+ const viewOk=inGym?gymInterior(scene,layer,14,48,222,212,state.stage,0):
+  routeScene(scene,layer,14,48,222,212,entry.index);
+ if(!viewOk)scenicDiorama(scene,layer,14,48,222,212,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
  control(scene,layer,570,12,53,32,'X',()=>{
@@ -633,7 +750,7 @@ function detailPage(scene,state,handlers,entry){
   (entry.foe?.name||'TREINADOR '+(entry.index+1));
  text(scene,layer,126,28,leader?(state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'LÍDER DE GINÁSIO'):'DESAFIO '+(entry.index+1),
   14,'#ffe29b');
- npc(scene,layer,npcKind(state.stage,entry.index,leader),126,206,
+ npc(scene,layer,npcKind(state.stage,entry.index,leader),126,238,
   leader?3.2:3.0);
  box(scene,layer,20,273,213,57,{fill:0x0b2949,edge:PALETTE.gold});
  text(scene,layer,126,285,name.toUpperCase(),14,'#ffe8ad');
