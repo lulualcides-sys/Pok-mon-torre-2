@@ -48,6 +48,24 @@ function removeTitleMenuOption(original,label){
 
 export const removeCustomizeTitleOption=source=>removeTitleMenuOption(source,'CUSTOMIZE');
 export const removeNewsTitleOption=source=>removeTitleMenuOption(source,'NEWS');
+// Owner request 2026-11-19: no News at all. Besides the NEWS menu tile, the
+// 0.76.2 title shows an "UPDATES" button (+ "NEW!" chip) beside the version
+// and opens it with the U key. Hide both; the subtitle stays centred.
+// Also removes the STREAMER MODE corner toggle.
+export function removeUpdatesTitleButton(original){
+ let source=String(original);
+ source=replaceOnce(source,
+  'this.subtitulo.setX(BX-(wb+8)/2);this.botonNovedades.mover(BX+w/2-(wb+8)/2+8+wb/2,98+BAJA);this.botonNovedades.mostrar(true);if(!novedadesVistas())this.chapaNovedades=this.chapa(BX+w/2+(wb+8)/2+4,102+BAJA,"NEW!");return}',
+  'this.subtitulo.setX(BX);this.botonNovedades.mostrar(false);return}','title UPDATES button');
+ source=replaceOnce(source,
+  'const verNovedades=this.verNovedades=()=>{if(this.menu==="principal"){sfx("confirmar");this.scene.start("novedades")}}',
+  'const verNovedades=this.verNovedades=()=>{}','title UPDATES shortcut');
+  // Owner request 2026-11-19: no "STREAMER MODE" toggle on the title. A
+ // device that had it ON is switched back OFF so nothing stays hidden.
+ source=replaceOnce(source,'this.esquinaMisiones();this.esquinaStreamer();',
+  'this.esquinaMisiones();if(streamerActivo()){activarStreamer(false);refrescarMusica()}','title STREAMER MODE button');
+ return source;
+}
 
 export function preloadPokedexOnePage(original){
  let source=String(original);

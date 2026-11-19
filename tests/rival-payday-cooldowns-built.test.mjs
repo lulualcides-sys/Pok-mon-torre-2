@@ -62,9 +62,9 @@ test('Author-defined leaders and wild captures retain their exact species and te
  assert.deepEqual(wild.foes.map(x=>x.id),['zubat']);
 });
 
-test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 4s, Egg Bomb 4s, Hex 6.5s, Discharge 4s, Thunderbolt 2s, Gust 0.7s',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':4,'egg-bomb':4,hex:6.5,discharge:4,thunderbolt:2,gust:0.7});
- for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',4],['Egg Bomb',4],['Hex',6.5],['Discharge',4],['Thunderbolt',2],['Gust',0.7]]){
+test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 4s, Egg Bomb 4s, Hex 6.5s, Discharge 4s, Thunderbolt 2s, Gust 1.2s, Hypnosis 3.5s, Cross Poison 5s',()=>{
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':4,'egg-bomb':4,hex:6.5,discharge:4,thunderbolt:2,gust:1.2,hypnosis:3.5,'cross-poison':5});
+ for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',4],['Egg Bomb',4],['Hex',6.5],['Discharge',4],['Thunderbolt',2],['Gust',1.2],['Hypnosis',3.5],['Cross Poison',5]]){
   const native={nombre:label,cd:label==='Egg Bomb'?1.2:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
   assert.equal(copy.cd,expected,label);
@@ -76,7 +76,7 @@ test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 4s, Egg Bo
  const gustPractice={nombre:'Gust',torre2IntroSource:'gust',
   torre2IntroPractice:true,torre2IntroSlot:'rmb',cd:4.2};
  const preview=moves.balanceCampaignQuickCooldown(gustPractice);
- assert.equal(preview.cd,0.7,'Gust normal HAB preview should use 0.7s');
+ assert.equal(preview.cd,1.2,'Gust normal HAB preview should use 1.2s');
  assert.equal(gustPractice.cd,4.2,'Do not mutate approved native/practice data');
  const sourceThunder={nombre:'Thunder',cd:14,ulti:true};
  assert.strictEqual(moves.balanceCampaignQuickCooldown(sourceThunder),sourceThunder,
