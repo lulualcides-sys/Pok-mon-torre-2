@@ -12,8 +12,9 @@ import {ball,drawBadgeIcon} from './campaign-art.js';
 // Native Poké Arena 2D UI kit: same panels, gold buttons, Cifras font, type
 // pills and lock as the base client menus (League/Gyms). Presentation only.
 import {UI,marco,aro,rectRedondo,candado,pastillaTipo,fondoMenu} from '../ui.js';
-import {texto,estrechar,COLOR,caso} from '../config.js';
+import {texto,estrechar,COLOR,caso,MOVIL} from '../config.js';
 import {buscar} from '../datos.js';
+import {ROOM_CROPS} from './frlg-interiors.js';
 
 const PALETTE={
  navy:0x06172b,panel:0x0c2845,body:0x123755,edge:0x3b77a6,
@@ -130,37 +131,62 @@ function gymCrop(stage){
  const loc=String(STAGES[stage]?.city||'').toLowerCase();
  return GYM_CROPS[loc]?{loc,rect:GYM_CROPS[loc]}:null;
 }
-function gymInterior(scene,layer,x,y,w,h,stage,variant=0){
- const info=gymCrop(stage);
- if(!info)return false;
- const key='frlg-location-'+info.loc,[cx,cy,cw,ch]=info.rect;
- // Square-ish window: leader podium at the top of the room; trainers are
- // framed further down the same room so cards in a page do not repeat.
- const aspect=w/h,fw=Math.min(cw,Math.round(ch*aspect)),fh=Math.min(ch,Math.round(fw/aspect));
- const lanes=Math.max(1,Math.floor((ch-fh)/Math.max(1,fh*.45)));
- const fy=cy+Math.min(ch-fh,Math.round((variant%(lanes+1))*fh*.45));
- const fx=cx+Math.round((cw-fw)/2),frame='torre2-gym-'+info.loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
+const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
+// Draws one window of an official FireRed location sheet (nearest filter).
+// The sheet loads on demand; the approved diorama shows until it arrives.
+// The campaign releases these textures on restart, so the live loader
+// queue (not a remembered flag) decides whether to request it again.
+function frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,fw,fh],stage,variant){
+ const key='frlg-location-'+loc,frame='torre2-win-'+loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
  const slot=scene.add.container(0,0);layer.add(slot);
  const draw=()=>{
   if(!slot.active||!scene.textures.exists(key))return;
   const tex=scene.textures.get(key);
   if(!tex.has(frame))tex.add(frame,0,fx,fy,fw,fh);
   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  slot.removeAll(true);
   slot.add(scene.add.image(x,y,key,frame).setOrigin(0).setDisplaySize(w,h));
  };
  if(scene.textures.exists(key)){draw();return true}
- // Placeholder until the room arrives: the approved regional diorama.
  scenicDiorama(scene,slot,x,y,w,h,stage,variant);
- // The campaign releases frlg-location textures on every restart, so check
- // the loader's live queue instead of remembering past requests.
  scene.load.once('filecomplete-image-'+key,()=>draw());
  const queued=[scene.load.list,scene.load.inflight].some(set=>
   (set?.entries||[]).some(file=>file?.key===key));
  if(!queued){
-  scene.load.image(key,'assets/ui/frlg/'+info.loc+'.png');
+  scene.load.image(key,'assets/ui/frlg/'+loc+'.png');
   if(!scene.load.isLoading())scene.load.start();
  }
  return true;
+}
+function gymInterior(scene,layer,x,y,w,h,stage,variant=0){
+ const info=gymCrop(stage);
+ if(!info)return false;
+ const [cx,cy,cw,ch]=info.rect;
+ // Leader podium at the top of the room; trainers further down the room.
+ const aspect=w/h,fw=Math.min(cw,Math.round(ch*aspect)),fh=Math.min(ch,Math.round(fw/aspect));
+ const lanes=Math.max(1,Math.floor((ch-fh)/Math.max(1,fh*.45)));
+ const fy=cy+Math.min(ch-fh,Math.round((variant%(lanes+1))*fh*.45));
+ const fx=cx+Math.round((cw-fw)/2);
+ return frlgWindow(scene,layer,x,y,w,h,info.loc,[fx,fy,fw,fh],stage,variant);
+}
+// Town region of a FireRed location sheet: the city map is always at the
+// top-left; rooms sit to its right (top row) or below it.
+function townRegion(loc){
+ const rooms=Object.values(ROOM_CROPS[loc]||{});
+ if(!rooms.length)return null;
+ const right=Math.min(...rooms.filter(r=>r[1]<100&&r[0]>200).map(r=>r[0]))-6;
+ if(!Number.isFinite(right)||right<200)return null;
+ const below=rooms.filter(r=>r[0]<right).map(r=>r[1]);
+ return {x:4,y:18,w:right-4,h:(below.length?Math.min(...below):9999)-24};
+}
+// Route cards: a real 1:1 slice of the destination city's FireRed map.
+function townView(scene,layer,x,y,w,h,stage,variant=0){
+ const loc=cityOf(stage),r=townRegion(loc);
+ if(!r)return false;
+ const ww=Math.round(w),wh=Math.round(h);
+ const spanX=Math.max(1,r.w-ww),spanY=Math.max(1,Math.min(r.h,660)-wh);
+ const fx=r.x+((variant*173+41)%spanX),fy=r.y+((variant*97+67)%spanY);
+ return frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,ww,wh],stage,variant);
 }
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  id='',size=10,icon=null,center=false}={}){
@@ -203,7 +229,16 @@ function trainerCardFrame(scene,layer,x,y,w,h,entry){
 }
 function npc(scene,layer,kind,x,y,scale=2.3){
  const image=addFireRedNPC(scene,kind,x,y,{scale,depth:0});
- if(image){layer.add(image);return image;}
+ if(image){
+  // Most FRLG sheets are 16x32 cells; the biker sheet uses 32x32 cells
+  // (10 frames in 320px). A 16px crop showed only half the cyclist.
+  const tex=image.texture,src=tex?.source?.[0];
+  if(src&&src.height===32&&src.width===320){
+   if(!tex.has('torre2-front-32x32'))tex.add('torre2-front-32x32',0,0,0,32,32);
+   image.setFrame('torre2-front-32x32');
+  }
+  layer.add(image);return image;
+ }
  const g=scene.add.graphics();drawTrainer(g,x,y-16,kind,1.3);layer.add(g);
  return g;
 }
@@ -367,10 +402,19 @@ function cityPanel(scene,layer,state,all){
  const spec=STAGES[state.stage]||{},x=8,y=34,w=150,h=266;
  box(scene,layer,x,y,w,h);
  // City medallion: the approved regional diorama in a native gold ring.
- if(!gymInterior(scene,layer,x+8,y+8,56,56,state.stage,0))
-  scenicDiorama(scene,layer,x+8,y+8,56,56,state.stage,0);
- const ring=scene.add.graphics();layer.add(ring);
- aro(ring,x+7,y+7,58,58,UI.oro,6);aro(ring,x+6,y+6,60,60,UI.contorno,7);
+ // City emblem: the gym's own badge on a gold medallion (Elite: Poké Ball).
+ const plate=scene.add.graphics();layer.add(plate);
+ rectRedondo(plate,x+6,y+6,60,60,UI.contorno,14);
+ rectRedondo(plate,x+7,y+7,58,58,UI.oroBorde,13);
+ rectRedondo(plate,x+9,y+9,54,54,UI.oro,11);
+ rectRedondo(plate,x+12,y+12,48,48,0x163a78,9);
+ rectRedondo(plate,x+12,y+12,48,22,0x2a5aa8,9,.55);
+ plate.fillStyle(UI.oroLuz,1).fillRect(x+18,y+8,36,1);
+ if(state.stage<8){
+  const icon=drawBadgeIcon(scene,state.stage,x+36,y+36,true,2.5);layer.add(icon);
+ }else pixelIcon(scene,layer,'team',x+36,y+36,3);
+ if(state.stage<8&&spec.badge)
+  if(!MOVIL.activo)text(scene,layer,x+108,y+63,'Insígnia '+spec.badge,8,UI.suave);
  const league=state.stage>=8;
  text(scene,layer,x+108,y+18,(league?'LIGA ÍNDIGO':(spec.city||'KANTO')).toUpperCase(),12,UI.amarillo);
  text(scene,layer,x+108,y+34,(league?(spec.leader||'ELITE'):'LÍDER '+(spec.leader||'')).toUpperCase(),9,UI.suave);
@@ -380,12 +424,12 @@ function cityPanel(scene,layer,state,all){
  }
  // Progress to the leader: native track + gold fill, also written as n/total.
  const total=Math.max(1,all.length-1),done=Math.min(total,state.trainer||0);
- text(scene,layer,x+8,y+76,league?'ATÉ O DESAFIO':'ATÉ O LÍDER',8,UI.suave).setOrigin(0,.5);
- text(scene,layer,x+w-8,y+76,done+' / '+total,9,UI.amarillo).setOrigin(1,.5);
+ text(scene,layer,x+8,y+80,league?'ATÉ O DESAFIO':'ATÉ O LÍDER',8,UI.suave).setOrigin(0,.5);
+ text(scene,layer,x+w-8,y+80,done+' / '+total,9,UI.amarillo).setOrigin(1,.5);
  const bar=scene.add.graphics();layer.add(bar);
- rectRedondo(bar,x+8,y+84,w-16,8,UI.contorno,3);
- rectRedondo(bar,x+9,y+85,w-18,6,UI.apagado,2);
- if(done>0)rectRedondo(bar,x+9,y+85,Math.max(4,Math.round((w-18)*done/total)),6,UI.oro,2);
+ rectRedondo(bar,x+8,y+88,w-16,8,UI.contorno,3);
+ rectRedondo(bar,x+9,y+89,w-18,6,UI.apagado,2);
+ if(done>0)rectRedondo(bar,x+9,y+89,Math.max(4,Math.round((w-18)*done/total)),6,UI.oro,2);
  // Team: always visible, real portraits, level and HP; opens the team screen.
  text(scene,layer,x+8,y+108,'SUA EQUIPE',9,UI.texto).setOrigin(0,.5);
  text(scene,layer,x+w-8,y+108,'₽ '+Number(state.money||0).toLocaleString('pt-BR'),9,UI.amarillo).setOrigin(1,.5);
@@ -453,7 +497,9 @@ function cardsPage(scene,state,handlers){
   'GINÁSIO DE '+city.toUpperCase();
  // Header exactly like native cabecera: back at left, gold title, info right.
  control(scene,layer,6,4,74,20,'< MENU',handlers.menu,{id:'menu',size:9});
- text(scene,layer,320,15,area,18,UI.amarillo);
+ const title=text(scene,layer,320,15,area,18,UI.amarillo);
+ const half=title.displayWidth/2+14;
+ pixelIcon(scene,layer,'team',320-half,15,1);pixelIcon(scene,layer,'team',320+half,15,1);
  badgeStrip(scene,layer,state);
  cityPanel(scene,layer,state,all);
  // Section line + pager.
@@ -495,8 +541,9 @@ function cardsPage(scene,state,handlers){
   text(scene,layer,x+w/2,y+12,String(entry.index+1).padStart(2,'0')+' · '+glyph,9,
    entry.leader?UI.amarillo:entry.locked?UI.tenue:UI.texto);
   // Regional diorama in a native ring; the FRLG trainer stands in front.
-  if(!(kind==='gym'&&gymInterior(scene,layer,x+7,y+22,w-14,92,state.stage,entry.leader?0:entry.index+1)))
-   scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+  const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,92,state.stage,entry.leader?0:entry.index+1):
+   kind==='route'&&townView(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+  if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
   aro(ring,x+6,y+21,w-12,94,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
   npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+100,
@@ -574,8 +621,9 @@ function detailPage(scene,state,handlers,entry){
  layer.add(g);
  const inGym=trainerCardSections(state.stage,TRAINERS_PER_GYM(state.stage))
   .find(sec=>sec.indices.includes(entry.index))?.kind==='gym';
- if(!(inGym&&gymInterior(scene,layer,14,77,222,175,state.stage,entry.leader?0:entry.index+1)))
-  scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
+ const viewOk=inGym?gymInterior(scene,layer,14,77,222,175,state.stage,0):
+  state.stage<8&&townView(scene,layer,14,77,222,175,state.stage,entry.index);
+ if(!viewOk)scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
  control(scene,layer,570,12,53,32,'X',()=>{
@@ -590,7 +638,7 @@ function detailPage(scene,state,handlers,entry){
  box(scene,layer,20,273,213,57,{fill:0x0b2949,edge:PALETTE.gold});
  text(scene,layer,126,285,name.toUpperCase(),14,'#ffe8ad');
  text(scene,layer,126,310,leader?(state.stage>=12?'DESAFIO FINAL':state.stage>=8?'LIGA POKÉMON':'BATALHA PELA INSÍGNIA'):
-  (entry.foe?.kind||'TREINADOR').toUpperCase(),9,'#bde1ef');
+  ({trainer:'TREINADOR',rival:'RIVAL',rocket:'EQUIPE ROCKET',leader:'LÍDER'}[entry.foe?.kind]||entry.foe?.kind||'TREINADOR').toUpperCase(),9,'#bde1ef');
  text(scene,layer,410,36,'TIME DO ADVERSÁRIO',17,'#ffe0a2');
  text(scene,layer,408,65,'DESAFIO '+(entry.index+1)+' / '+
   (TRAINERS_PER_GYM(state.stage)+1),10,'#b5d6ec');
