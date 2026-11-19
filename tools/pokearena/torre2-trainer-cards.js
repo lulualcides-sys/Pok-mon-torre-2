@@ -588,10 +588,15 @@ function extrasPage(scene,state,handlers){
  ];
  actions.push(['MAPA DE KANTO',()=>journeyPage(scene,state,handlers),'team']);
  actions.push(['CARTÃO DO TREINADOR',handlers.trainerCard,'badges']);
+ // Save backup outside the browser (download / restore a JSON copy).
+ actions.push(['SALVAR CÓPIA',handlers.saveExport,'bag']);
+ actions.push(['RESTAURAR CÓPIA',handlers.saveImport,'bag']);
+ // Three columns so all twelve options fit above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
-  const x=118+(i%2)*208,y=84+Math.floor(i/2)*40;
-  control(scene,layer,x,y,196,34,name,name==='TELA CHEIA'||name==='MAPA DE KANTO'?(()=>{layer.destroy(true);fn?.()}):close(fn),
-   {id:'cards-extras-'+i,size:11,icon,center:true});
+  const x=110+(i%3)*142,y=84+Math.floor(i/3)*44;
+  const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
+  control(scene,layer,x,y,136,36,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
+   {id:'cards-extras-'+i,size:9,icon,center:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});

@@ -354,6 +354,7 @@ create(){
   // pixels, on a native-kit stage with a dialogue box.
   // The starter and save are created only after all four dialogue pages.
   this.backdrop();
+  this.campaignMusic('title');
   this.screenBanner(20,320,'Pokémon Torre 2 · Kanto','dex');
   const g=this.add.graphics().setDepth(1);
   // Soft lab stage: light gradient, glow and floor band behind Oak.
@@ -411,6 +412,7 @@ create(){
  starterSelection(){
   if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
   this.backdrop();
+  this.campaignMusic('title');
   this.screenBanner(20,330,'Escolha seu primeiro Pokémon','team');
   this.uiLabel(ANCHO/2,46,'O companheiro que o Professor Oak entrega para a sua jornada',8,MENU_UI.suave,[.5,.5]);
   // A blocked first write must not crash Phaser or leave a phantom journey.
@@ -838,13 +840,18 @@ create(){
    dex:()=>this.dexScreen(state),
    badges:()=>this.badgeCaseScreen(state),
    trainerCard:()=>this.trainerCardScreen(state),
+   saveExport:()=>this.exportSave(state),
+   saveImport:()=>this.importSave(),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
   this.screenFade();
-  this.campaignMusic('town');
+  // League (Victory Road, Elite Four, Champion): the dungeon theme.
+  this.campaignMusic(state.stage>=8?'dungeon':'town');
   const cards=renderTrainerCardHub(this,state,handlers);
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
+  // First visit only: point out the main buttons (never blocks input).
+  if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive())this.campaignTips()});}
   return cards;
  }
  // Only explicitly flagged QA sessions may exercise the old path engine.
@@ -1045,6 +1052,114 @@ create(){
    return false;
   }finally{this.__torre2EeveeResolving=false}
  }
+ // First-visit tips on the campaign hub: a speech bubble and a gold ring on
+ // one button at a time. Never blocks the screen (only the bubble itself is
+ // interactive), remembered on this device, and — like the base client's
+ // account prompt — skipped under browser automation unless forced.
+ campaignTips(force=false){
+  const KEY='torre2-tips-v1';
+  try{if(!force&&(localStorage.getItem(KEY)==='done'||navigator.webdriver))return false}catch{return false}
+  const steps=[
+   [422,320,210,36,'Batalhar','Toque aqui para enfrentar o próximo treinador da rota.'],
+   [166,56,464,246,'Cards da rota','Cada card é um treinador. Vença todos para desafiar o líder.'],
+   [8,324,80,30,'Equipe','Veja seus Pokémon, o HP e escolha quem luta primeiro.'],
+   [92,324,80,30,'Bolsa','Use Poções, remédios de status e ensine TMs.'],
+   [176,324,80,30,'Centro','O Centro Pokémon cura toda a equipe de graça.'],
+   [344,324,70,30,'Mais','Pokédex, insígnias, mapa, cartão do treinador e cópia do save.']
+  ];
+  const D=9200;let i=0,objs=[];
+  const clear=()=>{objs.forEach(o=>o?.active&&o.destroy());objs=[]};
+  const finish=()=>{clear();try{localStorage.setItem(KEY,'done')}catch{};this.__torre2Tips=null};
+  const show=()=>{
+   clear();
+   if(i>=steps.length)return finish();
+   const [x,y,w,h,title,body]=steps[i];
+   const ring=this.add.graphics().setDepth(D);objs.push(ring);
+   nativeAro(ring,x-3,y-3,w+6,h+6,MENU_UI.oro,8,1);
+   this.tweens.add({targets:ring,alpha:.35,duration:520,yoyo:true,repeat:-1});
+   const bw=270,bh=58,bx=Math.max(8,Math.min(632-bw,x+w/2-bw/2)),by=y>200?y-bh-12:y+h+12;
+   const b=this.add.graphics().setDepth(D+1);objs.push(b);
+   nativeRect(b,bx,by,bw,bh,MENU_UI.contorno,8);nativeRect(b,bx+2,by+2,bw-4,bh-4,0xf4f1e6,7);
+   const tx=Math.max(bx+16,Math.min(bx+bw-16,x+w/2));
+   if(y>200)b.fillStyle(0xf4f1e6,1).fillTriangle(tx-7,by+bh-2,tx+7,by+bh-2,tx,by+bh+8);
+   else b.fillStyle(0xf4f1e6,1).fillTriangle(tx-7,by+2,tx+7,by+2,tx,by-8);
+   const t=(px,py,s,c,o,txt)=>{const l=textoMenu(this,px,py,txt,{tam:s,color:c,borde:0,literal:true}).setOrigin(...o).setDepth(D+2);objs.push(l);return l};
+   t(bx+12,by+13,9,MENU_UI.textoOscuro,[0,.5],title);
+   t(bx+bw-12,by+13,7,'#36507a',[1,.5],(i+1)+' / '+steps.length);
+   estrechar(t(bx+12,by+31,7,'#24365a',[0,.5],body),bw-24);
+   const mk=(px,label,fn,gold)=>{const z=this.add.zone(px,by+bh-11,74,18).setDepth(D+3)
+     .setInteractive({useHandCursor:true}).setData('torre2-tip-'+(gold?'next':'skip'),true);
+    const g=this.add.graphics().setDepth(D+2);nativeRect(g,px-37,by+bh-20,74,17,gold?MENU_UI.oro:0xc9d4e6,5);
+    const l=t(px,by+bh-11,7,MENU_UI.textoOscuro,[.5,.5],label);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();fn()});objs.push(z,g,l)};
+   mk(bx+bw-48,i<steps.length-1?'Próxima ▶':'Entendi',()=>{i++;show()},true);
+   mk(bx+48,'Pular',finish,false);
+  };
+  this.__torre2Tips={steps:steps.length,next:()=>{i++;show()},skip:finish};
+  show();
+  return true;
+ }
+ // Short on-screen notice (save export/import feedback).
+ campaignNotice(message,color=MENU_UI.amarillo){
+  const t=this.uiLabel(320,346,message,9,color,[.5,.5],9600).setData('torre2-campaign-notice',true);
+  this.time.delayedCall(2600,()=>t.active&&t.destroy());
+  return t;
+ }
+ // Backup: download the whole campaign (plus trainer name / character) as a
+ // JSON file the player keeps outside the browser. Read-only for the save.
+ exportSave(state){
+  let name=null,gender=null;try{name=localStorage.getItem('torre2-trainer-name');gender=localStorage.getItem('torre2-trainer-gender')}catch{}
+  const campaign=readCampaign()||state;
+  const data={format:'torre2-save',version:1,exportedAt:new Date().toISOString(),trainer:{name,gender},campaign};
+  try{
+   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+   a.download='torre2-save-'+new Date().toISOString().slice(0,10)+'.json';
+   document.body.appendChild(a);a.click();
+   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+   this.campaignNotice('Cópia do save baixada: '+a.download,'#9ff0bf');
+  }catch{this.campaignNotice('Não foi possível baixar a cópia','#ff9d9d')}
+  return data;
+ }
+ // Restore: pick a file, validate it, confirm in two steps, then write it
+ // through saveCampaign (which refuses broken snapshots before touching
+ // storage, and keeps the previous save as its rotating backup).
+ importSave(){
+  const input=document.createElement('input');input.type='file';input.accept='application/json,.json';
+  input.style.display='none';document.body.appendChild(input);
+  input.addEventListener('change',async()=>{
+   const file=input.files?.[0];input.remove();
+   if(!file)return;
+   if(file.size>2_000_000)return this.campaignNotice('Arquivo grande demais para um save','#ff9d9d');
+   let data;try{data=JSON.parse(await file.text())}catch{return this.campaignNotice('Arquivo inválido: não é JSON','#ff9d9d')}
+   this.confirmImport(data);
+  },{once:true});
+  input.click();
+ }
+ confirmImport(data){
+  if(data?.format!=='torre2-save'||!data.campaign||typeof data.campaign!=='object')
+   return this.campaignNotice('Este arquivo não é um save do Pokémon Torre 2','#ff9d9d');
+  const c=data.campaign,D=9400,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list.filter(o=>o.getData?.('torre2-import-ui')).forEach(o=>o.destroy())};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive().setData('torre2-import-confirm',true));
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.88).fillRect(0,0,640,360);
+  nativeMarco(g,120,70,400,210,'panel',{borde:MENU_UI.oro});
+  const L=(y,t,s,col)=>keep(this.uiLabel(320,y,t,s,col,[.5,.5],D+2));
+  L(96,'Restaurar cópia do save?',13,MENU_UI.amarillo);
+  L(122,(data.trainer?.name?'Treinador: '+data.trainer.name+' · ':'')+'Insígnias: '+((c.badges||[]).length)+' · Equipe: '+((c.team||[]).length),9,'#ffffff');
+  L(140,'Cópia de '+String(data.exportedAt||'').slice(0,10),8,MENU_UI.suave);
+  L(170,'Isso substitui o progresso atual neste aparelho.',8,'#ffd47a');
+  L(186,'O save atual fica guardado como reserva automática.',7,MENU_UI.tenue);
+  const lift=btn=>{this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+3);o.setData?.('torre2-import-ui',true)}});btn.setDepth(D+4);return keep(btn)};
+  lift(this.button(232,240,150,28,'CANCELAR',close,false,9).setData('torre2-import-cancel',true));
+  lift(this.button(408,240,150,28,'RESTAURAR',()=>{
+   try{saveCampaign(c)}catch{close();return this.campaignNotice('Save inválido: nada foi alterado','#ff9d9d')}
+   try{if(data.trainer?.name)localStorage.setItem('torre2-trainer-name',String(data.trainer.name).slice(0,12));
+    if(data.trainer?.gender==='leaf'||data.trainer?.gender==='red')localStorage.setItem('torre2-trainer-gender',data.trainer.gender)}catch{}
+   close();this.scene.restart();
+  },true,9).setData('torre2-import-apply',true));
+ }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
  trainerCardScreen(state){
@@ -1084,9 +1199,61 @@ create(){
   nativeRect(g,60,250,520,30,0x081436,6,.9);
   this.uiLabel(70,265,'Insígnias',8,MENU_UI.suave);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,170+i*48,265,state.badges?.includes(HALL_BADGE_ORDER[i]),1.3).setDepth(6);
-  this.button(320,330,220,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
+  this.button(220,330,190,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
    .setData('torre2-trainer-card-back',true);
+  const won=this.achievementList(state).filter(a=>a.done).length;
+  this.button(430,330,190,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true)
+   .setData('torre2-trainer-card-achievements',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
+ }
+ // Achievements computed only from the existing save (read-only).
+ achievementList(state){
+  const caught=(state.dexCaught||[]).length,seen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
+  const owned=(state.team||[]).length+(state.box||[]).length,badges=(state.badges||[]).length,wins=state.wins||0;
+  const shiny=(state.dexShinyCaught||[]).length;
+  return [
+   ['Primeiro parceiro','Recebeu o Pokémon inicial',owned,1],
+   ['Primeira captura','Capturou um Pokémon selvagem',owned,2],
+   ['Colecionador','Capture 10 espécies',caught,10],
+   ['Pesquisador','Veja 50 espécies',seen,50],
+   ['Mestre da Pokédex','Capture as 151 espécies',caught,151],
+   ['Equipe completa','Tenha 6 Pokémon na equipe',(state.team||[]).length,6],
+   ['Primeira insígnia','Vença o primeiro líder',badges,1],
+   ['Meio caminho','Conquiste 4 insígnias',badges,4],
+   ['Todas as insígnias','Conquiste as 8 insígnias',badges,8],
+   ['Campeão de Kanto','Vença a Liga Pokémon',state.champion?1:0,1],
+   ['Veterano','Vença 10 batalhas',wins,10],
+   ['Lenda','Vença 50 batalhas',wins,50],
+   ['Brilho raro','Capture um Pokémon shiny',shiny,1]
+  ].map(([name,desc,value,goal])=>({name,desc,value:Math.min(value,goal),goal,done:value>=goal}));
+ }
+ achievementsScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const list=this.achievementList(state),done=list.filter(a=>a.done).length;
+  this.screenBanner(20,300,'Conquistas','badges');
+  this.uiLabel(320,46,done+' de '+list.length+' conquistadas',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  list.forEach((a,i)=>{
+   const x=16+(i%4)*154,y=64+Math.floor(i/4)*60;
+   nativeRect(g,x,y,150,56,a.done?MENU_UI.oro:MENU_UI.apagadoBorde,7);
+   nativeRect(g,x+2,y+2,146,52,a.done?0x2a3f78:0x0a1638,6);
+   // Medal.
+   g.fillStyle(MENU_UI.contorno,1).fillCircle(x+22,y+28,15);
+   g.fillStyle(a.done?MENU_UI.oroBorde:0x3a4a6a,1).fillCircle(x+22,y+28,13);
+   g.fillStyle(a.done?MENU_UI.oro:0x26324a,1).fillCircle(x+22,y+28,10);
+   this.uiLabel(x+22,y+28,a.done?'★':'?',10,a.done?MENU_UI.textoOscuro:'#5f7099',[.5,.5],5);
+   estrechar(this.uiLabel(x+42,y+16,a.name,8,a.done?MENU_UI.amarillo:'#c8d6f0'),102);
+   estrechar(this.uiLabel(x+42,y+30,a.desc,6,a.done?'#dcf4fb':MENU_UI.tenue),102);
+   if(!a.done&&a.goal>1){
+    nativeRect(g,x+42,y+40,80,6,MENU_UI.contorno,3);
+    if(a.value>0)nativeRect(g,x+43,y+41,Math.max(2,Math.round(78*a.value/a.goal)),4,0x50cc84,2);
+    this.uiLabel(x+140,y+43,a.value+'/'+a.goal,6,MENU_UI.suave,[1,.5]);
+   }else if(a.done)this.uiLabel(x+42,y+43,'Concluída',6,'#9ff0bf');
+  });
+  this.button(220,334,190,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-achievements-back',true);
+  this.button(430,334,190,28,'VOLTAR AOS CARDS',()=>this.renderCampaign(state));
+  this.__torre2Achievements={done,total:list.length};
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
@@ -2743,6 +2910,70 @@ create(){
    fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':
     this.__torre2PcNotice?'#ffdb94':C.muted}).setOrigin(.5,.5);
  }
+ // Pokédex entry: animated sprite on a platform, number, types, where it
+ // appears in the campaign's tall grass and the evolution line. Unseen
+ // species show only a silhouette and "???". Read-only.
+ dexDetail(state,row){
+  const D=9000,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list
+   .filter(o=>o.getData?.('torre2-dex-detail-ui')).forEach(o=>o.destroy());};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive().setData('torre2-dex-detail',row.id));
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.85).fillRect(0,0,640,360);
+  nativeMarco(g,40,30,560,280,'panel',{borde:row.caught?0x50cc84:row.seen?MENU_UI.panelLuz:MENU_UI.apagadoBorde});
+  const nice=String(row.name).replace(/-/g,' ');
+  let types=[],chain=[],dexNo=String(row.index+1).padStart(3,'0');
+  try{
+   const {def,etapa}=buscar(row.id);
+   const stage=etapa>0?def.evoluciones?.[etapa-1]:def;
+   types=stage?.tipos||def.tipos||[];
+   chain=[{nombre:def.nombre,dex:def.dex,tipos:def.tipos},...(def.evoluciones||[])];
+  }catch{}
+  // Left: platform + animated sprite (dark silhouette while unseen).
+  const col=TIPOS[types[0]]??0x5f86bd,cx=170,ground=210;
+  g.fillStyle(0xffffff,.05).fillCircle(cx,150,70);
+  g.fillStyle(0x061433,.9).fillEllipse(cx,ground+6,170,34);
+  g.fillStyle(row.seen?col:0x24386e,1).fillEllipse(cx,ground+2,160,28);
+  g.fillStyle(0xffffff,.18).fillEllipse(cx,ground,130,18);
+  const ok=this.pokemonIdleSprite(row.id,cx,ground+1,130,D+3,sp=>{
+   keep(sp);if(!row.seen)sp.setTintFill(0x0a1638);
+  });
+  keep(ok);
+  if(!ok){const key='torre2-portrait-'+String(row.index+1).padStart(4,'0');
+   requestCardPortrait(this,key,'assets/pmd/'+String(row.index+1).padStart(4,'0')+'/portrait.png',()=>{
+    if(!g.active)return;const im=keep(this.add.image(cx,150,key).setDisplaySize(72,72).setDepth(D+3));
+    if(!row.seen)im.setTint(0x1b2852);});}
+  const L=(x,y,t,s,c,o=[0,.5])=>keep(this.uiLabel(x,y,t,s,c,o,D+4));
+  // Right: identity.
+  L(300,58,'Nº '+dexNo,9,MENU_UI.suave);
+  L(300,80,row.seen?nice:'???',16,row.shinyCaught?MENU_UI.amarillo:'#ffffff');
+  if(row.seen)types.slice(0,2).forEach((t,k)=>{pastillaTipo(g,300+k*64,96,t,60,14);
+   L(330+k*64,103,t[0]+t.slice(1).toLowerCase(),8,'#ffffff',[.5,.5])});
+  const status=row.shinyCaught?'Capturado ✦ Shiny':row.caught?'Capturado':row.seen?'Visto':'Ainda não visto';
+  nativeRect(g,300,120,140,20,row.caught?0x1b5a3a:row.seen?0x2a3f78:0x1a2140,5);
+  L(370,130,status,8,row.caught?'#9ff0bf':row.seen?'#dcf4fb':MENU_UI.tenue,[.5,.5]);
+  if(row.ready)L(452,130,'Disponível na Arena',7,'#9ddcf0');
+  // Where it appears (tall grass of each city route in the campaign).
+  const where=[];
+  for(let st=0;st<=8;st++){try{if(wildAvailability(st).wild.includes(row.id))where.push(STAGES[st]?.city||'Kanto')}catch{}}
+  L(300,158,'Onde aparece',8,MENU_UI.amarillo);
+  estrechar(L(300,174,row.seen?(where.length?'Grama alta: '+[...new Set(where)].join(', '):'Não aparece na grama alta'):'???',8,'#ffffff'),280);
+  // Evolution line.
+  L(300,200,'Linha evolutiva',8,MENU_UI.amarillo);
+  if(chain.length>1&&row.seen){
+   chain.slice(0,4).forEach((st,i)=>{
+    const x=300+i*72,dex=String(st.dex||'').padStart(4,'0'),key='torre2-portrait-'+dex;
+    nativeRect(g,x,212,40,40,MENU_UI.panelBorde,6);nativeRect(g,x+2,214,36,36,0x0a1a46,5);
+    requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
+     if(!g.active)return;keep(this.add.image(x+20,232,key).setDisplaySize(32,32).setDepth(D+3));});
+    estrechar(L(x+20,260,String(st.nombre||'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase()),7,'#dcf4fb',[.5,.5]),64);
+    if(i<Math.min(chain.length,4)-1)L(x+56,232,'▶',8,MENU_UI.amarillo,[.5,.5]);
+   });
+  }else L(300,220,row.seen?'Não evolui':'???',8,MENU_UI.tenue);
+  const btn=this.button(320,290,180,26,'◀ FECHAR',close,false,9).setDepth(D+6).setData('torre2-dex-detail-close',true);
+  this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+5);o.setData?.('torre2-dex-detail-ui',true)}});
+  keep(btn);
+ }
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
@@ -2788,6 +3019,10 @@ create(){
     row.caught?'#9ff0bf':row.seen?MENU_UI.suave:MENU_UI.apagadoTexto);
    if(row.caught)originalBallSprite(this,x+CW-11,y+11,'pokeball',12,6);
    if(row.ready)this.uiLabel(x+CW-6,y+27,'Arena',6,'#9ddcf0',[1,.5]);
+   // Tap a card to open its Pokédex entry.
+   this.add.zone(x+CW/2,y+CH/2,CW,CH).setDepth(8).setInteractive({useHandCursor:true})
+    .setData('torre2-dex-open',row.id)
+    .on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();this.dexDetail(state,row)});
   });
   this.button(82,334,140,28,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,334,133,28,'◀ ANTERIOR',()=>{

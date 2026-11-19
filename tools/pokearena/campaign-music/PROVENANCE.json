@@ -9,7 +9,9 @@
   "town": "05 - Town",
   "route": "02 - Exploration",
   "victory": "04 - Victory",
-  "hall": "09 - End"
+  "hall": "09 - End",
+  "title": "01 - Title",
+  "dungeon": "06 - Dungeon"
  },
  "note": "Crédito não exigido; dado por cortesia em CREDITOS-E-LICENCAS.md.",
  "files": {
@@ -20,6 +22,10 @@
   "victory.ogg": "171e14731df4cb8f5812c39e729d0c5289c42c08b99dcb7e7cb5b11cd0e79288",
   "victory.mp3": "e8df5783ddfdc7bfa55f19657b16cd6f1794e337624e1fcaa4886fdf9608711f",
   "hall.ogg": "231e5e18476cbb7f6a74cd02178f83e0a0ae949040aa163730f9e2316af7bcf6",
-  "hall.mp3": "b28121ead40c2fda07860e617fc4d6243cf44485924c5faec4524d659e33fedd"
+  "hall.mp3": "b28121ead40c2fda07860e617fc4d6243cf44485924c5faec4524d659e33fedd",
+  "title.ogg": "fc41093c43a8c5bc181c90a11b65d2dc504aedd7ec3c171612d2de97fba8a36b",
+  "title.mp3": "695cf50bb56f2db75c7814a1b6891a16296df1147bf9c12e0d93c948678b83db",
+  "dungeon.ogg": "ff345e8245926cc73a65eeabf30c42924167c27e5d9f883c9775b9d634804308",
+  "dungeon.mp3": "25652811fb773258a8c29c78a7bf247323cbbb0c76d42a0037a44ef0f51aeb2b"
  }
 }

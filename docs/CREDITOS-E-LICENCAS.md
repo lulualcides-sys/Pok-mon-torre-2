@@ -33,4 +33,4 @@ Arte Nintendo/Game Freak/Creatures, sem alegação de licença MIT/CC0. Proveni�
 ### Música da campanha — "Bite Sized RPG Tunes"
 Autor: Guy G. Gamerson. Licença: **CC0 1.0** (domínio público; o autor dispensa crédito, citado aqui por cortesia).
 Fonte: https://opengameart.org/content/bite-sized-rpg-tunes (também em https://tr-y.itch.io/bite-sized-rpg-tunes).
-Faixas usadas: Town (painel da campanha), Exploration (grama alta), Victory (cena de evolução) e End (Salão da Fama). Arquivos, SHA-256 e o hash do pacote original estão em `tools/pokearena/campaign-music/PROVENANCE.json`. A música toca só na campanha; a arena e os sons nativos do cliente-base não mudam.
+Faixas usadas: Title (abertura com o Professor Oak e escolha do inicial), Town (painel da campanha), Dungeon (painel da Liga Pokémon), Exploration (grama alta), Victory (cena de evolução) e End (Salão da Fama). Arquivos, SHA-256 e o hash do pacote original estão em `tools/pokearena/campaign-music/PROVENANCE.json`. A música toca só na campanha; a arena e os sons nativos do cliente-base não mudam.
