@@ -22,6 +22,7 @@ on:
       - 'tools/pokearena/torre2-frlg-npc.js'
       - 'tools/pokearena/torre2-battle-report.js'
       - 'tools/pokearena/campaign-art/**'
+      - 'tools/pokearena/campaign-music/**'
       - '.github/workflows/torre2-alpha0762-publish.yml'
       - 'tests/alpha0762-new-species-moves-browser.cjs'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
@@ -57,6 +58,7 @@ on:
       - 'tools/pokearena/torre2-frlg-npc.js'
       - 'tools/pokearena/torre2-battle-report.js'
       - 'tools/pokearena/campaign-art/**'
+      - 'tools/pokearena/campaign-music/**'
   workflow_dispatch:
 
 permissions:
