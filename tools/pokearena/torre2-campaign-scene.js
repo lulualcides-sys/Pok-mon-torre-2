@@ -1505,11 +1505,14 @@ create(){
    colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(...origin).setDepth(depth);
  }
  screenBanner(y,w,title,icon){
+  // The banner grows with its title so the side icons never cover the text.
+  const label=this.uiLabel(320,y,title,15,MENU_UI.amarillo,[.5,.5]);
+  w=Math.max(w,Math.ceil(label.displayWidth)+76);
   const g=this.add.graphics().setDepth(4);
   nativeMarco(g,320-w/2,y-15,w,30,'panel',{borde:MENU_UI.panelLuz});
   const layer={add:o=>o.setDepth(6)};
-  pixelIcon(this,layer,icon,320-w/2+18,y,1.5);pixelIcon(this,layer,icon,320+w/2-18,y,1.5);
-  return this.uiLabel(320,y,title,15,MENU_UI.amarillo,[.5,.5]);
+  pixelIcon(this,layer,icon,320-w/2+20,y,1.5);pixelIcon(this,layer,icon,320+w/2-20,y,1.5);
+  return label;
  }
  memberInfo(member){
   let types=[],name=member.id;
@@ -2160,34 +2163,41 @@ create(){
   this.pcFilter=PC_FILTERS.includes(this.pcFilter)?this.pcFilter:'ALL';
   const boxView=pcPageModel(state,page,this.pcFilter);
   const {page:safePage,pages:totalPages}=boxView;
-  this.screenBanner(20,260,'PC do Centro Pokémon','team');
+  this.screenBanner(20,260,'PC de armazenamento','team');
   this.button(588,20,90,24,'◀ VOLTAR',()=>{
    this.pcSelected=null;this.__torre2PcNotice=null;this.scene.restart()
   },false,8);
-  // Two native panels: party on the left, storage box on the right.
+  // Two native panels with the same grid: header, a tab/hint row, 6 rows.
   this.uiSection(8,40,312,250);this.uiSection(324,40,308,250);
-  this.uiLabel(20,54,'Equipe '+state.team.length+'/6',10,MENU_UI.amarillo);
-  this.uiLabel(310,54,'Toque para selecionar',7,MENU_UI.tenue,[1,.5]);
-  this.uiLabel(336,54,'Caixa · '+boxView.total+' Pokémon'+(boxView.shiny?' · ✦ '+boxView.shiny:''),10,MENU_UI.amarillo);
+  const ROW=i=>98+i*34,TEAM_X=164,TEAM_W=290,BOX_X=478,BOX_W=290;
+  this.uiLabel(22,55,'Equipe · '+state.team.length+'/6',10,MENU_UI.amarillo);
+  this.uiLabel(22,75,Number.isInteger(this.pcSelected)?'Selecionado: toque num Pokémon da caixa para trocar':
+   'Toque num Pokémon para selecionar',7,MENU_UI.tenue);
+  this.uiLabel(338,55,'Caixa · '+boxView.total+' Pokémon'+(boxView.shiny?' · ✦ '+boxView.shiny:''),10,MENU_UI.amarillo);
+  // Filter tabs sit under the box header, never over the rows.
+  for(const [i,filter] of PC_FILTERS.entries()){
+   const buttonLabel={ALL:'TODOS',SHINY:'✦ SHINY',KO:'KO',STATUS:'STATUS'}[filter];
+   this.button(371+i*71,75,67,19,buttonLabel,()=>{
+    this.pcFilter=filter;this.__torre2PcNotice=null;this.pcScreen(state,0);
+   },boxView.filter===filter,7).setData('torre2-pc-filter',filter);
+  }
   const empty=this.add.graphics().setDepth(3);
   for(let i=0;i<6;i++){
-   const y=79+i*34;
-   if(!state.team[i]){nativeRect(empty,24,y-14,281,29,0x081232,5,.7);
-    this.uiLabel(164,y,'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
-   if(!boxView.rows[i]&&(boxView.rows.length||i<5)){nativeRect(empty,328,y-14,277,29,0x081232,5,.7);
-    this.uiLabel(466,y,'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
+   if(!state.team[i]){nativeRect(empty,TEAM_X-TEAM_W/2,ROW(i)-14,TEAM_W,29,0x081232,5,.7);
+    this.uiLabel(TEAM_X,ROW(i),'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
+   if(boxView.rows.length&&!boxView.rows[i]){nativeRect(empty,BOX_X-BOX_W/2,ROW(i)-14,BOX_W,29,0x081232,5,.7);
+    this.uiLabel(BOX_X,ROW(i),'Espaço livre',7,MENU_UI.apagadoTexto,[.5,.5]);}
   }
   state.team.forEach((member,i)=>{
-   const y=79+i*34,selected=this.pcSelected===i;
-   this.pcRow(member,164,y,281,{selected,active:i===state.active,
+   const selected=this.pcSelected===i;
+   this.pcRow(member,TEAM_X,ROW(i),TEAM_W,{selected,active:i===state.active,
     dataKey:'torre2-pc-team-index',dataValue:i,onTap:()=>{
      this.pcSelected=i===this.pcSelected?null:i;
      this.__torre2PcNotice=null;this.pcScreen(state,safePage);
     }});
   });
   boxView.rows.forEach(({member,actualIndex},i)=>{
-   const y=79+i*34;
-   this.pcRow(member,466,y,277,{dataKey:'torre2-pc-box-index',dataValue:actualIndex,onTap:()=>{
+   this.pcRow(member,BOX_X,ROW(i),BOX_W,{dataKey:'torre2-pc-box-index',dataValue:actualIndex,onTap:()=>{
     const result=attemptTransfer(()=>{
      if(state.team.length<6)return withdrawPokemon(state,actualIndex);
      if(Number.isInteger(this.pcSelected))
@@ -2202,15 +2212,12 @@ create(){
    }});
   });
   if(!boxView.rows.length){
-   premiumSprite(this,'terminal',350,249);
-   this.uiLabel(372,249,boxView.total?'Nenhum Pokémon neste filtro':'Capture Pokémon para preencher o PC',8,MENU_UI.suave);
-  }
-  // Four one-tap filter tabs on the native Phaser screen; never alter box order.
-  for(const [i,filter] of PC_FILTERS.entries()){
-   const buttonLabel={ALL:'TODOS',SHINY:'✦ SHINY',KO:'KO',STATUS:'STATUS'}[filter];
-   this.button(363+i*69,275,65,22,buttonLabel,()=>{
-    this.pcFilter=filter;this.__torre2PcNotice=null;this.pcScreen(state,0);
-   },boxView.filter===filter,8).setData('torre2-pc-filter',filter);
+   // Empty box: one centred message instead of six empty rows.
+   const card=this.add.graphics().setDepth(3);
+   nativeRect(card,BOX_X-120,120,240,130,0x081232,8,.75);
+   premiumSprite(this,'terminal',BOX_X,160);
+   this.uiLabel(BOX_X,200,boxView.total?'Nenhum Pokémon neste filtro':'A caixa está vazia',9,'#ffffff',[.5,.5]);
+   this.uiLabel(BOX_X,220,boxView.total?'Escolha outra aba acima':'Capture Pokémon para guardar aqui',7,MENU_UI.suave,[.5,.5]);
   }
   this.button(121,306,195,26,'GUARDAR SELECIONADO',()=>{
    const result=attemptTransfer(()=>storePokemon(state,this.pcSelected));

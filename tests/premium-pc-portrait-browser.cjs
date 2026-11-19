@@ -27,9 +27,14 @@ const {chromium}=require('playwright-core');
   },[x,y]);await p.touchscreen.tap(pt.x,pt.y);await p.waitForTimeout(250)};
   await p.screenshot({path:'/workspace/pt2-evidence/pc-page3.png'});
   await p.waitForTimeout(300);
-  await tap(39,79);
+  // Tap the portrait end of the real row (wherever the PC layout puts it).
+  const portraitOf=(key,value)=>p.evaluate(([key,value])=>{const z=window.__pt2Game.scene.getScene('campanha').children.list
+   .find(o=>o.input?.enabled&&o.getData?.(key)===value);return z&&[z.x-z.width/2+15,z.y]},[key,value]);
+  const teamRow=await portraitOf('torre2-pc-team-index',0);assert.ok(teamRow,'Team row 0 missing');
+  await tap(...teamRow);
   assert.equal(await p.evaluate(()=>window.__pt2Game.scene.getScene('campanha').pcSelected),0,'Team portrait selects original row');
-  await tap(351,79+(info.index%6)*34);
+  const boxRow=await portraitOf('torre2-pc-box-index',info.index);assert.ok(boxRow,'Box row missing');
+  await tap(...boxRow);
   assert.equal(await p.evaluate(()=>pcCore.readCampaign().team.some(m=>m.uid==='portrait-test-12')),true,'Box portrait withdraws exact UID');
   assert.deepEqual(errors,[]);
   console.log('PASS_PREMIUM_PC_PORTRAIT_TOUCH_AND_PAGE3');
