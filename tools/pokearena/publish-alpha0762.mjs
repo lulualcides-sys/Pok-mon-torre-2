@@ -10,6 +10,7 @@ import {createHash} from 'node:crypto';
 import {removeNewsTitleOption} from './torre2-title-pokedex-fast.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
+import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.mjs';
 
 const site=path.resolve(process.env.TORRE2_SITE_ROOT||'_site');
 const root=path.join(site,'arena2d');
@@ -210,6 +211,9 @@ const arenaPrepared=nativeArena;
 const perfScript=await read('tools/pokearena/torre2-performance-monitor.js');
 must(perfScript.length>1500,'performance probe missing');
 const originalTitle=await read(path.join(original,'escenas/titulo.js'));
+// Offline game: the mandatory online-account screen becomes a trainer-name screen.
+const redPatched=patchAccountRequirement(await read(path.join(original,'red.js')));
+const accountPatched=patchAccountScene(await read(path.join(original,'escenas/cuenta.js')));
 const title=removeNewsTitleOption(originalTitle);
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
 
@@ -239,6 +243,7 @@ inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
 inputHash.update(virtualDex);inputHash.update(arenaPrepared);
 inputHash.update(perfScript);
+inputHash.update(redPatched);inputHash.update(accountPatched);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -248,6 +253,8 @@ await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
+await fs.writeFile(path.join(dest,'red.js'),redPatched);
+await fs.writeFile(path.join(dest,'escenas/cuenta.js'),accountPatched);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
 await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
 await fs.writeFile(path.join(dest,'escenas/pokedex.js'),virtualDex);

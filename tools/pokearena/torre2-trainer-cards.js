@@ -320,7 +320,7 @@ const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // pixel art stays as placeholder until the PNG arrives. Trainer sprites and
 // Pokémon portraits are never replaced by these.
 export const OWNER_ART_DIR='assets/ui/torre2-campaign/';
-function ownerArt(scene,layer,name,x,y,w,h,placeholder){
+function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
  const key='torre2-art-'+name;
  const slot=scene.add.container(0,0);layer.add(slot);
  const draw=()=>{
@@ -328,8 +328,8 @@ function ownerArt(scene,layer,name,x,y,w,h,placeholder){
   const tex=scene.textures.get(key),src=tex.getSourceImage();
   const sw=src.width,sh=src.height,a=w/h;
   const cw=Math.min(sw,Math.round(sh*a)),ch=Math.min(sh,Math.round(cw/a));
-  const frame='crop-'+cw+'x'+ch;
-  if(!tex.has(frame))tex.add(frame,0,Math.round((sw-cw)/2),Math.round((sh-ch)/2),cw,ch);
+  const ox=Math.round((sw-cw)*pan),frame='crop-'+cw+'x'+ch+'-'+ox;
+  if(!tex.has(frame))tex.add(frame,0,ox,Math.round((sh-ch)/2),cw,ch);
   tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
   slot.removeAll(true);
   slot.add(scene.add.image(x,y,key,frame).setOrigin(0).setDisplaySize(w,h));
@@ -345,6 +345,8 @@ function ownerArt(scene,layer,name,x,y,w,h,placeholder){
  }
  return true;
 }
+// Horizontal framing of the city illustration per card, so neighbours differ.
+const CARD_PAN=[.5,.12,.88,.32,.68];
 const artCity=stage=>stage>=8?'indigo':String(STAGES[stage]?.city||'').toLowerCase();
 function frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,fw,fh],stage,variant){
  const key='frlg-location-'+loc,frame='torre2-win-'+loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
@@ -647,7 +649,9 @@ function cityPanel(scene,layer,state,all,handlers={}){
  rectRedondo(bar,x+9,y+89,w-18,6,UI.apagado,2);
  if(done>0)rectRedondo(bar,x+9,y+89,Math.max(4,Math.round((w-18)*done/total)),6,UI.oro,2);
  // Team: always visible, real portraits, level and HP; opens the team screen.
- text(scene,layer,x+8,y+108,'SUA EQUIPE',9,UI.texto).setOrigin(0,.5);
+ let trainerName=null;try{trainerName=localStorage.getItem('torre2-trainer-name')}catch{}
+ estrechar(text(scene,layer,x+8,y+108,trainerName?'Equipe de '+trainerName:'SUA EQUIPE',9,UI.texto),w-74).setOrigin(0,.5)
+  .setData('torre2-trainer-name',trainerName||'');
  text(scene,layer,x+w-8,y+108,'₽ '+Number(state.money||0).toLocaleString('pt-BR'),9,UI.amarillo).setOrigin(1,.5);
  const team=state.team||[];
  for(let i=0;i<6;i++){
@@ -805,16 +809,33 @@ function cardsPage(scene,state,handlers){
    if(c!==visibleEntries.length)continue;
    const pw=(CARDS_PER_PAGE-c)*(CW+GAP)-GAP;
    box(scene,layer,x,y,pw,h,{alpha:.55});
-   const gymView=kind==='gym'&&gymInterior(scene,layer,x+8,y+28,pw-16,120,state.stage,0);
-   if(!gymView)scenicDiorama(scene,layer,x+8,y+28,pw-16,120,state.stage,page);
-   const rg=scene.add.graphics();layer.add(rg);aro(rg,x+7,y+27,pw-14,122,gymView?UI.oro:UI.panelBorde,6);
-   text(scene,layer,x+pw/2,y+14,state.stage>=12?'DESAFIO FINAL':
-    gymView?'GINÁSIO DE '+city.toUpperCase():'JORNADA EM KANTO',11,UI.amarillo);
-   const got=(state.badges||[]).length;
-   text(scene,layer,x+pw/2,y+168,got+' / 8 INSÍGNIAS',10,UI.texto);
-   for(let i=0;i<8;i++){const icon=drawBadgeIcon(scene,i,x+pw/2-70+i*20,y+192,i<got,1);layer.add(icon);}
-   text(scene,layer,x+pw/2,y+220,state.stage>=12?'VENÇA O CAMPEÃO DE KANTO':
-    state.stage>=8?'VENÇA A ELITE FOUR':'VENÇA O LÍDER PARA SEGUIR VIAGEM',8,UI.tenue);
+   // Works for 1 to 3 free slots: everything is sized from the panel width.
+   const narrow=pw<180,iw=pw-16,ih=narrow?Math.round(iw*156/184):120;
+   const gymView=kind==='gym'&&gymInterior(scene,layer,x+8,y+28,iw,ih,state.stage,0);
+   if(!gymView)ownerArt(scene,layer,'city-'+artCity(state.stage),x+8,y+28,iw,ih,
+    slot=>scenicDiorama(scene,slot,x+8,y+28,iw,ih,state.stage,page));
+   const rg=scene.add.graphics();layer.add(rg);aro(rg,x+7,y+27,iw+2,ih+2,gymView?UI.oro:UI.panelBorde,6);
+   const title=state.stage>=12?'DESAFIO FINAL':gymView?'GINÁSIO DE '+city.toUpperCase():
+    narrow?(state.stage>=8?'LIGA ÍNDIGO':city.toUpperCase()):'JORNADA EM KANTO';
+   estrechar(text(scene,layer,x+pw/2,y+14,title,11,UI.amarillo),pw-12);
+   if(!gymView){
+    const open=scene.add.zone(x+8+iw/2,y+28+ih/2,iw,ih).setInteractive({useHandCursor:true})
+     .setData('torre2-card-control','cards-journey-panel');
+    open.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();journeyPage(scene,state,handlers)});
+    layer.add(open);
+   }
+   const got=(state.badges||[]).length,by=y+28+ih;
+   text(scene,layer,x+pw/2,by+16,got+' / 8 INSÍGNIAS',10,UI.texto);
+   // Badges: one row when wide, 4×2 when the panel is a single slot.
+   const perRow=narrow?4:8,step=narrow?Math.min(20,Math.floor((pw-12)/4)):20;
+   for(let i=0;i<8;i++){
+    const col=i%perRow,row=Math.floor(i/perRow);
+    const icon=drawBadgeIcon(scene,i,x+pw/2-(perRow-1)*step/2+col*step,by+36+row*20,i<got,1);layer.add(icon);
+   }
+   const hint=state.stage>=12?'VENÇA O CAMPEÃO':state.stage>=8?'VENÇA A ELITE FOUR':
+    narrow?'VENÇA O LÍDER':'VENÇA O LÍDER PARA SEGUIR VIAGEM';
+   estrechar(text(scene,layer,x+pw/2,by+(narrow?78:58),hint,8,UI.tenue),pw-12);
+   if(!gymView&&!narrow)text(scene,layer,x+pw/2,by+(narrow?92:72),'TOQUE NA IMAGEM PARA VER O MAPA',7,UI.tenue);
    continue;
   }
   trainerCardFrame(scene,layer,x,y,w,h,entry);
@@ -825,7 +846,8 @@ function cardsPage(scene,state,handlers){
   // Regional diorama in a native ring; the FRLG trainer stands in front.
   const SH=104;
   const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.leader?0:entry.index+1):
-   ownerArt(scene,layer,'route-card',x+7,y+22,w-14,SH,slot=>routeScene(scene,slot,x+7,y+22,w-14,SH,entry.index));
+   ownerArt(scene,layer,'city-'+artCity(state.stage),x+7,y+22,w-14,SH,
+    slot=>routeScene(scene,slot,x+7,y+22,w-14,SH,entry.index),CARD_PAN[entry.index%CARD_PAN.length]);
   if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
   aro(ring,x+6,y+21,w-12,SH+2,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
@@ -905,7 +927,8 @@ function detailPage(scene,state,handlers,entry){
  const inGym=trainerCardSections(state.stage,TRAINERS_PER_GYM(state.stage))
   .find(sec=>sec.indices.includes(entry.index))?.kind==='gym';
  const viewOk=inGym?gymInterior(scene,layer,14,48,222,212,state.stage,0):
-  ownerArt(scene,layer,'route-detail',14,48,222,212,slot=>routeScene(scene,slot,14,48,222,212,entry.index));
+  ownerArt(scene,layer,'city-'+artCity(state.stage),14,48,222,212,
+   slot=>routeScene(scene,slot,14,48,222,212,entry.index),CARD_PAN[entry.index%CARD_PAN.length]);
  if(!viewOk)scenicDiorama(scene,layer,14,48,222,212,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
