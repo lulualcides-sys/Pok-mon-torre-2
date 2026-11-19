@@ -8,7 +8,12 @@ import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-ro
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {requestCardPortrait} from './card-portrait-cache.js';
-import {ball} from './campaign-art.js';
+import {ball,drawBadgeIcon} from './campaign-art.js';
+// Native Poké Arena 2D UI kit: same panels, gold buttons, Cifras font, type
+// pills and lock as the base client menus (League/Gyms). Presentation only.
+import {UI,marco,aro,rectRedondo,candado,pastillaTipo,fondoMenu} from '../ui.js';
+import {texto,estrechar,COLOR,caso} from '../config.js';
+import {buscar} from '../datos.js';
 
 const PALETTE={
  navy:0x06172b,panel:0x0c2845,body:0x123755,edge:0x3b77a6,
@@ -32,50 +37,57 @@ export const LEADER_DIALOGUE=Object.freeze([
  'Mostre que pode superar o poder dos dragões.',
  'Chegou até aqui? Agora enfrente o campeão!'
 ]);
-const TX={fontFamily:'Pixelify Sans,monospace',fontStyle:'bold'};
+// Native Cifras text (texto) keeps the base client font and its automatic
+// mobile enlargement. `size` keeps the old pixel scale of callers.
+// Native sentence case, keeping Kanto proper nouns capitalised.
+const PROPER=['Kanto','Índigo','Pokémon','Pokédex','Elite','Four','Rocket',
+ 'Pewter','Cerulean','Vermilion','Celadon','Fuchsia','Saffron','Cinnabar','Viridian','Pallet','Lavender',
+ 'Brock','Misty','Surge','Erika','Koga','Sabrina','Blaine','Giovanni','Lorelei','Bruno','Agatha','Lance'];
+const PROPER_RX=new RegExp('(^|[^\\p{L}])('+PROPER.join('|')+')(?![\\p{L}])','giu');
+function pretty(value){
+ const s=caso(String(value));
+ return s.replace(PROPER_RX,(_m,pre,word)=>pre+PROPER.find(w=>w.toLowerCase()===word.toLowerCase()))
+  // Portuguese one-letter articles/conjunctions stay lower case mid-sentence.
+  .replace(/(\s)([OAE])(?=\s)/g,(_m,sp,l)=>sp+l.toLowerCase());
+}
 function text(scene,layer,x,y,value,size=11,color='#f5f4e9',props={}){
- const t=scene.add.text(x,y,String(value),{...TX,fontSize:size+'px',
-  color,stroke:'#05111e',strokeThickness:2,...props}).setOrigin(.5);
+ const tam=Math.max(8,Math.round(size*.8));
+ const t=texto(scene,x,y,pretty(value),{tam,color,borde:3,colorBorde:UI.bordeTexto,literal:true})
+  .setOrigin(.5);
+ if(props.wordWrap)t.setWordWrapWidth(props.wordWrap.width).setAlign(props.align||'center');
  layer.add(t);return t;
 }
-function box(scene,layer,x,y,w,h,{fill=PALETTE.panel,edge=PALETTE.edge,
- accent=PALETTE.light}={}){
+const NATIVE_GREEN=0x50cc84;
+// Native marco "panel" frame (League/Gyms cards); a coloured edge only marks
+// state that is ALSO written in text (gold = next, green = defeated).
+function box(scene,layer,x,y,w,h,{edge=null,alpha=.9}={}){
  const g=scene.add.graphics();
- // Pixel-cut silhouette, quiet inset and one light edge; no nested metal bevels.
- const cut=(xx,yy,ww,hh,c)=>{
-  g.fillStyle(c);g.fillRect(xx+4,yy,ww-8,hh);
-  g.fillRect(xx+2,yy+2,ww-4,hh-4);g.fillRect(xx,yy+4,ww,hh-8);
- };
- cut(x+1,y+3,w,h,PALETTE.shadow);cut(x,y,w,h,edge);
- cut(x+1,y+1,w-2,h-3,fill);
- g.fillStyle(accent,.65);g.fillRect(x+6,y+2,w-12,1);
- g.fillStyle(0x0b1822,.4);g.fillRect(x+5,y+h-3,w-10,1);
+ const borde=edge===PALETTE.gold||edge===UI.oro?UI.oro:edge===PALETTE.green||edge===NATIVE_GREEN?NATIVE_GREEN:null;
+ marco(g,x,y,w,h,'panel',{alfa:alpha,...(borde&&{borde})});
  layer.add(g);return g;
 }
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
- id='',size=10}={}){
- box(scene,layer,x,y,w,h,{fill:muted?0x172737:gold?0x81633a:0x284c50,
-  edge:muted?0x475568:gold?0xe6c384:0x789e9b,
-  accent:muted?0x606f7d:gold?0xffe6b3:0xb3cbbb});
- const iconIds=['team','bag','center','shop','capture','train','seeker'];
- const icon=id.startsWith('cards-')&&/^cards-[0-6]$/.test(id)?iconIds[Number(id.slice(-1))]:null;
+ id='',size=10,icon=null}={}){
+ const g=scene.add.graphics();layer.add(g);
+ const paint=(hover=false)=>{
+  g.clear();
+  marco(g,x,y,w,h,muted?'apagado':gold?'oro':'azul');
+  if(hover&&!muted)aro(g,x-2,y-2,w+4,h+4,UI.anillo,6,.7);
+ };
+ paint();
  if(icon)scenicIcon(scene,layer,icon,x+12,y+h/2);
- text(scene,layer,x+w/2+(icon?8:0),y+h/2,label,size,
-  muted?'#8fa0ac':gold?'#fff5ca':'#ecf8ff');
- // The shine is paint only: no additional interactive surface or larger target.
+ const caption=text(scene,layer,x+w/2+(icon?7:0),y+h/2,label,size,
+  muted?UI.apagadoTexto:gold?UI.textoOscuro:UI.texto);
+ if(gold)caption.setStroke(UI.oroLuz,0);
+ estrechar(caption,w-(icon?28:10));
+ // Hover ring is paint only: no additional interactive surface or larger target.
  const focus=scene.add.graphics();layer.add(focus);
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
   .setInteractive({useHandCursor:!muted}).setData('torre2-card-control',id||label);
  layer.add(zone);
  let lastPress=-Infinity;
  if(!muted){
-  const shine=()=>{
-   focus.clear();
-   focus.fillStyle(gold?0xffed9a:0xbdeaff,.85);
-   focus.fillRect(x+6,y+4,Math.max(1,w-12),2);
-   focus.fillRect(x+3,y+6,2,Math.max(1,h-12));
-  };
-  zone.on('pointerover',shine).on('pointerout',()=>focus.clear());
+  zone.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
   zone.on('pointerdown',(_p,_x,_y,event)=>{
    event?.stopPropagation?.();
    const now=Date.now();
@@ -86,31 +98,11 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  }
  return zone;
 }
-// Trainer-card artwork only. Keep the approved five-column grid and FRLG
-// sprites exactly where they are; these pixel details never become hitboxes.
+// Trainer-card frame: native marco "panel" (as the League cards). Gold edge =
+// next challenge, green = defeated, plain = locked; the state is also written.
 function trainerCardFrame(scene,layer,x,y,w,h,entry){
  const edge=entry.active?PALETTE.gold:entry.completed?PALETTE.green:0x587790;
- const trim=entry.active?PALETTE.sun:entry.completed?0x7fe0a5:0x7bacc7;
- box(scene,layer,x,y+121,w,h-121,{
-  fill:entry.active?0x173e62:entry.completed?0x14374d:0x102d4a,
-  edge,accent:trim
- });
- const art=scene.add.graphics();
- // Restrained paper label and stitched lower pocket; scenery does the work.
- art.fillStyle(entry.leader?0x5e4d63:0x244d52,.96);
- art.fillRect(x+3,y+6,w-6,25);
- art.fillStyle(trim,.92);art.fillRect(x+7,y+30,w-14,2);
- art.fillStyle(entry.active?0xd7bd7a:entry.completed?0x8bb99b:0x8b9e97);
- art.fillRect(x+7,y+8,2,15);art.fillRect(x+w-9,y+8,2,15);
- art.fillStyle(0x122e36);art.fillRect(x+4,y+124,w-8,43);
- art.fillStyle(trim,.2);art.fillRect(x+9,y+139,w-18,1);
- for(let xx=x+9;xx<x+w-8;xx+=7){
-  art.fillStyle(trim,.3);art.fillRect(xx,y+165,3,1);
- }
- // State is also written in text, and never indicated by colour alone.
- art.fillStyle(trim,.8);art.fillRect(x+7,y+173,2,11);
- art.fillRect(x+w-9,y+173,2,11);
- layer.add(art);
+ box(scene,layer,x,y,w,h,{edge,alpha:entry.locked?.6:.92});
  return edge;
 }
 function npc(scene,layer,kind,x,y,scale=2.3){
@@ -180,41 +172,82 @@ function status(entry){
 export const OPPONENT_SPRITE_SCALE=0.5;
 export const OPPONENT_LIST_SPRITE_SIZE=22*OPPONENT_SPRITE_SCALE;
 export const OPPONENT_DETAIL_SPRITE_SIZE=53*OPPONENT_SPRITE_SCALE;
-function compactRoster(scene,layer,entry,x,y){
- entry.species.slice(0,6).forEach((id,i)=>{
-  const xx=x+(i%3-1)*25,yy=y+Math.floor(i/3)*17;
-  const placeholder=scene.add.graphics();ball(placeholder,xx,yy,5);layer.add(placeholder);
-  portrait(scene,layer,id,xx,yy,OPPONENT_LIST_SPRITE_SIZE);
- });
- return entry.species.length;
+const MINI=22,MINI_STEP=24;
+function miniChip(scene,layer,id,x,y,{dim=false,gold=false}={}){
+ const g=scene.add.graphics();layer.add(g);
+ rectRedondo(g,x,y,MINI,MINI,UI.contorno,4);
+ rectRedondo(g,x+1,y+1,MINI-2,MINI-2,gold?UI.oro:UI.panelBorde,3);
+ rectRedondo(g,x+2,y+2,MINI-4,MINI-4,0x0c1844,2);
+ ball(g,x+MINI/2,y+MINI/2,4);
+ const key=portrait(scene,layer,id,x+MINI/2,y+MINI/2,MINI-4);
+ if(dim&&key)layer.list.filter(o=>o.getData?.('torre2-opponent-sprite')===id).forEach(o=>o.setTint(0x6f7f9a));
+ return g;
 }
+// Always every real opponent (1–6): one row up to four, else two rows of 3.
+export const OPPONENT_CHIP_SPRITE_SIZE=MINI-4;
+function compactRoster(scene,layer,entry,x,y){
+ const list=entry.species.slice(0,6),perRow=list.length>4?3:Math.max(1,list.length);
+ list.forEach((id,i)=>{
+  const row=Math.floor(i/perRow),inRow=Math.min(perRow,list.length-row*perRow);
+  const x0=Math.round(x-(inRow*MINI_STEP-2)/2);
+  miniChip(scene,layer,id,x0+(i%perRow)*MINI_STEP,y+row*MINI_STEP,{dim:entry.locked});
+ });
+ return Math.ceil(list.length/perRow);
+}
+function typesOf(id){
+ try{
+  const m=buscar(id);if(!m?.def)return [];
+  const stage=m.etapa>0?m.def.evoluciones?.[m.etapa-1]:null;
+  return (stage?.tipos||m.def.tipos||[]).slice(0,2);
+ }catch{return []}
+}
+// Native type pills of the opponent's lead Pokémon, with readable labels.
+function typePills(scene,layer,types,cx,y){
+ if(!types.length)return;
+ const w=46,gap=3,x0=Math.round(cx-(types.length*w+(types.length-1)*gap)/2);
+ const g=scene.add.graphics();layer.add(g);
+ types.forEach((t,i)=>{
+  pastillaTipo(g,x0+i*(w+gap),y,t,w,10);
+  text(scene,layer,x0+i*(w+gap)+w/2,y+5,TYPE_PT[t]||t,8,UI.texto);
+ });
+}
+const TYPE_PT={ROCK:'PEDRA',WATER:'ÁGUA',ELECTRIC:'ELÉTRICO',GRASS:'PLANTA',POISON:'VENENO',
+ PSYCHIC:'PSÍQUICO',FIRE:'FOGO',GROUND:'TERRA',ICE:'GELO',FIGHTING:'LUTA',GHOST:'FANTASMA',
+ DRAGON:'DRAGÃO',NORMAL:'NORMAL',FLYING:'VOADOR',BUG:'INSETO',STEEL:'AÇO',DARK:'SOMBRIO',FAIRY:'FADA',MIXED:'VARIADO'};
 function extrasPage(scene,state,handlers){
  const layer=scene.add.container(0,0).setDepth(410);
  layer.setData('torre2-cards-extras',true);
  const shade=scene.add.graphics();
- shade.fillStyle(0x051324,.97);shade.fillRect(0,0,640,360);
- shade.fillStyle(0x203d43);shade.fillRect(50,32,540,286);
- shade.fillStyle(PALETTE.gold,.6);shade.fillRect(64,32,512,1);
+ shade.fillStyle(0x020a1c,.78);shade.fillRect(0,0,640,360);
+ marco(shade,96,30,448,300,'panel');
  layer.add(shade);
  layer.add(scene.add.zone(320,180,640,360).setInteractive());
- text(scene,layer,320,68,'OPÇÕES DA CAMPANHA',21,'#ffe6a2');
- text(scene,layer,320,97,'A JORNADA CONTINUA PELOS CARDS',10,'#b8d7e8');
+ text(scene,layer,320,52,'MAIS OPÇÕES',20,UI.amarillo);
+ text(scene,layer,320,74,'CAMPANHA DE KANTO',10,UI.suave);
+ const close=fn=>()=>{layer.destroy(true);fn?.()};
  const actions=[
-  ['POKÉDEX',handlers.dex],['INSÍGNIAS',handlers.badges],
-  ['ÁUDIO',handlers.audio],['REINICIAR JORNADA',handlers.reset]
+  ['CAPTURA',handlers.capture,'capture'],['TREINO',handlers.training,'train'],
+  ['VS SEEKER',handlers.rematchAtlas,'seeker'],['POKÉDEX',handlers.dex,null],
+  ['INSÍGNIAS',handlers.badges,null],['ÁUDIO',handlers.audio,null],
+  ['TELA CHEIA',()=>{if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
+   else scene.scale.startFullscreen({navigationUI:'hide'})},null],
+  ['REINICIAR JORNADA',handlers.reset,null]
  ];
- actions.forEach(([name,fn],i)=>{
-  const x=85+(i%2)*250,y=118+Math.floor(i/2)*76;
-  control(scene,layer,x,y,220,56,name,()=>{layer.destroy(true);fn?.()},
-   {id:'cards-extras-'+i,gold:name==='POKÉDEX',size:12});
+ actions.forEach(([name,fn,icon],i)=>{
+  const x=118+(i%2)*208,y=92+Math.floor(i/2)*46;
+  control(scene,layer,x,y,196,36,name,name==='TELA CHEIA'?fn:close(fn),
+   {id:'cards-extras-'+i,size:11,icon});
  });
- control(scene,layer,236,276,168,30,'VOLTAR AOS CARDS',()=>layer.destroy(true),
+ control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
- text(scene,layer,320,326,'ARTE DOS CENÁRIOS · CRÉDITOS',9,'#c6d5bd');
- const credits=scene.add.zone(320,326,260,24).setInteractive({useHandCursor:true});
- credits.on('pointerdown',()=>window.open('assets/ui/scenic/CREDITS.txt','_blank','noopener'));layer.add(credits);
+ const credits=text(scene,layer,320,322,'ARTE DOS CENÁRIOS · CRÉDITOS',8,UI.tenue);
+ const z=scene.add.zone(320,322,240,14).setInteractive({useHandCursor:true});
+ z.on('pointerdown',()=>window.open('assets/ui/scenic/CREDITS.txt','_blank','noopener'));
+ layer.add(z);credits.setData('torre2-credits',true);
  return layer;
 }
+// Four native cards per page (League width), legible on phones.
+export const CARDS_PER_PAGE=4;
 // Pure presentation: routes and gym leaders occupy distinct pages.
 // Encounter indices, save keys, click targets and original battles are untouched.
 export function trainerCardSections(stage,total){
@@ -224,7 +257,7 @@ export function trainerCardSections(stage,total){
  const sections=[];
  const pageGroup=(start,count,kind)=>{
   if(count<=0)return;
-  const pages=Math.ceil(count/5),base=Math.floor(count/pages),extra=count%pages;
+  const pages=Math.ceil(count/4),base=Math.floor(count/pages),extra=count%pages; // 4 = CARDS_PER_PAGE
   let cursor=start;
   for(let i=0;i<pages;i++){
    const size=base+(i<extra?1:0);
@@ -235,6 +268,61 @@ export function trainerCardSections(stage,total){
  pageGroup(0,routeCount,stage===8?'victory':'route');
  pageGroup(routeCount,total-routeCount+1,stage<8?'gym':'league');
  return sections;
+}
+// Left column: city identity, progress to the leader and the live team.
+function cityPanel(scene,layer,state,all){
+ const spec=STAGES[state.stage]||{},x=8,y=34,w=150,h=266;
+ box(scene,layer,x,y,w,h);
+ // City medallion: the approved regional diorama in a native gold ring.
+ scenicDiorama(scene,layer,x+8,y+8,56,56,state.stage,0);
+ const ring=scene.add.graphics();layer.add(ring);
+ aro(ring,x+7,y+7,58,58,UI.oro,6);aro(ring,x+6,y+6,60,60,UI.contorno,7);
+ const league=state.stage>=8;
+ text(scene,layer,x+108,y+18,(league?'LIGA ÍNDIGO':(spec.city||'KANTO')).toUpperCase(),12,UI.amarillo);
+ text(scene,layer,x+108,y+34,(league?(spec.leader||'ELITE'):'LÍDER '+(spec.leader||'')).toUpperCase(),9,UI.suave);
+ if(spec.type){
+  const g=scene.add.graphics();layer.add(g);pastillaTipo(g,x+82,y+44,spec.type,52,11);
+  text(scene,layer,x+108,y+50,TYPE_PT[spec.type]||spec.type,8,UI.texto);
+ }
+ // Progress to the leader: native track + gold fill, also written as n/total.
+ const total=Math.max(1,all.length-1),done=Math.min(total,state.trainer||0);
+ text(scene,layer,x+8,y+76,league?'ATÉ O DESAFIO':'ATÉ O LÍDER',8,UI.suave).setOrigin(0,.5);
+ text(scene,layer,x+w-8,y+76,done+' / '+total,9,UI.amarillo).setOrigin(1,.5);
+ const bar=scene.add.graphics();layer.add(bar);
+ rectRedondo(bar,x+8,y+84,w-16,8,UI.contorno,3);
+ rectRedondo(bar,x+9,y+85,w-18,6,UI.apagado,2);
+ if(done>0)rectRedondo(bar,x+9,y+85,Math.max(4,Math.round((w-18)*done/total)),6,UI.oro,2);
+ // Team: always visible, real portraits, level and HP; opens the team screen.
+ text(scene,layer,x+8,y+108,'SUA EQUIPE',9,UI.texto).setOrigin(0,.5);
+ text(scene,layer,x+w-8,y+108,'₽ '+Number(state.money||0).toLocaleString('pt-BR'),9,UI.amarillo).setOrigin(1,.5);
+ const team=state.team||[];
+ for(let i=0;i<6;i++){
+  const ry=y+118+i*24,m=team[i],active=i===(state.active||0)&&m;
+  const g=scene.add.graphics();layer.add(g);
+  if(active){rectRedondo(g,x+5,ry-1,w-10,23,UI.oro,4,.28);aro(g,x+5,ry-1,w-10,23,UI.oro,4,.9);}
+  rectRedondo(g,x+8,ry,21,21,UI.contorno,4);rectRedondo(g,x+9,ry+1,19,19,0x0c1844,3);
+  if(!m){ball(g,x+18,ry+10,4);g.setAlpha(.45);continue;}
+  ball(g,x+18,ry+10,4);
+  portrait(scene,layer,m.id,x+18,ry+10,19,'team');
+  const lv=m.progression?.level??m.level??'?';
+  text(scene,layer,x+34,ry+6,String(m.id).replace(/-/g,' ').toUpperCase(),8,UI.texto).setOrigin(0,.5);
+  text(scene,layer,x+w-9,ry+6,'NV '+lv,8,UI.suave).setOrigin(1,.5);
+  const hp=Math.max(0,Math.min(100,Number(m.hp??100)));
+  rectRedondo(g,x+34,ry+14,w-44,5,UI.contorno,2);
+  if(hp>0)g.fillStyle(hp>50?COLOR.vida:hp>20?COLOR.vidaMedia:COLOR.vidaBaja,1)
+   .fillRect(x+35,ry+15,Math.max(1,Math.round((w-46)*hp/100)),3);
+ }
+ const teamZone=scene.add.zone(x+w/2,y+190,w,148).setInteractive({useHandCursor:true})
+  .setData('torre2-card-control','cards-team-panel');
+ teamZone.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();handlers.pokemon?.()});
+ layer.add(teamZone);
+}
+function badgeStrip(scene,layer,state){
+ const earned=new Set(state.badges||[]);
+ for(let i=0;i<8;i++){
+  const got=earned.has(STAGES[i]?.badge)||(state.badges||[]).length>i&&!STAGES[i]?.badge;
+  const icon=drawBadgeIcon(scene,i,486+i*19,14,got,1);layer.add(icon);
+ }
 }
 function cardsPage(scene,state,handlers){
  const all=trainerCardEntries(state);
@@ -252,56 +340,95 @@ function cardsPage(scene,state,handlers){
  const visibleEntries=sections[page].indices.map(index=>all[index]);
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
- scenicBackdrop(scene,layer,state.stage);
+ // Native checkered menu background (same as League/Gyms), behind the layer.
+ // Native checkered menu background, moved INTO this layer so it covers the
+ // campaign scene's own lower layers (they stay intact underneath).
+ fondoMenu(scene,28);
+ [...(scene.fondoMenu||[])].reverse().forEach(o=>layer.addAt(o,0));
+ scene.fondoMenu=null;
+ // City identity: the approved regional backdrop as a light wash over the
+ // native background (each city keeps its own scenery and colours).
+ scenicBackdrop(scene,layer,state.stage).setAlpha(.28);
  const blocker=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(blocker);
  const city=STAGES[state.stage]?.city||'KANTO';
- text(scene,layer,16,19,'POKÉMON TORRE 2',17,'#ffe2a2').setOrigin(0,.5);
- text(scene,layer,17,38,'KANTO  ·  '+city.toUpperCase(),10,'#a6dcf4').setOrigin(0,.5);
- text(scene,layer,408,18,all.length===1?'DESAFIO':'DESAFIOS',10,'#a9c9dd');
- text(scene,layer,408,36,all.length===1?'1 / 1':(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
- control(scene,layer,465,9,54,32,'MAIS',()=>extrasPage(scene,state,handlers),
-  {id:'cards-more',size:9});
- control(scene,layer,523,9,51,32,'CHEIA',()=>{
-  if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
-  else scene.scale.startFullscreen({navigationUI:'hide'});
- },{id:'fullscreen',size:9});
- control(scene,layer,578,9,54,32,'MENU',handlers.menu,
-  {id:'menu',size:9});
- const heading=visibleEntries[0].index+1,last=visibleEntries.at(-1).index+1;
  const kind=sections[page].kind;
  const area=kind==='route'?'CAMINHO PARA '+city.toUpperCase():
   kind==='victory'?'ESTRADA DA VITÓRIA':
-  kind==='league'?(state.stage>=12?'CAMPEÃO':'LIGA ÍNDIGO · '+(STAGES[state.stage]?.leader||'ELITE FOUR').toUpperCase()):
+  kind==='league'?(state.stage>=12?'CAMPEÃO':'LIGA ÍNDIGO'):
   'GINÁSIO DE '+city.toUpperCase();
- text(scene,layer,320,68,
-  area+' · '+(heading===last?'DESAFIO '+heading:'DESAFIOS '+heading+'–'+last),
-  11,'#f8f2d6');
- for(let c=0;c<5;c++){
+ // Header exactly like native cabecera: back at left, gold title, info right.
+ control(scene,layer,6,4,74,20,'< MENU',handlers.menu,{id:'menu',size:9});
+ text(scene,layer,320,15,area,18,UI.amarillo);
+ badgeStrip(scene,layer,state);
+ cityPanel(scene,layer,state,all);
+ // Section line + pager.
+ const heading=visibleEntries[0].index+1,last=visibleEntries.at(-1).index+1;
+ text(scene,layer,174,44,(heading===last?'DESAFIO '+heading:'DESAFIOS '+heading+'–'+last)+' DE '+(all.length),9,UI.suave).setOrigin(0,.5);
+ text(scene,layer,560,44,'PÁGINA '+(page+1)+' / '+(maxPage+1),9,UI.tenue).setOrigin(1,.5);
+ control(scene,layer,568,35,30,18,'◀',()=>{
+  scene.__torre2CardPage=Math.max(0,page-1);
+  layer.destroy(true);cardsPage(scene,state,handlers);
+ },{muted:page===0,id:'cards-prev',size:10});
+ control(scene,layer,602,35,30,18,'▶',()=>{
+  scene.__torre2CardPage=Math.min(maxPage,page+1);
+  layer.destroy(true);cardsPage(scene,state,handlers);
+ },{muted:page===maxPage,id:'cards-next',size:10});
+ const CW=110,GAP=8,X0=166,CY=56,CH=244;
+ for(let c=0;c<CARDS_PER_PAGE;c++){
   const entry=visibleEntries[c];
-  if(!entry)continue;
-  const x=18+c*124,y=81,w=109,h=190;
-  const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
+  const x=X0+c*(CW+GAP),y=CY,w=CW,h=CH;
+  if(!entry){
+   // Empty slots of the last page become ONE quiet journey panel (no actions).
+   if(c!==visibleEntries.length)continue;
+   const pw=(CARDS_PER_PAGE-c)*(CW+GAP)-GAP;
+   box(scene,layer,x,y,pw,h,{alpha:.55});
+   scenicDiorama(scene,layer,x+8,y+28,pw-16,120,state.stage,page);
+   const rg=scene.add.graphics();layer.add(rg);aro(rg,x+7,y+27,pw-14,122,UI.panelBorde,6);
+   text(scene,layer,x+pw/2,y+14,state.stage>=12?'DESAFIO FINAL':'JORNADA EM KANTO',11,UI.amarillo);
+   const got=(state.badges||[]).length;
+   text(scene,layer,x+pw/2,y+168,got+' / 8 INSÍGNIAS',10,UI.texto);
+   for(let i=0;i<8;i++){const icon=drawBadgeIcon(scene,i,x+pw/2-70+i*20,y+192,i<got,1);layer.add(icon);}
+   text(scene,layer,x+pw/2,y+220,state.stage>=12?'VENÇA O CAMPEÃO DE KANTO':
+    state.stage>=8?'VENÇA A ELITE FOUR':'VENÇA O LÍDER PARA SEGUIR VIAGEM',8,UI.tenue);
+   continue;
+  }
+  trainerCardFrame(scene,layer,x,y,w,h,entry);
   const glyph=entry.leader?(state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'LÍDER'):entry.foe?.kind==='rival'?'RIVAL':
    entry.foe?.kind==='rocket'?'ROCKET':'TREINADOR';
-  text(scene,layer,x+w/2,y+15,
-   String(entry.index+1).padStart(2,'0')+'  '+glyph,10,'#f6f3da');
-  scenicDiorama(scene,layer,x+3,y+35,w-6,89,state.stage,entry.index);
-  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+102,
-   entry.leader?2.55:2.35);
-  if(entry.leader)text(scene,layer,x+w/2,y+126,
-   (entry.foe?.name||'LÍDER').toUpperCase(),10,'#ffe18f');
-  else text(scene,layer,x+w/2,y+129,
-   (entry.foe?.name||'TREINADOR').toUpperCase().slice(0,16),
-   9,'#e5f4ff');
-  // Always display 1–6 actual opponents, including on locked cards.
-  compactRoster(scene,layer,entry,x+w/2,y+146);
-  box(scene,layer,x+7,y+171,w-14,16,{fill:entry.active?0x86611e:
-   entry.completed?0x205b42:0x263b52,edge,
-   accent:entry.active?0xffe8a0:edge});
-  text(scene,layer,x+w/2,y+179,status(entry),9,
-   entry.active?'#fff3c5':entry.completed?'#c3f8d2':'#c1cbd5');
-  const zone=scene.add.zone(x+w/2,y+96,w,189)
+  text(scene,layer,x+w/2,y+12,String(entry.index+1).padStart(2,'0')+' · '+glyph,9,
+   entry.leader?UI.amarillo:entry.locked?UI.tenue:UI.texto);
+  // Regional diorama in a native ring; the FRLG trainer stands in front.
+  scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+  const ring=scene.add.graphics();layer.add(ring);
+  aro(ring,x+6,y+21,w-12,94,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
+  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+100,
+   entry.leader?2.45:2.25);
+  if(entry.locked){
+   const veil=scene.add.graphics();layer.add(veil);
+   rectRedondo(veil,x+7,y+22,w-14,92,0x06102a,5,.45);
+   candado(veil,x+w-31,y+25,24);
+  }
+  if(entry.leader&&state.stage<8){
+   const badge=drawBadgeIcon(scene,state.stage,x+18,y+34,entry.completed,1.5);layer.add(badge);
+  }
+  const name=text(scene,layer,x+w/2,y+126,
+   (entry.foe?.name||(entry.leader?'LÍDER':'TREINADOR')).toUpperCase(),10,
+   entry.leader?UI.amarillo:UI.texto);
+  estrechar(name,w-10);
+  const level=entry.leader?STAGES[state.stage]?.leaderLevels?.at(-1)??entry.foe?.level:entry.foe?.level;
+  text(scene,layer,x+w/2,y+142,'NV '+(level??'?')+' · '+entry.species.length+(entry.species.length===1?' POKÉMON':' POKÉMON'),8,UI.suave);
+  // Real opponents with native chips; lead Pokémon types as native pills.
+  const rows=compactRoster(scene,layer,entry,x+w/2,y+152);
+  typePills(scene,layer,typesOf(entry.species[0]),x+w/2,y+(rows>1?201:182));
+  // State: native pill, written and coloured (never colour alone).
+  const sg=scene.add.graphics();layer.add(sg);
+  const sx=x+8,sy=y+h-30,sw=w-16,sh=20;
+  marco(sg,sx,sy,sw,sh,entry.active?'oro':entry.completed?'panel':'apagado',
+   entry.completed?{borde:NATIVE_GREEN}:{});
+  text(scene,layer,x+w/2,sy+sh/2,entry.active?'▶ PRÓXIMO':entry.completed?'✓ VENCIDO':'BLOQUEADO',9,
+   entry.active?UI.textoOscuro:entry.completed?'#9ff0bf':UI.apagadoTexto).setStroke(entry.active?UI.oroLuz:UI.bordeTexto,entry.active?0:3);
+  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
    .setInteractive({useHandCursor:true})
    .setData('torre2-trainer-card-index',entry.index);
   zone.on('pointerdown',(_p,_x,_y,event)=>{
@@ -309,46 +436,29 @@ function cardsPage(scene,state,handlers){
    detailPage(scene,state,handlers,entry);
   });layer.add(zone);
  }
- // Last pages use their otherwise empty slots for a regional journey panel.
- // Pure presentation: no extra actions, progress writes or card hit areas.
  const visible=visibleEntries.length;
- if(visible<5){
-  const px=18+visible*124,pw=(5-visible)*124-15;
-  box(scene,layer,px,86,pw,181,{fill:0x1b3942,edge:0x5b827f,accent:0xb3cbbb});
-  text(scene,layer,px+pw/2,103,state.stage>=12?'DESAFIO FINAL':'JORNADA EM KANTO',pw>160?14:9,'#ead9ac');
-  scenicDiorama(scene,layer,px+8,119,pw-16,81,state.stage,page);
-  if(pw>160){
-   text(scene,layer,px+pw/2,215,'SUA EQUIPE',10,'#c5d9c4');
-   const team=state.team.slice(0,6),step=Math.min(52,(pw-24)/Math.max(1,team.length));
-   team.forEach((member,j)=>portrait(scene,layer,member.id,px+pw/2+(j-(team.length-1)/2)*step,241,25,'team'));
-  }else text(scene,layer,px+pw/2,232,city.toUpperCase(),8,'#c5d9c4');
- }
- const navY=278;
- control(scene,layer,16,navY,49,28,'◀',()=>{
-  scene.__torre2CardPage=Math.max(0,page-1);
-  layer.destroy(true);cardsPage(scene,state,handlers);
- },{muted:page===0,id:'cards-prev'});
- text(scene,layer,320,292,'PÁGINA '+(page+1)+' / '+(maxPage+1),
-  10,'#e8dbb7');
- control(scene,layer,574,navY,49,28,'▶',()=>{
-  scene.__torre2CardPage=Math.min(maxPage,page+1);
-  layer.destroy(true);cardsPage(scene,state,handlers);
- },{muted:page===maxPage,id:'cards-next'});
+ // Bottom bar (native): info line, four core actions + MAIS, gold primary.
+ const foe=current.foe;
+ const leaderGoal=state.stage>=12?'DESAFIO FINAL':state.stage>=8?'LIGA POKÉMON':'BATALHA PELA INSÍGNIA';
+ text(scene,layer,174,312,current.leader?'PRÓXIMO: '+(foe?.name||'LÍDER').toUpperCase()+' · '+leaderGoal:
+  'PRÓXIMO: '+(foe?.name||'TREINADOR').toUpperCase()+' · NV '+(foe?.level??'?')+' · '+current.species.length+' POKÉMON',9,UI.suave).setOrigin(0,.5);
  const bottom=[
-  ['EQUIPE',handlers.pokemon],['BOLSA',handlers.bag],
-  ['CENTRO',handlers.center],['LOJA',handlers.mart],
-  ['CAPTURA',handlers.capture],['TREINO',handlers.training],
-  ['VS SEEKER',handlers.rematchAtlas]
+  ['EQUIPE',handlers.pokemon,'team'],['BOLSA',handlers.bag,'bag'],
+  ['CENTRO',handlers.center,'center'],['LOJA',handlers.mart,'shop']
  ];
- for(let i=0;i<bottom.length;i++)
-  control(scene,layer,6+i*79,317,76,29,bottom[i][0],bottom[i][1],
-   {size:8,id:'cards-'+i});
- control(scene,layer,559,317,75,29,'VER ATUAL',()=>{
-  detailPage(scene,state,handlers,current);
- },{gold:true,id:'cards-open-current',size:8});
+ bottom.forEach(([label,fn,icon],i)=>control(scene,layer,8+i*84,324,80,30,label,fn,
+  {size:10,id:'cards-'+i,icon}));
+ control(scene,layer,344,324,70,30,'MAIS',()=>extrasPage(scene,state,handlers),
+  {id:'cards-more',size:10});
+ const cta=current.leader?(state.stage>=8?'▶ DESAFIAR':'▶ DESAFIAR LÍDER'):'▶ BATALHAR';
+ // Regular trainers: one tap to fight. Leaders: preview with their line first.
+ const primary=control(scene,layer,422,320,210,36,cta,
+  current.leader?()=>detailPage(scene,state,handlers,current):()=>handlers.battle?.(),
+  {gold:true,id:'cards-open-current',size:14});
+ primary.setData('torre2-card-primary',current.index);
  scene.__torre2CardUI={stage:state.stage,mode:'cards',total:all.length,
   page,section:sections[page].kind,active:current.index,
-  visible:visibleEntries.map(e=>e.index)};
+  visible:visibleEntries.map(e=>e.index),visibleCount:visible};
  return scene.__torre2CardUI;
 }
 function detailPage(scene,state,handlers,entry){
@@ -356,25 +466,14 @@ function detailPage(scene,state,handlers,entry){
  old?.destroy(true);
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
+ // Native menu background and two marco panels (opponent / their team).
+ fondoMenu(scene,28);
+ [...(scene.fondoMenu||[])].reverse().forEach(o=>layer.addAt(o,0));
+ scene.fondoMenu=null;
  const g=scene.add.graphics();
- g.fillStyle(0x061625);g.fillRect(0,0,640,360);
- g.fillStyle(entry.leader?0x463f50:0x24484b);g.fillRect(0,0,252,360);
- for(let i=0;i<8;i++){
-  g.fillStyle(entry.leader?0xa84345:0x367dad,.2);
-  g.fillRect(0,35+i*39,252,4);
- }
- g.fillStyle(0x0a243c);g.fillRect(252,0,388,360);
- g.fillStyle(PALETTE.gold);g.fillRect(250,0,3,360);
- // Detail-screen framing: a quiet GBA-style rail; the real NPC and PMD
- // portraits, labels and battle action keep their approved coordinates.
- g.fillStyle(0x1c4e6a);g.fillRect(265,76,359,2);
- g.fillStyle(0xc4d5dc,.5);g.fillRect(265,80,359,1);
- g.fillStyle(0x5794b5,.5);g.fillRect(265,300,357,2);
- g.fillStyle(0xffde91,.75);g.fillRect(21,262,211,2);
- for(const px of [269,615]){
-  g.fillStyle(0x8ec1d5,.75);g.fillRect(px,87,3,7);
-  g.fillRect(px,285,3,7);
- }
+ marco(g,8,40,236,298,'panel',entry.leader?{borde:UI.oro}:{});
+ marco(g,252,52,380,234,'panel');
+ aro(g,13,76,226,183,entry.leader?UI.oro:UI.panelBorde,6);
  layer.add(g);
  scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
@@ -401,14 +500,15 @@ function detailPage(scene,state,handlers,entry){
   const firstX=444-(cols-1)*stepX/2,rows=Math.ceil(species.length/3);
   for(let k=0;k<species.length;k++){
    const cx=firstX+(k%3)*stepX;
-   const cy=rows===1?150:117+Math.floor(k/3)*83;
-   box(scene,layer,cx-52,cy-36,104,74,
-    {fill:0x103454,edge:0x4f8caf,accent:0x89c9dd});
-   const placeholder=scene.add.graphics();ball(placeholder,cx,cy-15,10);layer.add(placeholder);
-   portrait(scene,layer,species[k],cx,cy-15,OPPONENT_DETAIL_SPRITE_SIZE);
-   text(scene,layer,cx,cy+9,species[k].toUpperCase().slice(0,13),9,'#f5f8fb');
+   // Two rows are compacted so they never run under the leader's dialogue.
+   const cy=rows===1?150:108+Math.floor(k/3)*62,bh=rows===1?74:58;
+   box(scene,layer,cx-52,cy-bh/2,104,bh);
+   const pdy=rows===1?-15:-10;
+   const placeholder=scene.add.graphics();ball(placeholder,cx,cy+pdy,10);layer.add(placeholder);
+   portrait(scene,layer,species[k],cx,cy+pdy,OPPONENT_DETAIL_SPRITE_SIZE);
+   text(scene,layer,cx,cy+(rows===1?9:10),species[k].toUpperCase().slice(0,13),9,UI.texto);
    const level=leader?STAGES[state.stage]?.leaderLevels?.[k]??entry.foe?.level:entry.foe?.level;
-   text(scene,layer,cx,cy+25,'NV. '+(level??'?'),9,'#ffe6a8');
+   text(scene,layer,cx,cy+(rows===1?25:22),'NV. '+(level??'?'),9,UI.amarillo);
   }
  }else text(scene,layer,445,144,'EQUIPE INDISPONÍVEL',12,'#a7bcd0');
 

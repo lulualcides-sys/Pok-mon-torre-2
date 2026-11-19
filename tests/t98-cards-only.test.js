@@ -23,7 +23,7 @@ test('Enemy party is rendered fully with genuine PMD textures at exact 50% size'
  assert.match(cards,/entry\.species\.slice\(0,6\)/);
  assert.match(cards,/compactRoster\(scene,layer,entry/);
  assert.match(cards,/const species=entry\.species\.slice\(0,6\)/);
- assert.match(cards,/portrait\(scene,layer,species\[k\],cx,cy-15,OPPONENT_DETAIL_SPRITE_SIZE\)/);
+ assert.match(cards,/portrait\(scene,layer,species\[k\],cx,cy\+pdy,OPPONENT_DETAIL_SPRITE_SIZE\)/);
  assert.doesNotMatch(cards,/entry\.locked&&!leader\?\[\]:entry\.species/);
  assert.match(cards,/nationalDex=new Map\(KANTO_DEX/);
 });
@@ -37,6 +37,6 @@ test('Retired maps do not consume campaign preload memory; original features rem
   'reset:()=>this.confirmResetJourney()','dex:()=>this.dexScreen(state)',
   'badges:()=>this.badgeCaseScreen(state)','audio:()=>this.__torre2AudioSettings?.open()'])
   assert.ok(scene.includes(token),'Missing campaign handler: '+token);
- assert.match(cards,/\['ÁUDIO',handlers\.audio\]/);
- assert.match(cards,/\['REINICIAR JORNADA',handlers\.reset\]/);
+ assert.match(cards,/\['ÁUDIO',handlers\.audio,/);
+ assert.match(cards,/\['REINICIAR JORNADA',handlers\.reset,/);
 });

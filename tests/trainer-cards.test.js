@@ -23,7 +23,7 @@ test('trainer cards are a separate native Phaser UI without changing saves or th
  assert.match(scene,/training:\(\)=>this\.enterTraining\(state\)/);
  assert.match(card,/'CAPTURA',handlers\.capture/);
  assert.match(card,/'TREINO',handlers\.training/);
- assert.match(card,/'CHEIA'/);
+ assert.match(card,/'TELA CHEIA'/);
  assert.match(card,/'MAIS'/);
  assert.doesNotMatch(card,/'MAPA',handlers\.map/);
  assert.match(card,/OPPONENT_SPRITE_SCALE=0\.5/);

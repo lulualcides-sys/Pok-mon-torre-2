@@ -15,18 +15,22 @@ const assertSafePages=(stage,total)=>{
  assert.deepEqual(indices,Array.from({length:total+1},(_,i)=>i),
   'No encounter may be omitted or repeated; save indices remain canonical');
  assert.equal(new Set(indices).size,indices.length);
- assert.ok(p.every(x=>x.indices.length>=1&&x.indices.length<=5));
+ assert.ok(p.every(x=>x.indices.length>=1&&x.indices.length<=4));
  return p;
 };
 
 test('all 8 Kanto stages isolate 3/4 intermediates + gym leader from route opponents',()=>{
  for(let stage=0;stage<8;stage++){
   const total=13+stage*2,groups=assertSafePages(stage,total);
-  const gym=groups.at(-1),intermediates=stage===0?3:4;
-  assert.equal(gym.kind,'gym');
-  assert.deepEqual(gym.indices,Array.from({length:intermediates+1},
+  // 4 cards per page: the gym (intermediates + leader) may take two pages,
+  // but those pages come last, are all 'gym' and hold exactly its encounters.
+  const intermediates=stage===0?3:4;
+  const firstGym=groups.findIndex(x=>x.kind==='gym');
+  const gymPages=groups.slice(firstGym);
+  assert.ok(firstGym>0&&gymPages.every(x=>x.kind==='gym'));
+  assert.deepEqual(allIndices(gymPages),Array.from({length:intermediates+1},
    (_,i)=>total-intermediates+i));
-  assert.ok(groups.slice(0,-1).every(x=>x.kind==='route'));
+  assert.ok(groups.slice(0,firstGym).every(x=>x.kind==='route'));
  }
 });
 
@@ -58,9 +62,9 @@ test('only card pagination and headings changed: original sprites, touch and sav
  assert.match(source,/section:sections\[page\]\.kind/);
  assert.match(source,/visible:visibleEntries\.map\(e=>e\.index\)/);
  assert.match(source,/setData\('torre2-trainer-card-index',entry\.index\)/);
- assert.match(source,/const x=18\+c\*124,y=81,w=109,h=190;/);
+ assert.match(source,/const CW=110,GAP=8,X0=166,CY=56,CH=244;/);
  assert.match(source,/scenicBackdrop\(scene,layer,state\.stage\)/);
- assert.match(source,/scenicDiorama\(scene,layer,x\+3,y\+35,w-6,89/);
+ assert.match(source,/scenicDiorama\(scene,layer,x\+7,y\+22,w-14,92/);
  assert.match(source,/kind==='route'\?'CAMINHO PARA '/);
  assert.match(source,/kind==='victory'\?'ESTRADA DA VITÓRIA'/);
  assert.match(source,/kind==='league'\?/);
