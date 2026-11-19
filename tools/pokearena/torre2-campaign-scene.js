@@ -2952,7 +2952,7 @@ create(){
   const status=row.shinyCaught?'Capturado ✦ Shiny':row.caught?'Capturado':row.seen?'Visto':'Ainda não visto';
   nativeRect(g,300,120,140,20,row.caught?0x1b5a3a:row.seen?0x2a3f78:0x1a2140,5);
   L(370,130,status,8,row.caught?'#9ff0bf':row.seen?'#dcf4fb':MENU_UI.tenue,[.5,.5]);
-  if(row.ready)L(452,130,'Disponível na Arena',7,'#9ddcf0');
+  if(row.ready&&row.seen)L(452,130,'Disponível na Arena',7,'#9ddcf0');
   // Where it appears (tall grass of each city route in the campaign).
   const where=[];
   for(let st=0;st<=8;st++){try{if(wildAvailability(st).wild.includes(row.id))where.push(STAGES[st]?.city||'Kanto')}catch{}}
