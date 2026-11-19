@@ -178,7 +178,7 @@ const server=http.createServer(async(req,res)=>{
    return {count:p.casillas.length,visibleCount:visible.length,portraits:base.map(id=>({
     id,exists:p.textures.exists('retrato-'+id),
     idle:p.anims.exists(id+'-Idle-0')})),
-    bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
+    bottom:Math.max(...p.casillas.filter(c=>Number.isFinite(c?.y)&&Number.isFinite(c?.h)).map(c=>c.y+c.h)),podium:p.peanaY,
     tabNames:p.etapas.map(x=>x.nombre)};
   });
   console.log('PHASER_POKEDEX_GEOMETRY',JSON.stringify(dexData));

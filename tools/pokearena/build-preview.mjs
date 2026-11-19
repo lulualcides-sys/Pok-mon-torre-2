@@ -616,7 +616,9 @@ patches.push(
  ]],
  ['tactil.js',[
   ['BOTONES=calcular(CONTROLES.tactil?.tam);this.botones=BOTONES;',
-   'BOTONES=calcular(CONTROLES.tactil?.tam).filter(b=>!escena.datos?.torre2||b.slot!=="mega");this.botones=BOTONES;']
+   // this.e (not the constructor-local `escena`): 0.76.2 moved this line
+   // into PanelTactil.rehacer(), where `escena` is not in scope.
+   'BOTONES=calcular(CONTROLES.tactil?.tam).filter(b=>!this.e?.datos?.torre2||b.slot!=="mega");this.botones=BOTONES;']
  ]],
  ['hud.js',[
   ['else if(l.puedeEvolucionar&&l.humano&&parpadeo)est.push(',
