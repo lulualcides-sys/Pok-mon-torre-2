@@ -582,11 +582,12 @@ create(){
   const frame=this.add.graphics().setDepth(3);
   nativeAro(frame,17,49,332,208,ready?MENU_UI.oro:MENU_UI.panelBorde,6);
   // Floor shadow so both figures stand on the same ground line.
-  frame.fillStyle(0x000000,.28).fillEllipse(140,236,60,12).fillEllipse(236,236,84,14);
+  // Leader and main Pokémon centred in the room (box centre x=183, y=153).
+  frame.fillStyle(0x000000,.28).fillEllipse(146,196,56,12).fillEllipse(224,196,80,14);
   const leaderKind=leaderSpriteKind(state.stage);
-  this.npcSprite(spriteIdForTrainer(leaderKind),140,238,3.4,5);
+  this.npcSprite(spriteIdForTrainer(leaderKind),146,198,3.4,5);
   const ace=spec.boss||spec.leaderTeam?.at(-1);
-  if(ace)this.pokemonIdleSprite(ace,236,206,92,5);
+  if(ace)this.pokemonIdleSprite(ace,224,166,92,5);
   // Right: who you face, the main Pokémon, the full team and the progress.
   const R=360;
   this.uiLabel(R,64,spec.leader||'Líder',14,MENU_UI.amarillo);
@@ -1183,9 +1184,9 @@ create(){
   const city=mapStage>=8?'indigo':String(STAGES[mapStage]?.city||'').toLowerCase();
   ownerArt(this,{add:o=>o.setDepth?.(2)},'city-'+city,18,50,290,150);
   const fr=this.add.graphics().setDepth(3);nativeAro(fr,17,49,292,152,MENU_UI.panelBorde,6);
-  fr.fillStyle(0x000000,.28).fillEllipse(110,190,50,10).fillEllipse(210,190,70,12);
-  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),110,192,3,5);
-  this.pokemonIdleSprite(foe.id,210,160,110,5);
+  fr.fillStyle(0x000000,.28).fillEllipse(130,162,50,10).fillEllipse(200,162,70,12);
+  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),130,164,3,5);
+  this.pokemonIdleSprite(foe.id,200,134,110,5);
   const R=328;
   this.uiLabel(R,64,foe.name,13,MENU_UI.amarillo);
   this.uiLabel(R,84,'Mapa de '+(STAGES[mapStage]?.city||'Kanto')+' · equipe Nv '+foe.level,8,MENU_UI.suave);
