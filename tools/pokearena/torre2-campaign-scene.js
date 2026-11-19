@@ -475,6 +475,9 @@ create(){
   }catch{return key}
  }
  backdrop(){
+  // Every drawn screen gets a new token; taps on objects of an older screen
+  // (still in Phaser's pending input list this frame) are ignored.
+  this.__torre2ScreenToken=(this.__torre2ScreenToken||0)+1;
   // Native checkered menu background of the base client.
   nativeBackground(this);
   this.screenFade();
@@ -3019,11 +3022,21 @@ create(){
     row.caught?'#9ff0bf':row.seen?MENU_UI.suave:MENU_UI.apagadoTexto);
    if(row.caught)originalBallSprite(this,x+CW-11,y+11,'pokeball',12,6);
    if(row.ready)this.uiLabel(x+CW-6,y+27,'Arena',6,'#9ddcf0',[1,.5]);
-   // Tap a card to open its Pokédex entry.
-   this.add.zone(x+CW/2,y+CH/2,CW,CH).setDepth(8).setInteractive({useHandCursor:true})
-    .setData('torre2-dex-open',row.id)
-    .on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();this.dexDetail(state,row)});
   });
+  // Tap a card to open its Pokédex entry. One scene-level listener (no
+  // per-card zones: Phaser keeps destroyed zones in its input list for a
+  // while and they could steal taps from the next screen). It is valid only
+  // while this exact Dex page is on screen and never over a real button.
+  const token=this.__torre2ScreenToken,rows=view.rows;
+  const onTap=(pointer,over)=>{
+   if(token!==this.__torre2ScreenToken||!this.scene.isActive()){this.input.off('pointerdown',onTap);return}
+   if((over||[]).some(o=>this.children.exists(o)))return;
+   const px=pointer.worldX,py=pointer.worldY,col=Math.floor((px-X0)/(CW+GX)),rw=Math.floor((py-Y0)/(CH+GY));
+   if(col<0||col>3||rw<0||rw>5||px-X0-col*(CW+GX)>CW||py-Y0-rw*(CH+GY)>CH)return;
+   const row=rows[rw*4+col];if(row)this.dexDetail(state,row);
+  };
+  this.input.on('pointerdown',onTap);
+  this.__torre2DexTap={X0,Y0,CW,CH,GX,GY};
   this.button(82,334,140,28,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,334,133,28,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);
