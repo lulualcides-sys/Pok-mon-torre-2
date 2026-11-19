@@ -1423,12 +1423,13 @@ create(){
    let types=[];try{const {def,etapa}=buscar(id);types=(etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{}
    nativeRect(cards,x,y,136,42,owned?0x50cc84:available?MENU_UI.panelBorde:MENU_UI.apagadoBorde,6);
    nativeRect(cards,x+1,y+1,134,40,available?0x0a1a46:0x081232,5);
-   nativeRect(cards,x+4,y+4,34,34,TIPOS[types[0]]??0x5f86bd,5,available?.55:.3);
+   nativeRect(cards,x+6,y+6,30,30,TIPOS[types[0]]??0x5f86bd,5,available?.55:.3);
    const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
    if(key&&this.textures.exists(key)){
     // Original PMD pixel portrait, with no silhouette substitution or VFX.
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    this.add.image(x+21,y+21,key).setDisplaySize(30,30).setAlpha(available?1:.55)
+    // Approved size (visual guard): the original 22 px PMD portrait.
+    this.add.image(x+21,y+21,key).setDisplaySize(22,22).setAlpha(available?1:.55)
      .setDepth(619).setData('torre2-grass-sprite',id);
    }
    const nice=id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
@@ -1439,9 +1440,9 @@ create(){
     this.uiLabel(x+64+k*44,y+30,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],620)});
    else this.uiLabel(x+44,y+30,'Aparece mais tarde',7,MENU_UI.apagadoTexto,[0,.5],620);
   });
-  label(320,268,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
-  modalButton(176,306,224,32,'◀ VOLTAR AO MAPA',close);
-  modalButton(464,306,224,32,'PROCURAR POKÉMON',()=>{
+  label(320,266,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
+  modalButton(176,300,224,32,'◀ VOLTAR AO MAPA',close);
+  modalButton(464,300,224,32,'PROCURAR POKÉMON',()=>{
    let found;
    try{found=startWildEncounter(state);}
    catch(error){
