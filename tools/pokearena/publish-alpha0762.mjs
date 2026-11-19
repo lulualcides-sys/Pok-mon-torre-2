@@ -61,6 +61,18 @@ const overlayNames=[
  // Campaign-only cooldown table (Arena/VS kits untouched).
  ['tools/pokearena/torre2-move-pool.js','torre2/move-pool.js']
 ];
+// New Torre 2 modules (not in the audited build): written next to the
+// overlays; refused if the audited build already has a file with that name.
+const newModuleNames=[
+ // Permanent trainer legacy, achievement rewards and the offline ranking code.
+ ['tools/pokearena/torre2-legacy.js','torre2/legacy.js']
+];
+const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
+ const content=await read(source);
+ must(content.length>900,'truncated '+source);
+ must(!(await fs.stat(path.join(original,target)).catch(()=>null)),'new module would overwrite '+target);
+ return {target,content};
+}));
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
  must(incoming.length>900,'truncated '+source);
@@ -254,6 +266,7 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
 const inputHash=createHash('sha256');
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
+for(const {target,content} of newModules)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
 inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
@@ -265,6 +278,7 @@ must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
 await fs.cp(original,dest,{recursive:true,force:false,errorOnExist:true});
 for(const {target,content} of overlays)await fs.writeFile(path.join(dest,target),content);
+for(const {target,content} of newModules)await fs.writeFile(path.join(dest,target),content);
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);

@@ -13,6 +13,8 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
+import {readLegacy,saveLegacy,syncLegacy,TITLES,titleById,ACHIEVEMENT_REWARDS,rewardLabel,claimAchievement,
+ encodeTrainerCode,decodeTrainerCode,readRanking,saveRanking,addFriend,rankingRows} from './legacy.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -354,6 +356,7 @@ create(){
   // pixels, on a native-kit stage with a dialogue box.
   // The starter and save are created only after all four dialogue pages.
   this.backdrop();
+  this.campaignMusic('title');
   this.screenBanner(20,320,'Pokémon Torre 2 · Kanto','dex');
   const g=this.add.graphics().setDepth(1);
   // Soft lab stage: light gradient, glow and floor band behind Oak.
@@ -411,6 +414,7 @@ create(){
  starterSelection(){
   if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
   this.backdrop();
+  this.campaignMusic('title');
   this.screenBanner(20,330,'Escolha seu primeiro Pokémon','team');
   this.uiLabel(ANCHO/2,46,'O companheiro que o Professor Oak entrega para a sua jornada',8,MENU_UI.suave,[.5,.5]);
   // A blocked first write must not crash Phaser or leave a phantom journey.
@@ -473,6 +477,9 @@ create(){
   }catch{return key}
  }
  backdrop(){
+  // Every drawn screen gets a new token; taps on objects of an older screen
+  // (still in Phaser's pending input list this frame) are ignored.
+  this.__torre2ScreenToken=(this.__torre2ScreenToken||0)+1;
   // Native checkered menu background of the base client.
   nativeBackground(this);
   this.screenFade();
@@ -756,6 +763,7 @@ create(){
   const center=(x,y,label,size=12,color=C.white)=>
    this.uiLabel(x,y,label,Math.max(7,Math.round(size*.8)),color,[.5,.5],7);
   this.campaignMusic('hall');
+  const legacy=this.legacySync(state);
   this.screenBanner(22,320,'★ SALÃO DA FAMA ★','badges').setData('torre2-hall-title',true);
   center(320,46,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
   // Left: the champion (the player's own Red/Leaf) on a golden podium.
@@ -768,7 +776,8 @@ create(){
   pod.fillStyle(0xffffff,.08).fillCircle(92,124,48);
   this.npcSprite(playerSpriteId(),92,171,3.6,6);
   center(92,194,champion||'Campeão',13,MENU_UI.amarillo).setData('torre2-hall-champion',champion||'');
-  center(92,210,'Campeão de Kanto',8,'#dcf4fb');
+  const hallTitle=titleById(legacy.activeTitle);
+  center(92,210,(hallTitle?hallTitle.name:'Campeão de Kanto')+' · zerou '+legacy.championRuns.length+'×',8,'#dcf4fb');
   // The eight original FireRed badges, all earned.
   const bg=this.add.graphics().setDepth(4);nativeRect(bg,22,222,140,56,0x0a1638,7,.85);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,40+(i%4)*35,238+Math.floor(i/4)*24,hall.badges.includes(HALL_BADGE_ORDER[i]),1.15).setDepth(6);
@@ -799,10 +808,12 @@ create(){
     pastillaTipo(p,px,y+106,t,46,10);this.uiLabel(px+23,y+111,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
   });
   if(!hall.team.length)center(400,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
-  center(400,322,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
+  center(480,332,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
    8,'#adcbe0');
   this.button(92,332,150,26,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}),false,8)
    .setData('torre2-hall-back',true);
+  this.button(250,332,150,26,'HISTÓRICO',()=>this.hallHistoryScreen(state,0,()=>this.hallOfFameScreen(state)),true,8)
+   .setData('torre2-hall-history',true);
   this.__torre2HallOfFame={...hall};
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
@@ -838,13 +849,20 @@ create(){
    dex:()=>this.dexScreen(state),
    badges:()=>this.badgeCaseScreen(state),
    trainerCard:()=>this.trainerCardScreen(state),
+   saveExport:()=>this.exportSave(state),
+   saveImport:()=>this.importSave(),
+   ranking:()=>this.rankingScreen(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
+  this.legacySync(state);
   this.screenFade();
-  this.campaignMusic('town');
+  // League (Victory Road, Elite Four, Champion): the dungeon theme.
+  this.campaignMusic(state.stage>=8?'dungeon':'town');
   const cards=renderTrainerCardHub(this,state,handlers);
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
+  // First visit only: point out the main buttons (never blocks input).
+  if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive())this.campaignTips()});}
   return cards;
  }
  // Only explicitly flagged QA sessions may exercise the old path engine.
@@ -1045,6 +1063,261 @@ create(){
    return false;
   }finally{this.__torre2EeveeResolving=false}
  }
+ // First-visit tips on the campaign hub: a speech bubble and a gold ring on
+ // one button at a time. Never blocks the screen (only the bubble itself is
+ // interactive), remembered on this device, and — like the base client's
+ // account prompt — skipped under browser automation unless forced.
+ campaignTips(force=false){
+  const KEY='torre2-tips-v1';
+  try{if(!force&&(localStorage.getItem(KEY)==='done'||navigator.webdriver))return false}catch{return false}
+  const steps=[
+   [422,320,210,36,'Batalhar','Toque aqui para enfrentar o próximo treinador da rota.'],
+   [166,56,464,246,'Cards da rota','Cada card é um treinador. Vença todos para desafiar o líder.'],
+   [8,324,80,30,'Equipe','Veja seus Pokémon, o HP e escolha quem luta primeiro.'],
+   [92,324,80,30,'Bolsa','Use Poções, remédios de status e ensine TMs.'],
+   [176,324,80,30,'Centro','O Centro Pokémon cura toda a equipe de graça.'],
+   [344,324,70,30,'Mais','Pokédex, insígnias, mapa, cartão do treinador e cópia do save.']
+  ];
+  const D=9200;let i=0,objs=[];
+  const clear=()=>{objs.forEach(o=>o?.active&&o.destroy());objs=[]};
+  const finish=()=>{clear();try{localStorage.setItem(KEY,'done')}catch{};this.__torre2Tips=null};
+  const show=()=>{
+   clear();
+   if(i>=steps.length)return finish();
+   const [x,y,w,h,title,body]=steps[i];
+   const ring=this.add.graphics().setDepth(D);objs.push(ring);
+   nativeAro(ring,x-3,y-3,w+6,h+6,MENU_UI.oro,8,1);
+   this.tweens.add({targets:ring,alpha:.35,duration:520,yoyo:true,repeat:-1});
+   const bw=270,bh=58,bx=Math.max(8,Math.min(632-bw,x+w/2-bw/2)),by=y>200?y-bh-12:y+h+12;
+   const b=this.add.graphics().setDepth(D+1);objs.push(b);
+   nativeRect(b,bx,by,bw,bh,MENU_UI.contorno,8);nativeRect(b,bx+2,by+2,bw-4,bh-4,0xf4f1e6,7);
+   const tx=Math.max(bx+16,Math.min(bx+bw-16,x+w/2));
+   if(y>200)b.fillStyle(0xf4f1e6,1).fillTriangle(tx-7,by+bh-2,tx+7,by+bh-2,tx,by+bh+8);
+   else b.fillStyle(0xf4f1e6,1).fillTriangle(tx-7,by+2,tx+7,by+2,tx,by-8);
+   const t=(px,py,s,c,o,txt)=>{const l=textoMenu(this,px,py,txt,{tam:s,color:c,borde:0,literal:true}).setOrigin(...o).setDepth(D+2);objs.push(l);return l};
+   t(bx+12,by+13,9,MENU_UI.textoOscuro,[0,.5],title);
+   t(bx+bw-12,by+13,7,'#36507a',[1,.5],(i+1)+' / '+steps.length);
+   estrechar(t(bx+12,by+31,7,'#24365a',[0,.5],body),bw-24);
+   const mk=(px,label,fn,gold)=>{const z=this.add.zone(px,by+bh-11,74,18).setDepth(D+3)
+     .setInteractive({useHandCursor:true}).setData('torre2-tip-'+(gold?'next':'skip'),true);
+    const g=this.add.graphics().setDepth(D+2);nativeRect(g,px-37,by+bh-20,74,17,gold?MENU_UI.oro:0xc9d4e6,5);
+    const l=t(px,by+bh-11,7,MENU_UI.textoOscuro,[.5,.5],label);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();fn()});objs.push(z,g,l)};
+   mk(bx+bw-48,i<steps.length-1?'Próxima ▶':'Entendi',()=>{i++;show()},true);
+   mk(bx+48,'Pular',finish,false);
+  };
+  this.__torre2Tips={steps:steps.length,next:()=>{i++;show()},skip:finish};
+  show();
+  return true;
+ }
+ // Short on-screen notice (save export/import feedback).
+ campaignNotice(message,color=MENU_UI.amarillo){
+  const t=this.uiLabel(320,346,message,9,color,[.5,.5],9600).setData('torre2-campaign-notice',true);
+  this.time.delayedCall(2600,()=>t.active&&t.destroy());
+  return t;
+ }
+ // Backup: download the whole campaign (plus trainer name / character) as a
+ // JSON file the player keeps outside the browser. Read-only for the save.
+ exportSave(state){
+  let name=null,gender=null;try{name=localStorage.getItem('torre2-trainer-name');gender=localStorage.getItem('torre2-trainer-gender')}catch{}
+  const campaign=readCampaign()||state;
+  const data={format:'torre2-save',version:1,exportedAt:new Date().toISOString(),trainer:{name,gender},campaign,legacy:readLegacy()};
+  try{
+   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+   a.download='torre2-save-'+new Date().toISOString().slice(0,10)+'.json';
+   document.body.appendChild(a);a.click();
+   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+   this.campaignNotice('Cópia do save baixada: '+a.download,'#9ff0bf');
+  }catch{this.campaignNotice('Não foi possível baixar a cópia','#ff9d9d')}
+  return data;
+ }
+ // Restore: pick a file, validate it, confirm in two steps, then write it
+ // through saveCampaign (which refuses broken snapshots before touching
+ // storage, and keeps the previous save as its rotating backup).
+ importSave(){
+  const input=document.createElement('input');input.type='file';input.accept='application/json,.json';
+  input.style.display='none';document.body.appendChild(input);
+  input.addEventListener('change',async()=>{
+   const file=input.files?.[0];input.remove();
+   if(!file)return;
+   if(file.size>2_000_000)return this.campaignNotice('Arquivo grande demais para um save','#ff9d9d');
+   let data;try{data=JSON.parse(await file.text())}catch{return this.campaignNotice('Arquivo inválido: não é JSON','#ff9d9d')}
+   this.confirmImport(data);
+  },{once:true});
+  input.click();
+ }
+ confirmImport(data){
+  if(data?.format!=='torre2-save'||!data.campaign||typeof data.campaign!=='object')
+   return this.campaignNotice('Este arquivo não é um save do Pokémon Torre 2','#ff9d9d');
+  const c=data.campaign,D=9400,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list.filter(o=>o.getData?.('torre2-import-ui')).forEach(o=>o.destroy())};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive().setData('torre2-import-confirm',true));
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.88).fillRect(0,0,640,360);
+  nativeMarco(g,120,70,400,210,'panel',{borde:MENU_UI.oro});
+  const L=(y,t,s,col)=>keep(this.uiLabel(320,y,t,s,col,[.5,.5],D+2));
+  L(96,'Restaurar cópia do save?',13,MENU_UI.amarillo);
+  L(122,(data.trainer?.name?'Treinador: '+data.trainer.name+' · ':'')+'Insígnias: '+((c.badges||[]).length)+' · Equipe: '+((c.team||[]).length),9,'#ffffff');
+  L(140,'Cópia de '+String(data.exportedAt||'').slice(0,10),8,MENU_UI.suave);
+  L(170,'Isso substitui o progresso atual neste aparelho.',8,'#ffd47a');
+  L(186,'O save atual fica guardado como reserva automática.',7,MENU_UI.tenue);
+  const lift=btn=>{this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+3);o.setData?.('torre2-import-ui',true)}});btn.setDepth(D+4);return keep(btn)};
+  lift(this.button(232,240,150,28,'CANCELAR',close,false,9).setData('torre2-import-cancel',true));
+  lift(this.button(408,240,150,28,'RESTAURAR',()=>{
+   try{saveCampaign(c)}catch{close();return this.campaignNotice('Save inválido: nada foi alterado','#ff9d9d')}
+   try{if(data.trainer?.name)localStorage.setItem('torre2-trainer-name',String(data.trainer.name).slice(0,12));
+    if(data.trainer?.gender==='leaf'||data.trainer?.gender==='red')localStorage.setItem('torre2-trainer-gender',data.trainer.gender)}catch{}
+   // Merge the permanent legacy (titles and completions only ever grow).
+   if(data.legacy&&typeof data.legacy==='object'){const l=readLegacy();
+    l.championRuns=[...new Set([...l.championRuns,...(Array.isArray(data.legacy.championRuns)?data.legacy.championRuns.filter(x=>typeof x==='string'):[])])];
+    for(const [k,v] of Object.entries(data.legacy.titles||{}))if(titleById(k)&&!l.titles[k])l.titles[k]=v;
+    l.bestShiny=Math.max(l.bestShiny||0,Number(data.legacy.bestShiny)||0);l.bestCaught=Math.max(l.bestCaught||0,Number(data.legacy.bestCaught)||0);
+    l.flawlessRuns=Math.max(l.flawlessRuns||0,Number(data.legacy.flawlessRuns)||0);
+    const known=new Set(l.champions.map(c=>c.run));
+    for(const c of Array.isArray(data.legacy.champions)?data.legacy.champions:[])if(c&&typeof c.run==='string'&&Array.isArray(c.team)&&!known.has(c.run))l.champions.push(c);
+    l.champions.sort((a,b)=>(a.at||0)-(b.at||0));saveLegacy(l);}
+   close();this.scene.restart();
+  },true,9).setData('torre2-import-apply',true));
+ }
+ // Permanent legacy (titles, completions): synced from the live campaign,
+ // stored apart from the save so "Reiniciar jornada" never erases it.
+ legacySync(state){
+  if(!state)return readLegacy();
+  let name=null;try{name=localStorage.getItem('torre2-trainer-name')}catch{}
+  const {legacy,earned}=syncLegacy(state,readLegacy(),Date.now(),{name});
+  saveLegacy(legacy);
+  if(earned.length)this.time?.delayedCall(700,()=>{if(this.scene.isActive())
+   this.campaignNotice('Novo título: '+earned.map(t=>t.name).join(', ')+'!',MENU_UI.amarillo)});
+  return legacy;
+ }
+ rarityColor(r){return r==='rainbow'?0xd06ad8:r==='gold'?MENU_UI.oro:r==='silver'?0xc0c8d8:MENU_UI.panelBorde}
+ titlesScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  const got=TITLES.filter(t=>legacy.titles[t.id]).length;
+  this.screenBanner(20,300,'Títulos','badges');
+  this.uiLabel(320,46,got+' de '+TITLES.length+' títulos · ficam com você mesmo ao reiniciar a jornada',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  TITLES.forEach((t,i)=>{
+   const x=16+(i%4)*154,y=64+Math.floor(i/4)*60,on=!!legacy.titles[t.id],active=legacy.activeTitle===t.id;
+   const col=on?this.rarityColor(t.rarity):MENU_UI.apagadoBorde;
+   nativeRect(g,x,y,150,56,active?0xffffff:col,7);nativeRect(g,x+2,y+2,146,52,on?0x1d2a5e:0x0a1638,6);
+   if(on&&t.rarity==='rainbow'){for(let k=0;k<6;k++)g.fillStyle([0xe85050,0xf2c34b,0x50cc84,0x6fb7f0,0x9b8ec5,0xe997bf][k],1).fillRect(x+6+k*23,y+52,22,2);}
+   estrechar(this.uiLabel(x+10,y+16,on?t.name:'???',9,on?(active?'#ffffff':MENU_UI.amarillo):'#8ea2c8'),130);
+   estrechar(this.uiLabel(x+10,y+31,t.desc,7,on?'#dcf4fb':MENU_UI.tenue),130);
+   this.uiLabel(x+10,y+45,on?(active?'◆ Em uso':'Toque para usar'):'Bloqueado',6,on?'#9ff0bf':MENU_UI.apagadoTexto);
+   if(on){const z=this.add.zone(x+75,y+28,150,56).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-title-pick',t.id);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();const l=readLegacy();l.activeTitle=t.id;saveLegacy(l);this.titlesScreen(state)});}
+  });
+  this.button(320,334,220,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-titles-back',true);
+ }
+ // Offline ranking: your code + friends' codes, ordered by completions.
+ rankingScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  let name='Treinador',gender='red';try{name=localStorage.getItem('torre2-trainer-name')||name;gender=localStorage.getItem('torre2-trainer-gender')||gender}catch{}
+  const self={name,completions:legacy.championRuns.length,titles:Object.keys(legacy.titles).length,activeTitle:legacy.activeTitle,gender};
+  const friends=readRanking(),rows=rankingRows(self,friends);
+  this.screenBanner(20,300,'Ranking de treinadores','badges');
+  this.uiLabel(320,46,'Quem zerou a campanha mais vezes · troque códigos com seus amigos',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,236);
+  const g=this.add.graphics().setDepth(3);
+  this.uiLabel(30,70,'#',8,MENU_UI.tenue);this.uiLabel(60,70,'Treinador',8,MENU_UI.tenue);
+  this.uiLabel(400,70,'Título',8,MENU_UI.tenue);this.uiLabel(600,70,'Zerou',8,MENU_UI.tenue,[1,.5]);
+  rows.slice(0,8).forEach((r,i)=>{
+   const y=84+i*26,medal=[MENU_UI.oro,0xc0c8d8,0xcd8a4a][i];
+   nativeRect(g,18,y,604,22,r.self?MENU_UI.oro:MENU_UI.panelBorde,5);nativeRect(g,19,y+1,602,20,r.self?0x2a3f78:0x0a1a46,4);
+   if(medal!==undefined){g.fillStyle(medal,1).fillCircle(32,y+11,8)}
+   this.uiLabel(32,y+11,String(i+1),8,medal!==undefined?MENU_UI.textoOscuro:'#ffffff',[.5,.5],5);
+   this.npcSprite(r.gender==='leaf'?'green_normal':'red_normal',52,y+21,.62,5);
+   estrechar(this.uiLabel(66,y+11,r.name+(r.self?' (você)':''),9,r.self?MENU_UI.amarillo:'#ffffff'),300);
+   const t=titleById(r.activeTitle);
+   estrechar(this.uiLabel(400,y+11,t?t.name:'—',8,t?'#f6dd9a':MENU_UI.tenue),150);
+   this.uiLabel(600,y+11,r.completions+'×',10,'#9ff0bf',[1,.5]);
+   if(!r.self){const z=this.add.zone(612,y+11,20,20).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-ranking-remove',r.name);
+    this.uiLabel(612,y+11,'✕',8,'#ff9daa',[.5,.5],6);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();saveRanking(readRanking().filter(f=>f.name!==r.name));this.rankingScreen(state)});}
+  });
+  if(rows.length===1)this.uiLabel(320,150,'Adicione o código de um amigo para ver quem zerou mais!',8,MENU_UI.suave,[.5,.5]);
+  this.button(118,320,200,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state));
+  this.button(330,320,196,28,'MEU CÓDIGO',()=>this.showTrainerCode(self),true).setData('torre2-ranking-mycode',true);
+  this.button(530,320,186,28,'ADICIONAR AMIGO',()=>{
+   const code=window.prompt('Cole o código de treinador do seu amigo (começa com T2-):','');
+   if(code===null)return;
+   const friend=decodeTrainerCode(code);
+   if(!friend)return this.campaignNotice('Código inválido ou incompleto','#ff9d9d');
+   if(friend.name===self.name)return this.campaignNotice('Esse é o seu próprio código','#ffd47a');
+   saveRanking(addFriend(readRanking(),friend,self.name));this.rankingScreen(state);
+   this.campaignNotice(friend.name+' entrou no ranking!','#9ff0bf');
+  }).setData('torre2-ranking-add',true);
+  this.__torre2Ranking={rows:rows.map(r=>({name:r.name,completions:r.completions,self:!!r.self}))};
+ }
+ showTrainerCode(self){
+  const code=encodeTrainerCode(self),D=9400,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list.filter(o=>o.getData?.('torre2-code-ui')).forEach(o=>o.destroy())};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive());
+  const g=keep(this.add.graphics().setDepth(D+1));g.fillStyle(0x020814,.88).fillRect(0,0,640,360);
+  nativeMarco(g,90,80,460,190,'panel',{borde:MENU_UI.oro});
+  keep(this.uiLabel(320,104,'Seu código de treinador',12,MENU_UI.amarillo,[.5,.5],D+2));
+  keep(this.uiLabel(320,124,'Mande para seus amigos: eles colam em "Adicionar amigo"',7,MENU_UI.suave,[.5,.5],D+2));
+  nativeRect(g,110,140,420,40,0xf4f1e6,6);
+  const t=keep(textoMenu(this,320,160,code,{tam:9,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(D+2));
+  estrechar(t,400);t.setData('torre2-trainer-code',code);
+  keep(this.uiLabel(320,194,self.name+' · zerou '+self.completions+'× · '+self.titles+' títulos',8,'#ffffff',[.5,.5],D+2));
+  const lift=btn=>{this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+3);o.setData?.('torre2-code-ui',true)}});btn.setDepth(D+4);return keep(btn)};
+  lift(this.button(230,240,160,28,'COPIAR',async()=>{
+   try{await navigator.clipboard.writeText(code);this.campaignNotice('Código copiado!','#9ff0bf')}
+   catch{window.prompt('Copie o código:',code)}
+  },true,9).setData('torre2-code-copy',true));
+  lift(this.button(410,240,160,28,'FECHAR',close,false,9));
+ }
+ // Hall of Fame history: every completed journey with its champion team.
+ // Read from the permanent legacy, so it survives "Reiniciar jornada".
+ hallHistoryScreen(state,page=0,back=null){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  const entries=[...legacy.champions].reverse();
+  const per=2,pages=Math.max(1,Math.ceil(entries.length/per));
+  page=Math.max(0,Math.min(pages-1,page));
+  this.screenBanner(20,330,'Histórico do Salão da Fama','badges');
+  this.uiLabel(320,46,'Campanha zerada '+legacy.championRuns.length+'× · times registrados: '+entries.length,8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  if(!entries.length){
+   this.uiLabel(320,160,'Nenhum time registrado ainda',11,'#ffffff',[.5,.5]);
+   this.uiLabel(320,180,'Zere a campanha: o time campeão fica guardado aqui para sempre.',8,MENU_UI.suave,[.5,.5]);
+  }
+  entries.slice(page*per,page*per+per).forEach((c,k)=>{
+   const y=64+k*120,n=entries.length-(page*per+k);
+   const t=titleById(c.title);
+   nativeRect(g,16,y,608,114,MENU_UI.oroBorde,8);nativeRect(g,18,y+2,604,110,0x1b1446,7);
+   g.fillStyle(MENU_UI.oroLuz,.12).fillRect(20,y+4,600,22);
+   this.uiLabel(30,y+15,'Vitória nº '+n,10,MENU_UI.amarillo);
+   const date=c.at?new Date(c.at).toLocaleDateString('pt-BR'):'';
+   estrechar(this.uiLabel(612,y+15,[c.name,t?.name,date].filter(Boolean).join(' · ')+(c.losses===0?' · Invicto':''),8,'#dcf4fb',[1,.5]),420);
+   (c.team||[]).slice(0,6).forEach((m,i)=>{
+    const x=24+i*100,cy=y+34;
+    nativeRect(g,x,cy,96,72,MENU_UI.panelBorde,6);nativeRect(g,x+2,cy+2,92,68,0x0f2352,5);
+    g.fillStyle(MENU_UI.oro,.9).fillEllipse(x+48,cy+50,64,10);g.fillStyle(MENU_UI.oroLuz,.5).fillEllipse(x+48,cy+49,44,5);
+    if(!this.pokemonIdleSprite(m.id,x+48,cy+51,40,6,null,true)){
+     try{const dex=portraitId({id:m.id}),key='torre2-portrait-'+dex;
+      requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{if(g.active)this.add.image(x+48,cy+28,key).setDisplaySize(34,34).setDepth(6)})}catch{}
+    }
+    const nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,ch=>ch.toUpperCase());
+    estrechar(this.uiLabel(x+48,cy+60,nice+(m.shiny?' ✦':''),7,m.shiny?MENU_UI.amarillo:'#ffffff',[.5,.5]),90);
+    this.uiLabel(x+90,cy+10,'Nv '+m.level,6,MENU_UI.suave,[1,.5]);
+   });
+  });
+  if(pages>1){
+   this.button(450,334,110,26,'◀ ANTERIOR',()=>this.hallHistoryScreen(state,(page-1+pages)%pages,back),false,8);
+   this.uiLabel(520,334,(page+1)+'/'+pages,8,MENU_UI.amarillo,[.5,.5]);
+   this.button(590,334,96,26,'PRÓXIMA ▶',()=>this.hallHistoryScreen(state,(page+1)%pages,back),false,8);
+  }
+  this.button(150,334,240,28,'◀ VOLTAR',()=>back?back():this.trainerCardScreen(state)).setData('torre2-hall-history-back',true);
+  this.__torre2HallHistory={count:entries.length,page,pages};
+ }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
  trainerCardScreen(state){
@@ -1054,8 +1327,9 @@ create(){
   const uid=String(state.team?.[0]?.uid||state.starter||'kanto');
   let h=7;for(const ch of uid)h=(h*31+ch.charCodeAt(0))%100000;
   const got=(state.badges||[]).length;
-  // Card colour follows progress, like the FRLG card tiers.
-  const tier=got>=8?MENU_UI.oro:got>=4?0xc0c8d8:got>=1?0xcd8a4a:0x5f86bd;
+  const legacy=this.legacySync(state),title=titleById(legacy.activeTitle);
+  // Card colour: the active permanent title's rarity, else badge progress.
+  const tier=title?this.rarityColor(title.rarity):got>=8?MENU_UI.oro:got>=4?0xc0c8d8:got>=1?0xcd8a4a:0x5f86bd;
   const g=this.add.graphics().setDepth(2);
   nativeRect(g,36,44,568,250,MENU_UI.contorno,12);
   nativeRect(g,38,46,564,246,tier,11);
@@ -1065,15 +1339,16 @@ create(){
   this.uiLabel(580,76,'ID Nº '+String(h).padStart(5,'0'),9,MENU_UI.suave,[1,.5]);
   g.fillStyle(MENU_UI.panelBorde,1).fillRect(56,96,528,1);
   const dexSeen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
-  const rows=[['Nome',name],['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
+  const rows=[['Nome',name],['Título',title?title.name:'—'],['Campanha zerada',legacy.championRuns.length+'×'],
+   ['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
    ['Pokédex',(state.dexCaught||[]).length+' capturados · '+dexSeen+' vistos'],
    ['Vitórias',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
    ['Equipe',(state.team||[]).length+' na equipe · '+(state.box||[]).length+' no PC']];
   rows.forEach(([k,v],i)=>{
-   const y=116+i*26;
-   nativeRect(g,60,y-10,340,22,i%2?0x0c1d46:0x12285a,5,.9);
+   const y=108+i*19;
+   nativeRect(g,60,y-9,340,18,i%2?0x0c1d46:0x12285a,5,.9);
    this.uiLabel(70,y+1,k,8,MENU_UI.suave);
-   estrechar(this.uiLabel(390,y+1,v,9,i===0?MENU_UI.amarillo:'#ffffff',[1,.5]),220);
+   estrechar(this.uiLabel(390,y+1,v,9,i===0||(i===1&&title)?MENU_UI.amarillo:'#ffffff',[1,.5]),220);
   });
   // The player's own FireRed character in a framed window.
   nativeRect(g,420,106,160,130,MENU_UI.contorno,8);nativeRect(g,422,108,156,126,0x1d3c7a,7);
@@ -1084,9 +1359,78 @@ create(){
   nativeRect(g,60,250,520,30,0x081436,6,.9);
   this.uiLabel(70,265,'Insígnias',8,MENU_UI.suave);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,170+i*48,265,state.badges?.includes(HALL_BADGE_ORDER[i]),1.3).setDepth(6);
-  this.button(320,330,220,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
+  this.button(86,330,150,28,'◀ VOLTAR',()=>this.renderCampaign(state),false,9)
    .setData('torre2-trainer-card-back',true);
+  const won=this.achievementList(state).filter(a=>a.done).length;
+  this.button(242,330,150,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true,9)
+   .setData('torre2-trainer-card-achievements',true);
+  this.button(398,330,150,28,'TÍTULOS '+Object.keys(legacy.titles).length,()=>this.titlesScreen(state),true,9)
+   .setData('torre2-trainer-card-titles',true);
+  this.button(554,330,150,28,'SALÃO DA FAMA',()=>this.hallHistoryScreen(state),true,9)
+   .setData('torre2-trainer-card-hall',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
+ }
+ // Achievements computed only from the existing save (read-only).
+ achievementList(state){
+  const caught=(state.dexCaught||[]).length,seen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
+  const owned=(state.team||[]).length+(state.box||[]).length,badges=(state.badges||[]).length,wins=state.wins||0;
+  const shiny=(state.dexShinyCaught||[]).length;
+  return [
+   ['Primeiro parceiro','Recebeu o Pokémon inicial',owned,1],
+   ['Primeira captura','Capturou um Pokémon selvagem',owned,2],
+   ['Colecionador','Capture 10 espécies',caught,10],
+   ['Pesquisador','Veja 50 espécies',seen,50],
+   ['Mestre da Pokédex','Capture as 151 espécies',caught,151],
+   ['Equipe completa','Tenha 6 Pokémon na equipe',(state.team||[]).length,6],
+   ['Primeira insígnia','Vença o primeiro líder',badges,1],
+   ['Meio caminho','Conquiste 4 insígnias',badges,4],
+   ['Todas as insígnias','Conquiste as 8 insígnias',badges,8],
+   ['Campeão de Kanto','Vença a Liga Pokémon',state.champion?1:0,1],
+   ['Veterano','Vença 10 batalhas',wins,10],
+   ['Lenda','Vença 50 batalhas',wins,50],
+   ['Brilho raro','Capture um Pokémon shiny',shiny,1]
+  ].map(([name,desc,value,goal])=>({name,desc,value:Math.min(value,goal),goal,done:value>=goal}));
+ }
+ achievementsScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const list=this.achievementList(state),done=list.filter(a=>a.done).length;
+  this.screenBanner(20,300,'Conquistas','badges');
+  this.uiLabel(320,46,done+' de '+list.length+' conquistadas',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  list.forEach((a,i)=>{
+   const x=16+(i%4)*154,y=64+Math.floor(i/4)*60;
+   nativeRect(g,x,y,150,56,a.done?MENU_UI.oro:MENU_UI.apagadoBorde,7);
+   nativeRect(g,x+2,y+2,146,52,a.done?0x2a3f78:0x0a1638,6);
+   // Medal.
+   g.fillStyle(MENU_UI.contorno,1).fillCircle(x+22,y+28,15);
+   g.fillStyle(a.done?MENU_UI.oroBorde:0x3a4a6a,1).fillCircle(x+22,y+28,13);
+   g.fillStyle(a.done?MENU_UI.oro:0x26324a,1).fillCircle(x+22,y+28,10);
+   this.uiLabel(x+22,y+28,a.done?'★':'?',10,a.done?MENU_UI.textoOscuro:'#5f7099',[.5,.5],5);
+   estrechar(this.uiLabel(x+42,y+16,a.name,8,a.done?MENU_UI.amarillo:'#c8d6f0'),102);
+   estrechar(this.uiLabel(x+42,y+30,a.desc,6,a.done?'#dcf4fb':MENU_UI.tenue),102);
+   const reward=ACHIEVEMENT_REWARDS[a.name],claimed=(state.achievementClaims||[]).includes(a.name);
+   if(a.done&&reward&&!claimed){
+    nativeRect(g,x+94,y+36,52,17,MENU_UI.contorno,5);nativeRect(g,x+95,y+37,50,15,MENU_UI.oro,4);
+    textoMenu(this,x+120,y+45,'Resgatar',{tam:7,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(6);
+    const z=this.add.zone(x+120,y+45,54,20).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-achievement-claim',a.name);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();
+     const cur=readCampaign()||state,next=claimAchievement(cur,a.name);
+     if(!next)return this.achievementsScreen(cur);
+     try{saveCampaign(next)}catch{return this.campaignNotice('Recompensa não salva: tente de novo','#ff9d9d')}
+     this.achievementsScreen(next);this.campaignNotice('Recompensa: '+rewardLabel(reward),'#9ff0bf');
+    });
+    estrechar(this.uiLabel(x+42,y+45,rewardLabel(reward),6,'#ffd47a'),48);
+   }else if(a.done&&reward&&claimed){this.uiLabel(x+42,y+45,'✓ '+rewardLabel(reward),6,'#9ff0bf');}
+   else if(!a.done&&a.goal>1){
+    nativeRect(g,x+42,y+40,80,6,MENU_UI.contorno,3);
+    if(a.value>0)nativeRect(g,x+43,y+41,Math.max(2,Math.round(78*a.value/a.goal)),4,0x50cc84,2);
+    this.uiLabel(x+140,y+43,a.value+'/'+a.goal,6,MENU_UI.suave,[1,.5]);
+   }else if(a.done&&!reward)this.uiLabel(x+42,y+43,'Concluída',6,'#9ff0bf');
+  });
+  this.button(220,334,190,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-achievements-back',true);
+  this.button(430,334,190,28,'VOLTAR AOS CARDS',()=>this.renderCampaign(state));
+  this.__torre2Achievements={done,total:list.length};
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
@@ -2743,6 +3087,70 @@ create(){
    fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':
     this.__torre2PcNotice?'#ffdb94':C.muted}).setOrigin(.5,.5);
  }
+ // Pokédex entry: animated sprite on a platform, number, types, where it
+ // appears in the campaign's tall grass and the evolution line. Unseen
+ // species show only a silhouette and "???". Read-only.
+ dexDetail(state,row){
+  const D=9000,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list
+   .filter(o=>o.getData?.('torre2-dex-detail-ui')).forEach(o=>o.destroy());};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive().setData('torre2-dex-detail',row.id));
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.85).fillRect(0,0,640,360);
+  nativeMarco(g,40,30,560,280,'panel',{borde:row.caught?0x50cc84:row.seen?MENU_UI.panelLuz:MENU_UI.apagadoBorde});
+  const nice=String(row.name).replace(/-/g,' ');
+  let types=[],chain=[],dexNo=String(row.index+1).padStart(3,'0');
+  try{
+   const {def,etapa}=buscar(row.id);
+   const stage=etapa>0?def.evoluciones?.[etapa-1]:def;
+   types=stage?.tipos||def.tipos||[];
+   chain=[{nombre:def.nombre,dex:def.dex,tipos:def.tipos},...(def.evoluciones||[])];
+  }catch{}
+  // Left: platform + animated sprite (dark silhouette while unseen).
+  const col=TIPOS[types[0]]??0x5f86bd,cx=170,ground=210;
+  g.fillStyle(0xffffff,.05).fillCircle(cx,150,70);
+  g.fillStyle(0x061433,.9).fillEllipse(cx,ground+6,170,34);
+  g.fillStyle(row.seen?col:0x24386e,1).fillEllipse(cx,ground+2,160,28);
+  g.fillStyle(0xffffff,.18).fillEllipse(cx,ground,130,18);
+  const ok=this.pokemonIdleSprite(row.id,cx,ground+1,130,D+3,sp=>{
+   keep(sp);if(!row.seen)sp.setTintFill(0x0a1638);
+  });
+  keep(ok);
+  if(!ok){const key='torre2-portrait-'+String(row.index+1).padStart(4,'0');
+   requestCardPortrait(this,key,'assets/pmd/'+String(row.index+1).padStart(4,'0')+'/portrait.png',()=>{
+    if(!g.active)return;const im=keep(this.add.image(cx,150,key).setDisplaySize(72,72).setDepth(D+3));
+    if(!row.seen)im.setTint(0x1b2852);});}
+  const L=(x,y,t,s,c,o=[0,.5])=>keep(this.uiLabel(x,y,t,s,c,o,D+4));
+  // Right: identity.
+  L(300,58,'Nº '+dexNo,9,MENU_UI.suave);
+  L(300,80,row.seen?nice:'???',16,row.shinyCaught?MENU_UI.amarillo:'#ffffff');
+  if(row.seen)types.slice(0,2).forEach((t,k)=>{pastillaTipo(g,300+k*64,96,t,60,14);
+   L(330+k*64,103,t[0]+t.slice(1).toLowerCase(),8,'#ffffff',[.5,.5])});
+  const status=row.shinyCaught?'Capturado ✦ Shiny':row.caught?'Capturado':row.seen?'Visto':'Ainda não visto';
+  nativeRect(g,300,120,140,20,row.caught?0x1b5a3a:row.seen?0x2a3f78:0x1a2140,5);
+  L(370,130,status,8,row.caught?'#9ff0bf':row.seen?'#dcf4fb':MENU_UI.tenue,[.5,.5]);
+  if(row.ready&&row.seen)L(452,130,'Disponível na Arena',7,'#9ddcf0');
+  // Where it appears (tall grass of each city route in the campaign).
+  const where=[];
+  for(let st=0;st<=8;st++){try{if(wildAvailability(st).wild.includes(row.id))where.push(STAGES[st]?.city||'Kanto')}catch{}}
+  L(300,158,'Onde aparece',8,MENU_UI.amarillo);
+  estrechar(L(300,174,row.seen?(where.length?'Grama alta: '+[...new Set(where)].join(', '):'Não aparece na grama alta'):'???',8,'#ffffff'),280);
+  // Evolution line.
+  L(300,200,'Linha evolutiva',8,MENU_UI.amarillo);
+  if(chain.length>1&&row.seen){
+   chain.slice(0,4).forEach((st,i)=>{
+    const x=300+i*72,dex=String(st.dex||'').padStart(4,'0'),key='torre2-portrait-'+dex;
+    nativeRect(g,x,212,40,40,MENU_UI.panelBorde,6);nativeRect(g,x+2,214,36,36,0x0a1a46,5);
+    requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
+     if(!g.active)return;keep(this.add.image(x+20,232,key).setDisplaySize(32,32).setDepth(D+3));});
+    estrechar(L(x+20,260,String(st.nombre||'').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase()),7,'#dcf4fb',[.5,.5]),64);
+    if(i<Math.min(chain.length,4)-1)L(x+56,232,'▶',8,MENU_UI.amarillo,[.5,.5]);
+   });
+  }else L(300,220,row.seen?'Não evolui':'???',8,MENU_UI.tenue);
+  const btn=this.button(320,290,180,26,'◀ FECHAR',close,false,9).setDepth(D+6).setData('torre2-dex-detail-close',true);
+  this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+5);o.setData?.('torre2-dex-detail-ui',true)}});
+  keep(btn);
+ }
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
@@ -2789,6 +3197,20 @@ create(){
    if(row.caught)originalBallSprite(this,x+CW-11,y+11,'pokeball',12,6);
    if(row.ready)this.uiLabel(x+CW-6,y+27,'Arena',6,'#9ddcf0',[1,.5]);
   });
+  // Tap a card to open its Pokédex entry. One scene-level listener (no
+  // per-card zones: Phaser keeps destroyed zones in its input list for a
+  // while and they could steal taps from the next screen). It is valid only
+  // while this exact Dex page is on screen and never over a real button.
+  const token=this.__torre2ScreenToken,rows=view.rows;
+  const onTap=(pointer,over)=>{
+   if(token!==this.__torre2ScreenToken||!this.scene.isActive()){this.input.off('pointerdown',onTap);return}
+   if((over||[]).some(o=>this.children.exists(o)))return;
+   const px=pointer.worldX,py=pointer.worldY,col=Math.floor((px-X0)/(CW+GX)),rw=Math.floor((py-Y0)/(CH+GY));
+   if(col<0||col>3||rw<0||rw>5||px-X0-col*(CW+GX)>CW||py-Y0-rw*(CH+GY)>CH)return;
+   const row=rows[rw*4+col];if(row)this.dexDetail(state,row);
+  };
+  this.input.on('pointerdown',onTap);
+  this.__torre2DexTap={X0,Y0,CW,CH,GX,GY};
   this.button(82,334,140,28,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,334,133,28,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);

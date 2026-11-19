@@ -24,6 +24,7 @@ on:
       - 'tools/pokearena/torre2-party-battle.js'
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tools/pokearena/torre2-title-pokedex-fast.mjs'
+      - 'tools/pokearena/torre2-legacy.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
       - '.github/workflows/torre2-alpha0762-publish.yml'
@@ -63,6 +64,7 @@ on:
       - 'tools/pokearena/torre2-party-battle.js'
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tools/pokearena/torre2-title-pokedex-fast.mjs'
+      - 'tools/pokearena/torre2-legacy.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
   workflow_dispatch:
