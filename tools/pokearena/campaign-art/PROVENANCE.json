@@ -26,7 +26,13 @@
   "route-detail.png": "c6fb5aacea0eb4d9871e9a8afc816a2891c97df4e7d4085ea734ad45a91591ae",
   "journey-bg.png": "f81468f466eca171ec46db834ae26f1a52ad3406934a1170d9acb16747f477df",
   "icon-center.png": "43c32f12d67ce69bb413127ba085448dc15e81b7968e9e7c726a42b504d98730",
-  "icon-mart.png": "63fda8451f83aa6527ab4d61669e4e13714e5b9fc885a0d3b6b015dcdd3d0af4"
+  "icon-mart.png": "63fda8451f83aa6527ab4d61669e4e13714e5b9fc885a0d3b6b015dcdd3d0af4",
+  "lair-cave.png": "fbaa7c5c3432e873e757deb71f531ed1f7a4ed7c05c2a79bc3e9149ccaeb010d",
+  "lair-ember.png": "8a1d76644b5b0bb7913279b6d14acfd0f0650029c0b0dcf67ca6a482cf65fee8",
+  "lair-seafoam.png": "c65ed5eb549ec05a6df220e913af6c9bd2cea20928140a1f7286752613f2c670",
+  "lair-powerplant.png": "17341ad429a551b078aeefa84247d08405481d94299865a254b29f1ecf08abdc",
+  "lair-faraway.png": "8f344fe0989b5cb285a7119ffbee3448c3897f14cb7ed96effc77726f280d2e3",
+  "silph-office.png": "d717a6a107be4bdc7b2f629e0ad58133d710514ac92c2b3e8a0e2326ee39b8e9"
  },
  "derived": {
   "icon-center.png": {
@@ -48,6 +54,66 @@
     72
    ],
    "note": "Prédio da Poké Mart, fundo removido; ícone do botão Loja."
+  },
+  "lair-cave.png": {
+   "source": "Prancha dos covis dos lendários enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    14,
+    48,
+    808,
+    246
+   ],
+   "note": "Cenário de Caverna de Cerulean recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "lair-ember.png": {
+   "source": "Prancha dos covis dos lendários enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    851,
+    48,
+    807,
+    246
+   ],
+   "note": "Cenário de Monte Ember recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "lair-seafoam.png": {
+   "source": "Prancha dos covis dos lendários enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    15,
+    433,
+    806,
+    203
+   ],
+   "note": "Cenário de Ilhas Seafoam recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "lair-powerplant.png": {
+   "source": "Prancha dos covis dos lendários enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    851,
+    431,
+    806,
+    206
+   ],
+   "note": "Cenário de Usina Elétrica recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "lair-faraway.png": {
+   "source": "Prancha dos covis dos lendários enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    219,
+    747,
+    1233,
+    125
+   ],
+   "note": "Cenário de Ilha Distante recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "silph-office.png": {
+   "source": "Sala do presidente da Silph Co. enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    0,
+    0,
+    1671,
+    941
+   ],
+   "note": "Imagem inteira reduzida à metade (835×470) e a 256 cores; cenário da batalha contra o Giovanni que dá a Master Ball."
   }
  }
 }

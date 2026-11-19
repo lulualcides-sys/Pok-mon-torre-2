@@ -23,7 +23,10 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
- ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove} from './campaign-core.js';
+ ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
+ startSilphBattle,resolveSilphBattle} from './campaign-core.js';
+import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
+import {drawLegendaryLair,drawLairAmbient,LAIR_SPOT,drawSilphOfficeArt} from './legendary-lairs.js';
 import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -249,6 +252,10 @@ create(){
       outcome=resolveRematch(next,marker.ticket,!!completed.won);
       kind='rematch';
      }
+    }else if(marker.kind==='silph'){
+     applyPartyBattleResult(next,marker.party);
+     outcome=resolveSilphBattle(next,marker.token,!!completed.won);
+     kind='trainer';
     }else if(marker.stage===next.stage&&marker.trainer===next.trainer){
      applyPartyBattleResult(next,marker.party);
      const wild=marker.kind==='wild'&&next.pendingWild?.id===marker.id;
@@ -610,7 +617,10 @@ create(){
     feet.set(key,(row+1)/idle.fh);
    }
    const box=this.__torre2Box?.get(key);
-   if(fitContent&&box)s=Math.min(3,maxSize/Math.max(box.w,box.h));
+   if(fitContent&&box)s=fitContent==='height'?
+    // Same visible height for every species; very wide ones are capped.
+    Math.min(3,maxSize/box.h,maxSize*1.6/box.w):
+    Math.min(3,maxSize/Math.max(box.w,box.h));
    const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
    onReady?.(sprite);
@@ -852,6 +862,8 @@ create(){
    saveExport:()=>this.exportSave(state),
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
+   legendaries:()=>this.legendaryHub(state),
+   silph:()=>this.silphScreen(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
@@ -1317,6 +1329,149 @@ create(){
   }
   this.button(150,334,240,28,'◀ VOLTAR',()=>back?back():this.trainerCardScreen(state)).setData('torre2-hall-history-back',true);
   this.__torre2HallHistory={count:entries.length,page,pages};
+ }
+ // Legendary lairs are genuine pixel art (legendary-lairs.js): painted on a
+ // small canvas and shown at 2× with nearest-neighbour, like the GBA screen.
+ legendaryStatusFor(state,id){return legendaryStatus(state,id,currentLevelCap(state.stage))}
+ // List of the five legendaries and where they wait.
+ legendaryHub(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  this.screenBanner(20,300,'Lendários de Kanto','badges');
+  this.uiLabel(320,46,'Um encontro único em cada lugar · lute, enfraqueça e capture',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,250);
+  const g=this.add.graphics().setDepth(3);
+  const colors={ELECTRIC:0xf2c232,ICE:0x7fd0f0,FIRE:0xf07030,PSYCHIC:0xd070c0};
+  LEGENDARIES.forEach((leg,i)=>{
+   const x=16+i*122,y=64,st=this.legendaryStatusFor(state,leg.id),locked=st.state==='locked';
+   const col=colors[leg.type]??MENU_UI.panelBorde;
+   nativeRect(g,x,y,118,234,locked?MENU_UI.apagadoBorde:col,8);nativeRect(g,x+2,y+2,114,230,locked?0x0a1638:0x1b1446,7);
+   // A slice of the lair illustration behind the legendary (darker if locked).
+   const art=this.add.container(0,0).setDepth(4);
+   ownerArt(this,art,'lair-'+leg.scene,x+3,y+3,112,140,null,.5,.5);
+   const veil=this.add.graphics().setDepth(4.5);veil.fillStyle(0x0a0a20,locked?.62:.18).fillRect(x+3,y+3,112,140);
+   veil.fillStyle(locked?MENU_UI.apagadoBorde:col,1).fillRect(x+3,y+143,112,2);
+   const seen=(state.dexSeen||[]).includes(leg.id)||!locked;
+   const ground=Math.round(y+3+140*(LAIR_SPOT[leg.scene]??.82));
+   const spr=this.pokemonIdleSprite(leg.id,x+59,ground,58,6,s=>{if(!seen)s.setTint(0x101828)},'height');
+   if(spr&&!seen)spr.setTint?.(0x101828);
+   if(!seen)this.uiLabel(x+59,ground-30,'?',22,'#4a5f8c',[.5,.5],7);
+   this.uiLabel(x+59,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]);
+   estrechar(this.uiLabel(x+59,y+170,leg.place,7,'#dcf4fb',[.5,.5]),110);
+   const label={caught:'✔ CAPTURADO',available:'DISPONÍVEL · '+st.reason,locked:'BLOQUEADO',gone:'FOI EMBORA'}[st.state]||'';
+   estrechar(this.uiLabel(x+59,y+190,label,7,st.state==='caught'?'#9ff0bf':st.state==='available'?'#ffe08a':'#ff9daa',[.5,.5]),110);
+   if(st.state!=='available'&&st.state!=='caught')estrechar(this.uiLabel(x+59,y+206,st.reason,6,MENU_UI.tenue,[.5,.5]),110);
+   const z=this.add.zone(x+59,y+117,118,234).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-legendary-card',leg.id);
+   z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();sfx('seleccion');this.legendaryLair(state,leg.id)});
+  });
+  this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state)).setData('torre2-legendary-back',true);
+  const mb=state.inventory?.masterball||0;
+  originalBallSprite(this,420,330,'masterball',18,9);
+  this.uiLabel(436,330,'Master Ball ×'+mb,8,mb?'#e8c8ff':MENU_UI.tenue,[0,.5]);
+  this.button(566,330,120,26,'SILPH CO.',()=>this.silphScreen(state),!state.masterBallGiven,8).setData('torre2-hub-silph',true);
+  this.__torre2LegendaryHub=LEGENDARIES.map(l=>({id:l.id,...this.legendaryStatusFor(state,l.id)}));
+ }
+ // The lair itself: the place drawn, the legendary waiting, and the challenge.
+ legendaryLair(state,id){
+  const leg=legendaryById(id);if(!leg)return this.legendaryHub(state);
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const st=this.legendaryStatusFor(state,id),locked=st.state==='locked';
+  this.screenBanner(20,300,leg.place,'badges');
+  // The owner's illustration of the place (campaign-art lair-*.png, cover
+  // fit); the original pixel-art drawing is only shown while it loads.
+  const LX=14,LY=44,LW=612,LH=190;
+  const fr=this.add.graphics().setDepth(1.5);nativeRect(fr,LX-4,LY-4,LW+8,LH+8,MENU_UI.contorno,8);
+  const layer=this.add.container(0,0).setDepth(2);
+  ownerArt(this,layer,'lair-'+leg.scene,LX,LY,LW,LH,slot=>{
+   const fallback=drawLegendaryLair(this,leg.scene,LX,LY,LW,LH);
+   fallback.objects.forEach(o=>slot.add(o));
+  });
+  drawLairAmbient(this,leg.scene,LX,LY,LW,LH);
+  const spot={x:LX+LW/2,y:Math.round(LY+LH*(LAIR_SPOT[leg.scene]??.82))};
+  nativeAro(this.add.graphics().setDepth(2.8),LX-2,LY-2,LW+4,LH+4,MENU_UI.panelBorde,7);
+  if(st.state==='available'){
+   const s=this.pokemonIdleSprite(id,spot.x,spot.y,78,6,null,'height');
+   if(s&&['zapdos','articuno','moltres','mew'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+  }else{
+   const note={caught:'Você já capturou '+leg.name+'.',gone:leg.name+' foi embora. '+st.reason+'.',locked:'Algo poderoso vive aqui… '+st.reason+'.'}[st.state];
+   const box=this.add.graphics().setDepth(5);nativeRect(box,spot.x-170,spot.y-40,340,34,MENU_UI.panelBorde,7);nativeRect(box,spot.x-168,spot.y-38,336,30,0x0a1a46,6);
+   estrechar(this.uiLabel(spot.x,spot.y-23,note,9,'#ffffff',[.5,.5],6),320);
+  }
+  this.uiSection(10,244,620,32);
+  const show=!locked;
+  this.uiLabel(24,260,show?leg.name+' · Nv '+legendaryLevel(state,leg,currentLevelCap(state.stage))+(state.champion?'':' (limite da sua etapa)'):'???',10,MENU_UI.amarillo,[0,.5],4);
+  const inv=state.inventory||{};
+  estrechar(this.uiLabel(616,260,'Ultra ×'+(inv.ultraball||0)+' · Great ×'+(inv.greatball||0)+' · Poké ×'+(inv.pokeball||0)+' · Master ×'+(inv.masterball||0)+' · Dica: sono/paralisia e HP baixo',7,'#dcf4fb',[1,.5],4),360);
+  const LORE={powerplant:'Uma usina abandonada onde a eletricidade nunca para de estalar.',seafoam:'Ilhas geladas no meio do mar, varridas por neve o ano inteiro.',ember:'Dizem que o pico deste vulcão brilha em chamas durante a noite.',cave:'A caverna mais profunda de Kanto. Só os campeões podem entrar.',faraway:'Uma ilha escondida, coberta de mata e grama alta.'};
+  estrechar(this.uiLabel(320,296,LORE[leg.scene]||'',9,'#dcf4fb',[.5,.5],4),600);
+  this.button(130,334,220,28,'◀ VOLTAR',()=>this.legendaryHub(state)).setData('torre2-lair-back',true);
+  if(st.state==='available')
+   this.button(470,334,260,28,'ENFRENTAR '+leg.name.toUpperCase(),()=>{
+    const r=startLegendaryEncounter(state,id);
+    if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+    this.enterBattle(state,true);
+   },true).setData('torre2-lair-fight',id);
+  this.__torre2Lair={id,state:st.state,scene:leg.scene};
+ }
+ // Silph Co., president's office: beat Giovanni to get the Master Ball.
+ // The owner's room art (campaign-art silph-office.png) with Giovanni and his
+ // ace on the rug; a separate battle that never moves the trainer ladder.
+ silphScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const st=silphStatus(state),team=silphTeam(state,currentLevelCap(state.stage));
+  this.screenBanner(20,330,'Silph Co. · Sala do presidente','badges');
+  const AX=12,AY=44,AW=360,AH=203;
+  const fr=this.add.graphics().setDepth(1.5);nativeRect(fr,AX-4,AY-4,AW+8,AH+8,MENU_UI.contorno,8);
+  const layer=this.add.container(0,0).setDepth(2);
+  ownerArt(this,layer,'silph-office',AX,AY,AW,AH,slot=>{slot.add(drawSilphOfficeArt(this,AX,AY,AW,AH).image);});
+  nativeAro(this.add.graphics().setDepth(2.8),AX-2,AY-2,AW+4,AH+4,MENU_UI.panelBorde,7);
+  const gx=AX+AW/2,gy=Math.round(AY+AH*.63);
+  const sh=this.add.graphics().setDepth(4);sh.fillStyle(0x000000,.3).fillEllipse(gx-26,gy+1,30,7).fillEllipse(gx+30,gy+1,40,8);
+  if(st.state!=='done'){
+   this.npcSprite(spriteIdForTrainer('giovanni'),gx-26,gy+2,2,5).setData?.('torre2-silph-giovanni',true);
+   this.pokemonIdleSprite(team.at(-1).id,gx+30,gy+2,52,5,null,'height');
+  }else{
+   originalBallSprite(this,gx,gy-14,'masterball',28,6);
+  }
+  // Right panel: who, his team and the prize.
+  this.uiSection(384,44,246,203);
+  const g=this.add.graphics().setDepth(3);
+  this.uiLabel(398,62,'Giovanni',13,MENU_UI.amarillo);
+  this.uiLabel(398,80,'Chefe da Equipe Rocket',8,MENU_UI.suave);
+  estrechar(this.uiLabel(398,98,'A Equipe Rocket tomou a Silph Co. para roubar a Master Ball!',7,'#dcf4fb'),222);
+  team.forEach((m,i)=>{
+   const x=398+i*57,y=114;
+   nativeRect(g,x,y,53,58,MENU_UI.panelBorde,6);nativeRect(g,x+1,y+1,51,56,0x0f2352,5);
+   this.pokemonIdleSprite(m.id,x+26,y+42,30,5,null,'height');
+   this.uiLabel(x+26,y+51,'Nv '+m.level,6,'#ffffff',[.5,.5],6);
+  });
+  nativeRect(g,394,182,226,52,MENU_UI.oroBorde,7);nativeRect(g,396,184,222,48,0x2a1d52,6);
+  originalBallSprite(this,416,208,'masterball',24,5);
+  this.uiLabel(436,198,'Recompensa',8,MENU_UI.suave);
+  this.uiLabel(436,214,'MASTER BALL + $'+SILPH_GIOVANNI.money,10,'#e8c8ff');
+  const note={available:'Vença os 4 Pokémon do Giovanni. Se perder, pode tentar de novo.',locked:st.reason,
+   done:'O presidente da Silph Co. agradece: a Master Ball é sua!'}[st.state];
+  estrechar(this.uiLabel(320,268,note,9,st.state==='done'?'#9ff0bf':st.state==='locked'?'#ff9daa':'#ffffff',[.5,.5],4),600);
+  this.button(130,334,220,28,'◀ VOLTAR',()=>this.renderCampaign(state)).setData('torre2-silph-back',true);
+  if(st.state==='available')
+   this.button(470,334,260,28,'Enfrentar Giovanni',()=>this.enterSilphBattle(state),true).setData('torre2-silph-fight',true);
+  this.__torre2Silph={state:st.state,team:team.map(m=>m.id+':'+m.level)};
+ }
+ enterSilphBattle(state){
+  const r=startSilphBattle(state);
+  if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+  const ace=r.team.at(-1),base={...state,stage:Math.min(state.stage,STAGES.length-1)};
+  const party=createPartyMatch(base,{id:ace.id,level:ace.level,leader:false,kind:'rocket'},false);
+  party.foes=r.team.map(({id,level})=>({id,level,hp:100,shiny:false,
+   loadout:resolveLoadout({id,progression:{species:id,level}})}));
+  party.enemyIndex=0;party.strategic=true;
+  const p=party.friend[party.playerIndex],e=party.foes[0];
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'dificil',arena:'neon',mandos:[touch?'tactil':'kbm','cpu'],
+   torre2:{stage:state.stage,trainer:state.trainer,kind:'silph',token:r.token,party,
+    versus:{name:'GIOVANNI',city:'SILPH CO. · SAFFRON',kind:'giovanni',
+     texture:'frlg-npc-'+spriteIdForTrainer('giovanni'),title:'CHEFE DA EQUIPE ROCKET'},
+    playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},
+   torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).

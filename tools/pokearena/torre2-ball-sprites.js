@@ -9,9 +9,10 @@ const PALETTE={
  'C':0xa80000,'E':0xb0c8e0,'G':0xb82858,'H':0xc89808,'R':0xf86088,
  'I':0xd02828,'K':0xd84070,'L':0xd86000,
  'N':0xe08020,'P':0xe8a040,'S':0xf89878,
- 'T':0xf8c060,'U':0xf8f808,'V':0xf8f8f8
+ 'T':0xf8c060,'U':0xf8f808,'V':0xf8f8f8,
+ 'a':0x5a2a8a,'b':0x8a48c8,'c':0xc8a0f0,'d':0x3a1858
 };
-const BALL_FRAMES=Object.freeze({
+const BALL_FRAMES=({
  pokeball:[
  [
  '................','......0000......','....00CCCC00....',
@@ -61,6 +62,12 @@ const BALL_FRAMES=Object.freeze({
  ]
  ]
 });
+// Master Ball: same 16x16 shape as the approved Poké Ball, purple shell and
+// the two pink bumps of the FireRed Master Ball (recolour, no new rip).
+const MASTER_SWAP={C:'a',I:'b',S:'c','6':'d'};
+BALL_FRAMES.masterball=BALL_FRAMES.pokeball.map((rows,frame)=>rows.map((row,y)=>
+ [...row].map((ch,x)=>frame===0&&y===3&&(x===5||x===10)?'R':MASTER_SWAP[ch]||ch).join('')));
+Object.freeze(BALL_FRAMES);
 export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=false){
  const atlas=BALL_FRAMES[kind]||BALL_FRAMES.pokeball;
  const rows=atlas[Math.abs(Math.sin(angle))>.48?1:0];

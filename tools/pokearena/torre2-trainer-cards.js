@@ -592,7 +592,9 @@ function extrasPage(scene,state,handlers){
  actions.push(['SALVAR CÓPIA',handlers.saveExport,'bag']);
  actions.push(['RESTAURAR CÓPIA',handlers.saveImport,'bag']);
  actions.push(['RANKING',handlers.ranking,'badges']);
- // Three columns so all thirteen options fit above VOLTAR.
+ actions.push(['LENDÁRIOS',handlers.legendaries,'capture']);
+ actions.push(['SILPH CO.',handlers.silph,'bag']);
+ // Three columns so all fifteen options fit above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
   const x=110+(i%3)*142,y=82+Math.floor(i/3)*40;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';

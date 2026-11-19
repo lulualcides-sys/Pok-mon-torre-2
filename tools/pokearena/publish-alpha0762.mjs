@@ -59,13 +59,20 @@ const overlayNames=[
  // Campaign battles only: 3-switch limit resets with each new round (time-out).
  ['tools/pokearena/torre2-party-battle.js','torre2/party-battle.js'],
  // Campaign-only cooldown table (Arena/VS kits untouched).
- ['tools/pokearena/torre2-move-pool.js','torre2/move-pool.js']
+ ['tools/pokearena/torre2-move-pool.js','torre2/move-pool.js'],
+ // Legendaries: Master Ball row in the wild capture menu and its ball sprite.
+ ['tools/pokearena/torre2-capture-arena.js','torre2/capture-arena.js'],
+ ['tools/pokearena/torre2-ball-sprites.js','torre2/ball-sprites.js']
 ];
 // New Torre 2 modules (not in the audited build): written next to the
 // overlays; refused if the audited build already has a file with that name.
 const newModuleNames=[
  // Permanent trainer legacy, achievement rewards and the offline ranking code.
- ['tools/pokearena/torre2-legacy.js','torre2/legacy.js']
+ ['tools/pokearena/torre2-legacy.js','torre2/legacy.js'],
+ // Legendary encounters (pure rules), imported by campaign-core and campanha.
+ ['tools/pokearena/torre2-legendaries.js','torre2/legendaries.js'],
+ // Pixel-art lairs of the legendaries (original drawing, no map images).
+ ['tools/pokearena/torre2-legendary-lairs.js','torre2/legendary-lairs.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);
