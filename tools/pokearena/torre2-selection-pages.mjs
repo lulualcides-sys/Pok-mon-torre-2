@@ -19,6 +19,27 @@ export function paginateSelectionSource(source){
  // October client now derives POR_FILA from FILAS. For 151 entries this
  // inflates one row to ~76 columns, making native buttons unreachable.
  // Fix ONLY grid dimensions, reuse the same card and input constructors.
+ // Alpha 0.76+: native scrolling grid (rejilla.js) already handles large
+ // rosters. Keep the native grid; only unlock offline roster, allow a single
+ // deliberate tap and lazy-load portraits of Torre 2 species on visible rows.
+ if(source.includes('const REJ=medidasRejilla(')){
+  once('this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+   'this.modo==="ranked"?!desbloqueadoRanked(p.id):false;');
+  once('if(esTactil()&&this.paso<2&&!yaFoco){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)',
+   'if(this.paso<2)this.foco=i;this.elegir(i)');
+  const visible='torre2LoadVisiblePortraits(){'+
+   'this.__torre2PortraitQueued??=new Set();const first=this.desl?.primera??0;'+
+   'for(const c of this.casillas??[]){if(c.fila<first||c.fila>=first+FILAS)continue;'+
+   'const key="retrato-"+c.p.dex;'+
+   'const show=()=>{if(c.img?.active&&this.textures.exists(key))c.img.setTexture(retratoA(this,c.p.dex,TW-4)).setDisplaySize(TW-4,TW-4)};'+
+   'if(this.textures.exists(key)){show();continue}'+
+   'if(this.__torre2PortraitQueued.has(key))continue;this.__torre2PortraitQueued.add(key);'+
+   'this.load.once("filecomplete-image-"+key,()=>{this.__torre2PortraitQueued.delete(key);show()});'+
+   'this.load.image(key,"assets/pmd/"+c.p.dex+"/portrait.png")}'+
+   'if(!this.load.isLoading()&&this.__torre2PortraitQueued.size)this.load.start()}';
+  once('refrescar(){const porId=',visible+'refrescar(){this.torre2LoadVisiblePortraits();const porId=');
+  return source;
+ }
  const legacy='const FILAS=Math.ceil(ROSTER.length/POR_FILA);';
  const current='FILAS=ROSTER.length>13?2:1;const POR_FILA=Math.ceil(ROSTER.length/FILAS);';
  if(source.includes(legacy)){
