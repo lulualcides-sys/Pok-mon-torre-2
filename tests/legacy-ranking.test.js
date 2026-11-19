@@ -53,3 +53,15 @@ test('ranking orders by completions and updates a friend by name',()=>{
  assert.deepEqual(rows.map(r=>r.name),['Ash','Misty']);
  assert.equal(rows[0].self,true);
 });
+
+test('each completion keeps its champion team in the Hall of Fame history',()=>{
+ const team=[{id:'venusaur',uid:'bulbasaur-abc',progression:{level:60}},{id:'pikachu',uid:'p1',progression:{level:55},shiny:true}];
+ let {legacy}=L.syncLegacy(run({champion:true,team,wins:40,losses:3}),L.emptyLegacy(),1000,{name:'Ash'});
+ ({legacy}=L.syncLegacy(run({champion:true,team,wins:41}),legacy,2000,{name:'Ash'})); // same journey: no duplicate
+ assert.equal(legacy.champions.length,1);
+ assert.deepEqual(legacy.champions[0].team,[{id:'venusaur',level:60,shiny:false},{id:'pikachu',level:55,shiny:true}]);
+ assert.equal(legacy.champions[0].name,'Ash');assert.equal(legacy.champions[0].at,1000);
+ const next=L.syncLegacy(run({champion:true,team:[{id:'blastoise',uid:'bulbasaur-zzz',progression:{level:62}}]}),legacy,3000);
+ assert.equal(next.legacy.champions.length,2);
+ assert.equal(next.legacy.champions[1].team[0].id,'blastoise');
+});

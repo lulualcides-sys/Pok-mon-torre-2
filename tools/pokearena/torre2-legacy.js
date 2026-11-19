@@ -9,7 +9,7 @@ export const RANKING_KEY='torre2-ranking-v1';
 const list=v=>Array.isArray(v)?v:[];
 const count=v=>new Set(list(v)).size;
 export function emptyLegacy(){
- return {version:1,championRuns:[],titles:{},activeTitle:null,bestShiny:0,bestCaught:0,flawlessRuns:0};
+ return {version:1,championRuns:[],champions:[],titles:{},activeTitle:null,bestShiny:0,bestCaught:0,flawlessRuns:0};
 }
 export function readLegacy(storage=globalThis.localStorage){
  try{
@@ -18,6 +18,7 @@ export function readLegacy(storage=globalThis.localStorage){
   const l={...emptyLegacy(),...raw};
   l.championRuns=list(l.championRuns).filter(x=>typeof x==='string').slice(0,999);
   l.titles=l.titles&&typeof l.titles==='object'?l.titles:{};
+  l.champions=list(l.champions).filter(c=>c&&typeof c.run==='string'&&Array.isArray(c.team)).slice(-100);
   return l;
  }catch{return emptyLegacy()}
 }
@@ -48,12 +49,17 @@ export const TITLES=Object.freeze([
  {id:'mew',name:'Sombra Mítica',desc:'Capture Mew',rarity:'rainbow',test:s=>list(s?.dexCaught).includes('mew')}
 ]);
 // Update the legacy from the live campaign; returns the titles earned now.
-export function syncLegacy(state,legacy=emptyLegacy(),now=Date.now()){
- const l={...legacy,championRuns:[...legacy.championRuns],titles:{...legacy.titles}};
+export function syncLegacy(state,legacy=emptyLegacy(),now=Date.now(),{name=null}={}){
+ const l={...legacy,championRuns:[...legacy.championRuns],champions:[...list(legacy.champions)],titles:{...legacy.titles}};
  const run=runIdOf(state);
  if(state?.champion&&run&&!l.championRuns.includes(run)){
   l.championRuns.push(run);
   if((state.losses||0)===0)l.flawlessRuns=(l.flawlessRuns||0)+1;
+  // Hall of Fame history: the champion team of this journey, kept forever.
+  l.champions.push({run,at:now,name:name?String(name).slice(0,12):null,title:l.activeTitle||null,
+   wins:state.wins||0,losses:state.losses||0,
+   team:list(state.team).slice(0,6).map(m=>({id:String(m?.id||''),level:Number(m?.progression?.level)||0,shiny:m?.shiny===true}))});
+  l.champions=l.champions.slice(-100);
  }
  l.bestShiny=Math.max(l.bestShiny||0,count(state?.dexShinyCaught));
  l.bestCaught=Math.max(l.bestCaught||0,count(state?.dexCaught));

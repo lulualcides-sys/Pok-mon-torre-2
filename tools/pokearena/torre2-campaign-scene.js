@@ -808,10 +808,12 @@ create(){
     pastillaTipo(p,px,y+106,t,46,10);this.uiLabel(px+23,y+111,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
   });
   if(!hall.team.length)center(400,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
-  center(400,322,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
+  center(480,332,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
    8,'#adcbe0');
   this.button(92,332,150,26,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}),false,8)
    .setData('torre2-hall-back',true);
+  this.button(250,332,150,26,'HISTÓRICO',()=>this.hallHistoryScreen(state,0,()=>this.hallOfFameScreen(state)),true,8)
+   .setData('torre2-hall-history',true);
   this.__torre2HallOfFame={...hall};
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
@@ -1171,7 +1173,10 @@ create(){
     l.championRuns=[...new Set([...l.championRuns,...(Array.isArray(data.legacy.championRuns)?data.legacy.championRuns.filter(x=>typeof x==='string'):[])])];
     for(const [k,v] of Object.entries(data.legacy.titles||{}))if(titleById(k)&&!l.titles[k])l.titles[k]=v;
     l.bestShiny=Math.max(l.bestShiny||0,Number(data.legacy.bestShiny)||0);l.bestCaught=Math.max(l.bestCaught||0,Number(data.legacy.bestCaught)||0);
-    l.flawlessRuns=Math.max(l.flawlessRuns||0,Number(data.legacy.flawlessRuns)||0);saveLegacy(l);}
+    l.flawlessRuns=Math.max(l.flawlessRuns||0,Number(data.legacy.flawlessRuns)||0);
+    const known=new Set(l.champions.map(c=>c.run));
+    for(const c of Array.isArray(data.legacy.champions)?data.legacy.champions:[])if(c&&typeof c.run==='string'&&Array.isArray(c.team)&&!known.has(c.run))l.champions.push(c);
+    l.champions.sort((a,b)=>(a.at||0)-(b.at||0));saveLegacy(l);}
    close();this.scene.restart();
   },true,9).setData('torre2-import-apply',true));
  }
@@ -1179,7 +1184,8 @@ create(){
  // stored apart from the save so "Reiniciar jornada" never erases it.
  legacySync(state){
   if(!state)return readLegacy();
-  const {legacy,earned}=syncLegacy(state,readLegacy());
+  let name=null;try{name=localStorage.getItem('torre2-trainer-name')}catch{}
+  const {legacy,earned}=syncLegacy(state,readLegacy(),Date.now(),{name});
   saveLegacy(legacy);
   if(earned.length)this.time?.delayedCall(700,()=>{if(this.scene.isActive())
    this.campaignNotice('Novo título: '+earned.map(t=>t.name).join(', ')+'!',MENU_UI.amarillo)});
@@ -1267,6 +1273,51 @@ create(){
   },true,9).setData('torre2-code-copy',true));
   lift(this.button(410,240,160,28,'FECHAR',close,false,9));
  }
+ // Hall of Fame history: every completed journey with its champion team.
+ // Read from the permanent legacy, so it survives "Reiniciar jornada".
+ hallHistoryScreen(state,page=0,back=null){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  const entries=[...legacy.champions].reverse();
+  const per=2,pages=Math.max(1,Math.ceil(entries.length/per));
+  page=Math.max(0,Math.min(pages-1,page));
+  this.screenBanner(20,330,'Histórico do Salão da Fama','badges');
+  this.uiLabel(320,46,'Campanha zerada '+legacy.championRuns.length+'× · times registrados: '+entries.length,8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  if(!entries.length){
+   this.uiLabel(320,160,'Nenhum time registrado ainda',11,'#ffffff',[.5,.5]);
+   this.uiLabel(320,180,'Zere a campanha: o time campeão fica guardado aqui para sempre.',8,MENU_UI.suave,[.5,.5]);
+  }
+  entries.slice(page*per,page*per+per).forEach((c,k)=>{
+   const y=64+k*120,n=entries.length-(page*per+k);
+   const t=titleById(c.title);
+   nativeRect(g,16,y,608,114,MENU_UI.oroBorde,8);nativeRect(g,18,y+2,604,110,0x1b1446,7);
+   g.fillStyle(MENU_UI.oroLuz,.12).fillRect(20,y+4,600,22);
+   this.uiLabel(30,y+15,'Vitória nº '+n,10,MENU_UI.amarillo);
+   const date=c.at?new Date(c.at).toLocaleDateString('pt-BR'):'';
+   estrechar(this.uiLabel(612,y+15,[c.name,t?.name,date].filter(Boolean).join(' · ')+(c.losses===0?' · Invicto':''),8,'#dcf4fb',[1,.5]),420);
+   (c.team||[]).slice(0,6).forEach((m,i)=>{
+    const x=24+i*100,cy=y+34;
+    nativeRect(g,x,cy,96,72,MENU_UI.panelBorde,6);nativeRect(g,x+2,cy+2,92,68,0x0f2352,5);
+    g.fillStyle(MENU_UI.oro,.9).fillEllipse(x+48,cy+50,64,10);g.fillStyle(MENU_UI.oroLuz,.5).fillEllipse(x+48,cy+49,44,5);
+    if(!this.pokemonIdleSprite(m.id,x+48,cy+51,40,6,null,true)){
+     try{const dex=portraitId({id:m.id}),key='torre2-portrait-'+dex;
+      requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{if(g.active)this.add.image(x+48,cy+28,key).setDisplaySize(34,34).setDepth(6)})}catch{}
+    }
+    const nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,ch=>ch.toUpperCase());
+    estrechar(this.uiLabel(x+48,cy+60,nice+(m.shiny?' ✦':''),7,m.shiny?MENU_UI.amarillo:'#ffffff',[.5,.5]),90);
+    this.uiLabel(x+90,cy+10,'Nv '+m.level,6,MENU_UI.suave,[1,.5]);
+   });
+  });
+  if(pages>1){
+   this.button(450,334,110,26,'◀ ANTERIOR',()=>this.hallHistoryScreen(state,(page-1+pages)%pages,back),false,8);
+   this.uiLabel(520,334,(page+1)+'/'+pages,8,MENU_UI.amarillo,[.5,.5]);
+   this.button(590,334,96,26,'PRÓXIMA ▶',()=>this.hallHistoryScreen(state,(page+1)%pages,back),false,8);
+  }
+  this.button(150,334,240,28,'◀ VOLTAR',()=>back?back():this.trainerCardScreen(state)).setData('torre2-hall-history-back',true);
+  this.__torre2HallHistory={count:entries.length,page,pages};
+ }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
  trainerCardScreen(state){
@@ -1308,13 +1359,15 @@ create(){
   nativeRect(g,60,250,520,30,0x081436,6,.9);
   this.uiLabel(70,265,'Insígnias',8,MENU_UI.suave);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,170+i*48,265,state.badges?.includes(HALL_BADGE_ORDER[i]),1.3).setDepth(6);
-  this.button(120,330,200,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
+  this.button(86,330,150,28,'◀ VOLTAR',()=>this.renderCampaign(state),false,9)
    .setData('torre2-trainer-card-back',true);
   const won=this.achievementList(state).filter(a=>a.done).length;
-  this.button(330,330,196,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true)
+  this.button(242,330,150,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true,9)
    .setData('torre2-trainer-card-achievements',true);
-  this.button(530,330,180,28,'TÍTULOS '+Object.keys(legacy.titles).length,()=>this.titlesScreen(state),true)
+  this.button(398,330,150,28,'TÍTULOS '+Object.keys(legacy.titles).length,()=>this.titlesScreen(state),true,9)
    .setData('torre2-trainer-card-titles',true);
+  this.button(554,330,150,28,'SALÃO DA FAMA',()=>this.hallHistoryScreen(state),true,9)
+   .setData('torre2-trainer-card-hall',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
  }
  // Achievements computed only from the existing save (read-only).
