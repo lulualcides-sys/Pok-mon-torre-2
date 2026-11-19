@@ -30,8 +30,10 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
   if(priority){
    const {PRIORITY_FORMS}=await import('./priority-licensed-pmd.mjs');
    const version=JSON.parse(await readFile(path.join(root,'version.json'),'utf8'));
-   if(priority.alpha!==version.officialAlpha||
-      priority.src!==version.src||
+   // Alpha 0.76+ ports reuse the audited 0.71.3 art: compare against the
+   // declared asset origin, never relabel the 0.71.3 provenance.
+   if(priority.alpha!==(version.assetAlpha??version.officialAlpha)||
+      priority.src!==(version.assetSrc??version.src)||
       priority.license!=='MIXED_OR_UNVERIFIED'||
       priority.repositoryLicense!=='CC BY-NC 4.0'||
       priority.redistributionCleared!==false||
@@ -133,7 +135,7 @@ export async function auditNativePacks(root, readFile=fs.readFile, access=fs.acc
   const contributorPermitted=new Set();
   if(rights){
    const v=JSON.parse(await readFile(path.join(root,'version.json'),'utf8'));
-   if(rights.alpha!==v.officialAlpha||rights.src!==v.src||
+   if(rights.alpha!==(v.assetAlpha??v.officialAlpha)||rights.src!==(v.assetSrc??v.src)||
        !Array.isArray(rights.forms)||rights.releaseApproved!==false)
     throw Error('Invalid source/Alpha contributor permissions report');
    const sources=new Map();

@@ -10,12 +10,14 @@ const PRELOADED=BASE.replace('create(){',
  'preload(){const m=this.registry.get("manifiesto"),ids=new Set(ROSTER.slice(0,8).map(p=>p.dex));for(const d of ["0041","0042"])if(m[d])ids.add(d);this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(this,this._torre2InitialSelectionForms,["Idle"])}create(){')+
  'crearAnimsPMD(this,this._torre2InitialSelectionForms,["Idle"]);';
 
+// 0.76.2: same preload over the native grid's visible rows.
+const PRELOADED_0762=PRELOADED.replace('ROSTER.slice(0,8)','ROSTER.slice(0,POR_FILA*FILAS)');
 const ORIGINAL='const h=p.kit[slot];const ky=';
 const GUARDED='const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=';
 export function adaptModernSelection(source,alpha){
- if(alpha!=='0.71.3')return null;
+ if(!['0.71.3','0.76.2'].includes(alpha))return null;
  if(typeof source!=='string' ||
-  [BASE,PRELOADED].filter(entry=>source.split(entry).length===2).length!==1 ||
+  [BASE,PRELOADED,PRELOADED_0762].filter(entry=>source.split(entry).length===2).length!==1 ||
   !source.includes('trioMenu') ||
   !source.includes('ponerRetratoA') ||
   !source.includes('const MODOS=[{id:"cpu",nombre:"VS CPU"}') ||

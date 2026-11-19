@@ -8,6 +8,10 @@ const http=require('node:http');
 const path=require('node:path');
 const {chromium}=require('playwright-core');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
+// Alpha 0.76.2 adds 19 non-Kanto/Johto native species (Mime Jr., Porygon-Z,
+// Treecko/Chimchar/Solosis/Honedge lines, Sableye, Regice, Zeraora, Hoopa).
+const builtSrc=JSON.parse(fs.readFileSync(path.join(root,'arena2d/version.json'),'utf8')).src;
+const SPECIES=builtSrc==='src-5bf1a1a788'?297:278;
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg',
  '.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.mp3':'audio/mpeg',
@@ -205,8 +209,8 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(pages.staleInteractive,0,'Hidden Pokédex cards must not intercept touches');
    }
   }
-  assert.ok(dexData.count>=90&&dexData.count<278,
-   'Family cards must group the 278 species without losing the national catalog');
+  assert.ok(dexData.count>=90&&dexData.count<SPECIES,
+   'Family cards must group the '+SPECIES+' species without losing the national catalog');
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Native P2 family cards cannot overlap the Pokémon pedestal');
   assert.equal(dexData.visibleCount,25,'Family Pokédex shows only 25 cards per page');
@@ -248,9 +252,9 @@ const server=http.createServer(async(req,res)=>{
     ditto:byDex.get('0132')?.kit?.lmb?.nombre};
   });
   console.log('PHASER_POKEDEX_FAMILY_278',JSON.stringify(groups));
-  assert.equal(groups.species,278,'All 278 native species must remain available in family tabs');
+  assert.equal(groups.species,SPECIES,'All '+SPECIES+' native species must remain available in family tabs');
   assert.ok(groups.extraForms>=groups.species,'Additional Mega/Power Up forms remain accessible without inflating the species count');
-  assert.ok(groups.cards>=90&&groups.cards<278,'Evolution families should share cards');
+  assert.ok(groups.cards>=90&&groups.cards<SPECIES,'Evolution families should share cards');
   assert.deepEqual(groups.guardian.map(x=>x.name),['UXIE','MESPRIT','AZELF']);
   assert.ok(groups.guardian.every(x=>x.alone&&x.attack==='Confusion'));
   assert.deepEqual(groups.ch,['0152','0153','0154']);
@@ -311,7 +315,10 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(visual.stage,name);
    assert.ok(visual.members.includes(dex));
-   assert.equal(visual.sprite,'pmd-'+dex+'-Idle');
+   // 0.76.2 native Pokédex plays a showcase attack (atacarEnMenu) on the
+   // pedestal: accept any sheet of the SAME species, never another dex.
+   if(SPECIES===297)assert.match(visual.sprite,new RegExp('^pmd-'+dex+'-[A-Za-z]+$'));
+   else assert.equal(visual.sprite,'pmd-'+dex+'-Idle');
   }
   // Regression: the user's screenshots showed SPD NaN and blank moves
   // on Nidorino/Nidoking. Visit EVERY added Kanto evolution in the actual
@@ -1326,8 +1333,12 @@ const server=http.createServer(async(req,res)=>{
    'Final laser endpoint must align with visible Pokémon body');
   const liveSpeciesGuard=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0];
-   const idle='pmd-'+a.dex+'-Idle',wrong='pmd-0007-Idle';
-   if(!b.textures.exists(wrong))throw Error('Missing test PMD atlas');
+   const idle='pmd-'+a.dex+'-Idle';
+   // Any loaded Idle atlas of ANOTHER species proves the guard (0.76.2
+   // frees menu atlases on scene change, so Squirtle may not be resident).
+   const wrong=b.textures.exists('pmd-0007-Idle')&&a.dex!=='0007'?'pmd-0007-Idle':
+    b.textures.getTextureKeys().find(k=>/^pmd-\d{4}(?:-[\w]+)?-Idle$/.test(k)&&k!==idle);
+   if(!wrong||!b.textures.exists(wrong))throw Error('Missing test PMD atlas');
    a.spr.anims.stop();a.spr.setTexture(wrong);
    a.actualizarGraficos(0);
    return {dex:a.dex,texture:a.spr.texture.key,expected:idle,
