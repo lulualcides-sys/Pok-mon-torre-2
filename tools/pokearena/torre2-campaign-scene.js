@@ -2246,36 +2246,37 @@ create(){
   const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0,24);
   this.dexPage=view.page;
   this.screenBanner(20,330,'Pokédex de Kanto','dex');
-  const info=this.uiLabel(320,46,'Vistos '+view.totals.seen+' · Capturados '+view.totals.caught+
-   ' de '+view.totals.all+(view.totals.shinySeen?'  ·  ✦ Shiny '+view.totals.shinyCaught+'/'+view.totals.shinySeen:''),
-   8,MENU_UI.suave,[.5,.5]);
+  const info=this.uiLabel(view.totals.shinySeen?200:320,46,'Vistos '+view.totals.seen+' · Capturados '+view.totals.caught+
+   ' de '+view.totals.all,8,MENU_UI.suave,[.5,.5]);
   info.setData('torre2-dex-totals',view.totals);
+  if(view.totals.shinySeen)this.uiLabel(450,46,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
+   ' · CAPTURADOS '+view.totals.shinyCaught,8,MENU_UI.amarillo,[.5,.5]);
   this.uiSection(8,56,624,256);
-  const CW=100,CH=58,GX=3,GY=3,X0=320-(6*CW+5*GX)/2,Y0=62;
+  // 4 × 6 wide cards: portrait, "Nº. Name" with the full Shiny marker,
+  // capture state and the Arena tag all stay readable on mobile.
+  const CW=152,CH=38,GX=3,GY=3,X0=Math.round(320-(4*CW+3*GX)/2),Y0=62;
   view.rows.forEach((row,i)=>{
-   const x=X0+(i%6)*(CW+GX),y=Y0+Math.floor(i/6)*(CH+GY);
+   const x=X0+(i%4)*(CW+GX),y=Y0+Math.floor(i/4)*(CH+GY);
    const dex=String(row.index+1).padStart(4,'0'),key='torre2-portrait-'+dex;
    const g=this.add.graphics().setDepth(3);
    const tone=row.shinyCaught?MENU_UI.oro:row.caught?0x50cc84:row.seen?MENU_UI.panelLuz:MENU_UI.apagadoBorde;
    nativeRect(g,x,y,CW,CH,MENU_UI.contorno,6);
    nativeRect(g,x+1,y+1,CW-2,CH-2,tone,5);
    nativeRect(g,x+2,y+2,CW-4,CH-4,row.seen?0x0f2352:0x0a1638,4);
-   // Portrait window; unseen species are a dark silhouette.
-   nativeRect(g,x+5,y+5,40,40,row.seen?0x1d3c7a:0x081232,4);
+   // Portrait window; unseen species are a silhouette.
+   nativeRect(g,x+4,y+4,30,30,row.seen?0x1d3c7a:0x081232,4);
    requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
     if(!g.active)return;
-    const img=this.add.image(x+25,y+25,key).setDisplaySize(36,36).setDepth(4);
+    const img=this.add.image(x+19,y+19,key).setDisplaySize(28,28).setDepth(4);
     if(!row.seen)img.setTintFill(0x2a4384).setAlpha(.9);
    });
-   this.uiLabel(x+50,y+11,'Nº '+String(row.index+1).padStart(3,'0'),7,MENU_UI.tenue);
-   const marker=row.shinyCaught?' ✦':row.shinySeen?' ✦':'';
-   estrechar(this.uiLabel(x+50,y+25,row.name+marker,8,row.shinyCaught?MENU_UI.amarillo:
-    row.seen?'#ffffff':MENU_UI.tenue),CW-54).setData('torre2-dex-id',row.id);
-   const state2=row.caught?'Capturado':row.seen?'Visto':'?????';
-   this.uiLabel(x+50,y+39,state2,7,row.caught?'#9ff0bf':row.seen?MENU_UI.suave:MENU_UI.apagadoTexto);
-   if(row.caught)originalBallSprite(this,x+CW-10,y+10,'pokeball',12,6);
-   if(row.ready){nativeRect(g,x+4,y+CH-13,40,9,0x0a1a46,3);
-    this.uiLabel(x+24,y+CH-8,'Arena',6,'#9ddcf0',[.5,.5]);}
+   const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':'';
+   estrechar(this.uiLabel(x+39,y+12,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,8,
+    row.shinyCaught?MENU_UI.amarillo:row.seen?'#ffffff':MENU_UI.tenue),CW-56).setData('torre2-dex-id',row.id);
+   this.uiLabel(x+39,y+27,row.caught?'Capturado':row.seen?'Visto':'?????',7,
+    row.caught?'#9ff0bf':row.seen?MENU_UI.suave:MENU_UI.apagadoTexto);
+   if(row.caught)originalBallSprite(this,x+CW-11,y+11,'pokeball',12,6);
+   if(row.ready)this.uiLabel(x+CW-6,y+27,'Arena',6,'#9ddcf0',[1,.5]);
   });
   this.button(82,334,140,28,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,334,133,28,'◀ ANTERIOR',()=>{
