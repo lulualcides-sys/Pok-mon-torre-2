@@ -64,7 +64,11 @@ test('only card pagination and headings changed: original sprites, touch and sav
  assert.match(source,/setData\('torre2-trainer-card-index',entry\.index\)/);
  assert.match(source,/const CW=110,GAP=8,X0=166,CY=56,CH=244;/);
  assert.match(source,/scenicBackdrop\(scene,layer,state\.stage\)/);
- assert.match(source,/routeScene\(scene,layer,x\+7,y\+22,w-14,SH,entry\.index\)/);
+ // Route cards: owner illustration, with the procedural route as placeholder.
+ assert.match(source,/ownerArt\(scene,layer,'route-card',x\+7,y\+22,w-14,SH,slot=>routeScene\(scene,slot,x\+7,y\+22,w-14,SH,entry\.index\)\)/);
+ // Owner art never replaces trainer sprites or gym interiors.
+ assert.match(source,/npc\(scene,layer,npcKind\(state\.stage,entry\.index,entry\.leader\)/);
+ assert.match(source,/kind==='gym'\?gymInterior\(scene,layer,x\+7,y\+22,w-14,SH/);
  assert.match(source,/gymInterior\(scene,layer,x\+7,y\+22,w-14,SH,/);
  assert.match(source,/kind==='route'\?'CAMINHO PARA '/);
  assert.match(source,/kind==='victory'\?'ESTRADA DA VITÓRIA'/);

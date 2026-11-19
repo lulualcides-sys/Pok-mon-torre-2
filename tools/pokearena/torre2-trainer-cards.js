@@ -293,6 +293,37 @@ const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // The sheet loads on demand; the approved diorama shows until it arrives.
 // The campaign releases these textures on restart, so the live loader
 // queue (not a remembered flag) decides whether to request it again.
+// Owner-supplied illustrations (tools/pokearena/campaign-art, PROVENANCE.json):
+// city thumbnails, emblems, route backdrops. Loaded lazily; the procedural
+// pixel art stays as placeholder until the PNG arrives. Trainer sprites and
+// Pokémon portraits are never replaced by these.
+export const OWNER_ART_DIR='assets/ui/torre2-campaign/';
+function ownerArt(scene,layer,name,x,y,w,h,placeholder){
+ const key='torre2-art-'+name;
+ const slot=scene.add.container(0,0);layer.add(slot);
+ const draw=()=>{
+  if(!slot.active||!scene.textures.exists(key))return;
+  const tex=scene.textures.get(key),src=tex.getSourceImage();
+  const sw=src.width,sh=src.height,a=w/h;
+  const cw=Math.min(sw,Math.round(sh*a)),ch=Math.min(sh,Math.round(cw/a));
+  const frame='crop-'+cw+'x'+ch;
+  if(!tex.has(frame))tex.add(frame,0,Math.round((sw-cw)/2),Math.round((sh-ch)/2),cw,ch);
+  tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  slot.removeAll(true);
+  slot.add(scene.add.image(x,y,key,frame).setOrigin(0).setDisplaySize(w,h));
+ };
+ if(scene.textures.exists(key)){draw();return true}
+ placeholder?.(slot);
+ scene.load.once('filecomplete-image-'+key,()=>draw());
+ const queued=[scene.load.list,scene.load.inflight].some(set=>
+  (set?.entries||[]).some(file=>file?.key===key));
+ if(!queued){
+  scene.load.image(key,OWNER_ART_DIR+name+'.png');
+  if(!scene.load.isLoading())scene.load.start();
+ }
+ return true;
+}
+const artCity=stage=>stage>=8?'indigo':String(STAGES[stage]?.city||'').toLowerCase();
 function frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,fw,fh],stage,variant){
  const key='frlg-location-'+loc,frame='torre2-win-'+loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
  const slot=scene.add.container(0,0);layer.add(slot);
@@ -570,7 +601,8 @@ function cityPanel(scene,layer,state,all,handlers={}){
  rectRedondo(plate,x+6,y+6,60,60,UI.contorno,8);
  rectRedondo(plate,x+7,y+7,58,58,UI.oroBorde,7);
  rectRedondo(plate,x+8,y+8,56,56,UI.oro,6);
- cityLandmark(scene,layer,x+10,y+10,52,52,state.stage);
+ ownerArt(scene,layer,'emblem-'+artCity(state.stage),x+10,y+10,52,52,
+  slot=>cityLandmark(scene,slot,x+10,y+10,52,52,state.stage));
  const shine=scene.add.graphics();layer.add(shine);
  shine.fillStyle(UI.oroLuz,1).fillRect(x+14,y+8,44,1);
  const mapZone=scene.add.zone(x+36,y+36,60,60).setInteractive({useHandCursor:true})
@@ -649,8 +681,8 @@ function toast(scene,layer,msg){
 export function journeyPage(scene,state,handlers){
  const layer=scene.add.container(0,0).setDepth(420);
  layer.setData('torre2-journey',true);
- routeScene(scene,layer,0,0,640,360,7);
- const shade=scene.add.graphics();layer.add(shade);shade.fillStyle(0x061230,.18).fillRect(0,0,640,360);
+ ownerArt(scene,layer,'journey-bg',0,0,640,360,slot=>routeScene(scene,slot,0,0,640,360,7));
+ const shade=scene.add.graphics();layer.add(shade);shade.fillStyle(0x061230,.1).fillRect(0,0,640,360);
  layer.add(scene.add.zone(320,180,640,360).setInteractive());
  const banner=(cy,w,label,size)=>{
   const g=scene.add.graphics();layer.add(g);
@@ -670,7 +702,7 @@ export function journeyPage(scene,state,handlers){
   if(current){aro(g,x-2,y-2,CW+4,CH+4,UI.oro,8,.9);
    const m=scene.add.graphics();layer.add(m);m.fillStyle(UI.oro,1);
    m.fillTriangle(x+8,y-6,x+20,y-6,x+14,y+2);m.fillTriangle(x+8,y+CH+6,x+20,y+CH+6,x+14,y+CH-2);}
-  cityLandmark(scene,layer,x+6,y+6,96,72,i<8?i:8);
+  ownerArt(scene,layer,'city-'+artCity(i<8?i:8),x+6,y+6,96,72,slot=>cityLandmark(scene,slot,x+6,y+6,96,72,i<8?i:8));
   const ring=scene.add.graphics();layer.add(ring);aro(ring,x+5,y+5,98,74,current?UI.oro:UI.panelBorde,5);
   const cityName=i<8?spec.city:'Liga Índigo';
   estrechar(text(scene,layer,x+150,y+20,cityName,15,UI.amarillo),86);
@@ -771,7 +803,7 @@ function cardsPage(scene,state,handlers){
   // Regional diorama in a native ring; the FRLG trainer stands in front.
   const SH=104;
   const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.leader?0:entry.index+1):
-   routeScene(scene,layer,x+7,y+22,w-14,SH,entry.index);
+   ownerArt(scene,layer,'route-card',x+7,y+22,w-14,SH,slot=>routeScene(scene,slot,x+7,y+22,w-14,SH,entry.index));
   if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
   aro(ring,x+6,y+21,w-12,SH+2,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
@@ -851,7 +883,7 @@ function detailPage(scene,state,handlers,entry){
  const inGym=trainerCardSections(state.stage,TRAINERS_PER_GYM(state.stage))
   .find(sec=>sec.indices.includes(entry.index))?.kind==='gym';
  const viewOk=inGym?gymInterior(scene,layer,14,48,222,212,state.stage,0):
-  routeScene(scene,layer,14,48,222,212,entry.index);
+  ownerArt(scene,layer,'route-detail',14,48,222,212,slot=>routeScene(scene,slot,14,48,222,212,entry.index));
  if(!viewOk)scenicDiorama(scene,layer,14,48,222,212,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
