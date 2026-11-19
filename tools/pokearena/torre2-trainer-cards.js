@@ -111,13 +111,24 @@ const PIXEL_ICONS={
 };
 // Item icons use the original FireRed item sprites when they are loaded
 // (bag frame 0 = items pocket, Poké Ball icon); the pixel grid is a fallback.
-const ITEM_SPRITES={bag:['torre2-frlg-bag',0,50],capture:['torre2-frlg-mart-pokeball',null,18]};
+// [texture, frame, visible content height, optional frame rect to register]
+const NPC_FRONT=[0,0,16,32];
+const ITEM_SPRITES={
+ team:['torre2-frlg-mart-pokeball',null,18],
+ capture:['torre2-frlg-mart-greatball',null,18],
+ bag:['torre2-frlg-bag',0,50],
+ heal:['torre2-frlg-mart-potion',null,20],
+ center:['frlg-npc-nurse','torre2-front',30,NPC_FRONT],
+ shop:['frlg-npc-clerk','torre2-front',30,NPC_FRONT],
+ badges:['torre2-frlg-badges',0,14]};
 export function pixelIcon(scene,layer,kind,x,y,scale=2){
  const sprite=ITEM_SPRITES[kind];
  if(sprite&&scene.textures.exists(sprite[0])){
-  const [key,frame,content]=sprite;
+  const [key,frame,content,rect]=sprite;
+  const tex=scene.textures.get(key);
+  if(rect&&!tex.has(frame))tex.add(frame,0,...rect);
   const img=scene.add.image(x,y,key,frame??undefined).setScale(12*scale/content);
-  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   layer.add(img);img.setData('torre2-pixel-icon',kind);
   return img;
  }

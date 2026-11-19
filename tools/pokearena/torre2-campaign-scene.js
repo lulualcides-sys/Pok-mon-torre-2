@@ -146,7 +146,8 @@ class Campanha extends Phaser.Scene{
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
-  const needed=new Set(['red_normal',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
+  // nurse/clerk: FireRed sprites for the Center and Shop button icons.
+  const needed=new Set(['red_normal','nurse','clerk',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
@@ -1412,7 +1413,7 @@ create(){
   };
   this.button(475,330,300,38,'CURAR POKÉMON',beginHeal,true)
    .setData('torre2-center-heal',true);
-  pixelIcon(this,{add:o=>o.setDepth(9)},'center',350,330,2);
+  pixelIcon(this,{add:o=>o.setDepth(9)},'heal',350,330,2);
   this.button(244,330,144,32,'ABRIR PC',()=>this.pcScreen(state))
    .setData('torre2-center-pc',true);
   this.button(88,330,148,32,'◀ VOLTAR',()=>this.scene.restart())
