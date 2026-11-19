@@ -2,7 +2,7 @@
  * approved for Torre 2: do not alter Pokémon kits or battle controls.
  */
 export function labelModernPokedexRoles(source,alpha){
- if(alpha!=='0.71.3')return source;
+ if(!['0.71.3','0.76.2'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('movimientos(c,p,et,tam){')||
     !source.includes('const COLS=5;const CEL=44;const PAGE_SIZE=COLS*5;'))
   throw Error('Unknown paginated Alpha 0.71.3 Pokedex role renderer');

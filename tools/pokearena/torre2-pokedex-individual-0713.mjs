@@ -6,7 +6,7 @@ const swap=(s,a,b)=>{
  return s.replace(a,b);
 };
 export function installIndividualPokedex0713(source,alpha){
- if(alpha!=='0.71.3')return source;
+ if(!['0.71.3','0.76.2'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('const PAGE_SIZE=COLS*5;')||
    !source.includes('torre2CargarPagina(page){')||
    !source.includes('class Pokedex extends Phaser.Scene{'))

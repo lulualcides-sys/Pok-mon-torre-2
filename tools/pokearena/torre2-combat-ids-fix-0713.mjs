@@ -4,7 +4,7 @@
  * Patch only the exact known upstream expression; fail closed on drift.
  */
 export function fixNativeBattleIds0713(source,alpha){
- if(alpha!=='0.71.3')return source;
+ if(!['0.71.3','0.76.2'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('class Combate extends Phaser.Scene')||
     !source.includes('const dexs=')||
     !source.includes('soltarPMD(this,m,dexs);'))

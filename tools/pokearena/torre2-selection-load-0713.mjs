@@ -31,7 +31,27 @@ const PAGE=`torre2LoadPortraitPage(page){
  }else finish();
 }`;
 export function loadNativeSelectionPage0713(source,alpha){
- if(alpha!=='0.71.3')return source;
+ if(!['0.71.3','0.76.2'].includes(alpha))return source;
+ // 0.76+: native grid + pedirBasicas already route packed native sprites;
+ // torre2-selection-pages installs only the Torre 2 portrait loader.
+ if(alpha==='0.76.2'){
+  if(typeof source!=='string'||source.split('torre2LoadVisiblePortraits(){').length!==2)
+   throw Error('Unrecognized Alpha 0.76.2 native selection grid');
+  // Same initial Idle preload as 0.71.3: first 8 cards + Zubat/Golbat (10
+  // forms, well under the native per-scene cap POR_ESCENA=24, so native
+  // pedirBasicas() calls never evict them).
+  let m=add(source,
+   'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetratoA,encajarSprite,retratoA,trioMenu,pedirBasicas,formasDe}from"../sprites.js";',
+   'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetratoA,encajarSprite,retratoA,trioMenu,pedirBasicas,formasDe,cargarPMD,crearAnimsPMD,soloFormas,registrar}from"../sprites.js";');
+  return add(m,START,START.replace('create(){',
+   'preload(){const m=this.registry.get("manifiesto"),ids=new Set(ROSTER.slice(0,8).map(p=>p.dex));for(const d of ["0041","0042"])if(m[d])ids.add(d);this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(this,this._torre2InitialSelectionForms,["Idle"])}create(){')+
+   'crearAnimsPMD(this,this._torre2InitialSelectionForms,["Idle"]);')
+   // 0.76.2 releases atlases no live scene has reserved when a scene shuts
+   // down (registrar/liberar). Reserve the initial cards in preload, before
+   // the title's release runs.
+   .replace('this._torre2InitialSelectionForms=soloFormas(m,ids);cargarPMD(',
+    'this._torre2InitialSelectionForms=soloFormas(m,ids);registrar(this,Object.keys(this._torre2InitialSelectionForms));cargarPMD(');
+ }
  if(typeof source!=='string'||!source.includes('torre2LoadPortraitPage(page){')||
   !source.includes('this.torre2PageLabel?.setText(')||
   !source.includes('const bloqueado=this.encargo?')||

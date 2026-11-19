@@ -5,6 +5,8 @@
 const GRID='const COLS=(()=>{for(let c=5;c<12;c++){const cel=Math.min(44,Math.floor(ANCHO_REJILLA/c));if(Math.ceil(ROSTER.length/c)*cel<=ALTO_REJILLA)return c}return 12})();const CEL=Math.min(44,Math.floor(ANCHO_REJILLA/COLS));';
 const CARDS='this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+i%COLS*CEL,GY+Math.floor(i/COLS)*CEL,i));';
 const CELL='casilla(p,x,y,i){casillaRetrato(this,x,y,CEL-2,p.dex);this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2}}';
+// 0.76.2: same cell with the native favourite marker (casillaFav).
+const CELL_0762='casilla(p,x,y,i){const{g}=casillaRetrato(this,x,y,CEL-2,p.dex,casillaFav(p.id));this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2,g}}';
 const PICK='elegir(i){if(i===this.foco)return;this.foco=i;this.etapa=0;this.alt=0;sfx("seleccion");this.refrescar()}';
 const PAGE_METHODS=`actualizarPaginaDex(){
  const start=this.dexPage*PAGE_SIZE;
@@ -34,7 +36,7 @@ const replaceOnce=(source,from,to)=>{
  return source.replace(from,to);
 };
 export function paginateModernPokedex0713(source,alpha){
- if(alpha!=='0.71.3')return source;
+ if(!['0.71.3','0.76.2'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('trioMenu')||
     !source.includes('const out=slot==="e"?["ULT"]:[];')||
     !source.includes('movimientos(c,p,et,tam){'))
@@ -42,7 +44,8 @@ export function paginateModernPokedex0713(source,alpha){
  let updated=replaceOnce(source,GRID,'const COLS=5;const CEL=44;const PAGE_SIZE=COLS*5;');
  updated=replaceOnce(updated,CARDS,
   'this.dexPage=Math.floor(this.foco/PAGE_SIZE);this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+(i%PAGE_SIZE)%COLS*CEL,GY+Math.floor((i%PAGE_SIZE)/COLS)*CEL,i));this.actualizarPaginaDex();this.controlesPaginaDex();');
- updated=replaceOnce(updated,CELL,
+ updated=alpha==='0.76.2'?replaceOnce(updated,CELL_0762,
+  'casilla(p,x,y,i){const {g,img}=casillaRetrato(this,x,y,CEL-2,p.dex,casillaFav(p.id));const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2,g,img,zone}}'):replaceOnce(updated,CELL,
   'casilla(p,x,y,i){const {g,img}=casillaRetrato(this,x,y,CEL-2,p.dex);const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2,g,img,zone}}');
  updated=replaceOnce(updated,PICK,
   'elegir(i){if(i===this.foco)return;this.foco=i;this.etapa=0;this.alt=0;this.dexPage=Math.floor(i/PAGE_SIZE);this.actualizarPaginaDex();sfx("seleccion");this.refrescar()}');

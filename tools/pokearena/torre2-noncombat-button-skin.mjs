@@ -37,7 +37,7 @@ export function skinMenuScene(source,scene,officialAlpha=null){
  if(scene==='pokedex'){
   // Alpha 0.71.3 owns an entirely new responsive Pokédex with trio forms.
   // Keep the approved native cosmetics, rather than forcing old coordinates.
-  if(officialAlpha==='0.71.3'){
+  if(['0.71.3','0.76.2'].includes(officialAlpha)){
    if(!preserveModernPokedex(source,officialAlpha))
     throw Error('Unrecognized modern Pokédex pixel skin context');
    return source;

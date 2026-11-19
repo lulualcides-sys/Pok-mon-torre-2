@@ -1,0 +1,73 @@
+name: Pokémon Torre 2 — porta Alpha 0.76.2 (build + QA, sem publicar)
+# Builds the Torre 2 client on the public Alpha 0.76.2 modules (SHA pinned in
+# data/alpha0762-source-modules.json) with the audited 0.71.3 assets, then
+# runs the visual guard, Node suite, Chromium smoke and the 0.76.2 new-species
+# move test. Never deploys to Pages: the site is only uploaded as an artifact.
+on:
+  push:
+    branches: ['port/alpha-0762-**']
+  pull_request:
+    paths:
+      - 'data/alpha0762-source-modules.json'
+      - 'tools/pokearena/**'
+      - 'tests/source-client-smoke.cjs'
+      - 'tests/alpha0762-new-species-moves-browser.cjs'
+      - '.github/workflows/pokearena-alpha0762-port.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: alpha0762-port-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Restore audited Alpha 0.71.3 source and site (assets base)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/audited/source" "$RUNNER_TEMP/audited/site"
+          bash tools/pokearena/restore-audited-alpha0713.sh source "$RUNNER_TEMP/audited/source"
+          bash tools/pokearena/restore-audited-alpha0713.sh site "$RUNNER_TEMP/audited/site"
+      - name: Assemble Alpha 0.76.2 capture (pinned public modules, no bypass)
+        run: node tools/pokearena/assemble-alpha0762-capture.mjs "$RUNNER_TEMP/audited"
+      - name: Build Torre 2 on Alpha 0.76.2 (isolated _site)
+        env:
+          TORRE2_UPSTREAM_AUDIT: '1'
+        run: node tools/pokearena/build-preview.mjs
+      - name: Visual guard and Node suite
+        run: |
+          node tools/dev/approved-visual-guard.mjs
+          npm test
+      - name: Chromium WebGL smoke (menu, Pokédex, selection, League, combat)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
+      - name: Cast every move of the 11 new 0.76.2 species in real combat
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/alpha0762-new-species-moves-browser.cjs _site test-evidence/alpha0762
+      - name: Keep built site and evidence (artifact only, never Pages)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-alpha0762-port
+          path: |
+            _site/arena2d
+            test-evidence
+            site-capture/CAPTURE-REPORT.json
+            site-capture/native-0713-adapter-drift.json
+          if-no-files-found: warn
+          retention-days: 14
