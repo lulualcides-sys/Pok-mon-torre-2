@@ -47,3 +47,14 @@ test('knocked out: gone until the League; after the League, 10 more wins',()=>{
  assert.equal(legendaryStatus(gone2,'mewtwo').state,'gone');
  assert.equal(legendaryStatus({...gone2,wins:80+LEGENDARY_RETURN_WINS},'mewtwo').state,'available');
 });
+
+import {silphStatus,silphTeam,SILPH_GIOVANNI} from '../tools/pokearena/torre2-legendaries.js';
+test('Silph Co.: opens in Saffron, gives the Master Ball once, FireRed team scaled to the cap',()=>{
+ assert.equal(silphStatus({stage:4}).state,'locked');
+ assert.equal(silphStatus({stage:5}).state,'available');
+ assert.equal(silphStatus({stage:13,champion:true}).state,'available');
+ assert.equal(silphStatus({stage:6,masterBallGiven:true}).state,'done');
+ assert.deepEqual(silphTeam({stage:5},43).map(m=>m.id+':'+m.level),['nidorino:37','kangaskhan:35','rhyhorn:37','nidoqueen:41']);
+ assert.deepEqual(silphTeam({stage:7},50).map(m=>m.level),[44,42,44,48]);
+ assert.equal(SILPH_GIOVANNI.money,3000);
+});

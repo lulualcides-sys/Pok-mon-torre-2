@@ -241,3 +241,50 @@ export function drawLairAmbient(scene,kind,x,y,w,h){
 }
 // Where the platform sits in each lair illustration (fraction of the frame).
 export const LAIR_SPOT=Object.freeze({cave:.80,ember:.80,seafoam:.86,powerplant:.84,faraway:.84});
+
+// Silph Co. president's office (Saffron), the Giovanni battle that gives the
+// Master Ball. Same pixel painter: night windows, Silph plaque, shelves, desk.
+function drawSilphOffice(p,W,H,rnd){
+ const back=46;
+ // Wall: dark navy panels above warm wood wainscot.
+ p.rect(0,0,W,back,0x262c4a);p.rect(0,back-12,W,12,0x5a3a22);p.rect(0,back-12,W,1,0x8a5a34);p.rect(0,back-1,W,1,0x2a1a10);
+ for(let x=0;x<W;x+=12)p.rect(x,back-11,1,10,0x4a2e1a);
+ // Three tall windows with Saffron at night.
+ const win=(x,w)=>{p.rect(x-1,3,w+2,back-15,0x9aa0bc);p.dither(x,4,w,back-17,0x0c1430,0x16224a,.45);
+  for(let b=0;b<6;b++){const bx=x+1+b*Math.floor(w/6),bh=6+(rnd()*14|0),bw=Math.floor(w/6)-1;p.rect(bx,back-13-bh,bw,bh,0x1c2648);
+   for(let k=0;k<5;k++)p.px(bx+1+(rnd()*(bw-2)|0),back-12-bh+(rnd()*(bh-2)|0),rnd()<.6?0xf2d860:0x8ab0e8)}
+  p.rect(x+Math.floor(w/2),4,1,back-17,0x9aa0bc);p.rect(x,4+Math.floor((back-17)/2),w,1,0x9aa0bc);p.px(x+3,7,0xffffff)};
+ win(24,58);win(W-82,58);
+ // Silph Co. plaque in the middle of the wall.
+ const cx=Math.round(W/2);p.outlinedDisc(cx,17,11,10,0x6a5428,0xd8b84a);p.disc(cx,17,8,7,0x2a2f52);
+ for(const [x,y] of [[-2,-4],[-1,-4],[0,-4],[1,-4],[-3,-3],[-3,-2],[-2,-1],[-1,-1],[0,-1],[1,0],[2,1],[2,2],[1,3],[0,3],[-1,3],[-2,3]])p.px(cx+x,17+y,0xe84850);
+ // Bookshelves at both ends.
+ const shelf=x=>{p.rect(x,4,18,back-6,0x3a2412);p.rect(x+1,5,16,back-8,0x5a3a20);
+  for(let r=0;r<3;r++){const y=8+r*11;p.rect(x+1,y+8,16,1,0x2a1a10);for(let b=0;b<6;b++)p.rect(x+2+b*2+(b>2?1:0),y+1+(b%2),2,7-(b%2),[0xc84848,0x4878c8,0xd8b84a,0x58a058,0x9a58c8,0xe8e0c8][b])}};
+ shelf(2);shelf(W-20);
+ // Floor: polished wood planks.
+ p.rect(0,back,W,H-back,0x7a4e2c);
+ for(let y=back;y<H;y+=5){p.rect(0,y+4,W,1,0x5e3a20);for(let x=(y/5%2?0:14);x<W;x+=28)p.rect(x,y,1,4,0x5e3a20)}
+ for(let i=0;i<40;i++)p.px(rnd()*W,back+rnd()*(H-back),0x8e5c36);
+ // President's desk with a computer, behind the battle spot.
+ const dx=cx-34;p.rect(dx,back-6,68,14,0x2e1c0e);p.rect(dx+1,back-6,66,3,0x8a5a34);p.rect(dx+1,back-3,66,10,0x5a3a20);
+ p.rect(dx+4,back-2,16,8,0x4a2e1a);p.rect(dx+48,back-2,16,8,0x4a2e1a);p.px(dx+12,back+2,0xd8b84a);p.px(dx+56,back+2,0xd8b84a);
+ p.rect(dx+28,back-14,14,9,0x2a2f3e);p.rect(dx+29,back-13,12,7,0x4ab0d8);p.rect(dx+33,back-5,4,1,0x2a2f3e);p.px(dx+30,back-12,0xc8f0ff);
+ // Potted plants.
+ const plant=(x,y)=>{p.rect(x-4,y-1,9,7,0x6a3a20);p.rect(x-4,y-1,9,1,0x9a5a30);for(const [a,b,r] of [[0,-6,4],[-3,-4,3],[3,-4,3]])p.outlinedDisc(x+a,y+b,r,r,0x1a4a22,0x3a8a40);p.px(x-1,y-8,0x7ac060)};
+ plant(30,back+6);plant(W-30,back+6);
+ // Red carpet with gold trim where Giovanni and his Pokémon stand.
+ const cy=back+34;p.outlinedDisc(cx,cy,74,13,0xb88a2a,0x8a1e2a);p.disc(cx,cy,68,10,0xa82838);
+ for(let a=0;a<36;a++){const t=a/36*Math.PI*2;p.px(Math.round(cx+Math.cos(t)*71),Math.round(cy+Math.sin(t)*11.5),0xf0d070)}
+ p.disc(cx,cy,24,4,0xb83848);
+ return {spot:{x:cx,y:cy-1},anim:'none',back};
+}
+export function drawSilphOfficeArt(scene,x,y,w,h){
+ const W=Math.floor(w/LAIR_SCALE),H=Math.floor(h/LAIR_SCALE),key='torre2-silph-office-'+W+'x'+H;
+ if(!scene.textures.exists(key)){const g=scene.make.graphics({x:0,y:0,add:false});
+  drawSilphOffice(painter(g),W,H,seeded(4242));g.generateTexture(key,W,H);g.destroy()}
+ const info=drawSilphOffice(painter({fillStyle(){return this},fillRect(){return this}}),W,H,seeded(4242));
+ if(typeof Phaser!=='undefined')scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+ const image=scene.add.image(Math.round(x),Math.round(y),key).setOrigin(0,0).setScale(LAIR_SCALE).setDepth(2).setData('torre2-silph-office',true);
+ return {image,spot:{x:Math.round(x+info.spot.x*LAIR_SCALE),y:Math.round(y+info.spot.y*LAIR_SCALE)}};
+}

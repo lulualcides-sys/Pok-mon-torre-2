@@ -31,7 +31,8 @@
   "lair-ember.png": "8a1d76644b5b0bb7913279b6d14acfd0f0650029c0b0dcf67ca6a482cf65fee8",
   "lair-seafoam.png": "c65ed5eb549ec05a6df220e913af6c9bd2cea20928140a1f7286752613f2c670",
   "lair-powerplant.png": "17341ad429a551b078aeefa84247d08405481d94299865a254b29f1ecf08abdc",
-  "lair-faraway.png": "8f344fe0989b5cb285a7119ffbee3448c3897f14cb7ed96effc77726f280d2e3"
+  "lair-faraway.png": "8f344fe0989b5cb285a7119ffbee3448c3897f14cb7ed96effc77726f280d2e3",
+  "silph-office.png": "d717a6a107be4bdc7b2f629e0ad58133d710514ac92c2b3e8a0e2326ee39b8e9"
  },
  "derived": {
   "icon-center.png": {
@@ -103,6 +104,16 @@
     125
    ],
    "note": "Cenário de Ilha Distante recortado sem a moldura e reduzido a 256 cores; fundo do covil do lendário."
+  },
+  "silph-office.png": {
+   "source": "Sala do presidente da Silph Co. enviada pelo dono do projeto na conversa (2026-11-19)",
+   "rect": [
+    0,
+    0,
+    1671,
+    941
+   ],
+   "note": "Imagem inteira reduzida à metade (835×470) e a 256 cores; cenário da batalha contra o Giovanni que dá a Master Ball."
   }
  }
 }

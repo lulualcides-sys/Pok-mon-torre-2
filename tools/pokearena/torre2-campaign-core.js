@@ -12,7 +12,7 @@ import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 import {regionalTrainer,regionalRocket} from './torre2-trainer-rosters.js';
-import {legendaryEncounter,markLegendaryDefeated,MASTER_BALL_STAGE} from './legendaries.js';
+import {legendaryEncounter,markLegendaryDefeated,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -678,11 +678,6 @@ export function resolveBattle(s,won,random=Math.random){
    if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
    const tm=grantGymTM(next,next.stage);
    next.lastRewardTM=tm.added?tm.item.name:null;
-   if(next.stage===MASTER_BALL_STAGE&&!next.masterBallGiven){
-    next.inventory={...next.inventory,masterball:(Number(next.inventory.masterball)||0)+1};
-    next.masterBallGiven=true;
-    next.lastRewardTM=(next.lastRewardTM?next.lastRewardTM+' e ':'')+'MASTER BALL';
-   }
    next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
    if(next.stage>=STAGES.length)next.champion=true;
   }else next.trainer++;
@@ -846,6 +841,42 @@ export function startLegendaryEncounter(s,id,random=Math.random){
  saveCampaign(next);
  s.pendingWild=wild;s.dexSeen=next.dexSeen;s.dexShinySeen=next.dexShinySeen;
  return {ok:true,encounter:wild};
+}
+// Silph Co.: Giovanni in the president's office. A separate battle (like a
+// VS Seeker rematch): stage, trainer ladder and badges never change. Winning
+// gives the journey's single Master Ball.
+export function startSilphBattle(s){
+ const st=silphStatus(s);
+ if(st.state!=='available')return {ok:false,reason:st.reason};
+ if(!ensureConsciousActive(s))return {ok:false,reason:'Sua equipe desmaiou. Recupere-a no Centro Pokémon.'};
+ const token='silph-'+(s.wins||0)+'-'+(s.losses||0)+'-'+Date.now().toString(36);
+ const team=silphTeam(s,currentLevelCap(s.stage));
+ const next={...s,silphPending:{token,stage:s.stage},dexSeen:[...(s.dexSeen||[])]};
+ recordSeen(next,team[0].id);
+ saveCampaign(next);
+ s.silphPending=next.silphPending;s.dexSeen=next.dexSeen;
+ return {ok:true,token,team};
+}
+export function resolveSilphBattle(s,token,won){
+ if(!s.silphPending||s.silphPending.token!==token)return {ok:false,reason:'Resultado antigo da Silph Co. ignorado.'};
+ return commitBattleOutcome(s,next=>{
+  next.silphPending=null;
+  if(!won){
+   next.losses++;
+   next.lastMessage='Giovanni venceu. Cure a equipe e volte à Silph Co.';
+   return {won:false,message:next.lastMessage,evolutions:[]};
+  }
+  const reward=Math.round(xpRewardFor(Math.min(next.stage,STAGES.length-1),TRAINERS_PER_GYM(Math.min(next.stage,STAGES.length-1)),'leader'));
+  const shared=awardSharedTeamExperience(next,reward,{kind:'trainer'});
+  next.wins++;rechargeRematches(next);
+  next.money=(next.money||0)+SILPH_GIOVANNI.money;
+  next.inventory={...next.inventory,masterball:(Number(next.inventory.masterball)||0)+1};
+  next.masterBallGiven=true;
+  next.lastRewardTM='MASTER BALL';
+  next.lastMessage='Você expulsou a Equipe Rocket! O presidente da Silph Co. te deu a MASTER BALL. +'+reward+' EXP · +$'+SILPH_GIOVANNI.money+'.';
+  return {won:true,message:next.lastMessage,reward,growth:shared.gains.find(g=>g.index===next.active),
+   sharedExp:shared.gains,evolutions:shared.evolutions};
+ });
 }
 export function startWildBattle(s){
  const wild=s.pendingWild;

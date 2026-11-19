@@ -7,7 +7,7 @@
  *    formula and the real catch rate (3 for birds/Mewtwo, 45 for Mew);
  *  - running away keeps it there; knocking it out makes it leave until the
  *    League is beaten (or, after the League, until 10 more victories);
- *  - one Master Ball per journey, from Giovanni.
+ *  - one Master Ball per journey: beat Giovanni at Silph Co. (Saffron).
  */
 export const LEGENDARIES=Object.freeze([
  {id:'zapdos',name:'Zapdos',place:'Usina Elétrica',scene:'powerplant',type:'ELECTRIC',
@@ -22,7 +22,22 @@ export const LEGENDARIES=Object.freeze([
   level:30,arena:'ruinas',champion:true,needs:['zapdos','articuno','moltres','mewtwo'],
   unlock:'Depois de capturar os outros 4'}
 ]);
-export const MASTER_BALL_STAGE=7; // Giovanni, Viridian gym.
+// Silph Co. (Saffron): beating Giovanni in the president's office gives the
+// journey's single Master Ball, as in FireRed. FireRed team and levels; they
+// rise with the campaign cap when the player arrives later.
+export const SILPH_STAGE=5; // Saffron, reached after the 5th badge.
+export const SILPH_GIOVANNI=Object.freeze({name:'Giovanni',money:3000,
+ team:Object.freeze([['nidorino',37],['kangaskhan',35],['rhyhorn',37],['nidoqueen',41]])});
+export function silphStatus(s){
+ if(s?.masterBallGiven)return {state:'done',reason:'Você já recebeu a Master Ball.'};
+ if(!s?.champion&&!(Number(s?.stage)>=SILPH_STAGE))return {state:'locked',reason:'Chegue a Saffron (depois da 5ª insígnia).'};
+ return {state:'available',reason:'Vença o Giovanni para ganhar a Master Ball.'};
+}
+// levelCap: campaign cap of the current stage (43 in Saffron).
+export function silphTeam(s,levelCap=43){
+ const boost=Math.max(0,(Number.isFinite(levelCap)?levelCap:43)-43);
+ return SILPH_GIOVANNI.team.map(([id,level])=>({id,level:level+boost}));
+}
 export const LEGENDARY_RETURN_WINS=10;
 
 const list=v=>Array.isArray(v)?v:[];
