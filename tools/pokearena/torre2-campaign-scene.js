@@ -612,7 +612,10 @@ create(){
     feet.set(key,(row+1)/idle.fh);
    }
    const box=this.__torre2Box?.get(key);
-   if(fitContent&&box)s=Math.min(3,maxSize/Math.max(box.w,box.h));
+   if(fitContent&&box)s=fitContent==='height'?
+    // Same visible height for every species; very wide ones are capped.
+    Math.min(3,maxSize/box.h,maxSize*1.6/box.w):
+    Math.min(3,maxSize/Math.max(box.w,box.h));
    const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
    onReady?.(sprite);
@@ -1342,9 +1345,10 @@ create(){
    const veil=this.add.graphics().setDepth(4.5);veil.fillStyle(0x0a0a20,locked?.62:.18).fillRect(x+3,y+3,112,140);
    veil.fillStyle(locked?MENU_UI.apagadoBorde:col,1).fillRect(x+3,y+143,112,2);
    const seen=(state.dexSeen||[]).includes(leg.id)||!locked;
-   const spr=this.pokemonIdleSprite(leg.id,x+59,y+128,70,6,s=>{if(!seen)s.setTint(0x101828)},true);
+   const ground=Math.round(y+3+140*(LAIR_SPOT[leg.scene]??.82));
+   const spr=this.pokemonIdleSprite(leg.id,x+59,ground,58,6,s=>{if(!seen)s.setTint(0x101828)},'height');
    if(spr&&!seen)spr.setTint?.(0x101828);
-   if(!seen)this.uiLabel(x+59,y+92,'?',22,'#4a5f8c',[.5,.5],7);
+   if(!seen)this.uiLabel(x+59,ground-30,'?',22,'#4a5f8c',[.5,.5],7);
    this.uiLabel(x+59,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]);
    estrechar(this.uiLabel(x+59,y+170,leg.place,7,'#dcf4fb',[.5,.5]),110);
    const label={caught:'✔ CAPTURADO',available:'DISPONÍVEL · '+st.reason,locked:'BLOQUEADO',gone:'FOI EMBORA'}[st.state]||'';
@@ -1378,7 +1382,7 @@ create(){
   const spot={x:LX+LW/2,y:Math.round(LY+LH*(LAIR_SPOT[leg.scene]??.82))};
   nativeAro(this.add.graphics().setDepth(2.8),LX-2,LY-2,LW+4,LH+4,MENU_UI.panelBorde,7);
   if(st.state==='available'){
-   const s=this.pokemonIdleSprite(id,spot.x,spot.y,84,6,null,true);
+   const s=this.pokemonIdleSprite(id,spot.x,spot.y,78,6,null,'height');
    if(s&&['zapdos','articuno','moltres','mew'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
   }else{
    const note={caught:'Você já capturou '+leg.name+'.',gone:leg.name+' foi embora. '+st.reason+'.',locked:'Algo poderoso vive aqui… '+st.reason+'.'}[st.state];
