@@ -39,7 +39,7 @@ import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSp
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
-import {hallOfFameModel} from './hall-of-fame.js';
+import {hallOfFameModel,HALL_GYM_BADGES as HALL_BADGE_ORDER} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {routeNode} from './route-data.js';
 import {kantoDexPageModel,pcPageModel,pcMemberLabel,PC_FILTERS} from './collection-ui.js';
@@ -687,45 +687,65 @@ create(){
   }
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(0x060f21);
-  this.backdrop();
   const g=this.add.graphics().setDepth(1);
-  // Native gold-framed panel and title band (same kit as the campaign).
-  nativeMarco(g,18,18,604,320,'panel',{borde:MENU_UI.oro});
-  nativeAro(g,16,16,608,324,MENU_UI.oro,10,.6);
-  nativeRect(g,32,29,576,45,0x2a3f78,7,.95);
+  // Celebration backdrop: deep royal gradient, golden light rays, sparkles.
+  const C3=Phaser.Display.Color;
+  for(let yy=0;yy<360;yy++){const c=C3.Interpolate.ColorWithColor(C3.ValueToColor(0x2a1d6e),C3.ValueToColor(0x060f21),100,Math.round(yy/359*100));
+   g.fillStyle(C3.GetColor(c.r,c.g,c.b),1).fillRect(0,yy,640,1);}
+  for(let k=0;k<9;k++){const a0=Math.PI*(.08+k*.105),a1=a0+.045;
+   g.fillStyle(0xffd86b,.07).fillTriangle(320,-10,320+Math.cos(a0)*700,-10+Math.sin(a0)*700,320+Math.cos(a1)*700,-10+Math.sin(a1)*700);}
+  for(let k=0;k<46;k++){const sx=(k*137)%640,sy=(k*71)%300+8,big=k%5===0;
+   g.fillStyle(k%3?0xfff3c4:0x9fd8ff,big?.9:.55).fillRect(sx,sy,big?2:1,big?2:1);
+   if(big){g.fillRect(sx-2,sy,6,1);g.fillRect(sx,sy-2,1,6);}}
+  nativeAro(g,6,6,628,348,MENU_UI.oro,10,.85);
   const center=(x,y,label,size=12,color=C.white)=>
    this.uiLabel(x,y,label,Math.max(7,Math.round(size*.8)),color,[.5,.5],7);
-  center(320,45,'★ SALÃO DA FAMA ★',21,'#ffdf94');
-  center(320,65,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
-  // The champion: the player's own FireRed character (Red or Leaf) and name.
+  this.screenBanner(22,320,'★ SALÃO DA FAMA ★','badges').setData('torre2-hall-title',true);
+  center(320,46,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
+  // Left: the champion (the player's own Red/Leaf) on a golden podium.
   let champion=null;try{champion=localStorage.getItem('torre2-trainer-name')}catch{}
-  this.npcSprite(playerSpriteId(),62,84,2.2,8);
-  this.npcSprite(playerSpriteId(),578,84,2.2,8);
-  if(champion)center(320,104,champion,12,MENU_UI.amarillo).setData('torre2-hall-champion',champion);
+  const pod=this.add.graphics().setDepth(4);
+  pod.fillStyle(0x000000,.35).fillEllipse(92,178,104,22);
+  pod.fillStyle(MENU_UI.oroBorde,1).fillEllipse(92,172,96,20);
+  pod.fillStyle(MENU_UI.oro,1).fillEllipse(92,169,84,15);
+  pod.fillStyle(MENU_UI.oroLuz,.7).fillEllipse(92,167,60,8);
+  pod.fillStyle(0xffffff,.08).fillCircle(92,124,48);
+  this.npcSprite(playerSpriteId(),92,171,3.6,6);
+  center(92,194,champion||'Campeão',13,MENU_UI.amarillo).setData('torre2-hall-champion',champion||'');
+  center(92,210,'Campeão de Kanto',8,'#dcf4fb');
+  // The eight original FireRed badges, all earned.
+  const bg=this.add.graphics().setDepth(4);nativeRect(bg,22,222,140,56,0x0a1638,7,.85);
+  for(let i=0;i<8;i++)drawBadgeIcon(this,i,40+(i%4)*35,238+Math.floor(i/4)*24,hall.badges.includes(HALL_BADGE_ORDER[i]),1.15).setDepth(6);
   const badges=hall.badgeCount+'/8 INSÍGNIAS';
   const honors=hall.honorCount+'/5 LIGA';
-  center(320,champion?120:89,badges+'  ·  '+honors+'  ·  '+hall.wins+' VITÓRIAS',
-   10,hall.complete?'#b2ffcb':'#ffdfa0');
-  // Canonical captured PMD portraits already loaded by Campanha.preload.
-  // Entire champion party, capped at six, remains shown at their actual level.
+  center(92,292,badges+'  ·  '+honors,8,hall.complete?'#b2ffcb':'#ffdfa0');
+  center(92,306,hall.wins+' VITÓRIAS',8,'#ffdfa0');
+  // Right: the champion party on golden pedestals, animated like in battle.
+  const panel=this.add.graphics().setDepth(2);
+  nativeRect(panel,176,60,450,250,0x0a1638,10,.55);
   hall.team.forEach((member,i)=>{
    const col=i%3,row=Math.floor(i/3);
-   const x=123+col*197,y=158+row*70;
+   const x=250+col*150,y=60+row*124;
    const info=this.memberInfo(member);
-   nativeRect(g,x-89,y-27,178,62,MENU_UI.oroBorde,7);
-   nativeRect(g,x-87,y-25,174,58,0x0f2352,6);
-   g.fillStyle(MENU_UI.oroLuz,.16).fillCircle(x-58,y+4,27);
-   this.portraitFrame(g,member,x-81,y-19,46,info.types);
+   const p=this.add.graphics().setDepth(4);
+   p.fillStyle(0xffffff,.05).fillCircle(x,y+46,34);
+   p.fillStyle(0x000000,.35).fillEllipse(x,y+80,92,18);
+   p.fillStyle(MENU_UI.oroBorde,1).fillEllipse(x,y+76,84,16);
+   p.fillStyle(MENU_UI.oro,1).fillEllipse(x,y+74,72,11);
+   p.fillStyle(MENU_UI.oroLuz,.6).fillEllipse(x,y+73,50,5);
+   if(!this.pokemonIdleSprite(member.id,x,y+75,66,6))this.drawPortrait(member,x,y+48,44,6);
+   // Name plaque, level and types.
+   nativeRect(p,x-62,y+88,124,32,MENU_UI.oroBorde,6);nativeRect(p,x-60,y+90,120,28,0x1b1446,5);
    const name=member.id.replace(/-/g,' ').toUpperCase().slice(0,16);
-   center(x+24,y-10,name,10,'#f6eed1');
-   center(x+24,y+6,'NÍVEL '+member.level,10,'#c1e6f3');
-   info.types.slice(0,2).forEach((t,k)=>{const px=x-8+k*50;pastillaTipo(g,px,y+16,t,46,11);
-    this.uiLabel(px+23,y+22,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
+   center(x-6,y+98,name,9,'#f6eed1');
+   this.uiLabel(x+56,y+98,'NV '+member.level,7,'#c1e6f3',[1,.5],7).setData('torre2-hall-level',member.level);
+   info.types.slice(0,2).forEach((t,k)=>{const n=Math.min(2,info.types.length),px=x-(n*48-2)/2+k*48;
+    pastillaTipo(p,px,y+106,t,46,10);this.uiLabel(px+23,y+111,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
   });
-  if(!hall.team.length)center(320,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
-  center(320,301,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
-   9,'#adcbe0');
-  this.button(320,327,232,27,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}))
+  if(!hall.team.length)center(400,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
+  center(400,322,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
+   8,'#adcbe0');
+  this.button(92,332,150,26,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}),false,8)
    .setData('torre2-hall-back',true);
   this.__torre2HallOfFame={...hall};
  }
