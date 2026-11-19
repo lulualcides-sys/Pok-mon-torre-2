@@ -12,6 +12,7 @@ import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 import {regionalTrainer,regionalRocket} from './torre2-trainer-rosters.js';
+import {legendaryEncounter,markLegendaryDefeated,MASTER_BALL_STAGE} from './legendaries.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -677,6 +678,11 @@ export function resolveBattle(s,won,random=Math.random){
    if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
    const tm=grantGymTM(next,next.stage);
    next.lastRewardTM=tm.added?tm.item.name:null;
+   if(next.stage===MASTER_BALL_STAGE&&!next.masterBallGiven){
+    next.inventory={...next.inventory,masterball:(Number(next.inventory.masterball)||0)+1};
+    next.masterBallGiven=true;
+    next.lastRewardTM=(next.lastRewardTM?next.lastRewardTM+' e ':'')+'MASTER BALL';
+   }
    next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
    if(next.stage>=STAGES.length)next.champion=true;
   }else next.trainer++;
@@ -694,7 +700,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(!inWild)return {ok:false,reason:'Pokémon de treinadores não podem ser capturados.'};
  const candidate=inWild?s.pendingWild:s.pendingCapture;
  if(!candidate)return {ok:false,reason:'Nenhum Pokémon disponível para captura.'};
- if(!['pokeball','greatball','ultraball'].includes(ball)||!(s.inventory?.[ball]>0))
+ if(!['pokeball','greatball','ultraball','masterball'].includes(ball)||!(s.inventory?.[ball]>0))
   return {ok:false,reason:'Sem Pokébolas! Visite o Mart.'};
  if(inWild&&candidate.stage!==s.stage)
   return {ok:false,reason:'Encontro selvagem expirado.'};
@@ -829,13 +835,25 @@ export function startWildEncounter(s,random=Math.random){
  s.dexShinySeen=next.dexShinySeen;
  return {ok:true,encounter:wild};
 }
+// Legendary lair: stage its single fixed encounter as the wild battle.
+export function startLegendaryEncounter(s,id,random=Math.random){
+ if(s.pendingWild)return {ok:false,reason:'Termine o encontro selvagem atual primeiro.'};
+ const wild=legendaryEncounter(s,id,currentLevelCap(s.stage),random);
+ if(!wild)return {ok:false,reason:'Este lendário ainda não está disponível.'};
+ const next={...s,pendingWild:wild,dexSeen:[...(s.dexSeen||[])],dexShinySeen:[...(s.dexShinySeen||[])]};
+ recordSeen(next,id);
+ if(wild.shiny)recordShiny(next,id);
+ saveCampaign(next);
+ s.pendingWild=wild;s.dexSeen=next.dexSeen;s.dexShinySeen=next.dexShinySeen;
+ return {ok:true,encounter:wild};
+}
 export function startWildBattle(s){
  const wild=s.pendingWild;
  if(!wild||wild.stage!==s.stage)throw new Error('Wild encounter no longer active');
  if(!ensureConsciousActive(s))
   throw new Error('Equipe desmaiada: visite o Centro Pokémon antes de batalhar.');
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
-  arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
+  arena:wild.arena||STAGES[s.stage]?.arena||'estadio',mandos:['kbm','cpu'],
   torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
    shiny:wild.shiny===true,
    playerLevel:s.team[s.active].progression?.level??5,
@@ -858,6 +876,10 @@ export function resolveWildBattle(s,won){
   const growth=shared.gains.find(g=>g.index===next.active);
   next.wins++;rechargeRematches(next);
   next.pendingCapture=null;
+  if(wild.legendary){
+   next.legendaryDefeated=markLegendaryDefeated(next,wild.id);
+   next.lastMessage=wild.id+' desmaiou e foi embora. '+(next.champion?'Ele volta depois de mais algumas vitórias.':'Ele volta depois que você zerar a Liga.');
+  }else
   next.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
   return {won:true,message:next.lastMessage,growth,
    sharedExp:shared.gains,evolutions:shared.evolutions};

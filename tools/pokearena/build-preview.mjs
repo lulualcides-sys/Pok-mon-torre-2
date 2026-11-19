@@ -296,6 +296,9 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  // Permanent legacy (titles, completions, Hall history) imported by campanha.js.
  ['tools/pokearena/torre2-legacy.js','legacy.js'],
+ // Legendary encounters (pure rules), imported by campaign-core and campanha.
+ ['tools/pokearena/torre2-legendaries.js','legendaries.js'],
+ ['tools/pokearena/torre2-legendary-lairs.js','legendary-lairs.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],

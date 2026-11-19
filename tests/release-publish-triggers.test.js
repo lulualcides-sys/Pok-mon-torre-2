@@ -24,8 +24,14 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-frlg-npc.js',
   // Reviewed: identical to the built module, restyled with the native kit.
   'tools/pokearena/torre2-battle-report.js',
+  // Reviewed 2026-11-19: byte-identical to the pinned build before the
+  // Master Ball row / Master Ball sprite.
+  'tools/pokearena/torre2-capture-arena.js',
+  'tools/pokearena/torre2-ball-sprites.js',
   // Reviewed NEW module (not in the audited build): legacy, rewards, ranking.
-  'tools/pokearena/torre2-legacy.js'
+  'tools/pokearena/torre2-legacy.js',
+  'tools/pokearena/torre2-legendaries.js',
+  'tools/pokearena/torre2-legendary-lairs.js'
  ],'Any changed or added release overlay must be reviewed explicitly');
  const pull=workflow.slice(workflow.indexOf('  pull_request:'),workflow.indexOf('  push:'));
  const push=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('  workflow_dispatch:'));

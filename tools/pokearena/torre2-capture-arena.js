@@ -124,15 +124,18 @@ export function installWildCapture(scene){
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
   add(txt(scene,187,142,state.pendingWild.id.toUpperCase()+
    ' · HP '+hp+'%',11,'#d2f5e5'));
-  const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
-  for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
-   const y=178+i*27,owned=state.inventory[kind]||0;
+  const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL',masterball:'MASTER BALL'};
+  // The Master Ball (one per journey, from Giovanni) only shows when owned.
+  const kinds=['pokeball','greatball','ultraball',...((state.inventory.masterball||0)>0?['masterball']:[])];
+  const step=kinds.length>3?21:27,top=kinds.length>3?173:178;
+  for(const [i,kind]of kinds.entries()){
+   const y=top+i*step,owned=state.inventory[kind]||0;
    add(originalBallSprite(scene,200,y+4,kind,16,2708));
    const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,
     status:fighterCaptureStatus(enemy)},kind);
    add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
     '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
-   if(owned)add(hit(scene,316,y+8,275,25,()=>throwBall(kind)));
+   if(owned)add(hit(scene,316,y+8,275,step-2,()=>throwBall(kind)));
   }
   add(txt(scene,225,265,'TOQUE NA MARGEM PARA VOLTAR',8,'#9bd9dc'));
   add(hit(scene,324,290,250,17,close));

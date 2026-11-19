@@ -23,7 +23,9 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
- ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove} from './campaign-core.js';
+ ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter} from './campaign-core.js';
+import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel} from './legendaries.js';
+import {drawLegendaryLair} from './legendary-lairs.js';
 import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -852,6 +854,7 @@ create(){
    saveExport:()=>this.exportSave(state),
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
+   legendaries:()=>this.legendaryHub(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
@@ -1317,6 +1320,71 @@ create(){
   }
   this.button(150,334,240,28,'◀ VOLTAR',()=>back?back():this.trainerCardScreen(state)).setData('torre2-hall-history-back',true);
   this.__torre2HallHistory={count:entries.length,page,pages};
+ }
+ // Legendary lairs are genuine pixel art (legendary-lairs.js): painted on a
+ // small canvas and shown at 2× with nearest-neighbour, like the GBA screen.
+ legendaryStatusFor(state,id){return legendaryStatus(state,id,currentLevelCap(state.stage))}
+ // List of the five legendaries and where they wait.
+ legendaryHub(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  this.screenBanner(20,300,'Lendários de Kanto','badges');
+  this.uiLabel(320,46,'Um encontro único em cada lugar · lute, enfraqueça e capture',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,250);
+  const g=this.add.graphics().setDepth(3);
+  const colors={ELECTRIC:0xf2c232,ICE:0x7fd0f0,FIRE:0xf07030,PSYCHIC:0xd070c0};
+  LEGENDARIES.forEach((leg,i)=>{
+   const x=16+i*122,y=64,st=this.legendaryStatusFor(state,leg.id),locked=st.state==='locked';
+   const col=colors[leg.type]??MENU_UI.panelBorde;
+   nativeRect(g,x,y,118,234,locked?MENU_UI.apagadoBorde:col,8);nativeRect(g,x+2,y+2,114,230,locked?0x0a1638:0x1b1446,7);
+   g.fillStyle(0x000000,.25).fillEllipse(x+59,y+132,84,16);g.fillStyle(col,locked?.25:.8).fillEllipse(x+59,y+130,72,12);
+   const seen=(state.dexSeen||[]).includes(leg.id)||!locked;
+   const spr=this.pokemonIdleSprite(leg.id,x+59,y+131,74,6,s=>{if(!seen)s.setTint(0x101828)},true);
+   if(spr&&!seen)spr.setTint?.(0x101828);
+   if(!seen)this.uiLabel(x+59,y+92,'?',22,'#4a5f8c',[.5,.5],7);
+   this.uiLabel(x+59,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]);
+   estrechar(this.uiLabel(x+59,y+170,leg.place,7,'#dcf4fb',[.5,.5]),110);
+   const label={caught:'✔ CAPTURADO',available:'DISPONÍVEL · '+st.reason,locked:'BLOQUEADO',gone:'FOI EMBORA'}[st.state]||'';
+   estrechar(this.uiLabel(x+59,y+190,label,7,st.state==='caught'?'#9ff0bf':st.state==='available'?'#ffe08a':'#ff9daa',[.5,.5]),110);
+   if(st.state!=='available'&&st.state!=='caught')estrechar(this.uiLabel(x+59,y+206,st.reason,6,MENU_UI.tenue,[.5,.5]),110);
+   const z=this.add.zone(x+59,y+117,118,234).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-legendary-card',leg.id);
+   z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();sfx('seleccion');this.legendaryLair(state,leg.id)});
+  });
+  this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state)).setData('torre2-legendary-back',true);
+  const mb=state.inventory?.masterball||0;
+  originalBallSprite(this,420,330,'masterball',18,9);
+  this.uiLabel(436,330,'Master Ball ×'+mb+(state.masterBallGiven?'':' · ganha ao vencer o Giovanni'),8,mb?'#e8c8ff':MENU_UI.tenue,[0,.5]);
+  this.__torre2LegendaryHub=LEGENDARIES.map(l=>({id:l.id,...this.legendaryStatusFor(state,l.id)}));
+ }
+ // The lair itself: the place drawn, the legendary waiting, and the challenge.
+ legendaryLair(state,id){
+  const leg=legendaryById(id);if(!leg)return this.legendaryHub(state);
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const st=this.legendaryStatusFor(state,id),locked=st.state==='locked';
+  this.screenBanner(20,300,leg.place,'badges');
+  const fr=this.add.graphics().setDepth(1.5);nativeRect(fr,10,40,620,236,MENU_UI.contorno,8);
+  const {spot}=drawLegendaryLair(this,leg.scene,14,44,612,228);
+  nativeAro(this.add.graphics().setDepth(2.8),12,42,616,232,MENU_UI.panelBorde,7);
+  if(st.state==='available'){
+   const s=this.pokemonIdleSprite(id,spot.x,spot.y,96,6,null,true);
+   if(s&&['zapdos','articuno','moltres','mew'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+  }else{
+   const note={caught:'Você já capturou '+leg.name+'.',gone:leg.name+' foi embora. '+st.reason+'.',locked:'Algo poderoso vive aqui… '+st.reason+'.'}[st.state];
+   const box=this.add.graphics().setDepth(5);nativeRect(box,spot.x-170,spot.y-40,340,34,MENU_UI.panelBorde,7);nativeRect(box,spot.x-168,spot.y-38,336,30,0x0a1a46,6);
+   estrechar(this.uiLabel(spot.x,spot.y-23,note,9,'#ffffff',[.5,.5],6),320);
+  }
+  this.uiSection(10,280,620,32);
+  const show=!locked;
+  this.uiLabel(24,296,show?leg.name+' · Nv '+legendaryLevel(state,leg,currentLevelCap(state.stage))+(state.champion?'':' (limite da sua etapa)'):'???',10,MENU_UI.amarillo,[0,.5],4);
+  const inv=state.inventory||{};
+  estrechar(this.uiLabel(616,296,'Ultra ×'+(inv.ultraball||0)+' · Great ×'+(inv.greatball||0)+' · Poké ×'+(inv.pokeball||0)+' · Master ×'+(inv.masterball||0)+' · Dica: sono/paralisia e HP baixo',7,'#dcf4fb',[1,.5],4),360);
+  this.button(130,334,220,28,'◀ VOLTAR',()=>this.legendaryHub(state)).setData('torre2-lair-back',true);
+  if(st.state==='available')
+   this.button(470,334,260,28,'ENFRENTAR '+leg.name.toUpperCase(),()=>{
+    const r=startLegendaryEncounter(state,id);
+    if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+    this.enterBattle(state,true);
+   },true).setData('torre2-lair-fight',id);
+  this.__torre2Lair={id,state:st.state,scene:leg.scene};
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
