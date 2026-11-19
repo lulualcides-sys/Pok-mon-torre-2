@@ -1520,7 +1520,8 @@ create(){
    const owned=caught.has(id),available=area.available.includes(id);
    let types=[];try{const {def,etapa}=buscar(id);types=(etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{}
    nativeRect(cards,x,y,136,42,owned?0x50cc84:available?MENU_UI.panelBorde:MENU_UI.apagadoBorde,6);
-   nativeRect(cards,x+1,y+1,134,40,available?0x0a1a46:0x081232,5);
+   // Only recorded captures are highlighted (approved green vs navy tile).
+   nativeRect(cards,x+1,y+1,134,40,owned?0x24553f:0x223345,5,available?1:.6);
    nativeRect(cards,x+6,y+6,30,30,TIPOS[types[0]]??0x5f86bd,5,available?.55:.3);
    const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
    if(key&&this.textures.exists(key)){
@@ -1538,9 +1539,9 @@ create(){
     this.uiLabel(x+64+k*44,y+30,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],620)});
    else this.uiLabel(x+44,y+30,'Aparece mais tarde',7,MENU_UI.apagadoTexto,[0,.5],620);
   });
-  label(320,266,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
-  modalButton(176,300,224,32,'◀ VOLTAR AO MAPA',close);
-  modalButton(464,300,224,32,'PROCURAR POKÉMON',()=>{
+  label(320,262,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
+  modalButton(174,292,224,30,'◀ VOLTAR AO MAPA',close);
+  modalButton(466,292,224,30,'PROCURAR POKÉMON',()=>{
    let found;
    try{found=startWildEncounter(state);}
    catch(error){
