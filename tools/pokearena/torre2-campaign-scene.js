@@ -346,23 +346,6 @@ create(){
   });
   paint();return zone;
  }
- // FireRed intro art ships with an opaque backdrop colour: key it out once
- // (the corner pixel's colour becomes transparent) so it sits on our stage.
- keyedTexture(key){
-  const out=key+'-keyed';
-  if(this.textures.exists(out))return out;
-  try{
-   const src=this.textures.get(key).getSourceImage();
-   const cv=document.createElement('canvas');cv.width=src.width;cv.height=src.height;
-   const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0);
-   const img=cx.getImageData(0,0,cv.width,cv.height),d=img.data;
-   const r0=d[0],g0=d[1],b0=d[2];
-   for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-r0)<6&&Math.abs(d[i+1]-g0)<6&&Math.abs(d[i+2]-b0)<6)d[i+3]=0;
-   cx.putImageData(img,0,0);
-   this.textures.addCanvas(out,cv);
-   return out;
-  }catch{return key}
- }
  professorOakIntro(){
   // Full-body FRLG lecture portrait (not the overworld NPC): original crisp
   // pixels, on a native-kit stage with a dialogue box.
@@ -468,6 +451,23 @@ create(){
   });
   this.uiLabel(ANCHO/2,294,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',7,MENU_UI.tenue,[.5,.5]);
   this.uiLabel(ANCHO/2,308,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',7,MENU_UI.tenue,[.5,.5]);
+ }
+ // FireRed intro art ships with an opaque backdrop colour: key it out once
+ // (the corner pixel's colour becomes transparent) so it sits on our stage.
+ keyedTexture(key){
+  const out=key+'-keyed';
+  if(this.textures.exists(out))return out;
+  try{
+   const src=this.textures.get(key).getSourceImage();
+   const cv=document.createElement('canvas');cv.width=src.width;cv.height=src.height;
+   const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0);
+   const img=cx.getImageData(0,0,cv.width,cv.height),d=img.data;
+   const r0=d[0],g0=d[1],b0=d[2];
+   for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-r0)<6&&Math.abs(d[i+1]-g0)<6&&Math.abs(d[i+2]-b0)<6)d[i+3]=0;
+   cx.putImageData(img,0,0);
+   this.textures.addCanvas(out,cv);
+   return out;
+  }catch{return key}
  }
  backdrop(){
   // Native checkered menu background of the base client.
