@@ -46,7 +46,7 @@ Autorização: veja `docs/CREDITOS-E-LICENCAS.md` (permissão declarada pelo don
 
 ## Pendências
 
-- **Folhas de efeito:** o site responde 403 para estas folhas. O dono do projeto enviou 5 delas em 19/11/2026: `detect`, `xtijera`, `hojatormenta`, `hojafilo` e `punohielo`. Estão em `tools/pokearena/alpha0762-vfx/`, com SHA-256 e procedência em `PROVENANCE.json`, e o montador as instala em `assets/vfx/`. **Falta só `fuegofatuo.png` (Will-O-Wisp, 256×96, quadros 32×32)**: o golpe funciona, mas sem essa arte.
+- **Folhas de efeito: completas.** O site responde 403 para as 6 folhas novas, e o dono do projeto enviou todas em 19/11/2026: `detect`, `xtijera`, `hojatormenta`, `hojafilo`, `punohielo` e `fuegofatuo`. Estão em `tools/pokearena/alpha0762-vfx/`, com SHA-256 e procedência em `PROVENANCE.json`, e o montador as instala em `assets/vfx/`.
 - Pacotes `assets/p/*.bin` da 0.76.2 (formas e trajes novos do site) não foram obtidos (403).
 - Músicas por import dinâmico (`musica/*.js`) e idiomas (`idiomas/*.js`) não estão na captura. Já faltavam no release 0.71.3 publicado.
 - Telas novas da 0.76.2 que dependem de `/assets/ui/*` (ginásios, loja, molduras, campo do Gyarball) podem aparecer sem imagem.

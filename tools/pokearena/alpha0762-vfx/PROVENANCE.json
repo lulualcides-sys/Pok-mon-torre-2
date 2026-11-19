@@ -5,9 +5,7 @@
  "source": "Folhas de VFX do cliente-base Poké Arena 2D (https://www.pokearena2d.com/assets/vfx/), enviadas pelo dono do projeto em 19/11/2026 porque o servidor responde 403 a clientes não-navegador.",
  "rights": "Uso sob a autorização declarada em docs/CREDITOS-E-LICENCAS.md; arte de terceiros, não redistribuir fora do Torre 2.",
  "checked": "Dimensões conferidas contra HOJAS em vfx.js 0.76.2 (fw x cols, fh x linhas), RGBA com transparência.",
- "stillMissing": [
-  "fuegofatuo.png (Will-O-Wisp, 256 px de largura, quadros 32x32)"
- ],
+ "stillMissing": [],
  "files": {
   "detect.png": {
    "move": "Detect",
@@ -33,6 +31,11 @@
    "move": "Ice Punch",
    "sha256": "5116b60df2c3de9213b19f91eefb6e3b35a230acc4a82167b6f2f38aa3183698",
    "bytes": 3095
+  },
+  "fuegofatuo.png": {
+   "move": "Will-O-Wisp",
+   "sha256": "56c8327e05dccb67aa98b0c580e03427759d298361a07193bdeebd5876597526",
+   "bytes": 3340
   }
  }
 }
