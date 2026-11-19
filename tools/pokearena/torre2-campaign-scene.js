@@ -13,6 +13,8 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
+import {readLegacy,saveLegacy,syncLegacy,TITLES,titleById,ACHIEVEMENT_REWARDS,rewardLabel,claimAchievement,
+ encodeTrainerCode,decodeTrainerCode,readRanking,saveRanking,addFriend,rankingRows} from './legacy.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -761,6 +763,7 @@ create(){
   const center=(x,y,label,size=12,color=C.white)=>
    this.uiLabel(x,y,label,Math.max(7,Math.round(size*.8)),color,[.5,.5],7);
   this.campaignMusic('hall');
+  const legacy=this.legacySync(state);
   this.screenBanner(22,320,'★ SALÃO DA FAMA ★','badges').setData('torre2-hall-title',true);
   center(320,46,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
   // Left: the champion (the player's own Red/Leaf) on a golden podium.
@@ -773,7 +776,8 @@ create(){
   pod.fillStyle(0xffffff,.08).fillCircle(92,124,48);
   this.npcSprite(playerSpriteId(),92,171,3.6,6);
   center(92,194,champion||'Campeão',13,MENU_UI.amarillo).setData('torre2-hall-champion',champion||'');
-  center(92,210,'Campeão de Kanto',8,'#dcf4fb');
+  const hallTitle=titleById(legacy.activeTitle);
+  center(92,210,(hallTitle?hallTitle.name:'Campeão de Kanto')+' · zerou '+legacy.championRuns.length+'×',8,'#dcf4fb');
   // The eight original FireRed badges, all earned.
   const bg=this.add.graphics().setDepth(4);nativeRect(bg,22,222,140,56,0x0a1638,7,.85);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,40+(i%4)*35,238+Math.floor(i/4)*24,hall.badges.includes(HALL_BADGE_ORDER[i]),1.15).setDepth(6);
@@ -845,9 +849,11 @@ create(){
    trainerCard:()=>this.trainerCardScreen(state),
    saveExport:()=>this.exportSave(state),
    saveImport:()=>this.importSave(),
+   ranking:()=>this.rankingScreen(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
+  this.legacySync(state);
   this.screenFade();
   // League (Victory Road, Elite Four, Champion): the dungeon theme.
   this.campaignMusic(state.stage>=8?'dungeon':'town');
@@ -1113,7 +1119,7 @@ create(){
  exportSave(state){
   let name=null,gender=null;try{name=localStorage.getItem('torre2-trainer-name');gender=localStorage.getItem('torre2-trainer-gender')}catch{}
   const campaign=readCampaign()||state;
-  const data={format:'torre2-save',version:1,exportedAt:new Date().toISOString(),trainer:{name,gender},campaign};
+  const data={format:'torre2-save',version:1,exportedAt:new Date().toISOString(),trainer:{name,gender},campaign,legacy:readLegacy()};
   try{
    const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -1160,8 +1166,106 @@ create(){
    try{saveCampaign(c)}catch{close();return this.campaignNotice('Save inválido: nada foi alterado','#ff9d9d')}
    try{if(data.trainer?.name)localStorage.setItem('torre2-trainer-name',String(data.trainer.name).slice(0,12));
     if(data.trainer?.gender==='leaf'||data.trainer?.gender==='red')localStorage.setItem('torre2-trainer-gender',data.trainer.gender)}catch{}
+   // Merge the permanent legacy (titles and completions only ever grow).
+   if(data.legacy&&typeof data.legacy==='object'){const l=readLegacy();
+    l.championRuns=[...new Set([...l.championRuns,...(Array.isArray(data.legacy.championRuns)?data.legacy.championRuns.filter(x=>typeof x==='string'):[])])];
+    for(const [k,v] of Object.entries(data.legacy.titles||{}))if(titleById(k)&&!l.titles[k])l.titles[k]=v;
+    l.bestShiny=Math.max(l.bestShiny||0,Number(data.legacy.bestShiny)||0);l.bestCaught=Math.max(l.bestCaught||0,Number(data.legacy.bestCaught)||0);
+    l.flawlessRuns=Math.max(l.flawlessRuns||0,Number(data.legacy.flawlessRuns)||0);saveLegacy(l);}
    close();this.scene.restart();
   },true,9).setData('torre2-import-apply',true));
+ }
+ // Permanent legacy (titles, completions): synced from the live campaign,
+ // stored apart from the save so "Reiniciar jornada" never erases it.
+ legacySync(state){
+  if(!state)return readLegacy();
+  const {legacy,earned}=syncLegacy(state,readLegacy());
+  saveLegacy(legacy);
+  if(earned.length)this.time?.delayedCall(700,()=>{if(this.scene.isActive())
+   this.campaignNotice('Novo título: '+earned.map(t=>t.name).join(', ')+'!',MENU_UI.amarillo)});
+  return legacy;
+ }
+ rarityColor(r){return r==='rainbow'?0xd06ad8:r==='gold'?MENU_UI.oro:r==='silver'?0xc0c8d8:MENU_UI.panelBorde}
+ titlesScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  const got=TITLES.filter(t=>legacy.titles[t.id]).length;
+  this.screenBanner(20,300,'Títulos','badges');
+  this.uiLabel(320,46,got+' de '+TITLES.length+' títulos · ficam com você mesmo ao reiniciar a jornada',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  TITLES.forEach((t,i)=>{
+   const x=16+(i%4)*154,y=64+Math.floor(i/4)*60,on=!!legacy.titles[t.id],active=legacy.activeTitle===t.id;
+   const col=on?this.rarityColor(t.rarity):MENU_UI.apagadoBorde;
+   nativeRect(g,x,y,150,56,active?0xffffff:col,7);nativeRect(g,x+2,y+2,146,52,on?0x1d2a5e:0x0a1638,6);
+   if(on&&t.rarity==='rainbow'){for(let k=0;k<6;k++)g.fillStyle([0xe85050,0xf2c34b,0x50cc84,0x6fb7f0,0x9b8ec5,0xe997bf][k],1).fillRect(x+6+k*23,y+52,22,2);}
+   estrechar(this.uiLabel(x+10,y+16,on?t.name:'???',9,on?(active?'#ffffff':MENU_UI.amarillo):'#8ea2c8'),130);
+   estrechar(this.uiLabel(x+10,y+31,t.desc,7,on?'#dcf4fb':MENU_UI.tenue),130);
+   this.uiLabel(x+10,y+45,on?(active?'◆ Em uso':'Toque para usar'):'Bloqueado',6,on?'#9ff0bf':MENU_UI.apagadoTexto);
+   if(on){const z=this.add.zone(x+75,y+28,150,56).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-title-pick',t.id);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();const l=readLegacy();l.activeTitle=t.id;saveLegacy(l);this.titlesScreen(state)});}
+  });
+  this.button(320,334,220,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-titles-back',true);
+ }
+ // Offline ranking: your code + friends' codes, ordered by completions.
+ rankingScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const legacy=this.legacySync(state);
+  let name='Treinador',gender='red';try{name=localStorage.getItem('torre2-trainer-name')||name;gender=localStorage.getItem('torre2-trainer-gender')||gender}catch{}
+  const self={name,completions:legacy.championRuns.length,titles:Object.keys(legacy.titles).length,activeTitle:legacy.activeTitle,gender};
+  const friends=readRanking(),rows=rankingRows(self,friends);
+  this.screenBanner(20,300,'Ranking de treinadores','badges');
+  this.uiLabel(320,46,'Quem zerou a campanha mais vezes · troque códigos com seus amigos',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,236);
+  const g=this.add.graphics().setDepth(3);
+  this.uiLabel(30,70,'#',8,MENU_UI.tenue);this.uiLabel(60,70,'Treinador',8,MENU_UI.tenue);
+  this.uiLabel(400,70,'Título',8,MENU_UI.tenue);this.uiLabel(600,70,'Zerou',8,MENU_UI.tenue,[1,.5]);
+  rows.slice(0,8).forEach((r,i)=>{
+   const y=84+i*26,medal=[MENU_UI.oro,0xc0c8d8,0xcd8a4a][i];
+   nativeRect(g,18,y,604,22,r.self?MENU_UI.oro:MENU_UI.panelBorde,5);nativeRect(g,19,y+1,602,20,r.self?0x2a3f78:0x0a1a46,4);
+   if(medal!==undefined){g.fillStyle(medal,1).fillCircle(32,y+11,8)}
+   this.uiLabel(32,y+11,String(i+1),8,medal!==undefined?MENU_UI.textoOscuro:'#ffffff',[.5,.5],5);
+   this.npcSprite(r.gender==='leaf'?'green_normal':'red_normal',52,y+21,.62,5);
+   estrechar(this.uiLabel(66,y+11,r.name+(r.self?' (você)':''),9,r.self?MENU_UI.amarillo:'#ffffff'),300);
+   const t=titleById(r.activeTitle);
+   estrechar(this.uiLabel(400,y+11,t?t.name:'—',8,t?'#f6dd9a':MENU_UI.tenue),150);
+   this.uiLabel(600,y+11,r.completions+'×',10,'#9ff0bf',[1,.5]);
+   if(!r.self){const z=this.add.zone(612,y+11,20,20).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-ranking-remove',r.name);
+    this.uiLabel(612,y+11,'✕',8,'#ff9daa',[.5,.5],6);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();saveRanking(readRanking().filter(f=>f.name!==r.name));this.rankingScreen(state)});}
+  });
+  if(rows.length===1)this.uiLabel(320,150,'Adicione o código de um amigo para ver quem zerou mais!',8,MENU_UI.suave,[.5,.5]);
+  this.button(118,320,200,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state));
+  this.button(330,320,196,28,'MEU CÓDIGO',()=>this.showTrainerCode(self),true).setData('torre2-ranking-mycode',true);
+  this.button(530,320,186,28,'ADICIONAR AMIGO',()=>{
+   const code=window.prompt('Cole o código de treinador do seu amigo (começa com T2-):','');
+   if(code===null)return;
+   const friend=decodeTrainerCode(code);
+   if(!friend)return this.campaignNotice('Código inválido ou incompleto','#ff9d9d');
+   if(friend.name===self.name)return this.campaignNotice('Esse é o seu próprio código','#ffd47a');
+   saveRanking(addFriend(readRanking(),friend,self.name));this.rankingScreen(state);
+   this.campaignNotice(friend.name+' entrou no ranking!','#9ff0bf');
+  }).setData('torre2-ranking-add',true);
+  this.__torre2Ranking={rows:rows.map(r=>({name:r.name,completions:r.completions,self:!!r.self}))};
+ }
+ showTrainerCode(self){
+  const code=encodeTrainerCode(self),D=9400,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list.filter(o=>o.getData?.('torre2-code-ui')).forEach(o=>o.destroy())};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive());
+  const g=keep(this.add.graphics().setDepth(D+1));g.fillStyle(0x020814,.88).fillRect(0,0,640,360);
+  nativeMarco(g,90,80,460,190,'panel',{borde:MENU_UI.oro});
+  keep(this.uiLabel(320,104,'Seu código de treinador',12,MENU_UI.amarillo,[.5,.5],D+2));
+  keep(this.uiLabel(320,124,'Mande para seus amigos: eles colam em "Adicionar amigo"',7,MENU_UI.suave,[.5,.5],D+2));
+  nativeRect(g,110,140,420,40,0xf4f1e6,6);
+  const t=keep(textoMenu(this,320,160,code,{tam:9,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(D+2));
+  estrechar(t,400);t.setData('torre2-trainer-code',code);
+  keep(this.uiLabel(320,194,self.name+' · zerou '+self.completions+'× · '+self.titles+' títulos',8,'#ffffff',[.5,.5],D+2));
+  const lift=btn=>{this.children.list.slice(-3).forEach(o=>{if(o!==btn){o.setDepth?.(D+3);o.setData?.('torre2-code-ui',true)}});btn.setDepth(D+4);return keep(btn)};
+  lift(this.button(230,240,160,28,'COPIAR',async()=>{
+   try{await navigator.clipboard.writeText(code);this.campaignNotice('Código copiado!','#9ff0bf')}
+   catch{window.prompt('Copie o código:',code)}
+  },true,9).setData('torre2-code-copy',true));
+  lift(this.button(410,240,160,28,'FECHAR',close,false,9));
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
@@ -1172,8 +1276,9 @@ create(){
   const uid=String(state.team?.[0]?.uid||state.starter||'kanto');
   let h=7;for(const ch of uid)h=(h*31+ch.charCodeAt(0))%100000;
   const got=(state.badges||[]).length;
-  // Card colour follows progress, like the FRLG card tiers.
-  const tier=got>=8?MENU_UI.oro:got>=4?0xc0c8d8:got>=1?0xcd8a4a:0x5f86bd;
+  const legacy=this.legacySync(state),title=titleById(legacy.activeTitle);
+  // Card colour: the active permanent title's rarity, else badge progress.
+  const tier=title?this.rarityColor(title.rarity):got>=8?MENU_UI.oro:got>=4?0xc0c8d8:got>=1?0xcd8a4a:0x5f86bd;
   const g=this.add.graphics().setDepth(2);
   nativeRect(g,36,44,568,250,MENU_UI.contorno,12);
   nativeRect(g,38,46,564,246,tier,11);
@@ -1183,15 +1288,16 @@ create(){
   this.uiLabel(580,76,'ID Nº '+String(h).padStart(5,'0'),9,MENU_UI.suave,[1,.5]);
   g.fillStyle(MENU_UI.panelBorde,1).fillRect(56,96,528,1);
   const dexSeen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
-  const rows=[['Nome',name],['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
+  const rows=[['Nome',name],['Título',title?title.name:'—'],['Campanha zerada',legacy.championRuns.length+'×'],
+   ['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
    ['Pokédex',(state.dexCaught||[]).length+' capturados · '+dexSeen+' vistos'],
    ['Vitórias',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
    ['Equipe',(state.team||[]).length+' na equipe · '+(state.box||[]).length+' no PC']];
   rows.forEach(([k,v],i)=>{
-   const y=116+i*26;
-   nativeRect(g,60,y-10,340,22,i%2?0x0c1d46:0x12285a,5,.9);
+   const y=108+i*19;
+   nativeRect(g,60,y-9,340,18,i%2?0x0c1d46:0x12285a,5,.9);
    this.uiLabel(70,y+1,k,8,MENU_UI.suave);
-   estrechar(this.uiLabel(390,y+1,v,9,i===0?MENU_UI.amarillo:'#ffffff',[1,.5]),220);
+   estrechar(this.uiLabel(390,y+1,v,9,i===0||(i===1&&title)?MENU_UI.amarillo:'#ffffff',[1,.5]),220);
   });
   // The player's own FireRed character in a framed window.
   nativeRect(g,420,106,160,130,MENU_UI.contorno,8);nativeRect(g,422,108,156,126,0x1d3c7a,7);
@@ -1202,11 +1308,13 @@ create(){
   nativeRect(g,60,250,520,30,0x081436,6,.9);
   this.uiLabel(70,265,'Insígnias',8,MENU_UI.suave);
   for(let i=0;i<8;i++)drawBadgeIcon(this,i,170+i*48,265,state.badges?.includes(HALL_BADGE_ORDER[i]),1.3).setDepth(6);
-  this.button(220,330,190,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
+  this.button(120,330,200,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
    .setData('torre2-trainer-card-back',true);
   const won=this.achievementList(state).filter(a=>a.done).length;
-  this.button(430,330,190,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true)
+  this.button(330,330,196,28,'CONQUISTAS '+won,()=>this.achievementsScreen(state),true)
    .setData('torre2-trainer-card-achievements',true);
+  this.button(530,330,180,28,'TÍTULOS '+Object.keys(legacy.titles).length,()=>this.titlesScreen(state),true)
+   .setData('torre2-trainer-card-titles',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
  }
  // Achievements computed only from the existing save (read-only).
@@ -1248,11 +1356,24 @@ create(){
    this.uiLabel(x+22,y+28,a.done?'★':'?',10,a.done?MENU_UI.textoOscuro:'#5f7099',[.5,.5],5);
    estrechar(this.uiLabel(x+42,y+16,a.name,8,a.done?MENU_UI.amarillo:'#c8d6f0'),102);
    estrechar(this.uiLabel(x+42,y+30,a.desc,6,a.done?'#dcf4fb':MENU_UI.tenue),102);
-   if(!a.done&&a.goal>1){
+   const reward=ACHIEVEMENT_REWARDS[a.name],claimed=(state.achievementClaims||[]).includes(a.name);
+   if(a.done&&reward&&!claimed){
+    nativeRect(g,x+94,y+36,52,17,MENU_UI.contorno,5);nativeRect(g,x+95,y+37,50,15,MENU_UI.oro,4);
+    textoMenu(this,x+120,y+45,'Resgatar',{tam:7,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(6);
+    const z=this.add.zone(x+120,y+45,54,20).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-achievement-claim',a.name);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();
+     const cur=readCampaign()||state,next=claimAchievement(cur,a.name);
+     if(!next)return this.achievementsScreen(cur);
+     try{saveCampaign(next)}catch{return this.campaignNotice('Recompensa não salva: tente de novo','#ff9d9d')}
+     this.achievementsScreen(next);this.campaignNotice('Recompensa: '+rewardLabel(reward),'#9ff0bf');
+    });
+    estrechar(this.uiLabel(x+42,y+45,rewardLabel(reward),6,'#ffd47a'),48);
+   }else if(a.done&&reward&&claimed){this.uiLabel(x+42,y+45,'✓ '+rewardLabel(reward),6,'#9ff0bf');}
+   else if(!a.done&&a.goal>1){
     nativeRect(g,x+42,y+40,80,6,MENU_UI.contorno,3);
     if(a.value>0)nativeRect(g,x+43,y+41,Math.max(2,Math.round(78*a.value/a.goal)),4,0x50cc84,2);
     this.uiLabel(x+140,y+43,a.value+'/'+a.goal,6,MENU_UI.suave,[1,.5]);
-   }else if(a.done)this.uiLabel(x+42,y+43,'Concluída',6,'#9ff0bf');
+   }else if(a.done&&!reward)this.uiLabel(x+42,y+43,'Concluída',6,'#9ff0bf');
   });
   this.button(220,334,190,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-achievements-back',true);
   this.button(430,334,190,28,'VOLTAR AOS CARDS',()=>this.renderCampaign(state));

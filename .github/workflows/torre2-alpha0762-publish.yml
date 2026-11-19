@@ -21,6 +21,7 @@ on:
       - 'tools/pokearena/torre2-trainer-name.mjs'
       - 'tools/pokearena/torre2-frlg-npc.js'
       - 'tools/pokearena/torre2-battle-report.js'
+      - 'tools/pokearena/torre2-legacy.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
       - '.github/workflows/torre2-alpha0762-publish.yml'
@@ -57,6 +58,7 @@ on:
       - 'tools/pokearena/torre2-trainer-name.mjs'
       - 'tools/pokearena/torre2-frlg-npc.js'
       - 'tools/pokearena/torre2-battle-report.js'
+      - 'tools/pokearena/torre2-legacy.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
   workflow_dispatch:

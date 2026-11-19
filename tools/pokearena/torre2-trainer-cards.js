@@ -591,11 +591,12 @@ function extrasPage(scene,state,handlers){
  // Save backup outside the browser (download / restore a JSON copy).
  actions.push(['SALVAR CÓPIA',handlers.saveExport,'bag']);
  actions.push(['RESTAURAR CÓPIA',handlers.saveImport,'bag']);
- // Three columns so all twelve options fit above VOLTAR.
+ actions.push(['RANKING',handlers.ranking,'badges']);
+ // Three columns so all thirteen options fit above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
-  const x=110+(i%3)*142,y=84+Math.floor(i/3)*44;
+  const x=110+(i%3)*142,y=82+Math.floor(i/3)*40;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
-  control(scene,layer,x,y,136,36,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
+  control(scene,layer,x,y,136,34,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
    {id:'cards-extras-'+i,size:9,icon,center:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
