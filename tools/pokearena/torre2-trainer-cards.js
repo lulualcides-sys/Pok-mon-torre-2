@@ -52,8 +52,8 @@ function pretty(value){
   .replace(/(\s)([OAE])(?=\s)/g,(_m,sp,l)=>sp+l.toLowerCase());
 }
 function text(scene,layer,x,y,value,size=11,color='#f5f4e9',props={}){
- const tam=Math.max(8,Math.round(size*.8));
- const t=texto(scene,x,y,pretty(value),{tam,color,borde:3,colorBorde:UI.bordeTexto,literal:true})
+ const tam=Math.max(8,Math.round(size*.9));
+ const t=texto(scene,x,y,pretty(value),{tam,color,borde:tam>=10?4:3,colorBorde:UI.bordeTexto,literal:true})
   .setOrigin(.5);
  if(props.wordWrap)t.setWordWrapWidth(props.wordWrap.width).setAlign(props.align||'center');
  layer.add(t);return t;
@@ -195,65 +195,99 @@ function routeScene(scene,layer,x,y,w,h,variant=0){
   px(k%2?RT.red:RT.white,fx,fy,1,1);px(RT.yellow,fx,fy+1,1,1)}
  return true;
 }
-// City landmark emblems (FireRed references), 28x28 art pixels at 2x.
-const LM={sky:0x90d0f8,skyLow:0xc8ecf8,sea:0x3a88d8,seaLight:0x78b8f0,ground:0x78c058,groundDark:0x58a040,
- rock:0x9c9c9c,rockDark:0x6c6c74,rockLight:0xc8c8c8,snow:0xf0f0f0,wood:0xa86c38,woodDark:0x6c4422,
- white:0xf8f8f8,red:0xd84848,redDark:0x983030,gold:0xf0c040,blue:0x4878c8,blueDark:0x2c4c88,
- glass:0x98d0f0,pink:0xf090b0,lava:0xf87830,lavaLight:0xf8d040,smoke:0xc8c8d0,leaf:0x3a9c46,leafDark:0x22743a,leafLight:0x70cc60,
- purple:0x8858c0,dark:0x283048};
-function cityLandmark(scene,layer,x,y,size,stage){
- const city=String(STAGES[stage]?.city||'').toLowerCase();
- const {W,H,px}=pixelCanvas(scene,layer,x,y,size,size,2);
- px(LM.sky,0,0,W,Math.round(H*.5));px(LM.skyLow,0,Math.round(H*.5),W,H);
- const ground=(c=LM.ground,top=H-6)=>{px(c,0,top,W,H-top);px(LM.groundDark,0,top,W,1)};
- const tree=(cx,cy,r=4)=>{px(LM.leafDark,cx-r,cy-r+1,r*2+1,r*2);px(LM.leaf,cx-r+1,cy-r,r*2-1,r*2);
-  px(LM.leafLight,cx-r+2,cy-r+1,2,1);px(LM.woodDark,cx,cy+r,1,3)};
- const window=(wx,wy,cols,rows,c=LM.glass)=>{for(let a=0;a<cols;a++)for(let b=0;b<rows;b++)px(c,wx+a*2,wy+b*2,1,1)};
- if(city==='pewter'){ // grey boulder mountain (Mt. Moon / Pewter stone)
-  ground();for(let j=0;j<16;j++){const half=Math.round(j*.85);px(LM.rockDark,14-half,6+j,half*2+1,1);px(LM.rock,14-half+1,6+j,Math.max(1,half*2-2),1)}
-  px(LM.snow,13,6,3,1);px(LM.snow,12,7,5,1);px(LM.rockLight,10,13,2,2);px(LM.rockLight,17,16,2,2);
-  px(LM.rockDark,3,H-9,6,3);px(LM.rock,4,H-10,4,2);px(LM.rockDark,20,H-8,5,2);
- }else if(city==='cerulean'){ // Nugget Bridge over the river
-  px(LM.sea,0,15,W,H-15);for(let i=1;i<W;i+=4)px(LM.seaLight,i,18+(i%3),2,1);
-  px(LM.woodDark,0,12,W,1);px(LM.wood,0,13,W,2);for(let i=1;i<W;i+=3)px(LM.woodDark,i,13,1,2);
-  for(let i=2;i<W;i+=6){px(LM.woodDark,i,8,1,5);px(LM.wood,i,8,1,1)}px(LM.wood,0,9,W,1);
-  tree(4,6,3);
- }else if(city==='vermilion'){ // S.S. Anne at the harbour
-  px(LM.sea,0,18,W,H-18);for(let i=0;i<W;i+=5)px(LM.seaLight,i+1,20+(i%2)*2,3,1);
-  px(LM.dark,3,15,22,1);px(LM.white,4,12,20,3);px(LM.red,4,15,20,2);px(LM.white,8,9,12,3);
-  window(9,10,6,1,LM.blue);px(LM.red,16,4,3,5);px(LM.dark,16,4,3,1);px(LM.smoke,18,1,3,2);
- }else if(city==='celadon'){ // department store and flowers
-  ground();px(LM.dark,6,3,16,H-9);px(LM.white,7,4,14,H-11);window(9,6,6,6);
-  px(LM.blue,12,H-9,4,3);px(LM.red,6,2,16,2);
-  for(let i=1;i<W;i+=3)px(i%2?LM.pink:LM.red,i,H-4,1,1);
- }else if(city==='fuchsia'){ // Safari Zone: gate hut, palm trees and pond
-  ground();px(LM.sea,15,H-8,10,3);px(LM.seaLight,17,H-7,4,1);
-  const palm=(cx,top,hgt)=>{
-   for(let j=0;j<hgt;j++)px(j%2?LM.wood:LM.woodDark,cx+(j>hgt*.6?1:0),top+j,2,1);
+// City landmark art (FireRed references): layered landscape at 2x —
+// sky + clouds, far hills, the landmark, grass/flowers and side trees.
+const LM={sky:0x7cc4f4,skyLow:0xbfe6f8,cloud:0xf8f8f8,cloudShade:0xd4ecf8,far:0x86b8d8,farDark:0x6a9cc4,
+ hill:0x5cac5c,hillDark:0x478c4c,sea:0x3a88d8,seaDark:0x2c68b0,seaLight:0x84c4f4,ground:0x78c858,groundDark:0x5aa840,
+ rock:0x9c9ca4,rockDark:0x6c6c78,rockLight:0xc8c8d0,snow:0xf4f4f8,wood:0xb0743c,woodDark:0x6c4422,
+ white:0xf8f8f8,wall:0xe8e4dc,wallDark:0xb8b0a8,red:0xe04848,redDark:0x9c2c30,gold:0xf0c040,
+ blue:0x4c7ccc,blueDark:0x2c4c88,glass:0x9cd4f4,roofPurple:0x8c64c8,pink:0xf094b4,orange:0xe8783c,
+ lava:0xf87830,lavaLight:0xf8d848,smoke:0xd0d0d8,smokeDark:0x9c9cac,leaf:0x3aa046,leafDark:0x22743a,
+ leafLight:0x7cd068,trunk:0x7a5230,dark:0x283048,path:0xe8d098,flower:0xf8f0f0};
+function cityLandmark(scene,layer,x,y,w,h,stage){
+ if(h===undefined){h=w;}
+ const city=stage>=8?'indigo':String(STAGES[stage]?.city||'').toLowerCase();
+ const {W,H,px}=pixelCanvas(scene,layer,x,y,w,h,2);
+ const gy=H-Math.max(5,Math.round(H*.2));
+ // --- primitives
+ const tri=(cx,top,height,slope,c,c2)=>{for(let j=0;j<height;j++){const hw=Math.round(j*slope);
+  px(c,cx-hw,top+j,hw*2+1,1);if(c2)px(c2,cx-hw,top+j,Math.max(1,hw),1)}};
+ const disc=(cx,cy,r,c)=>{for(let j=-r;j<=r;j++){const hw=Math.round(Math.sqrt(r*r-j*j));px(c,cx-hw,cy+j,hw*2+1,1)}};
+ const roundTree=(cx,base,r)=>{px(LM.trunk,cx,base-2,1,3);disc(cx,base-r-2,r,LM.leafDark);disc(cx,base-r-3,r-1,LM.leaf);
+  px(LM.leafLight,cx-r+2,base-2*r-1,2,1);px(LM.leafLight,cx-r+1,base-2*r,1,1)};
+ const pine=(cx,base,hh)=>{px(LM.trunk,cx,base-1,1,2);tri(cx,base-hh,hh-1,.45,LM.leafDark,LM.leaf)};
+ const cloud=(cx,cy)=>{px(LM.cloud,cx+1,cy,6,1);px(LM.cloud,cx,cy+1,9,2);px(LM.cloudShade,cx+1,cy+3,7,1)};
+ const windows=(wx,wy,cols,rows,c=LM.glass,step=2)=>{for(let a=0;a<cols;a++)for(let b=0;b<rows;b++)px(c,wx+a*step,wy+b*step,1,1)};
+ const grass=()=>{px(LM.ground,0,gy,W,H-gy);px(LM.groundDark,0,gy,W,1);
+  for(let i=1;i<W;i+=5)px(LM.groundDark,i+(i%3),gy+2+(i%2),1,1)};
+ const flowers=(y0)=>{for(let i=2;i<W-1;i+=6){px(i%4?LM.pink:LM.flower,i,y0,1,1);px(LM.gold,i,y0+1,1,1)}};
+ // --- sky, clouds and far hills (shared, the "postcard" frame)
+ px(LM.sky,0,0,W,Math.round(gy*.5));px(LM.skyLow,0,Math.round(gy*.5),W,gy);
+ cloud(2,2);if(W>30)cloud(W-12,4);
+ const farTop=gy-Math.round(H*.25);
+ for(let i=0;i<W;i++){const t=farTop+Math.round(2*Math.sin(i/5)+1.5*Math.sin(i/2.3));px(LM.far,i,t,1,gy-t)}
+ const mid=Math.floor(W/2);
+ if(city==='pewter'){
+  grass();tri(mid,gy-Math.round(H*.62),Math.round(H*.62),.85,LM.rockDark,LM.rock);
+  tri(mid,gy-Math.round(H*.62),Math.round(H*.16),.85,LM.snow);px(LM.rockLight,mid-3,gy-Math.round(H*.3),2,2);
+  pine(4,gy+1,10);pine(9,gy+2,8);pine(W-5,gy+1,10);pine(W-10,gy+2,8);
+  px(LM.rockDark,mid+6,gy-1,4,2);px(LM.rock,mid+7,gy-2,2,1);
+ }else if(city==='cerulean'){
+  px(LM.sea,0,gy-3,W,H-gy+3);for(let i=1;i<W;i+=4)px(LM.seaLight,i,gy+(i%3),2,1);
+  const by=gy-5;px(LM.woodDark,0,by,W,1);px(LM.wood,0,by+1,W,2);for(let i=1;i<W;i+=3)px(LM.woodDark,i,by+1,1,2);
+  for(let i=3;i<W;i+=6){px(LM.woodDark,i,by-4,1,9);}px(LM.wood,0,by-3,W,1);
+  roundTree(4,by,4);
+  const hx=W-14,hy=by-11;px(LM.wall,hx,hy+4,11,7);px(LM.blue,hx-1,hy+1,13,3);px(LM.blueDark,hx-1,hy+3,13,1);
+  px(LM.red,hx+4,hy+7,3,4);windows(hx+1,hy+5,1,1,LM.glass);windows(hx+8,hy+5,1,1,LM.glass);
+ }else if(city==='vermilion'){
+  px(LM.sea,0,gy-5,W,H-gy+5);for(let i=0;i<W;i+=5)px(LM.seaLight,i+1,gy-2+(i%2)*2,3,1);
+  const sx=mid-13,sy=gy-11;
+  px(LM.dark,sx,sy+8,27,1);px(LM.white,sx+1,sy+4,25,4);px(LM.red,sx+1,sy+8,25,2);px(LM.redDark,sx+2,sy+10,23,1);
+  px(LM.white,sx+6,sy+1,15,3);windows(sx+7,sy+2,7,1,LM.blue);windows(sx+3,sy+5,11,1,LM.blue);
+  px(LM.red,sx+16,sy-4,3,5);px(LM.dark,sx+16,sy-4,3,1);px(LM.smoke,sx+18,sy-7,3,2);px(LM.smoke,sx+20,sy-9,3,2);
+  px(LM.wood,0,gy-4,7,2);px(LM.woodDark,1,gy-2,1,3);px(LM.woodDark,5,gy-2,1,3);
+ }else if(city==='celadon'){
+  grass();px(LM.path,mid-2,gy,5,H-gy);
+  const bx=mid-10,by=gy-Math.round(H*.62);px(LM.dark,bx-1,by,22,gy-by);px(LM.wall,bx,by+3,20,gy-by-3);
+  px(LM.roofPurple,bx-2,by,24,3);windows(bx+2,by+5,8,Math.max(2,Math.floor((gy-by-9)/2)),LM.glass);
+  px(LM.blue,mid-2,gy-4,5,4);px(LM.white,mid-1,by+1,3,1);
+  roundTree(4,gy,4);roundTree(W-5,gy,4);flowers(gy+2);
+ }else if(city==='fuchsia'){
+  grass();px(LM.path,mid-2,gy,5,H-gy);
+  const palm=(cx,top,hgt)=>{for(let j=0;j<hgt;j++)px(j%2?LM.wood:LM.woodDark,cx+(j>hgt*.6?1:0),top+j,2,1);
    px(LM.leafDark,cx-5,top-1,12,2);px(LM.leaf,cx-4,top-2,10,2);px(LM.leafLight,cx-2,top-2,3,1);
-   px(LM.leaf,cx-6,top+1,3,1);px(LM.leaf,cx+5,top+1,3,1);px(LM.leafDark,cx-1,top-4,4,2);
-   px(LM.gold,cx,top,2,1);
-  };
-  palm(6,8,H-14);palm(21,5,H-17);
-  px(LM.woodDark,10,H-11,9,5);px(LM.gold,10,H-12,9,2);px(LM.white,11,H-10,7,3);px(LM.woodDark,13,H-9,3,3);
- }else if(city==='saffron'){ // Silph Co. tower
-  ground();px(LM.dark,9,2,10,H-8);px(LM.blueDark,10,3,8,H-10);window(11,4,4,9);
-  px(LM.dark,13,0,2,2);px(LM.red,13,0,2,1);px(LM.blue,12,H-9,4,3);
-  px(LM.rockDark,2,H-14,5,8);window(3,H-12,2,3);px(LM.rockDark,21,H-12,5,6);window(22,H-10,2,2);
- }else if(city==='cinnabar'){ // volcano with lava
-  px(LM.sea,0,H-6,W,6);px(LM.seaLight,2,H-4,4,1);px(LM.seaLight,18,H-3,5,1);
-  for(let j=0;j<15;j++){const half=4+Math.round(j*.75);px(LM.rockDark,14-half,7+j,half*2,1);px(LM.rock,14-half+1,7+j,Math.max(1,half-1),1)}
-  px(LM.lava,11,7,6,2);px(LM.lavaLight,12,7,4,1);px(LM.lava,13,9,2,4);px(LM.lava,15,12,1,3);
-  px(LM.smoke,10,3,3,2);px(LM.smoke,14,1,4,2);px(LM.smoke,17,3,3,2);
- }else if(city==='viridian'){ // Viridian Forest
-  ground();tree(6,10,5);tree(20,9,5);tree(13,14,4);
+   px(LM.leaf,cx-6,top+1,3,1);px(LM.leaf,cx+5,top+1,3,1);px(LM.leafDark,cx-1,top-4,4,2)};
+  palm(5,gy-Math.round(H*.55),Math.round(H*.55));palm(W-7,gy-Math.round(H*.5),Math.round(H*.5));
+  const hx=mid-8,hy=gy-10;px(LM.wall,hx,hy+3,17,7);px(LM.orange,hx-1,hy,19,3);px(LM.redDark,hx-1,hy+2,19,1);
+  px(LM.woodDark,mid-1,hy+5,3,5);windows(hx+2,hy+5,2,1,LM.glass,11);px(LM.white,mid,hy+1,1,1);flowers(gy+2);
+ }else if(city==='saffron'){
+  grass();
+  const tower=(tx,top,tw,c,cd)=>{px(cd,tx,top,tw,gy-top);px(c,tx+1,top+1,tw-2,gy-top-1);windows(tx+2,top+3,Math.floor((tw-3)/2),Math.floor((gy-top-5)/2))};
+  tower(3,gy-Math.round(H*.4),8,LM.rock,LM.rockDark);tower(W-11,gy-Math.round(H*.45),8,LM.rock,LM.rockDark);
+  tower(mid-6,gy-Math.round(H*.72),13,LM.blue,LM.blueDark);px(LM.dark,mid,gy-Math.round(H*.72)-3,1,3);px(LM.red,mid,gy-Math.round(H*.72)-4,1,1);
+  px(LM.glass,mid-2,gy-4,5,4);
+ }else if(city==='cinnabar'){
+  px(LM.sea,0,gy,W,H-gy);for(let i=1;i<W;i+=6)px(LM.seaLight,i,gy+2+(i%2),3,1);
+  const top=gy-Math.round(H*.58);tri(mid,top,gy-top,.9,LM.rockDark,LM.rock);
+  px(LM.lava,mid-3,top,7,2);px(LM.lavaLight,mid-2,top,5,1);
+  for(let j=0;j<gy-top-3;j++){px(LM.lava,mid-1+Math.round(Math.sin(j/2)),top+2+j,1,1);if(j>4)px(LM.lava,mid+3+Math.round(j*.3),top+2+j,1,1)}
+  px(LM.smokeDark,mid-4,top-4,5,3);px(LM.smoke,mid-1,top-7,6,4);px(LM.smoke,mid+3,top-4,5,3);
+ }else if(city==='viridian'){
+  grass();roundTree(5,gy+1,5);roundTree(mid,gy,7);roundTree(W-6,gy+1,5);roundTree(mid-9,gy+2,4);roundTree(mid+9,gy+2,4);
  }else{ // Indigo Plateau
-  ground();px(LM.dark,4,9,20,H-15);px(LM.white,5,10,18,H-17);px(LM.red,3,7,22,3);
-  px(LM.redDark,3,9,22,1);window(7,12,6,2);px(LM.blue,12,H-9,4,3);
-  px(LM.dark,13,1,1,6);px(LM.gold,14,1,4,3);
+  grass();tri(5,farTop-6,gy-farTop+6,.9,LM.rockDark,LM.rock);tri(W-6,farTop-4,gy-farTop+4,.9,LM.rockDark,LM.rock);
+  const bx=mid-10,by=gy-Math.round(H*.48);px(LM.wall,bx,by+4,21,gy-by-8);px(LM.blue,bx-2,by,25,4);px(LM.blueDark,bx-2,by+3,25,1);
+  windows(bx+2,by+6,9,2,LM.glass);px(LM.blueDark,mid-2,gy-8,5,4);
+  for(let k=0;k<4;k++)px(k%2?LM.wallDark:LM.wall,mid-4+k,gy-4+k,9-2*k,1);
+  px(LM.dark,mid,by-5,1,5);px(LM.red,mid+1,by-5,3,2);
  }
  return true;
 }
+// Small pixel glyph for each type, shown inside the type pill.
+const TYPE_GLYPH={ROCK:['.kk.','kggk','kgGk','.kk.'],WATER:['.k..','kbk.','kbbk','.kk.'],
+ ELECTRIC:['..kk','.kk.','kkk.','.k..'],GRASS:['..kk','.kek','kek.','kk..'],POISON:['.kk.','kwwk','.kk.','k..k'],
+ PSYCHIC:['.kk.','k..k','k.kk','.kk.'],FIRE:['.k..','.kk.','krrk','.kk.'],GROUND:['....','.kk.','kyyk','kkkk'],
+ ICE:['k.k.','.k..','k.k.','....'],DRAGON:['k..k','.kk.','kkkk','.kk.'],MIXED:['.k..','kkk.','.k..','....']};
 const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // Draws one window of an official FireRed location sheet (nearest filter).
 // The sheet loads on demand; the approved diorama shows until it arrives.
@@ -348,6 +382,11 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
 function trainerCardFrame(scene,layer,x,y,w,h,entry){
  const edge=entry.active?PALETTE.gold:entry.completed?PALETTE.green:0x587790;
  box(scene,layer,x,y,w,h,{edge,alpha:entry.locked?.6:.92});
+ // Vivid outer rim (gold = next, teal = others), as in the approved mock.
+ if(typeof aro==='function'){
+  const rim=scene.add.graphics();layer.add(rim);
+  aro(rim,x-2,y-2,w+4,h+4,entry.active?UI.oro:0x3fd4c4,8,entry.locked?.35:.85);
+ }
  return edge;
 }
 function npc(scene,layer,kind,x,y,scale=2.3){
@@ -427,13 +466,13 @@ export const OPPONENT_SPRITE_SCALE=0.5;
 export const OPPONENT_LIST_SPRITE_SIZE=22*OPPONENT_SPRITE_SCALE;
 export const OPPONENT_DETAIL_SPRITE_SIZE=53*OPPONENT_SPRITE_SCALE;
 const MINI=22,MINI_STEP=24;
-function miniChip(scene,layer,id,x,y,{dim=false,gold=false}={}){
+function miniChip(scene,layer,id,x,y,{dim=false,gold=false,size=MINI}={}){
  const g=scene.add.graphics();layer.add(g);
- rectRedondo(g,x,y,MINI,MINI,UI.contorno,4);
- rectRedondo(g,x+1,y+1,MINI-2,MINI-2,gold?UI.oro:UI.panelBorde,3);
- rectRedondo(g,x+2,y+2,MINI-4,MINI-4,0x0c1844,2);
- ball(g,x+MINI/2,y+MINI/2,4);
- const key=portrait(scene,layer,id,x+MINI/2,y+MINI/2,MINI-4);
+ rectRedondo(g,x,y,size,size,UI.contorno,4);
+ rectRedondo(g,x+1,y+1,size-2,size-2,gold?UI.oro:UI.panelBorde,3);
+ rectRedondo(g,x+2,y+2,size-4,size-4,0x0c1844,2);
+ ball(g,x+size/2,y+size/2,4);
+ const key=portrait(scene,layer,id,x+size/2,y+size/2,size-4);
  if(dim&&key)layer.list.filter(o=>o.getData?.('torre2-opponent-sprite')===id).forEach(o=>o.setTint(0x6f7f9a));
  return g;
 }
@@ -441,10 +480,11 @@ function miniChip(scene,layer,id,x,y,{dim=false,gold=false}={}){
 export const OPPONENT_CHIP_SPRITE_SIZE=MINI-4;
 function compactRoster(scene,layer,entry,x,y){
  const list=entry.species.slice(0,6),perRow=list.length>4?3:Math.max(1,list.length);
+ const size=list.length<=3?26:MINI,step=size+2;
  list.forEach((id,i)=>{
   const row=Math.floor(i/perRow),inRow=Math.min(perRow,list.length-row*perRow);
-  const x0=Math.round(x-(inRow*MINI_STEP-2)/2);
-  miniChip(scene,layer,id,x0+(i%perRow)*MINI_STEP,y+row*MINI_STEP,{dim:entry.locked});
+  const x0=Math.round(x-(inRow*step-2)/2);
+  miniChip(scene,layer,id,x0+(i%perRow)*step,y+row*step,{dim:entry.locked,size});
  });
  return Math.ceil(list.length/perRow);
 }
@@ -458,11 +498,11 @@ function typesOf(id){
 // Native type pills of the opponent's lead Pokémon, with readable labels.
 function typePills(scene,layer,types,cx,y){
  if(!types.length)return;
- const w=46,gap=3,x0=Math.round(cx-(types.length*w+(types.length-1)*gap)/2);
+ const w=types.length>1?47:56,gap=2,x0=Math.round(cx-(types.length*w+(types.length-1)*gap)/2);
  const g=scene.add.graphics();layer.add(g);
  types.forEach((t,i)=>{
-  pastillaTipo(g,x0+i*(w+gap),y,t,w,10);
-  text(scene,layer,x0+i*(w+gap)+w/2,y+5,t,8,UI.texto);
+  pastillaTipo(g,x0+i*(w+gap),y,t,w,14);
+  text(scene,layer,x0+i*(w+gap)+w/2,y+7,t,10,UI.texto);
  });
 }
 function extrasPage(scene,state,handlers){
@@ -484,9 +524,10 @@ function extrasPage(scene,state,handlers){
    else scene.scale.startFullscreen({navigationUI:'hide'})},'fullscreen'],
   ['REINICIAR JORNADA',handlers.reset,null]
  ];
+ actions.push(['MAPA DE KANTO',()=>journeyPage(scene,state,handlers),'team']);
  actions.forEach(([name,fn,icon],i)=>{
-  const x=118+(i%2)*208,y=92+Math.floor(i/2)*46;
-  control(scene,layer,x,y,196,36,name,name==='TELA CHEIA'?fn:close(fn),
+  const x=i===8?222:118+(i%2)*208,y=84+Math.floor(i/2)*40;
+  control(scene,layer,x,y,196,34,name,name==='TELA CHEIA'||name==='MAPA DE KANTO'?(()=>{layer.destroy(true);fn?.()}):close(fn),
    {id:'cards-extras-'+i,size:11,icon,center:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
@@ -521,7 +562,7 @@ export function trainerCardSections(stage,total){
  return sections;
 }
 // Left column: city identity, progress to the leader and the live team.
-function cityPanel(scene,layer,state,all){
+function cityPanel(scene,layer,state,all,handlers={}){
  const spec=STAGES[state.stage]||{},x=8,y=34,w=150,h=266;
  box(scene,layer,x,y,w,h);
  // City emblem: a pixel-art landmark of the city in a gold frame.
@@ -529,9 +570,13 @@ function cityPanel(scene,layer,state,all){
  rectRedondo(plate,x+6,y+6,60,60,UI.contorno,8);
  rectRedondo(plate,x+7,y+7,58,58,UI.oroBorde,7);
  rectRedondo(plate,x+8,y+8,56,56,UI.oro,6);
- cityLandmark(scene,layer,x+10,y+10,52,state.stage);
+ cityLandmark(scene,layer,x+10,y+10,52,52,state.stage);
  const shine=scene.add.graphics();layer.add(shine);
  shine.fillStyle(UI.oroLuz,1).fillRect(x+14,y+8,44,1);
+ const mapZone=scene.add.zone(x+36,y+36,60,60).setInteractive({useHandCursor:true})
+  .setData('torre2-card-control','cards-journey');
+ mapZone.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();journeyPage(scene,state,handlers)});
+ layer.add(mapZone);
  const league=state.stage>=8;
  text(scene,layer,x+108,y+18,(league?'LIGA ÍNDIGO':(spec.city||'KANTO')).toUpperCase(),12,UI.amarillo);
  text(scene,layer,x+108,y+34,(league?(spec.leader||'ELITE'):'LÍDER '+(spec.leader||'')).toUpperCase(),9,UI.suave);
@@ -558,7 +603,7 @@ function cityPanel(scene,layer,state,all){
   rectRedondo(g,x+8,ry,21,21,UI.contorno,4);rectRedondo(g,x+9,ry+1,19,19,0x0c1844,3);
   if(!m){ball(g,x+18,ry+10,4);g.setAlpha(.45);continue;}
   ball(g,x+18,ry+10,4);
-  portrait(scene,layer,m.id,x+18,ry+10,19,'team');
+  portrait(scene,layer,m.id,x+18,ry+10,21,'team');
   const lv=m.progression?.level??m.level??'?';
   text(scene,layer,x+34,ry+6,String(m.id).replace(/-/g,' ').toUpperCase(),8,UI.texto).setOrigin(0,.5);
   text(scene,layer,x+w-9,ry+6,'NV '+lv,8,UI.suave).setOrigin(1,.5);
@@ -576,8 +621,74 @@ function badgeStrip(scene,layer,state){
  const earned=new Set(state.badges||[]);
  for(let i=0;i<8;i++){
   const got=earned.has(STAGES[i]?.badge)||(state.badges||[]).length>i&&!STAGES[i]?.badge;
-  const icon=drawBadgeIcon(scene,i,486+i*19,14,got,1);layer.add(icon);
+  const icon=drawBadgeIcon(scene,i,478+i*20,15,got,1.2);layer.add(icon);
  }
+}
+// Type pill with its pixel glyph and English name (League/Gyms look).
+function typeBadge(scene,layer,type,cx,cy,w=74,h=16){
+ const g=scene.add.graphics();layer.add(g);
+ const x=Math.round(cx-w/2),y=Math.round(cy-h/2);
+ pastillaTipo(g,x,y,type,w,h);
+ const glyph=TYPE_GLYPH[type];
+ if(glyph)glyph.forEach((row,j)=>[...row].forEach((ch,i)=>{
+  const c=ch==='k'?0x101828:ICON_PAL[ch];if(c===undefined)return;
+  g.fillStyle(c,1).fillRect(x+6+i*2,y+Math.round(h/2)-4+j*2,2,2);
+ }));
+ text(scene,layer,cx+(glyph?6:0),cy,type,10,UI.texto);
+}
+// Toast in the native style (no actions behind it).
+function toast(scene,layer,msg){
+ const t=scene.add.container(0,0).setDepth(500);layer.add(t);
+ const g=scene.add.graphics();t.add(g);marco(g,170,160,300,40,'panel',{borde:UI.oro});
+ text(scene,t,320,180,msg,11,UI.texto);
+ scene.time.delayedCall(1400,()=>t.active&&t.destroy(true));
+}
+// "Jornada de Kanto": the nine stops of the campaign as illustrated city
+// cards (current = gold, done = green check, next ones = lock). Read-only:
+// it never changes progress; the current city returns to its trainer cards.
+export function journeyPage(scene,state,handlers){
+ const layer=scene.add.container(0,0).setDepth(420);
+ layer.setData('torre2-journey',true);
+ routeScene(scene,layer,0,0,640,360,7);
+ const shade=scene.add.graphics();layer.add(shade);shade.fillStyle(0x061230,.18).fillRect(0,0,640,360);
+ layer.add(scene.add.zone(320,180,640,360).setInteractive());
+ const banner=(cy,w,label,size)=>{
+  const g=scene.add.graphics();layer.add(g);
+  marco(g,320-w/2,cy-15,w,30,'panel',{borde:UI.panelLuz});
+  pixelIcon(scene,layer,'team',320-w/2+18,cy,1.5);pixelIcon(scene,layer,'team',320+w/2-18,cy,1.5);
+  text(scene,layer,320,cy,label,size,UI.texto);
+ };
+ banner(22,300,'JORNADA DE KANTO',17);
+ control(scene,layer,6,6,74,22,'< VOLTAR',()=>layer.destroy(true),{id:'journey-back',size:9});
+ const here=Math.min(8,state.stage),CW=196,CH=84;
+ for(let i=0;i<9;i++){
+  const x=18+(i%3)*(CW+8),y=46+Math.floor(i/3)*(CH+6);
+  const stage=i<8?i:Math.max(8,Math.min(12,state.stage));
+  const spec=STAGES[stage]||{},done=i<here||state.champion,current=i===here&&!state.champion,locked=i>here;
+  const g=scene.add.graphics();layer.add(g);
+  marco(g,x,y,CW,CH,'panel',{alfa:.96,...(current?{borde:UI.oro}:done?{borde:NATIVE_GREEN}:{})});
+  if(current){aro(g,x-2,y-2,CW+4,CH+4,UI.oro,8,.9);
+   const m=scene.add.graphics();layer.add(m);m.fillStyle(UI.oro,1);
+   m.fillTriangle(x+8,y-6,x+20,y-6,x+14,y+2);m.fillTriangle(x+8,y+CH+6,x+20,y+CH+6,x+14,y+CH-2);}
+  cityLandmark(scene,layer,x+6,y+6,96,72,i<8?i:8);
+  const ring=scene.add.graphics();layer.add(ring);aro(ring,x+5,y+5,98,74,current?UI.oro:UI.panelBorde,5);
+  const cityName=i<8?spec.city:'Liga Índigo';
+  estrechar(text(scene,layer,x+150,y+20,cityName,15,UI.amarillo),86);
+  estrechar(text(scene,layer,x+150,y+40,i<8?'Líder '+spec.leader:(spec.leader||'Elite Four'),10,UI.texto),86);
+  if(spec.type)typeBadge(scene,layer,spec.type,x+150,y+62,76,16);
+  if(locked){const v=scene.add.graphics();layer.add(v);rectRedondo(v,x+6,y+6,96,72,0x06102a,5,.5);candado(v,x+42,y+30,24);}
+  if(done){const c=scene.add.graphics();layer.add(c);marco(c,x+8,y+8,20,18,'panel',{borde:NATIVE_GREEN});
+   text(scene,layer,x+18,y+17,'✓',11,'#9ff0bf');}
+  const z=scene.add.zone(x+CW/2,y+CH/2,CW,CH).setInteractive({useHandCursor:true})
+   .setData('torre2-journey-city',i);
+  z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();
+   if(current)layer.destroy(true);
+   else toast(scene,layer,done?'Cidade concluída!':'Vença os líderes anteriores');
+  });layer.add(z);
+ }
+ banner(338,440,'Toque na cidade atual para continuar a jornada!',11);
+ scene.__torre2Journey={stage:state.stage,current:here};
+ return layer;
 }
 function cardsPage(scene,state,handlers){
  const all=trainerCardEntries(state);
@@ -614,11 +725,11 @@ function cardsPage(scene,state,handlers){
   'GINÁSIO DE '+city.toUpperCase();
  // Header exactly like native cabecera: back at left, gold title, info right.
  control(scene,layer,6,4,74,20,'< MENU',handlers.menu,{id:'menu',size:9});
- const title=text(scene,layer,320,15,area,18,UI.amarillo);
+ const title=estrechar(text(scene,layer,300,15,area,17,UI.amarillo),300);
  const half=title.displayWidth/2+14;
- pixelIcon(scene,layer,'team',320-half,15,1);pixelIcon(scene,layer,'team',320+half,15,1);
+ pixelIcon(scene,layer,'team',300-half,15,1);pixelIcon(scene,layer,'team',300+half,15,1);
  badgeStrip(scene,layer,state);
- cityPanel(scene,layer,state,all);
+ cityPanel(scene,layer,state,all,handlers);
  // Section line + pager.
  const heading=visibleEntries[0].index+1,last=visibleEntries.at(-1).index+1;
  text(scene,layer,174,44,(heading===last?'DESAFIO '+heading:'DESAFIOS '+heading+'–'+last)+' DE '+(all.length),9,UI.suave).setOrigin(0,.5);
@@ -658,33 +769,34 @@ function cardsPage(scene,state,handlers){
   text(scene,layer,x+w/2,y+12,String(entry.index+1).padStart(2,'0')+' · '+glyph,9,
    entry.leader?UI.amarillo:entry.locked?UI.tenue:UI.texto);
   // Regional diorama in a native ring; the FRLG trainer stands in front.
-  const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,92,state.stage,entry.leader?0:entry.index+1):
-   routeScene(scene,layer,x+7,y+22,w-14,92,entry.index);
-  if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+  const SH=104;
+  const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.leader?0:entry.index+1):
+   routeScene(scene,layer,x+7,y+22,w-14,SH,entry.index);
+  if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
-  aro(ring,x+6,y+21,w-12,94,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
-  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+100,
-   entry.leader?2.45:2.25);
+  aro(ring,x+6,y+21,w-12,SH+2,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
+  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+118,
+   entry.leader?2.9:2.7);
   if(entry.locked){
    const veil=scene.add.graphics();layer.add(veil);
-   rectRedondo(veil,x+7,y+22,w-14,92,0x06102a,5,.45);
+   rectRedondo(veil,x+7,y+22,w-14,SH,0x06102a,5,.45);
    candado(veil,x+w-31,y+25,24);
   }
   if(entry.leader&&state.stage<8){
    const badge=drawBadgeIcon(scene,state.stage,x+18,y+34,entry.completed,1.5);layer.add(badge);
   }
-  const name=text(scene,layer,x+w/2,y+126,
+  const name=text(scene,layer,x+w/2,y+139,
    (entry.foe?.name||(entry.leader?'LÍDER':'TREINADOR')).toUpperCase(),10,
    entry.leader?UI.amarillo:UI.texto);
   estrechar(name,w-10);
   const level=entry.leader?STAGES[state.stage]?.leaderLevels?.at(-1)??entry.foe?.level:entry.foe?.level;
-  text(scene,layer,x+w/2,y+142,'NV '+(level??'?')+' · '+entry.species.length+(entry.species.length===1?' POKÉMON':' POKÉMON'),8,UI.suave);
+  text(scene,layer,x+w/2,y+155,'NV '+(level??'?')+' · '+entry.species.length+' POKÉMON',9,UI.suave);
   // Real opponents with native chips; lead Pokémon types as native pills.
-  const rows=compactRoster(scene,layer,entry,x+w/2,y+152);
-  typePills(scene,layer,typesOf(entry.species[0]),x+w/2,y+(rows>1?201:182));
+  const rows=compactRoster(scene,layer,entry,x+w/2,y+165);
+  if(rows<2)typePills(scene,layer,typesOf(entry.species[0]),x+w/2,y+196);
   // State: native pill, written and coloured (never colour alone).
   const sg=scene.add.graphics();layer.add(sg);
-  const sx=x+8,sy=y+h-30,sw=w-16,sh=20;
+  const sx=x+8,sy=y+h-26,sw=w-16,sh=20;
   marco(sg,sx,sy,sw,sh,entry.active?'oro':entry.completed?'panel':'apagado',
    entry.completed?{borde:NATIVE_GREEN}:{});
   text(scene,layer,x+w/2,sy+sh/2,entry.active?'▶ PRÓXIMO':entry.completed?'✓ VENCIDO':'BLOQUEADO',9,

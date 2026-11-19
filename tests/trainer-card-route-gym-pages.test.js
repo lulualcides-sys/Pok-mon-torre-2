@@ -64,7 +64,8 @@ test('only card pagination and headings changed: original sprites, touch and sav
  assert.match(source,/setData\('torre2-trainer-card-index',entry\.index\)/);
  assert.match(source,/const CW=110,GAP=8,X0=166,CY=56,CH=244;/);
  assert.match(source,/scenicBackdrop\(scene,layer,state\.stage\)/);
- assert.match(source,/scenicDiorama\(scene,layer,x\+7,y\+22,w-14,92/);
+ assert.match(source,/routeScene\(scene,layer,x\+7,y\+22,w-14,SH,entry\.index\)/);
+ assert.match(source,/gymInterior\(scene,layer,x\+7,y\+22,w-14,SH,/);
  assert.match(source,/kind==='route'\?'CAMINHO PARA '/);
  assert.match(source,/kind==='victory'\?'ESTRADA DA VITÓRIA'/);
  assert.match(source,/kind==='league'\?/);
