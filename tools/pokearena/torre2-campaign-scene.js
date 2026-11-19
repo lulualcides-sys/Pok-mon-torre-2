@@ -587,7 +587,7 @@ create(){
   const leaderKind=leaderSpriteKind(state.stage);
   this.npcSprite(spriteIdForTrainer(leaderKind),146,198,3.4,5);
   const ace=spec.boss||spec.leaderTeam?.at(-1);
-  if(ace)this.pokemonIdleSprite(ace,224,166,92,5);
+  if(ace)this.pokemonIdleSprite(ace,224,196,92,5);
   // Right: who you face, the main Pokémon, the full team and the progress.
   const R=360;
   this.uiLabel(R,64,spec.leader||'Líder',14,MENU_UI.amarillo);
@@ -1181,12 +1181,25 @@ create(){
   this.screenBanner(20,300,'REVANCHE · '+foe.name,'seeker');
   this.uiSection(8,40,624,170);
   // The trainer and their Pokémon on the route, as in the gym challenge.
-  const city=mapStage>=8?'indigo':String(STAGES[mapStage]?.city||'').toLowerCase();
-  ownerArt(this,{add:o=>o.setDepth?.(2)},'city-'+city,18,50,290,150);
-  const fr=this.add.graphics().setDepth(3);nativeAro(fr,17,49,292,152,MENU_UI.panelBorde,6);
-  fr.fillStyle(0x000000,.28).fillEllipse(130,162,50,10).fillEllipse(200,162,70,12);
+  // Neutral stage: soft vertical gradient and one round platform under both
+  // figures (battle-style), instead of a busy city picture.
+  const fr=this.add.graphics().setDepth(3);
+  nativeRect(fr,18,50,290,150,MENU_UI.contorno,7);
+  for(let i=0;i<146;i++){const t=i/145;
+   const c=Phaser.Display.Color.Interpolate.ColorWithColor(
+    Phaser.Display.Color.ValueToColor(0x2a4a8c),Phaser.Display.Color.ValueToColor(0x0c1d46),100,Math.round(t*100));
+   fr.fillStyle(Phaser.Display.Color.GetColor(c.r,c.g,c.b),1).fillRect(21,52+i,284,1);}
+  fr.fillStyle(0xffffff,.06).fillCircle(165,118,46);fr.fillStyle(0xffffff,.04).fillCircle(165,118,34);
+  nativeAro(fr,17,49,292,152,MENU_UI.panelBorde,6);
+  // Platform: dark rim, lit top and a highlight ring.
+  fr.fillStyle(0x061433,.9).fillEllipse(165,168,176,40);
+  fr.fillStyle(0x3f7ad8,1).fillEllipse(165,164,168,34);
+  fr.fillStyle(0x6c9fe8,1).fillEllipse(165,162,150,26);
+  fr.lineStyle(2,0xbcd6ff,.7).strokeEllipse(165,162,150,26);
+  fr.fillStyle(0x000000,.25).fillEllipse(132,163,40,8).fillEllipse(200,163,56,10);
   this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),130,164,3,5);
-  this.pokemonIdleSprite(foe.id,200,134,110,5);
+  // PMD frame centre = ground point: stand on the platform, not above it.
+  this.pokemonIdleSprite(foe.id,200,163,110,5);
   const R=328;
   this.uiLabel(R,64,foe.name,13,MENU_UI.amarillo);
   this.uiLabel(R,84,'Mapa de '+(STAGES[mapStage]?.city||'Kanto')+' · equipe Nv '+foe.level,8,MENU_UI.suave);
