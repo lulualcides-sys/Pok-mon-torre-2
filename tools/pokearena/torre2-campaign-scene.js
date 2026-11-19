@@ -35,7 +35,7 @@ import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,gymInterior,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -535,7 +535,22 @@ create(){
    if(!this.anims.exists(anim))this.anims.create({key:anim,repeat:-1,
     frames:Array.from({length:n},(_,i)=>({key,frame:i,duration:Math.round((idle.durations?.[i]||8)*1000/60)}))});
    const s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
-   this.add.sprite(x,y,key,0).setScale(s).setDepth(depth).play(anim)
+   // y is the GROUND line: measure the lowest visible pixel row of the first
+   // frame (the feet) and anchor there, so the Pokémon stands exactly on the
+   // same line as the trainer instead of floating or sinking.
+   const feet=(this.__torre2Feet??=new Map());
+   if(!feet.has(key)){
+    let row=idle.fh-1;
+    try{
+     const src=this.textures.get(key).getSourceImage();
+     const cv=document.createElement('canvas');cv.width=idle.fw;cv.height=idle.fh;
+     const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0,idle.fw,idle.fh,0,0,idle.fw,idle.fh);
+     const data=cx.getImageData(0,0,idle.fw,idle.fh).data;
+     find:for(let r=idle.fh-1;r>=0;r--)for(let c=0;c<idle.fw;c++)if(data[(r*idle.fw+c)*4+3]>40){row=r;break find}
+    }catch{}
+    feet.set(key,(row+1)/idle.fh);
+   }
+   this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
   };
   if(this.textures.exists(key))show();
@@ -576,16 +591,20 @@ create(){
   this.screenBanner(20,300,state.stage<8?'Desafio do ginásio':'Desafio da Liga','badges');
   this.uiSection(8,40,624,262);
   // Left: the gym itself, with the leader and the leader's main Pokémon.
-  // Same neutral stage as the rematch, tinted by the gym type; the leader and
-  // the main Pokémon stand side by side with their feet on one ground line.
-  const st=this.stagePlatform(18,50,330,206,TIPOS[spec.type]??0x3f7ad8);
-  if(ready)nativeAro(st.g,16,48,334,210,MENU_UI.oro,7,.9);
-  st.g.fillStyle(0x000000,.25).fillEllipse(st.cx-40,st.ground+1,52,10).fillEllipse(st.cx+42,st.ground+1,72,12);
+  // Left: the gym's own FireRed interior (owner approved), with the leader and
+  // the main Pokémon centred in the room, feet on one ground line, side by side.
+  const stageLayer={add:o=>o.setDepth?.(2)};
+  const room=gymInterior(this,stageLayer,18,50,330,206,state.stage,0);
+  if(!room)ownerArt(this,stageLayer,'city-'+(state.stage>=8?'indigo':String(spec.city||'').toLowerCase()),18,50,330,206);
+  const frame=this.add.graphics().setDepth(3);
+  nativeAro(frame,17,49,332,208,ready?MENU_UI.oro:MENU_UI.panelBorde,6);
+  const cx=183,ground=198;
+  frame.fillStyle(0x000000,.28).fillEllipse(cx-26,ground,50,11).fillEllipse(cx+36,ground,58,12);
   const leaderKind=leaderSpriteKind(state.stage);
-  this.npcSprite(spriteIdForTrainer(leaderKind),st.cx-40,st.ground+3,3.4,5);
+  this.npcSprite(spriteIdForTrainer(leaderKind),cx-26,ground+2,3.4,5);
   const ace=spec.boss||spec.leaderTeam?.at(-1);
-  // PMD frame centre = ground point.
-  if(ace)this.pokemonIdleSprite(ace,st.cx+42,st.ground+1,100,5);
+  // Feet on the same ground line as the leader (measured from the sprite).
+  if(ace)this.pokemonIdleSprite(ace,cx+36,ground+2,104,5);
   // Right: who you face, the main Pokémon, the full team and the progress.
   const R=360;
   this.uiLabel(R,64,spec.leader||'Líder',14,MENU_UI.amarillo);
@@ -1201,10 +1220,10 @@ create(){
   // The trainer and their Pokémon on the route, as in the gym challenge.
   // Neutral stage and one round platform under both figures (feet aligned).
   const st=this.stagePlatform(18,50,290,150);
-  st.g.fillStyle(0x000000,.25).fillEllipse(st.cx-33,st.ground+1,40,8).fillEllipse(st.cx+35,st.ground+1,56,10);
-  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),st.cx-33,st.ground+2,3,5);
-  // PMD frame centre = ground point: stand on the platform, not above it.
-  this.pokemonIdleSprite(foe.id,st.cx+35,st.ground+1,110,5);
+  st.g.fillStyle(0x000000,.25).fillEllipse(st.cx-22,st.ground+1,40,8).fillEllipse(st.cx+24,st.ground+1,44,9);
+  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),st.cx-22,st.ground+2,3,5);
+  // Feet on the same ground line as the trainer (measured from the sprite).
+  this.pokemonIdleSprite(foe.id,st.cx+24,st.ground+2,96,5);
   const R=328;
   this.uiLabel(R,64,foe.name,13,MENU_UI.amarillo);
   this.uiLabel(R,84,'Mapa de '+(STAGES[mapStage]?.city||'Kanto')+' · equipe Nv '+foe.level,8,MENU_UI.suave);
