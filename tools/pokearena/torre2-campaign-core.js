@@ -867,15 +867,15 @@ export function resolveSilphBattle(s,token,won){
    return {won:false,message:next.lastMessage,evolutions:[]};
   }
   const reward=Math.round(xpRewardFor(Math.min(next.stage,STAGES.length-1),TRAINERS_PER_GYM(Math.min(next.stage,STAGES.length-1)),'leader'));
-  const shared=awardSharedTeamExperience(next,reward,{kind:'trainer'});
+  const silphShare=awardSharedTeamExperience(next,reward,{kind:'trainer'});
   next.wins++;rechargeRematches(next);
   next.money=(next.money||0)+SILPH_GIOVANNI.money;
   next.inventory={...next.inventory,masterball:(Number(next.inventory.masterball)||0)+1};
   next.masterBallGiven=true;
   next.lastRewardTM='MASTER BALL';
   next.lastMessage='Você expulsou a Equipe Rocket! O presidente da Silph Co. te deu a MASTER BALL. +'+reward+' EXP · +$'+SILPH_GIOVANNI.money+'.';
-  return {won:true,message:next.lastMessage,reward,growth:shared.gains.find(g=>g.index===next.active),
-   sharedExp:shared.gains,evolutions:shared.evolutions};
+  return {won:true,message:next.lastMessage,reward,growth:silphShare.gains.find(g=>g.index===next.active),
+   sharedExp:silphShare.gains,evolutions:silphShare.evolutions};
  });
 }
 export function startWildBattle(s){
