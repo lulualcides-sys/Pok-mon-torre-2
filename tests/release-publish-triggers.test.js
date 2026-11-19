@@ -18,7 +18,8 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-gen3-status.js',
   'tools/pokearena/batch24/runtime.js',
   'tools/pokearena/torre2-campaign-core.js',
-  'tools/pokearena/torre2-trainer-cards.js'
+  'tools/pokearena/torre2-trainer-cards.js',
+  'tools/pokearena/torre2-campaign-scene.js'
  ],'Any changed or added release overlay must be reviewed explicitly');
  const pull=workflow.slice(workflow.indexOf('  pull_request:'),workflow.indexOf('  push:'));
  const push=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('  workflow_dispatch:'));

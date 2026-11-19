@@ -48,7 +48,9 @@ const overlayNames=[
  ['tools/pokearena/batch24/runtime.js','torre2/batch24/runtime.js'],
  ['tools/pokearena/torre2-campaign-core.js','torre2/campaign-core.js'],
  // Audited presentation-only #600 backport; preserves sprites and campaign save order.
- ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js']
+ ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js'],
+ // Campaign menus (native buttons/panels, Pokémon Center): presentation only.
+ ['tools/pokearena/torre2-campaign-scene.js','torre2/campanha.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);

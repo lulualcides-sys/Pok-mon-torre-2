@@ -66,8 +66,104 @@ function box(scene,layer,x,y,w,h,{edge=null,alpha=.9}={}){
  marco(g,x,y,w,h,'panel',{alfa:alpha,...(borde&&{borde})});
  layer.add(g);return g;
 }
+// Crisp pixel-art icon set (12x12, drawn pixel by pixel; FRLG palette).
+const ICON_PAL={k:0x101828,w:0xf8f8f8,r:0xe04848,R:0xa82830,g:0xc8d0d8,G:0x808890,
+ b:0x78b8f0,B:0x2f68c0,y:0xf8d048,Y:0xb88a20,n:0xc08040,N:0x80502a,c:0xf2e8cc,d:0x3a64b0};
+function ballGrid(top,stripe=null){
+ const rows=[];
+ for(let j=0;j<12;j++){let row='';
+  for(let i=0;i<12;i++){
+   const d=Math.hypot(i-5.5,j-5.5);
+   if(d>5.9){row+='.';continue}
+   if(d>4.9){row+='k';continue}
+   const bd=Math.hypot(i-5.5,j-5.5);
+   if(j===5||j===6){row+=(Math.abs(i-5.5)<1.6?'w':'k');continue}
+   if(bd<1.6){row+='w';continue}
+   if(j<5)row+=(stripe&&(i===2||i===9)&&j>=2?stripe:(i===3&&j===2)||(i===2&&j===3)?'w':top);
+   else row+=(j>=9&&i<=3)?'g':'w';
+  }rows.push(row)}
+ return rows;
+}
+const PIXEL_ICONS={
+ team:ballGrid('r'),
+ capture:ballGrid('B','r'),
+ bag:['....kkkk....','...kn..nk...','..kkkkkkkk..','.knnnnnnnnk.','.knnnnnnnnk.','.kNNNyyNNNk.',
+  '.knnnyynnnk.','.knnnnnnnnk.','.knnnnnnnnk.','.kNnnnnnnNk.','..kkkkkkkk..','............'],
+ center:['..kkkkkkkk..','.krrrrrrrrk.','krrrrwwrrrrk','krrrwwwwrrrk','krrrrwwrrrrk','kkkkkkkkkkkk',
+  '.kcbbccbbck.','.kcbbccbbck.','.kcccddccck.','.kcccddccck.','.kkkkkkkkkk.','............'],
+ shop:['............','..kkkkkkkk..','.kBbBbBbBbk.','kBbBbBbBbBbk','kkkkkkkkkkkk','.kcccccccck.',
+  '.kcbbccddck.','.kcbbccddck.','.kccccddcck.','.kkkkkkkkkk.','............','............'],
+ more:['............','............','............','............','.kkk.kkk.kkk','.kwk.kwk.kwk',
+  '.kkk.kkk.kkk','............','............','............','............','............'],
+ train:['............','............','.kk......kk.','kggk....kggk','kggkkkkkkggk','kggGGGGGGggk',
+  'kggkkkkkkggk','kggk....kggk','.kk......kk.','............','............','............'],
+ seeker:['....kk......','...kgk......','..kkkkkkk...','.kyyyyyyyk..','.kyrrryyyk..','.kyrRryyyk..',
+  '.kyrrryyyk..','.kyyyyyyyk..','.kYYkkYYYk..','.kyyyyyyyk..','..kkkkkkk...','............'],
+ dex:['............','.kkkkkkkkkk.','.krrrrrrrRk.','.krkkkrrrRk.','.krkbbkrrRk.','.krkbwkrrRk.',
+  '.krkkkrrrRk.','.krrrrrrrRk.','.krwwwwwrRk.','.krrrrrrrRk.','.kkkkkkkkkk.','............'],
+ badges:['...kk..kk...','...kb..bk...','....kbbk....','...kkkkkk...','..kyyyyyyk..','.kyyywyyyyk.',
+  '.kyywwwyyyk.','.kyyywyyyyk.','.kYyyyyyyYk.','..kYYYYYYk..','...kkkkkk...','............'],
+ audio:['............','............','....kk......','...kgk..k...','kkkgGk...k..','kgggGk.k.k..',
+  'kgggGk.k.k..','kkkgGk...k..','...kgk..k...','....kk......','............','............'],
+ fullscreen:['kkkk....kkkk','kwwk....kwwk','kwk......kwk','kk........kk','............','............',
+  '............','............','kk........kk','kwk......kwk','kwwk....kwwk','kkkk....kkkk']
+};
+export function pixelIcon(scene,layer,kind,x,y,scale=2){
+ const grid=PIXEL_ICONS[kind];if(!grid)return null;
+ const g=scene.add.graphics();layer.add(g);
+ const ox=Math.round(x-6*scale),oy=Math.round(y-6*scale);
+ grid.forEach((row,j)=>[...row].forEach((ch,i)=>{
+  const c=ICON_PAL[ch];if(c===undefined)return;
+  g.fillStyle(c,1).fillRect(ox+i*scale,oy+j*scale,scale,scale);
+ }));
+ g.setData('torre2-pixel-icon',kind);
+ return g;
+}
+// Gym trainers and leaders stand inside their own FireRed gym interior.
+// Each city's sheet is loaded on demand (one at a time), never at preload.
+const GYM_CROPS=Object.freeze({
+ pewter:[790,544,190,247],cerulean:[1033,24,258,317],vermilion:[1034,24,168,340],
+ celadon:[1154,700,204,298],fuchsia:[1030,23,247,365],saffron:[1550,21,402,330],
+ cinnabar:[712,22,484,395],viridian:[1030,24,320,385]
+});
+function gymCrop(stage){
+ const loc=String(STAGES[stage]?.city||'').toLowerCase();
+ return GYM_CROPS[loc]?{loc,rect:GYM_CROPS[loc]}:null;
+}
+function gymInterior(scene,layer,x,y,w,h,stage,variant=0){
+ const info=gymCrop(stage);
+ if(!info)return false;
+ const key='frlg-location-'+info.loc,[cx,cy,cw,ch]=info.rect;
+ // Square-ish window: leader podium at the top of the room; trainers are
+ // framed further down the same room so cards in a page do not repeat.
+ const aspect=w/h,fw=Math.min(cw,Math.round(ch*aspect)),fh=Math.min(ch,Math.round(fw/aspect));
+ const lanes=Math.max(1,Math.floor((ch-fh)/Math.max(1,fh*.45)));
+ const fy=cy+Math.min(ch-fh,Math.round((variant%(lanes+1))*fh*.45));
+ const fx=cx+Math.round((cw-fw)/2),frame='torre2-gym-'+info.loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
+ const slot=scene.add.container(0,0);layer.add(slot);
+ const draw=()=>{
+  if(!slot.active||!scene.textures.exists(key))return;
+  const tex=scene.textures.get(key);
+  if(!tex.has(frame))tex.add(frame,0,fx,fy,fw,fh);
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  slot.add(scene.add.image(x,y,key,frame).setOrigin(0).setDisplaySize(w,h));
+ };
+ if(scene.textures.exists(key)){draw();return true}
+ // Placeholder until the room arrives: the approved regional diorama.
+ scenicDiorama(scene,slot,x,y,w,h,stage,variant);
+ // The campaign releases frlg-location textures on every restart, so check
+ // the loader's live queue instead of remembering past requests.
+ scene.load.once('filecomplete-image-'+key,()=>draw());
+ const queued=[scene.load.list,scene.load.inflight].some(set=>
+  (set?.entries||[]).some(file=>file?.key===key));
+ if(!queued){
+  scene.load.image(key,'assets/ui/frlg/'+info.loc+'.png');
+  if(!scene.load.isLoading())scene.load.start();
+ }
+ return true;
+}
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
- id='',size=10,icon=null}={}){
+ id='',size=10,icon=null,center=false}={}){
  const g=scene.add.graphics();layer.add(g);
  const paint=(hover=false)=>{
   g.clear();
@@ -75,11 +171,11 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
   if(hover&&!muted)aro(g,x-2,y-2,w+4,h+4,UI.anillo,6,.7);
  };
  paint();
- if(icon)scenicIcon(scene,layer,icon,x+12,y+h/2);
- const caption=text(scene,layer,x+w/2+(icon?7:0),y+h/2,label,size,
+ if(icon)pixelIcon(scene,layer,icon,x+17,y+h/2,h>=34?2:h>=26?2:1);
+ const caption=text(scene,layer,x+w/2+(icon&&!center?12:0),y+h/2,label,size,
   muted?UI.apagadoTexto:gold?UI.textoOscuro:UI.texto);
  if(gold)caption.setStroke(UI.oroLuz,0);
- estrechar(caption,w-(icon?28:10));
+ estrechar(caption,w-(icon?38:10));
  // Hover ring is paint only: no additional interactive surface or larger target.
  const focus=scene.add.graphics();layer.add(focus);
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
@@ -208,12 +304,9 @@ function typePills(scene,layer,types,cx,y){
  const g=scene.add.graphics();layer.add(g);
  types.forEach((t,i)=>{
   pastillaTipo(g,x0+i*(w+gap),y,t,w,10);
-  text(scene,layer,x0+i*(w+gap)+w/2,y+5,TYPE_PT[t]||t,8,UI.texto);
+  text(scene,layer,x0+i*(w+gap)+w/2,y+5,t,8,UI.texto);
  });
 }
-const TYPE_PT={ROCK:'PEDRA',WATER:'ÁGUA',ELECTRIC:'ELÉTRICO',GRASS:'PLANTA',POISON:'VENENO',
- PSYCHIC:'PSÍQUICO',FIRE:'FOGO',GROUND:'TERRA',ICE:'GELO',FIGHTING:'LUTA',GHOST:'FANTASMA',
- DRAGON:'DRAGÃO',NORMAL:'NORMAL',FLYING:'VOADOR',BUG:'INSETO',STEEL:'AÇO',DARK:'SOMBRIO',FAIRY:'FADA',MIXED:'VARIADO'};
 function extrasPage(scene,state,handlers){
  const layer=scene.add.container(0,0).setDepth(410);
  layer.setData('torre2-cards-extras',true);
@@ -227,16 +320,16 @@ function extrasPage(scene,state,handlers){
  const close=fn=>()=>{layer.destroy(true);fn?.()};
  const actions=[
   ['CAPTURA',handlers.capture,'capture'],['TREINO',handlers.training,'train'],
-  ['VS SEEKER',handlers.rematchAtlas,'seeker'],['POKÉDEX',handlers.dex,null],
-  ['INSÍGNIAS',handlers.badges,null],['ÁUDIO',handlers.audio,null],
+  ['VS SEEKER',handlers.rematchAtlas,'seeker'],['POKÉDEX',handlers.dex,'dex'],
+  ['INSÍGNIAS',handlers.badges,'badges'],['ÁUDIO',handlers.audio,'audio'],
   ['TELA CHEIA',()=>{if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
-   else scene.scale.startFullscreen({navigationUI:'hide'})},null],
+   else scene.scale.startFullscreen({navigationUI:'hide'})},'fullscreen'],
   ['REINICIAR JORNADA',handlers.reset,null]
  ];
  actions.forEach(([name,fn,icon],i)=>{
   const x=118+(i%2)*208,y=92+Math.floor(i/2)*46;
   control(scene,layer,x,y,196,36,name,name==='TELA CHEIA'?fn:close(fn),
-   {id:'cards-extras-'+i,size:11,icon});
+   {id:'cards-extras-'+i,size:11,icon,center:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
@@ -274,7 +367,8 @@ function cityPanel(scene,layer,state,all){
  const spec=STAGES[state.stage]||{},x=8,y=34,w=150,h=266;
  box(scene,layer,x,y,w,h);
  // City medallion: the approved regional diorama in a native gold ring.
- scenicDiorama(scene,layer,x+8,y+8,56,56,state.stage,0);
+ if(!gymInterior(scene,layer,x+8,y+8,56,56,state.stage,0))
+  scenicDiorama(scene,layer,x+8,y+8,56,56,state.stage,0);
  const ring=scene.add.graphics();layer.add(ring);
  aro(ring,x+7,y+7,58,58,UI.oro,6);aro(ring,x+6,y+6,60,60,UI.contorno,7);
  const league=state.stage>=8;
@@ -282,7 +376,7 @@ function cityPanel(scene,layer,state,all){
  text(scene,layer,x+108,y+34,(league?(spec.leader||'ELITE'):'LÍDER '+(spec.leader||'')).toUpperCase(),9,UI.suave);
  if(spec.type){
   const g=scene.add.graphics();layer.add(g);pastillaTipo(g,x+82,y+44,spec.type,52,11);
-  text(scene,layer,x+108,y+50,TYPE_PT[spec.type]||spec.type,8,UI.texto);
+  text(scene,layer,x+108,y+50,spec.type,8,UI.texto);
  }
  // Progress to the leader: native track + gold fill, also written as n/total.
  const total=Math.max(1,all.length-1),done=Math.min(total,state.trainer||0);
@@ -383,9 +477,11 @@ function cardsPage(scene,state,handlers){
    if(c!==visibleEntries.length)continue;
    const pw=(CARDS_PER_PAGE-c)*(CW+GAP)-GAP;
    box(scene,layer,x,y,pw,h,{alpha:.55});
-   scenicDiorama(scene,layer,x+8,y+28,pw-16,120,state.stage,page);
-   const rg=scene.add.graphics();layer.add(rg);aro(rg,x+7,y+27,pw-14,122,UI.panelBorde,6);
-   text(scene,layer,x+pw/2,y+14,state.stage>=12?'DESAFIO FINAL':'JORNADA EM KANTO',11,UI.amarillo);
+   const gymView=kind==='gym'&&gymInterior(scene,layer,x+8,y+28,pw-16,120,state.stage,0);
+   if(!gymView)scenicDiorama(scene,layer,x+8,y+28,pw-16,120,state.stage,page);
+   const rg=scene.add.graphics();layer.add(rg);aro(rg,x+7,y+27,pw-14,122,gymView?UI.oro:UI.panelBorde,6);
+   text(scene,layer,x+pw/2,y+14,state.stage>=12?'DESAFIO FINAL':
+    gymView?'GINÁSIO DE '+city.toUpperCase():'JORNADA EM KANTO',11,UI.amarillo);
    const got=(state.badges||[]).length;
    text(scene,layer,x+pw/2,y+168,got+' / 8 INSÍGNIAS',10,UI.texto);
    for(let i=0;i<8;i++){const icon=drawBadgeIcon(scene,i,x+pw/2-70+i*20,y+192,i<got,1);layer.add(icon);}
@@ -399,7 +495,8 @@ function cardsPage(scene,state,handlers){
   text(scene,layer,x+w/2,y+12,String(entry.index+1).padStart(2,'0')+' · '+glyph,9,
    entry.leader?UI.amarillo:entry.locked?UI.tenue:UI.texto);
   // Regional diorama in a native ring; the FRLG trainer stands in front.
-  scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
+  if(!(kind==='gym'&&gymInterior(scene,layer,x+7,y+22,w-14,92,state.stage,entry.leader?0:entry.index+1)))
+   scenicDiorama(scene,layer,x+7,y+22,w-14,92,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);
   aro(ring,x+6,y+21,w-12,94,entry.active||entry.leader?UI.oro:UI.panelBorde,6);
   npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+100,
@@ -449,7 +546,7 @@ function cardsPage(scene,state,handlers){
  bottom.forEach(([label,fn,icon],i)=>control(scene,layer,8+i*84,324,80,30,label,fn,
   {size:10,id:'cards-'+i,icon}));
  control(scene,layer,344,324,70,30,'MAIS',()=>extrasPage(scene,state,handlers),
-  {id:'cards-more',size:10});
+  {id:'cards-more',size:10,icon:'more'});
  const cta=current.leader?(state.stage>=8?'▶ DESAFIAR':'▶ DESAFIAR LÍDER'):'▶ BATALHAR';
  // Regular trainers: one tap to fight. Leaders: preview with their line first.
  const primary=control(scene,layer,422,320,210,36,cta,
@@ -475,7 +572,10 @@ function detailPage(scene,state,handlers,entry){
  marco(g,252,52,380,234,'panel');
  aro(g,13,76,226,183,entry.leader?UI.oro:UI.panelBorde,6);
  layer.add(g);
- scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
+ const inGym=trainerCardSections(state.stage,TRAINERS_PER_GYM(state.stage))
+  .find(sec=>sec.indices.includes(entry.index))?.kind==='gym';
+ if(!(inGym&&gymInterior(scene,layer,14,77,222,175,state.stage,entry.leader?0:entry.index+1)))
+  scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
  control(scene,layer,570,12,53,32,'X',()=>{

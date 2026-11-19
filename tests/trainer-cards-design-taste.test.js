@@ -9,7 +9,7 @@ import vm from 'node:vm';
 
 const source=fs.readFileSync('tools/pokearena/torre2-trainer-cards.js','utf8');
 const start=source.indexOf('function box(');
-const middle=source.indexOf('function control(');
+const middle=source.indexOf('// Crisp pixel-art icon set');
 const cardStart=source.indexOf('function trainerCardFrame(');
 const cardEnd=source.indexOf('function npc(');
 assert.ok(start>0&&middle>start&&cardStart>middle&&cardEnd>cardStart);
