@@ -279,6 +279,21 @@ for(const [file,sha] of artFiles){
  await fs.writeFile(path.join(artDest,file),bytes);
 }
 await fs.writeFile(path.join(artDest,'PROVENANCE.json'),JSON.stringify(artProvenance,null,1));
+// CC0 campaign music (campaign-music/PROVENANCE.json), verified by SHA-256.
+const musicSource='tools/pokearena/campaign-music';
+const musicProvenance=JSON.parse(await read(path.join(musicSource,'PROVENANCE.json')));
+must(/^CC0/.test(musicProvenance.license||''),'campaign music must be CC0');
+const musicFiles=Object.entries(musicProvenance.files||{});
+must(musicFiles.length>=8,'campaign music provenance incomplete');
+const musicDest=path.join(root,'assets/audio/torre2-campaign');
+await fs.mkdir(musicDest,{recursive:true});
+for(const [file,sha] of musicFiles){
+ must(/^[a-z0-9-]+\.(ogg|mp3)$/.test(file),'unexpected campaign music name '+file);
+ const bytes=await fs.readFile(path.join(musicSource,file));
+ must(createHash('sha256').update(bytes).digest('hex')===sha,'campaign music hash mismatch '+file);
+ await fs.writeFile(path.join(musicDest,file),bytes);
+}
+await fs.writeFile(path.join(musicDest,'PROVENANCE.json'),JSON.stringify(musicProvenance,null,1));
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
 exactly(html,oldModule+'/main.js','native main entrypoint');
@@ -294,6 +309,6 @@ await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
 const release={alpha:'0.76.2',source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},
  baseModules:oldModule,modules:newModule,baseRun:Number(process.env.TORRE2_ALPHA0762_RUN)||null,
- patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length};
+ patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length,campaignMusic:musicFiles.length};
 await fs.writeFile(path.join(site,'RELEASE-0762.json'),JSON.stringify(release,null,2));
 console.log('ALPHA0762_RELEASE_READY',JSON.stringify(release));

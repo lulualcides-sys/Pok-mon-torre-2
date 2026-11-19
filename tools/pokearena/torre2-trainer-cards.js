@@ -587,8 +587,9 @@ function extrasPage(scene,state,handlers){
   ['REINICIAR JORNADA',handlers.reset,null]
  ];
  actions.push(['MAPA DE KANTO',()=>journeyPage(scene,state,handlers),'team']);
+ actions.push(['CARTÃO DO TREINADOR',handlers.trainerCard,'badges']);
  actions.forEach(([name,fn,icon],i)=>{
-  const x=i===8?222:118+(i%2)*208,y=84+Math.floor(i/2)*40;
+  const x=118+(i%2)*208,y=84+Math.floor(i/2)*40;
   control(scene,layer,x,y,196,34,name,name==='TELA CHEIA'||name==='MAPA DE KANTO'?(()=>{layer.destroy(true);fn?.()}):close(fn),
    {id:'cards-extras-'+i,size:11,icon,center:true});
  });
@@ -771,6 +772,8 @@ function cardsPage(scene,state,handlers){
  const visibleEntries=sections[page].indices.map(index=>all[index]);
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
+ // Cards slide in gently when a page is drawn (presentation only).
+ if(scene.tweens){layer.setY(6);scene.tweens.add({targets:layer,y:0,duration:180,ease:'Quad.easeOut'});}
  // Native checkered menu background (same as League/Gyms), behind the layer.
  // Native checkered menu background, moved INTO this layer so it covers the
  // campaign scene's own lower layers (they stay intact underneath).

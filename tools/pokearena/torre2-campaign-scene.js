@@ -12,6 +12,7 @@ import {UI as MENU_UI,marco as nativeMarco,aro as nativeAro,rectRedondo as nativ
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
+import {sfx} from '../sonido.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -36,7 +37,7 @@ import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
-import {installCampaignAudioSettings} from './audio-settings.js';
+import {installCampaignAudioSettings,readAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel,HALL_GYM_BADGES as HALL_BADGE_ORDER} from './hall-of-fame.js';
@@ -342,6 +343,8 @@ create(){
    if(now-lastPress<190)return;
    lastPress=now;
    pressed=true;paint();
+   // Native menu click sound (guarded: the Node button harness has no audio).
+   if(typeof sfx==='function')try{sfx('seleccion')}catch{}
    callback();
   });
   paint();return zone;
@@ -472,6 +475,12 @@ create(){
  backdrop(){
   // Native checkered menu background of the base client.
   nativeBackground(this);
+  this.screenFade();
+ }
+ // Short fade-in whenever a campaign screen is drawn (presentation only).
+ screenFade(){
+  const cam=this.cameras?.main;
+  if(cam&&!cam.fadeEffect?.isRunning)cam.fadeIn(160,4,12,30);
  }
  // Shared noncombat pixel frame. Deliberately inert graphics: input zones,
  // text, saves and battle scenes retain the exact native behavior.
@@ -561,7 +570,7 @@ create(){
  }
  // Animated full-body PMD Idle sprite (the same art as in battle), facing
  // the player. Loaded on demand and released when the scene shuts down.
- pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null){
+ pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null,fitContent=false){
   const dex=portraitId({id});
   const idle=this.registry.get('manifiesto')?.[dex]?.anims?.Idle;
   if(!idle)return null;
@@ -573,7 +582,7 @@ create(){
    const n=Math.max(1,idle.durations?.length||1);
    if(!this.anims.exists(anim))this.anims.create({key:anim,repeat:-1,
     frames:Array.from({length:n},(_,i)=>({key,frame:i,duration:Math.round((idle.durations?.[i]||8)*1000/60)}))});
-   const s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
+   let s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
    // y is the GROUND line: measure the lowest visible pixel row of the first
    // frame (the feet) and anchor there, so the Pokémon stands exactly on the
    // same line as the trainer instead of floating or sinking.
@@ -586,9 +595,15 @@ create(){
      const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(src,0,0,idle.fw,idle.fh,0,0,idle.fw,idle.fh);
      const data=cx.getImageData(0,0,idle.fw,idle.fh).data;
      find:for(let r=idle.fh-1;r>=0;r--)for(let c=0;c<idle.fw;c++)if(data[(r*idle.fw+c)*4+3]>40){row=r;break find}
+     // Visible bounding box of the frame, to size small windows by content.
+     let x0=idle.fw,x1=-1,y0=idle.fh;
+     for(let r=0;r<=row;r++)for(let c=0;c<idle.fw;c++)if(data[(r*idle.fw+c)*4+3]>40){if(c<x0)x0=c;if(c>x1)x1=c;if(r<y0)y0=r}
+     (this.__torre2Box??=new Map()).set(key,{w:Math.max(1,x1-x0+1),h:Math.max(1,row-y0+1)});
     }catch{}
     feet.set(key,(row+1)/idle.fh);
    }
+   const box=this.__torre2Box?.get(key);
+   if(fitContent&&box)s=Math.min(3,maxSize/Math.max(box.w,box.h));
    const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
    onReady?.(sprite);
@@ -740,6 +755,7 @@ create(){
   nativeAro(g,6,6,628,348,MENU_UI.oro,10,.85);
   const center=(x,y,label,size=12,color=C.white)=>
    this.uiLabel(x,y,label,Math.max(7,Math.round(size*.8)),color,[.5,.5],7);
+  this.campaignMusic('hall');
   this.screenBanner(22,320,'★ SALÃO DA FAMA ★','badges').setData('torre2-hall-title',true);
   center(320,46,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
   // Left: the champion (the player's own Red/Leaf) on a golden podium.
@@ -821,9 +837,12 @@ create(){
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    dex:()=>this.dexScreen(state),
    badges:()=>this.badgeCaseScreen(state),
+   trainerCard:()=>this.trainerCardScreen(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
   };
+  this.screenFade();
+  this.campaignMusic('town');
   const cards=renderTrainerCardHub(this,state,handlers);
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   return cards;
@@ -978,6 +997,7 @@ create(){
    glow.fillStyle(0xffffff,.22).fillCircle(320,150,70);
    this.tweens.add({targets:glow,alpha:0,duration:700});
    line.setText('Parabéns! '+nice(from)+' evoluiu para '+nice(to)+'!').setColor(MENU_UI.amarillo);
+   this.campaignJingle('victory');
    const btn=this.button(320,288,180,28,'CONTINUAR ▶',()=>{
     objs.forEach(o=>o.active&&o.destroy());btn.active&&btn.destroy();
     this.children.list.filter(o=>o.getData?.('torre2-evolution-ui')).forEach(o=>o.destroy());
@@ -1024,6 +1044,49 @@ create(){
    });
    return false;
   }finally{this.__torre2EeveeResolving=false}
+ }
+ // Trainer Card, FireRed style: the player's character, name, ID, money,
+ // Pokédex, wins and the eight badges. Read-only (never writes the save).
+ trainerCardScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  this.screenBanner(20,300,'Cartão do treinador','badges');
+  let name='Treinador';try{name=localStorage.getItem('torre2-trainer-name')||name}catch{}
+  const uid=String(state.team?.[0]?.uid||state.starter||'kanto');
+  let h=7;for(const ch of uid)h=(h*31+ch.charCodeAt(0))%100000;
+  const got=(state.badges||[]).length;
+  // Card colour follows progress, like the FRLG card tiers.
+  const tier=got>=8?MENU_UI.oro:got>=4?0xc0c8d8:got>=1?0xcd8a4a:0x5f86bd;
+  const g=this.add.graphics().setDepth(2);
+  nativeRect(g,36,44,568,250,MENU_UI.contorno,12);
+  nativeRect(g,38,46,564,246,tier,11);
+  nativeRect(g,46,54,548,230,0x0f2352,9);
+  g.fillStyle(0xffffff,.05).fillRect(50,58,540,40);
+  this.uiLabel(64,76,'CARTÃO DE TREINADOR',11,MENU_UI.amarillo);
+  this.uiLabel(580,76,'ID Nº '+String(h).padStart(5,'0'),9,MENU_UI.suave,[1,.5]);
+  g.fillStyle(MENU_UI.panelBorde,1).fillRect(56,96,528,1);
+  const dexSeen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
+  const rows=[['Nome',name],['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
+   ['Pokédex',(state.dexCaught||[]).length+' capturados · '+dexSeen+' vistos'],
+   ['Vitórias',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
+   ['Equipe',(state.team||[]).length+' na equipe · '+(state.box||[]).length+' no PC']];
+  rows.forEach(([k,v],i)=>{
+   const y=116+i*26;
+   nativeRect(g,60,y-10,340,22,i%2?0x0c1d46:0x12285a,5,.9);
+   this.uiLabel(70,y+1,k,8,MENU_UI.suave);
+   estrechar(this.uiLabel(390,y+1,v,9,i===0?MENU_UI.amarillo:'#ffffff',[1,.5]),220);
+  });
+  // The player's own FireRed character in a framed window.
+  nativeRect(g,420,106,160,130,MENU_UI.contorno,8);nativeRect(g,422,108,156,126,0x1d3c7a,7);
+  g.fillStyle(0xffffff,.06).fillCircle(500,160,48);
+  g.fillStyle(0x000000,.3).fillEllipse(500,222,70,12);
+  this.npcSprite(playerSpriteId(),500,224,3.6,5);
+  // Badge strip.
+  nativeRect(g,60,250,520,30,0x081436,6,.9);
+  this.uiLabel(70,265,'Insígnias',8,MENU_UI.suave);
+  for(let i=0;i<8;i++)drawBadgeIcon(this,i,170+i*48,265,state.badges?.includes(HALL_BADGE_ORDER[i]),1.3).setDepth(6);
+  this.button(320,330,220,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state))
+   .setData('torre2-trainer-card-back',true);
+  this.__torre2TrainerCard={name,id:h,badges:got};
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
@@ -1284,6 +1347,48 @@ create(){
   // Soft spotlight where the leader and the Pokémon stand.
   g.fillStyle(0xffffff,.10).fillEllipse(x+w/2,fy+(h-wallH)*.62,170,46);
   return g;
+ }
+ // Campaign background music: CC0 chiptune tracks (campaign-music/PROVENANCE).
+ // One looping track at a time, kept across campaign screen restarts, volume
+ // from the player's music setting (the global bus applies master/mute), and
+ // stopped automatically as soon as the campaign scene is not running
+ // (battles, title menu). The arena and its sounds are never touched.
+ campaignMusic(track){
+  const game=this.game,key=track&&'torre2-music-'+track;
+  const music=()=>{const p=readAudioSettings();return p.muted?0:p.music};
+  const current=game.__torre2Music;
+  if(current&&game.__torre2MusicKey===key&&current.isPlaying)return;
+  current?.stop();current?.destroy?.();game.__torre2Music=null;game.__torre2MusicKey=key||null;
+  if(!key||music()<=0||!this.sound)return;
+  const play=()=>{
+   if(!this.scene.isActive()||game.__torre2MusicKey!==key||game.__torre2Music)return;
+   try{const snd=this.sound.add(key,{loop:true,volume:music()});snd.play();game.__torre2Music=snd}catch{}
+  };
+  if(this.cache.audio.exists(key))play();
+  else{
+   this.load.once('filecomplete-audio-'+key,play);
+   this.load.audio(key,['assets/audio/torre2-campaign/'+track+'.ogg','assets/audio/torre2-campaign/'+track+'.mp3']);
+   if(!this.load.isLoading())this.load.start();
+  }
+  if(!game.__torre2MusicWatch){
+   let frames=0;
+   game.__torre2MusicWatch=()=>{
+    const snd=game.__torre2Music;if(!snd)return;
+    if(!game.scene.isActive('campanha')){snd.stop();snd.destroy?.();game.__torre2Music=null;game.__torre2MusicKey=null;return}
+    if(++frames%60===0){const v=music();if(v<=0){snd.stop();snd.destroy?.();game.__torre2Music=null;game.__torre2MusicKey=null}else snd.setVolume?.(v)}
+   };
+   game.events.on('poststep',game.__torre2MusicWatch);
+  }
+ }
+ // Short one-shot jingle (evolution), over the background music.
+ campaignJingle(track){
+  const key='torre2-music-'+track,p=readAudioSettings(),v=p.muted?0:p.music;
+  if(v<=0||!this.sound)return;
+  const play=()=>{try{this.sound.play(key,{volume:v})}catch{}};
+  if(this.cache.audio.exists(key))play();
+  else{this.load.once('filecomplete-audio-'+key,play);
+   this.load.audio(key,['assets/audio/torre2-campaign/'+track+'.ogg','assets/audio/torre2-campaign/'+track+'.mp3']);
+   if(!this.load.isLoading())this.load.start();}
  }
  // Neutral stage with one round battle-style platform; returns the ground y.
  stagePlatform(x,y,w,h,tint=0x3f7ad8){
@@ -1592,6 +1697,7 @@ create(){
    const list=this.children.list.slice(start);
    list.forEach(obj=>obj.active&&obj.destroy());
    this.__torre2GrassOverlay=null;
+   this.campaignMusic('town');
   };
   const label=(x,y,value,size=9,color='#ffffff',origin=[.5,.5])=>this.uiLabel(x,y,value,size,color,origin,620);
   const modalButton=(x,y,w,h,caption,callback,gold=false,icon=null)=>{
@@ -1603,6 +1709,7 @@ create(){
    return this.add.zone(x,y,w,h).setDepth(630)
     .setInteractive({useHandCursor:true}).on('pointerdown',callback);
   };
+  this.campaignMusic('route');
   const area=wildAvailability(state.stage);
   // Landscape header from the owner's journey art (top strip: forest/town).
   ownerArt(this,{add:o=>o.setDepth?.(613)},'journey-bg',32,26,576,84,null,.5,0);
@@ -1917,6 +2024,18 @@ create(){
   g.fillStyle(0xffffff,.28).fillRect(x+4,y+2,size-8,1);
   this.drawPortrait(member,x+size/2,y+size/2,size-6,6);
  }
+ // Same type-tinted window, but with the animated full-body PMD sprite
+ // (as in battle) standing inside it; the portrait is the fallback.
+ animatedFrame(g,member,x,y,size,types=[]){
+  const col=TIPOS[types[0]]??0x5f86bd;
+  nativeRect(g,x-1,y-1,size+2,size+2,MENU_UI.contorno,6);
+  nativeRect(g,x,y,size,size,col,5,.55);
+  g.fillStyle(0x061433,.35).fillRect(x+2,y+Math.round(size*.62),size-4,Math.round(size*.34));
+  g.fillStyle(0xffffff,.28).fillRect(x+4,y+2,size-8,1);
+  g.fillStyle(0x000000,.25).fillEllipse(x+size/2,y+size-8,size*.6,6);
+  if(!this.pokemonIdleSprite(member.id,x+size/2,y+size-7,size-12,6,null,true))
+   this.drawPortrait(member,x+size/2,y+size/2,size-6,6);
+ }
  teamScreen(state){
   // EQUIPE is a full roster, not a shortcut to the active Pokémon's summary.
   this.__torre2SummaryFromTeam=false;
@@ -1941,7 +2060,7 @@ create(){
    const info=this.memberInfo(member);
    nativeMarco(g,x,y,CW,CH,'panel',active?{borde:MENU_UI.oro}:{});
    if(active)nativeAro(g,x-2,y-2,CW+4,CH+4,MENU_UI.oro,8,.9);
-   this.portraitFrame(g,member,x+8,y+10,64,info.types);
+   this.animatedFrame(g,member,x+8,y+10,64,info.types);
    // Slot number medal.
    nativeRect(g,x+4,y+6,18,14,active?MENU_UI.oro:MENU_UI.panelBorde,4);
    this.uiLabel(x+13,y+13,String(i+1),8,active?MENU_UI.textoOscuro:'#ffffff',[.5,.5],7);
@@ -2235,11 +2354,15 @@ create(){
    if(!this.scene.isActive()||!this.textures.exists(key))return;
    this.add.image(66,143,key).setDisplaySize(74,74).setDepth(3);
   };
-  if(this.textures.exists(key))portrait();
-  else{
-   this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
-   this.load.once('complete',portrait);
-   if(!this.load.isLoading())this.load.start();
+  // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
+  const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.3).fillEllipse(66,175,50,8);
+  if(!this.pokemonIdleSprite(member.id,66,176,64,18,null,true)){
+   if(this.textures.exists(key))portrait();
+   else{
+    this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
+    this.load.once('complete',portrait);
+    if(!this.load.isLoading())this.load.start();
+   }
   }
   label(119,114,'TIPO',C.muted,10);
   label(119,131,stats.types[0],hex(stats.types[0]),12);
