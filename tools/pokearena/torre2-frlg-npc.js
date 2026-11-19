@@ -42,8 +42,13 @@ export function addFireRedNPC(scene,kind,x,y,{scale=1,depth=8}={}){
  return scene.add.image(x,y,key,frame).setOrigin(.5,1)
   .setDepth(depth).setScale(scale);
 }
+// Player character chosen on the trainer-name screen: Red or Leaf (FireRed).
+export function playerSpriteId(storage=globalThis.localStorage){
+ try{return storage?.getItem('torre2-trainer-gender')==='leaf'?'green_normal':'red_normal'}catch{return 'red_normal'}
+}
 export function addRedPlayer(scene,x,y,{scale=1,depth=9}={}){
- const key=NPC_TEXTURE_PREFIX+'red_normal';
+ let key=NPC_TEXTURE_PREFIX+playerSpriteId();
+ if(!scene.textures.exists(key))key=NPC_TEXTURE_PREFIX+'red_normal';
  if(!scene.textures.exists(key))return null;
  const tex=scene.textures.get(key),frame=frontFrame(tex,key);
  if(!frame)return null;

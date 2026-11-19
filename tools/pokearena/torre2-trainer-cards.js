@@ -320,7 +320,7 @@ const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // pixel art stays as placeholder until the PNG arrives. Trainer sprites and
 // Pokémon portraits are never replaced by these.
 export const OWNER_ART_DIR='assets/ui/torre2-campaign/';
-function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
+export function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
  const key='torre2-art-'+name;
  const slot=scene.add.container(0,0);layer.add(slot);
  const draw=()=>{
@@ -347,6 +347,11 @@ function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
 }
 // Horizontal framing of the city illustration per card, so neighbours differ.
 const CARD_PAN=[.5,.12,.88,.32,.68];
+// Route cards alternate the destination city with the owner's two route
+// landscapes, so neighbouring cards never repeat the same picture.
+const ROUTE_ART_CYCLE=['city','route-card','city','route-detail'];
+const routeArt=(stage,index)=>{const kind=ROUTE_ART_CYCLE[index%ROUTE_ART_CYCLE.length];
+ return kind==='city'?'city-'+artCity(stage):kind};
 const artCity=stage=>stage>=8?'indigo':String(STAGES[stage]?.city||'').toLowerCase();
 function frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,fw,fh],stage,variant){
  const key='frlg-location-'+loc,frame='torre2-win-'+loc+'-'+fx+'-'+fy+'-'+fw+'-'+fh;
@@ -846,7 +851,7 @@ function cardsPage(scene,state,handlers){
   // Regional diorama in a native ring; the FRLG trainer stands in front.
   const SH=104;
   const sceneryOk=kind==='gym'?gymInterior(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.leader?0:entry.index+1):
-   ownerArt(scene,layer,'city-'+artCity(state.stage),x+7,y+22,w-14,SH,
+   ownerArt(scene,layer,routeArt(state.stage,entry.index),x+7,y+22,w-14,SH,
     slot=>routeScene(scene,slot,x+7,y+22,w-14,SH,entry.index),CARD_PAN[entry.index%CARD_PAN.length]);
   if(!sceneryOk)scenicDiorama(scene,layer,x+7,y+22,w-14,SH,state.stage,entry.index);
   const ring=scene.add.graphics();layer.add(ring);

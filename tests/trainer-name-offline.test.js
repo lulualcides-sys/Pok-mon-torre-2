@@ -36,3 +36,14 @@ test('publisher writes both patched modules and the workflow watches the patch',
  const wf=readFileSync(new URL('../.github/workflows/torre2-alpha0762-publish.yml',import.meta.url),'utf8');
  assert.equal(wf.split("'tools/pokearena/torre2-trainer-name.mjs'").length,3);
 });
+
+test('boy/girl choice is saved and drives the FireRed player sprite',async()=>{
+ const {patchAccountScene:patch,TRAINER_GENDER_KEY}=await import('../tools/pokearena/torre2-trainer-name.mjs');
+ const out=patch('class Cuenta extends Phaser.Scene{create(){const d=this.datos;this.modo=d.modo??"crear";}}');
+ assert.ok(out.includes('["red","red_normal"')&&out.includes('["leaf","green_normal"'));
+ assert.ok(out.includes('localStorage.setItem("'+TRAINER_GENDER_KEY+'",genero)'));
+ const {playerSpriteId}=await import('../tools/pokearena/torre2-frlg-npc.js');
+ assert.equal(playerSpriteId({getItem:()=>'leaf'}),'green_normal');
+ assert.equal(playerSpriteId({getItem:()=>null}),'red_normal');
+ assert.equal(playerSpriteId({getItem:()=>{throw Error('denied')}}),'red_normal');
+});

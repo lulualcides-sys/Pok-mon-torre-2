@@ -65,7 +65,7 @@ test('only card pagination and headings changed: original sprites, touch and sav
  assert.match(source,/const CW=110,GAP=8,X0=166,CY=56,CH=244;/);
  assert.match(source,/scenicBackdrop\(scene,layer,state\.stage\)/);
  // Route cards: owner illustration, with the procedural route as placeholder.
- assert.match(source,/ownerArt\(scene,layer,'city-'\+artCity\(state\.stage\),x\+7,y\+22,w-14,SH,\s*slot=>routeScene\(scene,slot,x\+7,y\+22,w-14,SH,entry\.index\),CARD_PAN\[/);
+ assert.match(source,/ownerArt\(scene,layer,routeArt\(state\.stage,entry\.index\),x\+7,y\+22,w-14,SH,\s*slot=>routeScene\(scene,slot,x\+7,y\+22,w-14,SH,entry\.index\),CARD_PAN\[/);
  // Owner art never replaces trainer sprites or gym interiors.
  assert.match(source,/npc\(scene,layer,npcKind\(state\.stage,entry\.index,entry\.leader\)/);
  assert.match(source,/kind==='gym'\?gymInterior\(scene,layer,x\+7,y\+22,w-14,SH/);
