@@ -205,3 +205,39 @@ export function drawLegendaryLair(scene,kind,x,y,w,h){
  scene.events.once('shutdown',()=>{tweens.forEach(t=>t.stop?.());m.destroy()});
  return {spot:at(info.spot.x,info.spot.y),objects,tweens,size:{W,H}};
 }
+
+// Ambient animation over the owner's lair illustration (campaign-art lair-*.png):
+// the same 2-px pixel grid, nothing that depends on the drawing's layout.
+export function drawLairAmbient(scene,kind,x,y,w,h){
+ const S=LAIR_SCALE,rnd=seeded(kind.length*53+11),objects=[],tweens=[];
+ const tw=cfg=>{const t=scene.tweens.add(cfg);tweens.push(t);return t};
+ const dot=(c,px,py,size=1)=>{const d=scene.add.rectangle(Math.round(px),Math.round(py),size*S,size*S,c).setOrigin(0,0).setDepth(2.6);objects.push(d);return d};
+ if(kind==='powerplant'){
+  for(let i=0;i<10;i++){const sx=x+12+rnd()*(w-24),sy=y+6+rnd()*h*.42;
+   const s=scene.add.graphics().setDepth(2.6);objects.push(s);s.fillStyle(0xfff26a,1);
+   for(const [a,b] of [[0,0],[1,1],[1,2],[0,3],[1,4],[2,5]])s.fillRect(Math.round(sx+a*S),Math.round(sy+b*S),S,S);
+   s.setAlpha(0);tw({targets:s,alpha:1,duration:90,yoyo:true,repeat:-1,repeatDelay:500+rnd()*1500,delay:rnd()*1500})}
+ }else if(kind==='seafoam'){
+  for(let i=0;i<26;i++){const sx=x+rnd()*w,d=dot(0xffffff,sx,y);d.setAlpha(.9);
+   tw({targets:d,y:y+h-S,x:sx+S*10,duration:4200+rnd()*2600,repeat:-1,delay:rnd()*4200})}
+ }else if(kind==='ember'){
+  for(let i=0;i<24;i++){const sx=x+rnd()*w,sy=y+h-4-rnd()*24,d=dot(i%2?0xffd040:0xff8a2a,sx,sy);
+   tw({targets:d,y:y+S*4,x:sx+(rnd()-.5)*S*12,alpha:{from:1,to:0},duration:2800+rnd()*2400,repeat:-1,delay:rnd()*2800})}
+ }else if(kind==='cave'){
+  for(let i=0;i<14;i++){const d=dot(i%3?0x9ad8ff:0xffffff,x+rnd()*w,y+rnd()*h*.7);d.setAlpha(0);
+   tw({targets:d,alpha:{from:0,to:1},duration:500,yoyo:true,repeat:-1,repeatDelay:900+rnd()*2200,delay:rnd()*2400})}
+  for(let i=0;i<10;i++){const sx=x+rnd()*w,sy=y+h*.25+rnd()*h*.4,d=dot(0xb8e4ff,sx,sy);d.setAlpha(.5);
+   tw({targets:d,y:sy-S*14,alpha:{from:.6,to:0},duration:3000+rnd()*2000,repeat:-1,delay:rnd()*3000})}
+ }else{
+  for(let i=0;i<14;i++){const sx=x+20+rnd()*(w-40),sy=y+h*.35+rnd()*h*.55,d=dot(0xfff0a0,sx,sy);
+   tw({targets:d,x:sx+S*10,y:sy-S*6,alpha:{from:.15,to:1},duration:1600+rnd()*1400,yoyo:true,repeat:-1,delay:rnd()*1600})}
+  for(let i=0;i<6;i++){const sx=x+rnd()*w,d=dot(0x5ab040,sx,y,1);
+   tw({targets:d,y:y+h-S,x:sx+S*20,duration:5200+rnd()*2400,repeat:-1,delay:rnd()*5000})}
+ }
+ const m=scene.make.graphics({add:false});m.fillStyle(0xffffff,1).fillRect(x,y,w,h);
+ const mask=m.createGeometryMask();objects.forEach(o=>o.setMask?.(mask));
+ scene.events.once('shutdown',()=>{tweens.forEach(t=>t.stop?.());m.destroy()});
+ return {objects,tweens};
+}
+// Where the platform sits in each lair illustration (fraction of the frame).
+export const LAIR_SPOT=Object.freeze({cave:.80,ember:.80,seafoam:.86,powerplant:.84,faraway:.84});

@@ -25,7 +25,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter} from './campaign-core.js';
 import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel} from './legendaries.js';
-import {drawLegendaryLair} from './legendary-lairs.js';
+import {drawLegendaryLair,drawLairAmbient,LAIR_SPOT} from './legendary-lairs.js';
 import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -1336,9 +1336,13 @@ create(){
    const x=16+i*122,y=64,st=this.legendaryStatusFor(state,leg.id),locked=st.state==='locked';
    const col=colors[leg.type]??MENU_UI.panelBorde;
    nativeRect(g,x,y,118,234,locked?MENU_UI.apagadoBorde:col,8);nativeRect(g,x+2,y+2,114,230,locked?0x0a1638:0x1b1446,7);
-   g.fillStyle(0x000000,.25).fillEllipse(x+59,y+132,84,16);g.fillStyle(col,locked?.25:.8).fillEllipse(x+59,y+130,72,12);
+   // A slice of the lair illustration behind the legendary (darker if locked).
+   const art=this.add.container(0,0).setDepth(4);
+   ownerArt(this,art,'lair-'+leg.scene,x+3,y+3,112,140,null,.5,.5);
+   const veil=this.add.graphics().setDepth(4.5);veil.fillStyle(0x0a0a20,locked?.62:.18).fillRect(x+3,y+3,112,140);
+   veil.fillStyle(locked?MENU_UI.apagadoBorde:col,1).fillRect(x+3,y+143,112,2);
    const seen=(state.dexSeen||[]).includes(leg.id)||!locked;
-   const spr=this.pokemonIdleSprite(leg.id,x+59,y+131,74,6,s=>{if(!seen)s.setTint(0x101828)},true);
+   const spr=this.pokemonIdleSprite(leg.id,x+59,y+128,70,6,s=>{if(!seen)s.setTint(0x101828)},true);
    if(spr&&!seen)spr.setTint?.(0x101828);
    if(!seen)this.uiLabel(x+59,y+92,'?',22,'#4a5f8c',[.5,.5],7);
    this.uiLabel(x+59,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]);
@@ -1361,22 +1365,33 @@ create(){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
   const st=this.legendaryStatusFor(state,id),locked=st.state==='locked';
   this.screenBanner(20,300,leg.place,'badges');
-  const fr=this.add.graphics().setDepth(1.5);nativeRect(fr,10,40,620,236,MENU_UI.contorno,8);
-  const {spot}=drawLegendaryLair(this,leg.scene,14,44,612,228);
-  nativeAro(this.add.graphics().setDepth(2.8),12,42,616,232,MENU_UI.panelBorde,7);
+  // The owner's illustration of the place (campaign-art lair-*.png, cover
+  // fit); the original pixel-art drawing is only shown while it loads.
+  const LX=14,LY=44,LW=612,LH=190;
+  const fr=this.add.graphics().setDepth(1.5);nativeRect(fr,LX-4,LY-4,LW+8,LH+8,MENU_UI.contorno,8);
+  const layer=this.add.container(0,0).setDepth(2);
+  ownerArt(this,layer,'lair-'+leg.scene,LX,LY,LW,LH,slot=>{
+   const fallback=drawLegendaryLair(this,leg.scene,LX,LY,LW,LH);
+   fallback.objects.forEach(o=>slot.add(o));
+  });
+  drawLairAmbient(this,leg.scene,LX,LY,LW,LH);
+  const spot={x:LX+LW/2,y:Math.round(LY+LH*(LAIR_SPOT[leg.scene]??.82))};
+  nativeAro(this.add.graphics().setDepth(2.8),LX-2,LY-2,LW+4,LH+4,MENU_UI.panelBorde,7);
   if(st.state==='available'){
-   const s=this.pokemonIdleSprite(id,spot.x,spot.y,96,6,null,true);
+   const s=this.pokemonIdleSprite(id,spot.x,spot.y,84,6,null,true);
    if(s&&['zapdos','articuno','moltres','mew'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
   }else{
    const note={caught:'Você já capturou '+leg.name+'.',gone:leg.name+' foi embora. '+st.reason+'.',locked:'Algo poderoso vive aqui… '+st.reason+'.'}[st.state];
    const box=this.add.graphics().setDepth(5);nativeRect(box,spot.x-170,spot.y-40,340,34,MENU_UI.panelBorde,7);nativeRect(box,spot.x-168,spot.y-38,336,30,0x0a1a46,6);
    estrechar(this.uiLabel(spot.x,spot.y-23,note,9,'#ffffff',[.5,.5],6),320);
   }
-  this.uiSection(10,280,620,32);
+  this.uiSection(10,244,620,32);
   const show=!locked;
-  this.uiLabel(24,296,show?leg.name+' · Nv '+legendaryLevel(state,leg,currentLevelCap(state.stage))+(state.champion?'':' (limite da sua etapa)'):'???',10,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(24,260,show?leg.name+' · Nv '+legendaryLevel(state,leg,currentLevelCap(state.stage))+(state.champion?'':' (limite da sua etapa)'):'???',10,MENU_UI.amarillo,[0,.5],4);
   const inv=state.inventory||{};
-  estrechar(this.uiLabel(616,296,'Ultra ×'+(inv.ultraball||0)+' · Great ×'+(inv.greatball||0)+' · Poké ×'+(inv.pokeball||0)+' · Master ×'+(inv.masterball||0)+' · Dica: sono/paralisia e HP baixo',7,'#dcf4fb',[1,.5],4),360);
+  estrechar(this.uiLabel(616,260,'Ultra ×'+(inv.ultraball||0)+' · Great ×'+(inv.greatball||0)+' · Poké ×'+(inv.pokeball||0)+' · Master ×'+(inv.masterball||0)+' · Dica: sono/paralisia e HP baixo',7,'#dcf4fb',[1,.5],4),360);
+  const LORE={powerplant:'Uma usina abandonada onde a eletricidade nunca para de estalar.',seafoam:'Ilhas geladas no meio do mar, varridas por neve o ano inteiro.',ember:'Dizem que o pico deste vulcão brilha em chamas durante a noite.',cave:'A caverna mais profunda de Kanto. Só os campeões podem entrar.',faraway:'Uma ilha escondida, coberta de mata e grama alta.'};
+  estrechar(this.uiLabel(320,296,LORE[leg.scene]||'',9,'#dcf4fb',[.5,.5],4),600);
   this.button(130,334,220,28,'◀ VOLTAR',()=>this.legendaryHub(state)).setData('torre2-lair-back',true);
   if(st.state==='available')
    this.button(470,334,260,28,'ENFRENTAR '+leg.name.toUpperCase(),()=>{
