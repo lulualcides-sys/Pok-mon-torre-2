@@ -41,11 +41,12 @@ Autorização: veja `docs/CREDITOS-E-LICENCAS.md` (permissão declarada pelo don
 | `npm test` | PASS 534/534 |
 | `tests/source-client-smoke.cjs` (menu, Pokédex 297 espécies, seleção, Liga, luta Arena/Liga) | PASS |
 | `tests/alpha0762-new-species-moves-browser.cjs` (5 slots × 11 espécies em luta real) | PASS 55/55, 0 erros de página |
+| Workflow `pokearena-alpha0762-port.yml`, run 44446345210 (commit 41c01ac) | PASS em todos os passos |
 | Android físico / campanha jogada normalmente | **não verificado** |
 
 ## Pendências
 
-- **6 folhas de efeito bloqueadas (403)**: `assets/vfx/fuegofatuo.png` (Will-O-Wisp), `punohielo.png` (Ice Punch), `hojafilo.png` (Leaf Blade), `hojatormenta.png` (Leaf Storm), `xtijera.png` (X-Scissor) e `detect.png` (Detect). Os golpes funcionam e dão dano, mas sem essa arte. É preciso obter os PNGs do autor ou de um navegador normal e colocá-los em `assets/vfx/`.
+- **Folhas de efeito:** o site responde 403 para estas folhas. O dono do projeto enviou 5 delas em 19/11/2026: `detect`, `xtijera`, `hojatormenta`, `hojafilo` e `punohielo`. Estão em `tools/pokearena/alpha0762-vfx/`, com SHA-256 e procedência em `PROVENANCE.json`, e o montador as instala em `assets/vfx/`. **Falta só `fuegofatuo.png` (Will-O-Wisp, 256×96, quadros 32×32)**: o golpe funciona, mas sem essa arte.
 - Pacotes `assets/p/*.bin` da 0.76.2 (formas e trajes novos do site) não foram obtidos (403).
 - Músicas por import dinâmico (`musica/*.js`) e idiomas (`idiomas/*.js`) não estão na captura. Já faltavam no release 0.71.3 publicado.
 - Telas novas da 0.76.2 que dependem de `/assets/ui/*` (ginásios, loja, molduras, campo do Gyarball) podem aparecer sem imagem.

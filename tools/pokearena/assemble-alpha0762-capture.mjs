@@ -45,6 +45,18 @@ for(const f of ['priority-licensed-pmd-report.json','priority-artist-upgrade-rep
 await fs.copyFile(path.join(siteRoot,'assets/pmd/torre2-visual-substitutes.json'),
  path.join(dest,'assets/pmd/torre2-visual-substitutes.json'));
 
+// 0.76.2 VFX sheets supplied by the project owner (403 for non-browser
+// clients): install them with their recorded SHA-256, never overwrite.
+const vfxDir='tools/pokearena/alpha0762-vfx';
+const vfx=JSON.parse(await fs.readFile(path.join(vfxDir,'PROVENANCE.json'),'utf8'));
+for(const [name,info] of Object.entries(vfx.files)){
+ const data=await fs.readFile(path.join(vfxDir,name));
+ if(sha(data)!==info.sha256)fail('owner-supplied VFX changed: '+name);
+ const target=path.join(dest,'assets/vfx',name);
+ try{await fs.access(target);fail('VFX already present, refusing to overwrite: '+name)}catch(e){if(e.code!=='ENOENT')throw e}
+ await fs.writeFile(target,data);
+}
+
 // 0.76.2 modules, pinned.
 const modules=Object.entries(pin.modules);
 let bytes=0;
@@ -71,5 +83,6 @@ const total=(await fs.readdir(dest,{recursive:true})).length;
 await fs.writeFile(path.resolve('site-capture/CAPTURE-REPORT.json'),JSON.stringify({
  source:pin.origin,totalFiles:total,sourceVersions:{selected:pin.src,officialAlpha:pin.alpha},
  sourceCatalog:'data/alpha0762-source-modules.json',completed:new Date().toISOString(),
- assetsInheritedFrom:pin.assetBase,blockedAssets:pin.blockedAssets},null,1));
-console.log('ALPHA0762_CAPTURE_ASSEMBLED',JSON.stringify({modules:modules.length,bytes,nativePmd:copied,files:total}));
+ assetsInheritedFrom:pin.assetBase,ownerSuppliedVfx:Object.keys(vfx.files),
+ blockedAssets:pin.blockedAssets.filter(a=>!vfx.files[a.split('/').pop()])},null,1));
+console.log('ALPHA0762_CAPTURE_ASSEMBLED',JSON.stringify({modules:modules.length,bytes,nativePmd:copied,ownerVfx:Object.keys(vfx.files).length,files:total}));

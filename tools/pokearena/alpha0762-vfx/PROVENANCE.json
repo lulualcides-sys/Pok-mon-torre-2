@@ -1,0 +1,38 @@
+{
+ "alpha": "0.76.2",
+ "src": "src-5bf1a1a788",
+ "target": "assets/vfx/",
+ "source": "Folhas de VFX do cliente-base Poké Arena 2D (https://www.pokearena2d.com/assets/vfx/), enviadas pelo dono do projeto em 19/11/2026 porque o servidor responde 403 a clientes não-navegador.",
+ "rights": "Uso sob a autorização declarada em docs/CREDITOS-E-LICENCAS.md; arte de terceiros, não redistribuir fora do Torre 2.",
+ "checked": "Dimensões conferidas contra HOJAS em vfx.js 0.76.2 (fw x cols, fh x linhas), RGBA com transparência.",
+ "stillMissing": [
+  "fuegofatuo.png (Will-O-Wisp, 256 px de largura, quadros 32x32)"
+ ],
+ "files": {
+  "detect.png": {
+   "move": "Detect",
+   "sha256": "65175a4f46e9a8be1df925a2e4d2b4e6b03552ccd7b254db195c343fa24e197a",
+   "bytes": 8050
+  },
+  "xtijera.png": {
+   "move": "X-Scissor",
+   "sha256": "7b386d2771d77e6adcaaa9c1bd94f73a601489663e2abb5f3c8f62f18c6a4db5",
+   "bytes": 5842
+  },
+  "hojatormenta.png": {
+   "move": "Leaf Storm",
+   "sha256": "59318e5e9bf51c9723ae3929d2f90dc33a08f3f53233bd0b684f745502d70e3c",
+   "bytes": 1223
+  },
+  "hojafilo.png": {
+   "move": "Leaf Blade",
+   "sha256": "a26128a40eedf7c88befb67031d3d0509b4b44edbeea128a73d1db27b90ac0d6",
+   "bytes": 11282
+  },
+  "punohielo.png": {
+   "move": "Ice Punch",
+   "sha256": "5116b60df2c3de9213b19f91eefb6e3b35a230acc4a82167b6f2f38aa3183698",
+   "bytes": 3095
+  }
+ }
+}
