@@ -53,7 +53,9 @@ const overlayNames=[
  // Campaign menus (native buttons/panels, Pokémon Center): presentation only.
  ['tools/pokearena/torre2-campaign-scene.js','torre2/campanha.js'],
  // Player character (Red/Leaf) chosen on the trainer-name screen.
- ['tools/pokearena/torre2-frlg-npc.js','torre2/frlg-npc.js']
+ ['tools/pokearena/torre2-frlg-npc.js','torre2/frlg-npc.js'],
+ // Post-battle report restyled with the native kit (texts and hit zones unchanged).
+ ['tools/pokearena/torre2-battle-report.js','torre2/battle-report.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);

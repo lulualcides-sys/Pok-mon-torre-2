@@ -120,28 +120,47 @@ export function showBattleReport(scene,report){
  blocker.setData?.('torre2-report-blocker',true);
  const g=track(scene.add.graphics().setDepth(depth+1));
  g.fillStyle(0x050d1c,.94).fillRect(0,0,640,360);
- g.fillStyle(0x112940,.99).fillRoundedRect(30,17,580,324,9);
- g.lineStyle(2,report.won?0xd9ae59:0xd47273,1).strokeRoundedRect(30,17,580,324,9);
- g.fillStyle(report.won?0x224c3a:0x593038,.9).fillRoundedRect(51,36,538,62,5);
- g.fillStyle(0x213951).fillRoundedRect(51,111,538,147,4);
- g.fillStyle(0x1a334b).fillRoundedRect(51,264,538,33,4);
+ // Native Poké Arena 2D panels when the campaign scene provides its UI kit;
+ // otherwise (Node tests, other scenes) the original plain drawing.
+ const kit=scene.__torre2UiKit;
+ const UI=kit?.UI||{oro:0xd9ae59,rojo:0xd47273,bordeTexto:'#061021',textoOscuro:'#201d16',oroLuz:0xffedbd};
+ const round=(x,y,w,h,color,r,alpha=1)=>kit?kit.rectRedondo(g,x,y,w,h,color,r,alpha):
+  g.fillStyle(color,alpha).fillRoundedRect(x,y,w,h,Math.min(r,4));
+ if(kit)kit.marco(g,30,17,580,324,'panel',{borde:report.won?UI.oro:UI.rojo});
+ else{g.fillStyle(0x112940,.99).fillRoundedRect(30,17,580,324,9);
+  g.lineStyle(2,report.won?0xd9ae59:0xd47273,1).strokeRoundedRect(30,17,580,324,9);}
+ round(51,36,538,62,report.won?0x1b5a3a:0x6b2430,6,.95);
+ round(51,111,538,147,0x0a1a46,6,.95);
+ round(51,264,538,33,0x081436,6,.95);
  const label=(x,y,value,size=11,color='#f4f4ee',center=false)=>{
-  const t=track(scene.add.text(x,y,String(value),{
-   fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',
-   color,stroke:'#061021',strokeThickness:2
-  }).setDepth(depth+2));
-  if(center)t.setOrigin(.5);return t;
+  const t=track(kit?kit.texto(scene,x,y,String(value),{tam:Math.max(7,Math.round(size*.82)),color,
+   borde:size>=12?4:3,colorBorde:UI.bordeTexto,literal:true}):
+   scene.add.text(x,y,String(value),{fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',
+    color,stroke:'#061021',strokeThickness:2})).setDepth(depth+2);
+  if(center)t.setOrigin(.5);else t.setOrigin(0,.5);return t;
+ };
+ const portrait=(id,x,y,size)=>{
+  try{
+   if(!kit?.buscar)return;
+   const {def,etapa}=kit.buscar(id);
+   const dex=(etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex);
+   const key='torre2-portrait-'+dex;
+   if(dex&&scene.textures.exists(key))
+    track(scene.add.image(x,y,key).setDisplaySize(size,size).setDepth(depth+2));
+  }catch{/* portraits are decoration only */}
  };
  label(320,54,report.title,22,report.won?'#b6f4c8':'#ffb4b4',true);
  const type={trainer:'TREINADOR',wild:'SELVAGEM',rematch:'REVANCHE'}[report.kind]||'BATALHA';
  label(320,80,type+'   +$'+report.money+'   '+report.badges.length+' INSÍGNIA(S)',10,'#f9de95',true);
- label(66,120,'EXPERIÊNCIA DA EQUIPE',11,'#f9de95');
+ label(66,124,'EXPERIÊNCIA DA EQUIPE',11,'#f9de95');
  const listed=report.team.slice(0,6);
  listed.forEach((member,index)=>{
   const y=142+index*19;
   const level=member.levelAfter>member.levelBefore?
    'NV '+member.levelBefore+' → '+member.levelAfter:'NV '+member.levelAfter;
-  label(66,y,display(member.id).slice(0,17),10,'#edf4f9');
+  round(60,y-9,520,18,index%2?0x0f2352:0x0c1d46,4,.9);
+  portrait(member.id,72,y,16);
+  label(84,y,display(member.id).slice(0,17),10,'#edf4f9');
   label(286,y,level,9,member.levelAfter>member.levelBefore?'#a7efac':'#a8c3d5');
   label(452,y,member.tester?'TESTE':('+'+member.experience+' XP'),9,'#d6e8ef');
  });
@@ -178,10 +197,12 @@ export function showBattleReport(scene,report){
    });
   }
  }
- const caption=label(320,321,'CONTINUAR  ▶',13,'#201d16',true);
+ const caption=label(320,319,'CONTINUAR  ▶',13,kit?UI.textoOscuro:'#201d16',true);
+ if(kit)caption.setStroke(UI.oroLuz,0);
  const buttonBg=track(scene.add.graphics().setDepth(depth+3));
- buttonBg.fillStyle(0xf4c85e).fillRoundedRect(220,302,200,34,4);
- buttonBg.lineStyle(1,0xffedbd).strokeRoundedRect(220,302,200,34,4);
+ if(kit)kit.marco(buttonBg,220,302,200,34,'oro');
+ else{buttonBg.fillStyle(0xf4c85e).fillRoundedRect(220,302,200,34,4);
+  buttonBg.lineStyle(1,0xffedbd).strokeRoundedRect(220,302,200,34,4);}
  caption.setDepth(depth+4);
  const click=track(scene.add.zone(320,319,200,34).setDepth(depth+5).setInteractive({useHandCursor:true}));
  click.setData?.('torre2-report-continue',true);

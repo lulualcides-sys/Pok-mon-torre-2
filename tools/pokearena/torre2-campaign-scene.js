@@ -35,7 +35,7 @@ import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,gymInterior,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -107,6 +107,9 @@ export function consumeCampaignResetLink(storage=localStorage,url=window.locatio
 class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){
+  // Native UI kit handed to plain modules (battle report) that must stay
+  // importable in Node tests without the base client's ui.js.
+  this.__torre2UiKit={UI:MENU_UI,marco:nativeMarco,rectRedondo:nativeRect,texto:textoMenu,buscar};
   // Phaser may reuse the prior start payload on scene.restart(). A finished
   // defeat is an event, not persistent scene data: never process it twice
   // when the user heals at the Center and returns to the same trainer.
@@ -493,41 +496,142 @@ create(){
    'fuji','dojo','bill','safari','tower','silph','harbor']);
   const homes=buildingInteractions(location).filter(h=>important.has(h.id));
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(16,80,608,218,0x4797b2);
-  text(this,320,35,'CASAS E LUGARES IMPORTANTES',{
-   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
-  text(this,320,74,'LOCAL: '+(location||region.title).toUpperCase(),{
-   fontSize:'13px',color:C.blue}).setOrigin(.5);
+  this.screenBanner(20,300,'Casas e lugares','center');
+  this.uiLabel(320,46,'Local: '+(location||region.title),8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,250);
+  // The city illustration on the left; the places to visit on the right.
+  const cityKey=state.stage>=8?'indigo':String(STAGES[state.stage]?.city||'').toLowerCase();
+  ownerArt(this,{add:o=>o.setDepth?.(2)},'city-'+cityKey,20,68,230,196);
+  const fr=this.add.graphics().setDepth(3);nativeAro(fr,19,67,232,198,MENU_UI.panelBorde,6);
+  this.uiLabel(135,282,STAGES[state.stage]?.city||'Kanto',10,MENU_UI.amarillo,[.5,.5]);
   homes.slice(0,8).forEach((h,i)=>{
-   const x=165+(i%2)*307,y=111+Math.floor(i/2)*49;
-   this.button(x,y,278,36,h.title,()=>this.enterLocalityBuilding(state,location,h),false,10);
+   const x=268+(i%2)*178,y=70+Math.floor(i/2)*48;
+   const g=this.add.graphics().setDepth(3);
+   nativeRect(g,x,y,170,42,MENU_UI.panelBorde,6);nativeRect(g,x+2,y+2,166,38,0x0a1a46,5);
+   pixelIcon(this,{add:o=>o.setDepth(5)},'center',x+20,y+21,1.2);
+   this.button(x+98,y+21,130,30,h.title,()=>this.enterLocalityBuilding(state,location,h),false,8)
+    .setData('torre2-house',h.id);
   });
-  if(!homes.length)text(this,320,180,
-   'NENHUMA CASA DISPONÍVEL NESTE TRECHO DA ROTA.',{
-   fontSize:'13px',color:C.muted}).setOrigin(.5);
-  this.button(522,333,198,30,'◀ VOLTAR À ROTA',()=>this.scene.restart());
+  if(!homes.length){
+   const g=this.add.graphics().setDepth(3);nativeRect(g,272,110,340,120,0x081232,8,.75);
+   pixelIcon(this,{add:o=>o.setDepth(5)},'center',442,140,2);
+   this.uiLabel(442,180,'Nenhuma casa para visitar neste trecho',9,'#ffffff',[.5,.5]).setData('torre2-houses-empty',true);
+   this.uiLabel(442,198,'Siga a rota: novas casas aparecem nas próximas cidades.',7,MENU_UI.suave,[.5,.5]);
+  }
+  this.button(320,334,230,28,'◀ VOLTAR À ROTA',()=>this.scene.restart());
+ }
+ // Animated full-body PMD Idle sprite (the same art as in battle), facing
+ // the player. Loaded on demand and released when the scene shuts down.
+ pokemonIdleSprite(id,x,y,maxSize=88,depth=6){
+  const dex=portraitId({id});
+  const idle=this.registry.get('manifiesto')?.[dex]?.anims?.Idle;
+  if(!idle)return null;
+  const key='torre2-idle-'+dex,anim=key+'-front';
+  const owner=this.add.zone(x,y,1,1).setData('torre2-idle-sprite',id);
+  const show=()=>{
+   if(!owner.active||!this.textures.exists(key))return;
+   this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+   const n=Math.max(1,idle.durations?.length||1);
+   if(!this.anims.exists(anim))this.anims.create({key:anim,repeat:-1,
+    frames:Array.from({length:n},(_,i)=>({key,frame:i,duration:Math.round((idle.durations?.[i]||8)*1000/60)}))});
+   const s=Math.min(3,maxSize/Math.max(idle.fw,idle.fh));
+   this.add.sprite(x,y,key,0).setScale(s).setDepth(depth).play(anim)
+    .setData('torre2-idle-sprite-image',id);
+  };
+  if(this.textures.exists(key))show();
+  else{
+   this.load.once('filecomplete-spritesheet-'+key,show);
+   this.load.spritesheet(key,'assets/pmd/'+idle.file,{frameWidth:idle.fw,frameHeight:idle.fh});
+   if(!this.load.isLoading())this.load.start();
+   this.events.once('shutdown',()=>{if(this.anims.exists(anim))this.anims.remove(anim);
+    if(this.textures.exists(key))this.textures.remove(key)});
+  }
+  return owner;
+ }
+ // Original FireRed overworld NPC, loaded on demand (front frame).
+ npcSprite(id,x,y,scale=2.4,depth=6){
+  const key='frlg-npc-'+id;
+  const owner=this.add.zone(x,y,1,1);
+  const show=()=>{
+   if(!owner.active||!this.textures.exists(key))return;
+   const t=this.textures.get(key),src=t.getSourceImage();
+   const cell=src.height===32&&src.width===320?32:16;
+   if(!t.has('torre2-front-'+cell))t.add('torre2-front-'+cell,0,0,0,cell,32);
+   t.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   this.add.image(x,y,key,'torre2-front-'+cell).setOrigin(.5,1).setScale(scale).setDepth(depth)
+    .setData('torre2-npc-sprite',id);
+  };
+  if(this.textures.exists(key))show();
+  else{this.load.once('filecomplete-image-'+key,show);
+   this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
+   if(!this.load.isLoading())this.load.start();}
+  return owner;
  }
  gymScreen(state){
   const limit=TRAINERS_PER_GYM(state.stage);
   const remaining=Math.max(0,limit-state.trainer);
   const ready=!state.champion&&remaining===0;
+  const spec=STAGES[state.stage]||{};
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(38,88,564,196,0xb49c61);
-  text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
-   ...titleStyle,fontSize:'22px'}).setOrigin(.5);
-  text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
-   'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
-    fontSize:'15px',color:ready?'#a9f4bd':'#f5dda0'
-   }).setOrigin(.5);
-  text(this,320,162,ready?'VOCÊ PODE ENTRAR AGORA.':
-   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
-    fontSize:'12px',color:C.white
-   }).setOrigin(.5);
-  this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
+  this.screenBanner(20,300,state.stage<8?'Desafio do ginásio':'Desafio da Liga','badges');
+  this.uiSection(8,40,624,262);
+  // Left: the gym itself, with the leader and the leader's main Pokémon.
+  const stageLayer={add:o=>o.setDepth?.(2)};
+  const room=gymInterior(this,stageLayer,18,50,330,206,state.stage,0);
+  if(!room)ownerArt(this,stageLayer,'city-'+(state.stage>=8?'indigo':String(spec.city||'').toLowerCase()),18,50,330,206);
+  const frame=this.add.graphics().setDepth(3);
+  nativeAro(frame,17,49,332,208,ready?MENU_UI.oro:MENU_UI.panelBorde,6);
+  // Floor shadow so both figures stand on the same ground line.
+  frame.fillStyle(0x000000,.28).fillEllipse(140,236,60,12).fillEllipse(236,236,84,14);
+  const leaderKind=leaderSpriteKind(state.stage);
+  this.npcSprite(spriteIdForTrainer(leaderKind),140,238,3.4,5);
+  const ace=spec.boss||spec.leaderTeam?.at(-1);
+  if(ace)this.pokemonIdleSprite(ace,236,206,92,5);
+  // Right: who you face, the main Pokémon, the full team and the progress.
+  const R=360;
+  this.uiLabel(R,64,spec.leader||'Líder',14,MENU_UI.amarillo);
+  this.uiLabel(R,84,state.stage<8?'Líder do ginásio de '+(spec.city||'Kanto'):'Liga Pokémon · Planalto Índigo',8,MENU_UI.suave);
+  if(spec.type){const tg=this.add.graphics().setDepth(5);pastillaTipo(tg,R,94,spec.type,62,13);
+   this.uiLabel(R+31,101,spec.type[0]+spec.type.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],7);}
+  if(ace){
+   const lv=spec.leaderLevels?.at(-1);
+   const g=this.add.graphics().setDepth(4);nativeRect(g,R-4,118,266,36,0x081436,6,.85);
+   this.uiLabel(R+4,129,'Pokémon principal',7,MENU_UI.tenue);
+   const nice=String(ace).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+   this.uiLabel(R+4,143,nice+(lv?' · Nv '+lv:''),10,'#ffffff');
+  }
+  const team=spec.leaderTeam||[];
+  if(team.length){
+   this.uiLabel(R,168,'Equipe do líder',7,MENU_UI.tenue);
+   const tg=this.add.graphics().setDepth(4);
+   team.slice(0,6).forEach((id,i)=>{
+    const x=R+i*44,y=178;
+    nativeRect(tg,x,y,38,38,id===ace?MENU_UI.oro:MENU_UI.panelBorde,6);
+    nativeRect(tg,x+2,y+2,34,34,0x0a1a46,5);
+    const dex=portraitId({id}),key='torre2-portrait-'+dex;
+    requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
+     if(!tg.active)return;this.add.image(x+19,y+19,key).setDisplaySize(32,32).setDepth(6);
+    });
+    const lv=spec.leaderLevels?.[i];
+    if(lv)this.uiLabel(x+19,y+44,'Nv '+lv,6,MENU_UI.suave,[.5,.5]);
+   });
+  }
+  // Route progress towards the leader.
+  const done=Math.min(limit,state.trainer||0);
+  this.uiLabel(R,240,'Treinadores vencidos',7,MENU_UI.tenue);
+  this.uiLabel(R+262,240,done+' / '+limit,8,MENU_UI.amarillo,[1,.5]);
+  const bar=this.add.graphics().setDepth(4);
+  nativeRect(bar,R,248,262,8,MENU_UI.contorno,3);nativeRect(bar,R+1,249,260,6,MENU_UI.apagado,2);
+  if(done>0)nativeRect(bar,R+1,249,Math.max(4,Math.round(260*done/Math.max(1,limit))),6,MENU_UI.oro,2);
+  this.uiLabel(R+131,270,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+   'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',8,ready?'#9ff0bf':'#ffd47a',[.5,.5]);
+  this.uiLabel(R+131,286,ready?'VOCÊ PODE ENTRAR AGORA.':
+   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',7,'#ffffff',[.5,.5]);
+  this.button(452,330,330,32,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
    if(ready)this.enterBattle(state);
    else {this.__torre2CityRoute=true;this.scene.restart();}
-  },ready,13);
-  this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  },ready,11);
+  this.button(130,330,220,30,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  card(x,y,w,h,accent=0x4b789b){
   // Native marco "panel" card (base client look). The returned rectangle is
@@ -567,35 +671,40 @@ create(){
   }
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(0x060f21);
+  this.backdrop();
   const g=this.add.graphics().setDepth(1);
-  g.fillStyle(0x061426).fillRect(0,0,640,360);
-  g.fillStyle(0x112d40).fillRoundedRect(18,18,604,320,10);
-  g.lineStyle(3,0xe4bd64,1).strokeRoundedRect(18,18,604,320,10);
-  g.fillStyle(0x26475c,.95).fillRoundedRect(32,29,576,45,6);
-  g.lineStyle(1,0xffe9a3).strokeRoundedRect(32,29,576,45,6);
-  const center=(x,y,label,size=12,color=C.white)=>{
-   const t=text(this,x,y,label,{fontSize:size+'px',fontStyle:'bold',
-    color,stroke:'#081521',strokeThickness:3});
-   t.setOrigin(.5).setDepth(7);return t;
-  };
+  // Native gold-framed panel and title band (same kit as the campaign).
+  nativeMarco(g,18,18,604,320,'panel',{borde:MENU_UI.oro});
+  nativeAro(g,16,16,608,324,MENU_UI.oro,10,.6);
+  nativeRect(g,32,29,576,45,0x2a3f78,7,.95);
+  const center=(x,y,label,size=12,color=C.white)=>
+   this.uiLabel(x,y,label,Math.max(7,Math.round(size*.8)),color,[.5,.5],7);
   center(320,45,'★ SALÃO DA FAMA ★',21,'#ffdf94');
   center(320,65,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
+  // The champion: the player's own FireRed character (Red or Leaf) and name.
+  let champion=null;try{champion=localStorage.getItem('torre2-trainer-name')}catch{}
+  this.npcSprite(playerSpriteId(),62,84,2.2,8);
+  this.npcSprite(playerSpriteId(),578,84,2.2,8);
+  if(champion)center(320,104,champion,12,MENU_UI.amarillo).setData('torre2-hall-champion',champion);
   const badges=hall.badgeCount+'/8 INSÍGNIAS';
   const honors=hall.honorCount+'/5 LIGA';
-  center(320,89,badges+'  ·  '+honors+'  ·  '+hall.wins+' VITÓRIAS',
+  center(320,champion?120:89,badges+'  ·  '+honors+'  ·  '+hall.wins+' VITÓRIAS',
    10,hall.complete?'#b2ffcb':'#ffdfa0');
   // Canonical captured PMD portraits already loaded by Campanha.preload.
   // Entire champion party, capped at six, remains shown at their actual level.
   hall.team.forEach((member,i)=>{
    const col=i%3,row=Math.floor(i/3);
-   const x=123+col*197,y=138+row*78;
-   g.fillStyle(0x1a3449).fillRoundedRect(x-89,y-27,178,68,5);
-   g.lineStyle(1,0x719dbe).strokeRoundedRect(x-89,y-27,178,68,5);
-   g.fillStyle(0x1d5b49,.86).fillRoundedRect(x-80,y-19,58,51,4);
-   this.drawPortrait(member,x-51,y+6,44,5);
+   const x=123+col*197,y=158+row*70;
+   const info=this.memberInfo(member);
+   nativeRect(g,x-89,y-27,178,62,MENU_UI.oroBorde,7);
+   nativeRect(g,x-87,y-25,174,58,0x0f2352,6);
+   g.fillStyle(MENU_UI.oroLuz,.16).fillCircle(x-58,y+4,27);
+   this.portraitFrame(g,member,x-81,y-19,46,info.types);
    const name=member.id.replace(/-/g,' ').toUpperCase().slice(0,16);
    center(x+24,y-10,name,10,'#f6eed1');
-   center(x+24,y+13,'NÍVEL '+member.level,10,'#c1e6f3');
+   center(x+24,y+6,'NÍVEL '+member.level,10,'#c1e6f3');
+   info.types.slice(0,2).forEach((t,k)=>{const px=x-8+k*50;pastillaTipo(g,px,y+16,t,46,11);
+    this.uiLabel(px+23,y+22,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
   });
   if(!hall.team.length)center(320,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
   center(320,301,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
@@ -999,6 +1108,12 @@ create(){
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  // VS Seeker on every previously cleared Kanto map without changing progress.
+ seekerBattery(x,y,charge){
+  const g=this.add.graphics().setDepth(5);
+  nativeRect(g,x,y,62,16,MENU_UI.contorno,4);nativeRect(g,x+62,y+4,4,8,MENU_UI.contorno,2);
+  for(let i=0;i<3;i++)nativeRect(g,x+3+i*19,y+3,17,10,i<charge?0x50cc84:0x0a1638,2);
+  return g;
+ }
  rematchAtlasScreen(state,mapStage=Math.min(state.stage,8),page=0){
   const eligible=Array.from({length:9},(_,stage)=>({
    stage,name:STAGES[stage]?.city||'KANTO',
@@ -1010,43 +1125,75 @@ create(){
   const maxPage=Math.max(0,Math.ceil(trainers.length/6)-1);
   page=Math.max(0,Math.min(maxPage,page));
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(12,66,616,230,0x569bb3);
-  text(this,320,23,'VS SEEKER · REVANCHES DE KANTO',{
-   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
-  text(this,320,47,'MAPAS CONCLUÍDOS · CARGA '+(state.rematches?.charge||0)+'/3 · SEM NOVAS INSÍGNIAS',{
-   fontSize:'10px',color:C.muted}).setOrigin(.5);
+  this.screenBanner(20,300,'VS Seeker · Revanches','seeker');
+  const charge=state.rematches?.charge||0;
+  this.uiLabel(250,46,'Carga do VS Seeker',8,MENU_UI.suave,[1,.5]);
+  this.seekerBattery(258,38,charge);
+  this.uiLabel(334,46,charge+'/3 · revanches não dão insígnias',7,MENU_UI.tenue,[0,.5]);
+  // Left: cities that already have rematches, with the owner's city art.
+  this.uiSection(8,56,206,246);
+  this.uiLabel(111,70,'Cidades',9,MENU_UI.amarillo,[.5,.5]);
+  const tiles=this.add.graphics().setDepth(3);
   eligible.forEach((entry,i)=>{
-   const x=112+(i%3)*207,y=81+Math.floor(i/3)*29;
-   this.button(x,y,194,25,entry.name.toUpperCase().slice(0,19),()=>
-    this.rematchAtlasScreen(state,entry.stage,0),true)
-    .setData('torre2-rematch-map',entry.stage);
+   const x=16+(i%3)*64,y=80+Math.floor(i/3)*70,on=entry.stage===mapStage;
+   nativeRect(tiles,x,y,60,64,on?MENU_UI.oro:MENU_UI.panelBorde,6);
+   nativeRect(tiles,x+2,y+2,56,60,on?0x2a3f78:0x0a1a46,5);
+   ownerArt(this,{add:o=>o.setDepth?.(4)},'city-'+(entry.stage>=8?'indigo':String(entry.name).toLowerCase()),x+4,y+4,52,40);
+   estrechar(this.uiLabel(x+30,y+53,entry.name,7,on?MENU_UI.amarillo:'#ffffff',[.5,.5]),54);
+   this.add.zone(x+30,y+32,60,64).setDepth(8).setInteractive({useHandCursor:true})
+    .setData('torre2-rematch-map',entry.stage)
+    .on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();this.rematchAtlasScreen(state,entry.stage,0)});
   });
-  text(this,320,168,(current?.name||'KANTO').toUpperCase()+
-   ' · TREINADORES '+trainers.length+' · PÁGINA '+(page+1)+'/'+(maxPage+1),{
-    fontSize:'11px',color:C.gold}).setOrigin(.5);
+  // Right: the trainers of the selected city, as cards with FireRed sprites.
+  this.uiSection(220,56,412,246);
+  this.uiLabel(234,70,(current?.name||'Kanto')+' · '+trainers.length+' treinadores',9,MENU_UI.amarillo);
+  if(maxPage>0)this.uiLabel(618,70,'Página '+(page+1)+'/'+(maxPage+1),7,MENU_UI.tenue,[1,.5]);
+  const cards=this.add.graphics().setDepth(3);
   trainers.slice(page*6,page*6+6).forEach((index,i)=>{
-   const x=165+(i%2)*315,y=203+Math.floor(i/2)*31;
+   const x=230+(i%2)*198,y=82+Math.floor(i/2)*70;
    const foe=rematchOpponent(state,index,mapStage);
-   this.button(x,y,295,27,'#'+(index+1)+' · '+foe.name.toUpperCase()+' Nv.'+foe.level,
-    ()=>this.rematchScreen(state,index,mapStage),true)
-    .setData('torre2-rematch-trainer',mapStage+':'+index);
+   nativeRect(cards,x,y,192,64,MENU_UI.panelBorde,6);nativeRect(cards,x+2,y+2,188,60,0x0a1a46,5);
+   nativeRect(cards,x+5,y+5,40,54,0x1d3c7a,5,.7);
+   this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),x+25,y+58,1.6,5);
+   estrechar(this.uiLabel(x+52,y+16,'#'+(index+1)+' · '+foe.name,8,'#ffffff'),132);
+   this.uiLabel(x+52,y+31,'Nv '+foe.level,8,MENU_UI.suave);
+   const dex=portraitId({id:foe.id}),key='torre2-portrait-'+dex;
+   nativeRect(cards,x+152,y+24,32,32,TIPOS[(()=>{try{return buscar(foe.id).def.tipos[0]}catch{return ''}})()]??0x5f86bd,5,.55);
+   requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
+    if(!cards.active)return;this.add.image(x+168,y+40,key).setDisplaySize(28,28).setDepth(6);
+   });
+   this.uiLabel(x+52,y+48,'Disponível',7,'#9ff0bf');
+   this.add.zone(x+96,y+32,192,64).setDepth(8).setInteractive({useHandCursor:true})
+    .setData('torre2-rematch-trainer',mapStage+':'+index)
+    .on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();this.rematchScreen(state,index,mapStage)});
   });
-  if(page>0)this.button(70,320,100,29,'◀ ANTERIOR',()=>
+  if(page>0)this.button(300,322,110,26,'◀ ANTERIOR',()=>
    this.rematchAtlasScreen(state,mapStage,page-1));
-  if(page<maxPage)this.button(570,320,105,29,'PRÓXIMA ▶',()=>
+  if(page<maxPage)this.button(560,322,110,26,'PRÓXIMA ▶',()=>
    this.rematchAtlasScreen(state,mapStage,page+1));
-  this.button(320,320,170,30,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.button(110,322,190,28,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
   this.__torre2RematchAtlas={mapStage,page,count:trainers.length,maps:eligible.map(m=>m.stage)};
  }
  rematchScreen(state,index,mapStage=state.stage){
   const foe=rematchOpponent(state,index,mapStage);if(!foe)return;
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(40,84,560,200,0xbca16e);
-  text(this,320,60,'REVANCHE · '+foe.name.toUpperCase(),titleStyle).setOrigin(.5);
-  text(this,320,110,'MAPA '+(STAGES[mapStage]?.city||'KANTO').toUpperCase()+
-   ' · EQUIPE Nv.'+foe.level+' · VS '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
-  text(this,320,151,'Recarrega ao vencer 3 outras batalhas.',statusStyle).setOrigin(.5);
-  text(this,320,178,'Não concede insígnias, TMs ou progresso da história.',statusStyle).setOrigin(.5);
+  this.screenBanner(20,300,'REVANCHE · '+foe.name,'seeker');
+  this.uiSection(8,40,624,170);
+  // The trainer and their Pokémon on the route, as in the gym challenge.
+  const city=mapStage>=8?'indigo':String(STAGES[mapStage]?.city||'').toLowerCase();
+  ownerArt(this,{add:o=>o.setDepth?.(2)},'city-'+city,18,50,290,150);
+  const fr=this.add.graphics().setDepth(3);nativeAro(fr,17,49,292,152,MENU_UI.panelBorde,6);
+  fr.fillStyle(0x000000,.28).fillEllipse(110,190,50,10).fillEllipse(210,190,70,12);
+  this.npcSprite(spriteIdForTrainer(trainerSpriteKind(mapStage,index)),110,192,3,5);
+  this.pokemonIdleSprite(foe.id,210,160,110,5);
+  const R=328;
+  this.uiLabel(R,64,foe.name,13,MENU_UI.amarillo);
+  this.uiLabel(R,84,'Mapa de '+(STAGES[mapStage]?.city||'Kanto')+' · equipe Nv '+foe.level,8,MENU_UI.suave);
+  this.uiLabel(R,108,'VS Seeker',8,'#ffffff');
+  this.seekerBattery(R+62,100,state.rematches?.charge||0);
+  this.uiLabel(R+134,108,(state.rematches?.charge||0)+'/3',8,MENU_UI.amarillo);
+  this.uiLabel(R,134,'Recarrega ao vencer 3 outras batalhas.',7,MENU_UI.tenue);
+  this.uiLabel(R,150,'Não concede insígnias, TMs ou progresso da história.',7,MENU_UI.tenue);
   // One durable ticket per fight: an interrupted rematch may be resumed
   // explicitly after reload without buying a second VS Seeker charge.
   // Keep the existing REVANCHE button's denial for insufficient charge.
@@ -1072,7 +1219,7 @@ create(){
   this.button(320,235,240,40,'REVANCHE',()=>{
    const result=startRematch(state,index,mapStage);
    if(!result.ok){
-    text(this,320,265,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);
+    text(this,320,262,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5).setDepth(9);
     return;
    }
    launchReserved(result);
@@ -1239,65 +1386,69 @@ create(){
   // precisely the same map, sprites, and panel state without a scene restart.
   if(this.__torre2GrassOverlay?.active)return;
   const start=this.children.list.length;
-  const wideOffset=0;
-  const shade=this.add.rectangle(320+wideOffset,180,
-   640+wideOffset*2,360,0x020c17,.90).setDepth(610);
+  const shade=this.add.rectangle(320,180,640,360,0x020c17,.90).setDepth(610);
   this.__torre2GrassOverlay=shade;
-  this.add.zone(320+wideOffset,180,640+wideOffset*2,360)
-   .setDepth(611).setInteractive();
-  this.add.rectangle(320+wideOffset,179,598,295,0x10283c)
-   .setStrokeStyle(2,0xf0ce87).setDepth(612);
-  const msg=(x,y,value,style={})=>text(this,x+wideOffset,y,value,style)
-   .setDepth(620).setOrigin(.5);
+  this.add.zone(320,180,640,360).setDepth(611).setInteractive();
+  const panel=this.add.graphics().setDepth(612);
+  nativeMarco(panel,22,16,596,328,'panel',{borde:MENU_UI.panelLuz});
   const close=()=>{
    const list=this.children.list.slice(start);
    list.forEach(obj=>obj.active&&obj.destroy());
    this.__torre2GrassOverlay=null;
   };
-  const modalButton=(x,y,w,h,label,callback,gold=false)=>{
+  const label=(x,y,value,size=9,color='#ffffff',origin=[.5,.5])=>this.uiLabel(x,y,value,size,color,origin,620);
+  const modalButton=(x,y,w,h,caption,callback,gold=false,icon=null)=>{
    const g=this.add.graphics().setDepth(622);
-   buttonFrame(g,x+wideOffset-w/2,y-h/2,w,h,gold?'gold':'blue',false);
-   msg(x,y,label,{fontSize:'12px',fontStyle:'bold',
-    color:gold?'#302510':'#fff6e4'}).setDepth(623);
-   return this.add.zone(x+wideOffset,y,w,h).setDepth(630)
+   nativeMarco(g,Math.round(x-w/2),Math.round(y-h/2),w,h,gold?'oro':'azul');
+   if(icon)originalBallSprite(this,x-w/2+20,y,icon,18,624);
+   textoMenu(this,x+(icon?10:0),y,caption,{tam:10,borde:gold?0:3,colorBorde:MENU_UI.bordeTexto,
+    color:gold?MENU_UI.textoOscuro:'#ffffff'}).setOrigin(.5).setDepth(623);
+   return this.add.zone(x,y,w,h).setDepth(630)
     .setInteractive({useHandCursor:true}).on('pointerdown',callback);
   };
   const area=wildAvailability(state.stage);
-  msg(320,57,'GRAMA ALTA · '+area.label,{...titleStyle,fontSize:'18px'});
-  msg(320,88,area.area.toUpperCase(),{fontSize:'13px',color:C.gold});
-  msg(320,111,'ENCONTROS REGIONAIS (FIRE RED)',{
-   fontSize:'11px',color:C.blue});
+  // Landscape header from the owner's journey art (top strip: forest/town).
+  ownerArt(this,{add:o=>o.setDepth?.(613)},'journey-bg',32,26,576,84,null,.5,0);
+  const head=this.add.graphics().setDepth(614);
+  nativeAro(head,31,25,578,86,MENU_UI.panelBorde,6);
+  head.fillStyle(0x061433,.55).fillRect(32,80,576,30);
+  label(320,48,'Grama alta · '+area.label,15,MENU_UI.amarillo);
+  label(320,94,area.area+'  ·  Encontros regionais (FireRed)',8,'#ffffff');
   // Green means genuinely caught (Pokédex), never merely available in grass.
   const caught=new Set(state.dexCaught||[]);
+  const cards=this.add.graphics().setDepth(616);
   [...new Set(area.wild)].slice(0,12).forEach((id,i)=>{
-   const x=111+(i%4)*142,y=148+Math.floor(i/4)*29;
-   const owned=caught.has(id);
-   const available=area.available.includes(id);
-   this.add.rectangle(x+wideOffset,y,132,25,owned?0x24553f:0x223345)
-    .setStrokeStyle(1,owned?0x7dd597:0x5d91b4).setDepth(617);
+   const x=40+(i%4)*141,y=120+Math.floor(i/4)*46;
+   const owned=caught.has(id),available=area.available.includes(id);
+   let types=[];try{const {def,etapa}=buscar(id);types=(etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{}
+   nativeRect(cards,x,y,136,42,owned?0x50cc84:available?MENU_UI.panelBorde:MENU_UI.apagadoBorde,6);
+   nativeRect(cards,x+1,y+1,134,40,available?0x0a1a46:0x081232,5);
+   nativeRect(cards,x+4,y+4,34,34,TIPOS[types[0]]??0x5f86bd,5,available?.55:.3);
    const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
    if(key&&this.textures.exists(key)){
     // Original PMD pixel portrait, with no silhouette substitution or VFX.
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    this.add.image(x-49+wideOffset,y,key).setDisplaySize(22,22)
+    this.add.image(x+21,y+21,key).setDisplaySize(30,30).setAlpha(available?1:.55)
      .setDepth(619).setData('torre2-grass-sprite',id);
    }
-   msg(x+11,y,id.toUpperCase()+(available?'':' · FUTURO'),{
-    fontSize:available?'9px':'8px',
-    color:owned?'#d7ffda':available?'#f5f3e8':'#8ca9bb'})
+   const nice=id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+   estrechar(this.uiLabel(x+44,y+13,nice,8,owned?'#d7ffda':available?'#ffffff':MENU_UI.tenue,[0,.5],620),72)
     .setData('torre2-grass-name',id);
+   if(owned)originalBallSprite(this,x+126,y+11,'pokeball',11,621);
+   if(available)types.slice(0,2).forEach((t,k)=>{pastillaTipo(cards,x+44+k*44,y+24,t,41,11);
+    this.uiLabel(x+64+k*44,y+30,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],620)});
+   else this.uiLabel(x+44,y+30,'Aparece mais tarde',7,MENU_UI.apagadoTexto,[0,.5],620);
   });
-  msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
-   {fontSize:'11px',color:C.gold});
-  modalButton(174,292,224,31,'◀ VOLTAR AO MAPA',close);
-  modalButton(465,292,224,31,'PROCURAR POKÉMON',()=>{
+  label(320,268,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
+  modalButton(176,306,224,32,'◀ VOLTAR AO MAPA',close);
+  modalButton(464,306,224,32,'PROCURAR POKÉMON',()=>{
    let found;
    try{found=startWildEncounter(state);}
    catch(error){
     console.warn('Torre 2: wild encounter not saved',error);
     const notice=text(this,320,266,'ENCONTRO NÃO SALVO · TENTE NOVAMENTE',{
      fontSize:'11px',color:'#ff9d9d'
-    }).setOrigin(.5).setDepth(620).setData('torre2-wild-save-error',true);
+    }).setOrigin(.5).setDepth(625).setData('torre2-wild-save-error',true);
     this.time.delayedCall(2300,()=>notice.active&&notice.destroy());
     return;
    }
@@ -1308,7 +1459,7 @@ create(){
      fontSize:'11px',color:C.gold}).setOrigin(.5).setDepth(620);
     this.time.delayedCall(1600,()=>toast.active&&toast.destroy());
    }
-  },true);
+  },true,'pokeball');
  }
  // Pokémon Center: the city's real FireRed Center interior, the live team
  // with HP/status, and the native gold heal action. Heal/PC logic unchanged.
@@ -1516,7 +1667,9 @@ create(){
  }
  memberInfo(member){
   let types=[],name=member.id;
-  try{const s=pokemonStats(member);types=s.types||[];name=s.name||name}catch{}
+  try{const s=pokemonStats(member);types=s.types||[];name=s.name||name}
+  catch{try{const {def,etapa}=buscar(member.id);const st=etapa>0?def.evoluciones?.[etapa-1]:def;
+   types=st?.tipos||def.tipos||[];name=st?.nombre||def.nombre||name}catch{}}
   const hp=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
   const status=statusLabel({est:{[member.status?.kind]:true}});
   const condition=hp===0?'Desmaiado':status||(member.confusion?'Confusão':'Pronto');
@@ -2275,7 +2428,10 @@ create(){
    requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{
     if(!g.active)return;
     const img=this.add.image(x+19,y+19,key).setDisplaySize(28,28).setDepth(4);
-    if(!row.seen)img.setTintFill(0x2a4384).setAlpha(.9);
+    // PMD portraits are opaque squares: a flat tint becomes a blank box,
+    // so unseen species are a darkened portrait with a "?" mark.
+    if(!row.seen){img.setTint(0x1b2852).setAlpha(.85);
+     this.uiLabel(x+19,y+19,'?',14,'#9fb4e6',[.5,.5],5);}
    });
    const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':'';
    estrechar(this.uiLabel(x+39,y+12,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,8,
