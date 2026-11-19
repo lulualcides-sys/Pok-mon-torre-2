@@ -1,0 +1,25 @@
+{
+ "pack": "Bite Sized RPG Tunes",
+ "author": "Guy G. Gamerson",
+ "license": "CC0 1.0 (domínio público)",
+ "source": "https://opengameart.org/content/bite-sized-rpg-tunes",
+ "also": "https://tr-y.itch.io/bite-sized-rpg-tunes",
+ "archive_sha256": "5e1d6119248fc2ec40f6142e13a925a1a4a98cadbfa13baeb3aae461c000f351",
+ "tracks": {
+  "town": "05 - Town",
+  "route": "02 - Exploration",
+  "victory": "04 - Victory",
+  "hall": "09 - End"
+ },
+ "note": "Crédito não exigido; dado por cortesia em CREDITOS-E-LICENCAS.md.",
+ "files": {
+  "town.ogg": "9da934a89b81bf59c71f54a9bf130dd582bc34bd4b483c3629f0af22356986a7",
+  "town.mp3": "a776bce56c125cddc5688e0b75dd4b300ec4679d5e667f3c146ca89b2dd81120",
+  "route.ogg": "3719f5dcc7810c37bc246e580387fdb513210920659edbfede0368ade1affde4",
+  "route.mp3": "fac7b921093f9addfb0993d9e0d7db88c290c650f83fb3636dc7da5b3deba963",
+  "victory.ogg": "171e14731df4cb8f5812c39e729d0c5289c42c08b99dcb7e7cb5b11cd0e79288",
+  "victory.mp3": "e8df5783ddfdc7bfa55f19657b16cd6f1794e337624e1fcaa4886fdf9608711f",
+  "hall.ogg": "231e5e18476cbb7f6a74cd02178f83e0a0ae949040aa163730f9e2316af7bcf6",
+  "hall.mp3": "b28121ead40c2fda07860e617fc4d6243cf44485924c5faec4524d659e33fedd"
+ }
+}

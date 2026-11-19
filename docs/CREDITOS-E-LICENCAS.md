@@ -29,3 +29,8 @@ O repositório do Pokémon Torre 2 está atualmente público: a captura original
 ### Insígnias de Kanto — Trainer Card FRLG
 Folha original: https://github.com/pret/pokefirered/blob/master/graphics/trainer_card/badges.png.
 Arte Nintendo/Game Freak/Creatures, sem alegação de licença MIT/CC0. Proveniência e hash em `reference-assets/kanto/ui/badges/README.md`. Build preserva pixels, adicionando transparência do índice zero; Phaser distingue conquistadas/bloqueadas por tint.
+
+### Música da campanha — "Bite Sized RPG Tunes"
+Autor: Guy G. Gamerson. Licença: **CC0 1.0** (domínio público; o autor dispensa crédito, citado aqui por cortesia).
+Fonte: https://opengameart.org/content/bite-sized-rpg-tunes (também em https://tr-y.itch.io/bite-sized-rpg-tunes).
+Faixas usadas: Town (painel da campanha), Exploration (grama alta), Victory (cena de evolução) e End (Salão da Fama). Arquivos, SHA-256 e o hash do pacote original estão em `tools/pokearena/campaign-music/PROVENANCE.json`. A música toca só na campanha; a arena e os sons nativos do cliente-base não mudam.
