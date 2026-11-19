@@ -8,7 +8,7 @@ import {WEATHER_NAMES} from './weather.js';
  * No login, network API or online match dependency.
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
-import {UI as MENU_UI} from '../ui.js';
+import {UI as MENU_UI,marco as nativeMarco,aro as nativeAro,rectRedondo as nativeRect,fondoMenu as nativeBackground} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
@@ -31,11 +31,11 @@ import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,AVAILABLE_OAK_INTRO} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
-import {renderInteriorScene} from './frlg-interiors.js';
+import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab} from './trainer-cards.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -304,31 +304,15 @@ create(){
    g.clear();
    const left=Math.round(x-w/2),top=Math.round(y-h/2);
    const down=pressed?1:0;
-   // Preserve the approved native pixel frame, add a crisp GBA-style
-   // engraved strip and a subtle inset only on noncombat menu buttons.
-   buttonFrame(g,left,top+down,w,h,tone,hovered&&!pressed);
-   if(w>=88&&h>=24){
-    const light=tone==='gold'?0xfff1a4:tone==='green'?0xc7ffe0:0xa4dfff;
-    const rim=tone==='gold'?0x966321:tone==='green'?0x115d47:0x153d79;
-    const markerX=isBack?left+w-12:left+9;
-    g.fillStyle(rim,.95).fillRect(markerX-2,top+down+7,6,h-14);
-    g.fillStyle(light,.96).fillRect(markerX,top+down+8,2,h-16);
-    g.fillStyle(light,hovered?1:.68)
-     .fillRect(left+12,top+down+5,Math.max(1,w-24),1);
-    g.fillStyle(rim,.85)
-     .fillRect(left+12,top+down+h-7,Math.max(1,w-24),1);
-    if(emphasis&&h>=30){
-     g.fillStyle(light,.9).fillRect(left+w-16,top+down+8,5,2);
-     g.fillRect(left+w-14,top+down+10,2,3);
-    }
-   }
-   if(pressed){
-    g.fillStyle(0x06121f,.19)
-     .fillRect(left+4,top+down+5,Math.max(1,w-8),Math.max(1,h-10));
-   }
+   // Native Poké Arena 2D button (same marco as the base client menus):
+   // gold = main action, blue = secondary, green-edged panel = confirm.
+   if(tone==='green')nativeMarco(g,left,top+down,w,h,'panel',{borde:0x50cc84});
+   else nativeMarco(g,left,top+down,w,h,tone==='gold'?'oro':'azul');
+   if(hovered&&!pressed)nativeAro(g,left-2,top+down-2,w+4,h+4,MENU_UI.anillo,6,.75);
+   if(pressed)nativeRect(g,left+2,top+down+2,w-4,h-4,0x06121f,4,.18);
    caption.setY(y+down);
-   caption.setColor(tone==='gold'?'#2e291b':hovered?'#fff5cd':'#f9fdff');
-   caption.setStroke(tone==='gold'?'#fff1ac':'#091629',tone==='gold'?0:3);
+   caption.setColor(tone==='gold'?MENU_UI.textoOscuro:hovered?'#fff5cd':'#ffffff');
+   caption.setStroke(tone==='gold'?MENU_UI.oroLuz:MENU_UI.bordeTexto,tone==='gold'?0:3);
   };
   const zone=this.add.zone(x,y,w,Math.max(h,27)).setDepth(8)
    .setInteractive({useHandCursor:true})
@@ -441,22 +425,15 @@ create(){
   text(this,ANCHO/2,294,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',statusStyle).setOrigin(.5);
  }
  backdrop(){
-  richBackdrop(this);
+  // Native checkered menu background of the base client.
+  nativeBackground(this);
  }
  // Shared noncombat pixel frame. Deliberately inert graphics: input zones,
  // text, saves and battle scenes retain the exact native behavior.
  uiSection(x,y,w,h,accent=0x5ba5c9){
+  // Native marco "panel" (League/Gyms look); accent kept for callers.
   const g=this.add.graphics().setDepth(0);
-  g.fillStyle(0x020a15,.72).fillRect(x+3,y+4,w,h);
-  g.fillStyle(accent,.8).fillRect(x,y,w,h);
-  g.fillStyle(0x0d2943,.97).fillRect(x+2,y+2,w-4,h-4);
-  g.fillStyle(0x163b59,.8).fillRect(x+4,y+4,w-8,h-8);
-  g.fillStyle(accent,.95).fillRect(x+7,y+5,w-14,2);
-  g.fillStyle(0x051527,.9).fillRect(x+7,y+h-8,w-14,3);
-  for(const cx of [x+4,x+w-8]){
-   g.fillStyle(0xd4eff7,.75).fillRect(cx,y+4,4,3);
-   g.fillStyle(0x0b2034).fillRect(cx+1,y+h-7,3,3);
-  }
+  nativeMarco(g,x,y,w,h,'panel',{alfa:.94});
   return g;
  }
  mapScreen(state){
@@ -550,18 +527,12 @@ create(){
   this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  card(x,y,w,h,accent=0x4b789b){
-  const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98)
-   .setStrokeStyle(1,accent);
-  // Pixel frame and corner fittings only. Existing card contents and
-  // controls continue to use their approved geometry and handlers.
-  const g=this.add.graphics().setDepth(1);
-  g.fillStyle(0x071526,.95).fillRect(x+3,y+h-7,w-6,3);
-  g.fillStyle(accent,.83).fillRect(x+5,y+4,w-10,2);
-  g.fillStyle(accent,.8).fillRect(x+3,y+7,3,h-14);
-  for(const cx of [x+3,x+w-8]){
-   g.fillStyle(0xd4edf3,.8).fillRect(cx,y+3,5,3);
-   g.fillStyle(accent,.7).fillRect(cx,y+h-6,5,3);
-  }
+  // Native marco "panel" card (base client look). The returned rectangle is
+  // an invisible anchor so callers keep their approved geometry/handlers.
+  const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,0);
+  const g=this.add.graphics().setDepth(0);
+  const warn=accent===0x6b5669;
+  nativeMarco(g,x,y,w,h,'panel',{alfa:.96,...(warn&&{borde:0x8a5a78})});
   return bg;
  }
  hallOfFameScreen(state){
@@ -1299,13 +1270,69 @@ create(){
    }
   },true);
  }
+ // Pokémon Center: the city's real FireRed Center interior, the live team
+ // with HP/status, and the native gold heal action. Heal/PC logic unchanged.
+ centerInterior(state,x,y,w,h){
+  const city=String(STAGES[state.stage]?.city||'').toLowerCase();
+  const loc=ROOM_CROPS[city]?.center?city:'viridian',rect=ROOM_CROPS[loc].center;
+  const key='frlg-location-'+loc,frame='torre2-center-'+loc;
+  const draw=()=>{
+   if(!this.scene.isActive()||!this.textures.exists(key))return;
+   const tex=this.textures.get(key);if(!tex.has(frame))tex.add(frame,0,...rect);
+   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   const k=Math.min(w/rect[2],h/rect[3]);
+   this.add.image(x+w/2,y+h/2,key,frame).setDisplaySize(Math.round(rect[2]*k),Math.round(rect[3]*k))
+    .setDepth(2).setData('torre2-center-interior',loc);
+  };
+  if(this.textures.exists(key))return draw();
+  this.load.once('filecomplete-image-'+key,draw);
+  this.load.image(key,'assets/ui/frlg/'+loc+'.png');
+  if(!this.load.isLoading())this.load.start();
+ }
  centerScreen(state){
   this.__torre2CenterBusy=false;
   this.children.removeAll(true);this.backdrop();
-  this.uiSection(44,79,552,240,0x50a3a4);
-  text(this,320,41,'CENTRO POKÉMON',{...titleStyle,fontSize:'24px'}).setOrigin(.5);
-  text(this,320,96,'CURAR TODA A EQUIPE · SEM CUSTO',{
-   fontSize:'16px',color:'#a4f6dc'}).setOrigin(.5);
+  text(this,320,20,'CENTRO POKÉMON',{...titleStyle,fontSize:'22px'}).setOrigin(.5);
+  // Left: the Center itself, with the nurse's welcome.
+  this.uiSection(14,40,300,262,0x50a3a4);
+  const frame=this.add.graphics().setDepth(1);
+  nativeRect(frame,24,50,280,176,0x081436,5);
+  this.centerInterior(state,26,52,276,172);
+  nativeAro(frame,23,49,282,178,MENU_UI.oro,6);
+  const city=STAGES[state.stage]?.city||'Kanto';
+  textoMenu(this,164,236,'Centro Pokémon de '+city,{tam:9,color:MENU_UI.amarillo,borde:3,
+   colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(.5).setDepth(5);
+  textoMenu(this,164,256,'Bem-vindo! Posso cuidar dos seus',{tam:8,color:'#ffffff',borde:3,
+   colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(.5).setDepth(5);
+  textoMenu(this,164,272,'Pokémon. É de graça!',{tam:8,color:'#ffffff',borde:3,
+   colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(.5).setDepth(5);
+  // Right: live team (portrait, level, HP bar and status).
+  this.uiSection(324,40,302,262,0x50a3a4);
+  textoMenu(this,338,58,'Sua equipe',{tam:10,color:'#ffffff',borde:3,colorBorde:MENU_UI.bordeTexto,literal:true})
+   .setOrigin(0,.5).setDepth(5);
+  const hurt=state.team.filter(m=>(Number(m.hp??100)<100)||m.status?.kind).length;
+  textoMenu(this,612,58,hurt?hurt+' precisa(m) de cura':'Todos saudáveis',{tam:8,
+   color:hurt?MENU_UI.amarillo:'#9ff0bf',borde:3,colorBorde:MENU_UI.bordeTexto,literal:true})
+   .setOrigin(1,.5).setDepth(5);
+  const rows=this.add.graphics().setDepth(3);
+  for(let i=0;i<6;i++){
+   const m=state.team[i],ry=72+i*37;
+   nativeRect(rows,334,ry,282,33,0x0a1a46,5,.75);
+   if(!m)continue;
+   this.drawPortrait(m,352,ry+16,26,5);
+   const hp=Math.max(0,Math.min(100,Number(m.hp??100)||0));
+   const status=statusLabel({est:{[m.status?.kind]:true}});
+   textoMenu(this,372,ry+9,m.id.replace(/-/g,' ').toUpperCase(),{tam:8,color:'#ffffff',borde:3,
+    colorBorde:MENU_UI.bordeTexto}).setOrigin(0,.5).setDepth(5);
+   textoMenu(this,606,ry+9,'NV '+(m.level??m.progression?.level??'?'),{tam:8,color:MENU_UI.suave,borde:3,
+    colorBorde:MENU_UI.bordeTexto}).setOrigin(1,.5).setDepth(5);
+   nativeRect(rows,372,ry+18,170,7,MENU_UI.contorno,3);
+   if(hp>0)rows.fillStyle(hp>50?0x50cc84:hp>20?0xf2c34b:0xe85050,1)
+    .fillRect(373,ry+19,Math.max(1,Math.round(168*hp/100)),5);
+   textoMenu(this,606,ry+22,hp<=0?'KO':status||Math.round(hp)+'%',{tam:8,
+    color:hp<=0?'#ff8f8f':status?'#ffd47a':'#d8e6ff',borde:3,colorBorde:MENU_UI.bordeTexto})
+    .setOrigin(1,.5).setDepth(5);
+  }
   const beginHeal=()=>{
    if(this.__torre2CenterBusy||!this.scene.isActive())return;
    this.__torre2CenterBusy=true;
@@ -1361,11 +1388,12 @@ create(){
     });
    });
   };
-  this.button(320,154,275,46,'CURAR POKÉMON',beginHeal,true)
+  this.button(475,330,300,38,'CURAR POKÉMON',beginHeal,true)
    .setData('torre2-center-heal',true);
-  this.button(320,219,275,40,'ABRIR PC',()=>this.pcScreen(state))
+  pixelIcon(this,{add:o=>o.setDepth(9)},'center',350,330,2);
+  this.button(244,330,144,32,'ABRIR PC',()=>this.pcScreen(state))
    .setData('torre2-center-pc',true);
-  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart())
+  this.button(88,330,148,32,'◀ VOLTAR',()=>this.scene.restart())
    .setData('torre2-center-back',true);
  }
  martScreen(state,page=0,errorText=''){

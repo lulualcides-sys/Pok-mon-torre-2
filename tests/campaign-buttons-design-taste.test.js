@@ -34,12 +34,15 @@ function harness(){
   on(name,handler){handlers.set(name,handler);return this}
  };
  const context={
-  MENU_UI:{bordeTexto:'#0b2033'},
+  MENU_UI:{bordeTexto:'#0b2033',anillo:0x8fd0ff,textoOscuro:'#0c1d44',oroLuz:'#fff2a0'},
   textoMenu(_scene,x,y,label){labels.push({x,y,label});return caption},
   estrechar(t,maxWidth){t.maxWidth=maxWidth;return t},
-  buttonFrame(_graphics,x,y,w,h,tone,hover){
-   painted.push({x,y,w,h,tone,hover});
+  // Native ui.js marco/aro: the frame and its hover ring (base client look).
+  nativeMarco(_graphics,x,y,w,h,estilo,opts={}){
+   painted.push({x,y,w,h,tone:estilo==='oro'?'gold':estilo==='azul'?'blue':'green',hover:false,estilo,opts});
   },
+  nativeAro(){painted.at(-1).hover=true},
+  nativeRect(){},
   Date:{now:()=>time},
   Math
  };
@@ -77,8 +80,8 @@ test('campaign buttons keep native dimensions, callbacks and highlight hierarchy
  h.fire('pointerout');
  assert.equal(h.painted.at(-1).hover,false);
  assert.equal(h.caption.y,150);
- assert.ok(h.rectangles.some(x=>x[0]==='fillRect'&&x[3]===2),
-  'pixel accent bars should be painted');
+ assert.ok(h.painted.every(x=>['oro','azul','panel'].includes(x.estilo)),
+  'campaign buttons use the native marco frame');
 });
 
 test('back navigation keeps its original tap target and secondary color',()=>{

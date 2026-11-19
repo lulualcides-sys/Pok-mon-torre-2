@@ -60,11 +60,11 @@ const server=http.createServer(async(req,res)=>{
    const c=__pt2Game.scene.getScene('campanha');
    const layer=c.children.list.find(o=>o.getData?.('torre2-cards-extras'));
    if(!layer)throw Error('MAIS modal not rendered');
-   const names=['POKÉDEX','INSÍGNIAS','ÁUDIO','REINICIAR JORNADA','VOLTAR AOS CARDS'];
-   return names.map((name,i)=>{
-    const id=i===4?'cards-extras-close':'cards-extras-'+i;
+   const names=[['POKÉDEX','cards-extras-3'],['INSÍGNIAS','cards-extras-4'],['ÁUDIO','cards-extras-5'],
+    ['REINICIAR JORNADA','cards-extras-7'],['VOLTAR','cards-extras-close']];
+   return names.map(([name,id])=>{
     const z=layer.list.find(o=>o.getData?.('torre2-card-control')===id);
-    const t=layer.list.find(o=>o.type==='Text'&&o.text===name);
+    const t=layer.list.find(o=>o.type==='Text'&&String(o.text).toUpperCase()===name);
     if(!z||!t)throw Error('Missing extras control '+name);
     return {name,cx:z.x,cy:z.y,w:z.width,h:z.height,tx:t.x,ty:t.y};
    });
@@ -74,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(e.tx,e.cx,e.name+' caption is not horizontally centered');
    assert.equal(e.ty,e.cy,e.name+' caption is not vertically centered');
   }
-  assert.equal(extras[4].cx,320,'Back control must be centered on the modal');
+  assert.equal(extras.at(-1).cx,320,'Back control must be centered on the modal');
   await page.screenshot({path:'test-evidence/kanto-cards/03-centered-options.png'});
   await page.evaluate(()=>{
    const c=__pt2Game.scene.getScene('campanha');

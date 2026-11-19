@@ -1,0 +1,29 @@
+{
+ "owner": "Dono do projeto Pokémon Torre 2",
+ "supplied": "2026-11-19",
+ "source": "Arte gerada pelo dono do projeto (imagens de referência enviadas na conversa); uso autorizado no jogo.",
+ "note": "Somente fundos/ilustrações. Sprites de treinadores (FRLG) e retratos de Pokémon continuam os do jogo.",
+ "files": {
+  "city-pewter.png": "bff735a8636364b9968bede56896f17425dfc2c5d12ef105ea7ed9610f275772",
+  "emblem-pewter.png": "4d2b184a0ebc683b8c5c21e94e3a34938ccca763d35e4a8a37ffe0932bc5a065",
+  "city-cerulean.png": "c187b572a0c54f18e7d21aec2a6ae65bd58019fca87ac254ff2e521f0f598d9c",
+  "emblem-cerulean.png": "6d37580620131ce3d05158d0a0fe217bf6b4f77899a62cad1de22aca3b0812c8",
+  "city-vermilion.png": "0245fe8c9720da11058cb8542b0a72faa6ff9caf8afb6ceb55b5617721eeef75",
+  "emblem-vermilion.png": "81305b2e02c1e588da4e01d68161179a2620e57fb0805b9b0d9e05a89b33a725",
+  "city-celadon.png": "9eb1707b8a31e614d3b8120ca0b2ddcb0e9246f76dcc1dbc7b5d5e3b2fd94377",
+  "emblem-celadon.png": "1173257e391e547808e2badfe9dfa9a75351e1693ba77ee36f38fc3132760921",
+  "city-fuchsia.png": "4007dc45d544cf30f5771a4cf24ca9137e5af60b37379a174b046911ba8682ec",
+  "emblem-fuchsia.png": "fdb8a1032a6110ac08ec5806259c7819ba884e3539deb849ffa33955e5b13c25",
+  "city-saffron.png": "bb5519d9ea201c5f63560555021f194cb4563bbe81a118c2fd0a24fa8fcd0dba",
+  "emblem-saffron.png": "7b3dee3c5f760d8003deb56add7220ff56c4f6c166ac6a7bf476ef17da447369",
+  "city-cinnabar.png": "88b94b4cacdb1a983e63fb012f58a2e8d9c2445b5855615c7277c98fc3b27703",
+  "emblem-cinnabar.png": "b957e076bcabb929e7c414a7c4a34ebd5e07f04ab10e1a635c9b8a85005ec395",
+  "city-viridian.png": "a181870e9da04e467872362ec9dd6ee0c74328dcbf8357a053415bed0f2394e2",
+  "emblem-viridian.png": "dd70339bf831866c722bbbba2cc0eaea7a65479dac978c8892ec4482596f8972",
+  "city-indigo.png": "a0f6f60a2392736ded2ad496621d8badef90abab1f1b31ab32c8927cf29a1e85",
+  "emblem-indigo.png": "e1ae914ec563e1b18ac91a710a91a5c99e069987dc2da5e87611b4b8f70ca07a",
+  "route-card.png": "e5ea71c65e57050b67befeab7e3cffdd9402462067672a288757877bcefc8375",
+  "route-detail.png": "c6fb5aacea0eb4d9871e9a8afc816a2891c97df4e7d4085ea734ad45a91591ae",
+  "journey-bg.png": "f81468f466eca171ec46db834ae26f1a52ad3406934a1170d9acb16747f477df"
+ }
+}

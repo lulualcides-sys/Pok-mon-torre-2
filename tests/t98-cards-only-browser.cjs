@@ -68,7 +68,8 @@ const server=http.createServer(async(req,res)=>{
     .map(x=>({id:x.getData('torre2-opponent-sprite'),w:x.displayWidth}));
   });
   assert.equal(listSizes.length,6);
-  assert.ok(listSizes.every(x=>Math.abs(x.w-11)<.1),'Preview sprites must be 50% of 22px');
+  // Campaign redesign (19/11/2026): card chips use native 22px cells with 18px portraits.
+  assert.ok(listSizes.every(x=>Math.abs(x.w-18)<.1),'Card preview sprites must be 18px native chips');
   await page.screenshot({path:'test-evidence/kanto-cards/01-six-trainer-party-small.png',fullPage:true});
   await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('campanha'),

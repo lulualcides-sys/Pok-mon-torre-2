@@ -48,7 +48,9 @@ const overlayNames=[
  ['tools/pokearena/batch24/runtime.js','torre2/batch24/runtime.js'],
  ['tools/pokearena/torre2-campaign-core.js','torre2/campaign-core.js'],
  // Audited presentation-only #600 backport; preserves sprites and campaign save order.
- ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js']
+ ['tools/pokearena/torre2-trainer-cards.js','torre2/trainer-cards.js'],
+ // Campaign menus (native buttons/panels, Pokémon Center): presentation only.
+ ['tools/pokearena/torre2-campaign-scene.js','torre2/campanha.js']
 ];
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
@@ -251,6 +253,21 @@ await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
 await fs.writeFile(path.join(dest,'escenas/pokedex.js'),virtualDex);
 await fs.writeFile(path.join(dest,'escenas/preparar.js'),arenaPrepared);
 await fs.writeFile(path.join(root,'torre2-performance-monitor.js'),perfScript);
+// Owner-supplied campaign illustrations (presentation only, never sprites).
+// Every file must match the SHA-256 in its PROVENANCE.json.
+const artSource='tools/pokearena/campaign-art';
+const artProvenance=JSON.parse(await read(path.join(artSource,'PROVENANCE.json')));
+const artFiles=Object.entries(artProvenance.files||{});
+must(artFiles.length>=21,'campaign art provenance incomplete');
+const artDest=path.join(root,'assets/ui/torre2-campaign');
+await fs.mkdir(artDest,{recursive:true});
+for(const [file,sha] of artFiles){
+ must(/^[a-z0-9-]+\.png$/.test(file),'unexpected campaign art name '+file);
+ const bytes=await fs.readFile(path.join(artSource,file));
+ must(createHash('sha256').update(bytes).digest('hex')===sha,'campaign art hash mismatch '+file);
+ await fs.writeFile(path.join(artDest,file),bytes);
+}
+await fs.writeFile(path.join(artDest,'PROVENANCE.json'),JSON.stringify(artProvenance,null,1));
 const htmlFile=path.join(root,'index.html');
 let html=await read(htmlFile);
 exactly(html,oldModule+'/main.js','native main entrypoint');
@@ -266,6 +283,6 @@ await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
 const release={alpha:'0.76.2',source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},
  baseModules:oldModule,modules:newModule,baseRun:Number(process.env.TORRE2_ALPHA0762_RUN)||null,
- patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length};
+ patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length};
 await fs.writeFile(path.join(site,'RELEASE-0762.json'),JSON.stringify(release,null,2));
 console.log('ALPHA0762_RELEASE_READY',JSON.stringify(release));

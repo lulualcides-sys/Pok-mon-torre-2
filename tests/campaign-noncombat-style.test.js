@@ -26,12 +26,14 @@ test('campaign common frame paints pixel art but registers no click zones',()=>{
   fillStyle(color,alpha){ops.push(['style',color,alpha]);return this},
   fillRect(x,y,w,h){ops.push(['rect',x,y,w,h]);return this}
  };
- const method=vm.runInNewContext('({'+scene.slice(methodStart,methodEnd)+'})',{}).uiSection;
+ // Native marco "panel" (base client look) drawn into one inert graphic.
+ const frames=[];
+ const method=vm.runInNewContext('({'+scene.slice(methodStart,methodEnd)+'})',
+  {nativeMarco:(g,x,y,w,h,estilo)=>{frames.push({g,x,y,w,h,estilo})}}).uiSection;
  const instance={add:{graphics:()=>graphics}};
  assert.equal(method.call(instance,13,81,614,241,0x428ea9),graphics);
- const rects=ops.filter(x=>x[0]==='rect');
- assert.ok(rects.length>=8);
- assert.ok(rects.every(x=>x[3]>0&&x[4]>0),'frame must never produce inverted rectangles');
+ assert.deepEqual(frames.map(f=>[f.x,f.y,f.w,f.h,f.estilo]),[[13,81,614,241,'panel']]);
+ assert.ok(frames.every(f=>f.g===graphics&&f.w>0&&f.h>0),'frame must never produce inverted rectangles');
  assert.ok(ops.some(x=>x[0]==='depth'&&x[1]===0),'frame stays behind UI');
  assert.ok(!ops.some(x=>/interactive|zone|input/.test(String(x[0]))),'graphics must not capture touch');
 });

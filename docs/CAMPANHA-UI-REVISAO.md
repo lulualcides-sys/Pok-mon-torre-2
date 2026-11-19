@@ -15,3 +15,14 @@ A primeira versão continha muitos elementos, nós sobrepostos, textos pequenos 
 
 ## Controle
 A interface continua no Phaser/WebGL e utiliza sprites/portraits do cliente. Não incorpora CSS nem Canvas 2D ao jogo. Compatível com o mesmo salvamento v1.
+
+## Revisão 19/11/2026 — padrão visual nativo da Alpha 0.76.2
+
+Pedido do dono do projeto: um design bonito em pixel art, no padrão do cliente-base, **sem mexer na arena (luta)**. Só `tools/pokearena/torre2-trainer-cards.js` mudou: é apresentação, sem alterar saves, progressão, kits nem o HUD de combate.
+
+- **Kit nativo:** `marco`, `aro`, `candado`, `pastillaTipo`, `fondoMenu`, a paleta `UI` e `texto` com a fonte Cifras, que aumenta sozinha no celular. É o mesmo visual das telas League e Gyms.
+- **Ação principal:** um botão dourado grande, "▶ Batalhar" ou "▶ Desafiar líder". Embaixo ficam só Equipe, Bolsa, Centro, Loja e **Mais**. Captura, Treino, VS Seeker, Pokédex, Insígnias, Áudio, Tela cheia e Reiniciar foram para o "Mais".
+- **Equipe e progresso sempre visíveis:** o painel da cidade tem medalhão, líder, tipo do ginásio e barra "até o líder". A equipe aparece com 6 retratos, nível e HP, e há dinheiro e as 8 insígnias no topo.
+- **Cards:** 4 por página, em painel nativo, com todos os Pokémon reais do adversário em chips de 22 px, nível, tipos em português e estado escrito (▶ Próximo, ✓ Vencido, cadeado). O card do líder tem borda dourada e a insígnia.
+- **Identidade da cidade:** o fundo regional aprovado entra como camada leve sobre o fundo nativo, mais o medalhão da cidade e o painel "Jornada em Kanto" na última página.
+- **Testes de design atualizados** para o layout novo, mantendo as garantias de comportamento: índices, revanche, bloqueio, seções rota/ginásio e roster completo.
