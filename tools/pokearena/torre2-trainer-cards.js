@@ -320,7 +320,7 @@ const cityOf=stage=>String(STAGES[stage]?.city||'').toLowerCase();
 // pixel art stays as placeholder until the PNG arrives. Trainer sprites and
 // Pokémon portraits are never replaced by these.
 export const OWNER_ART_DIR='assets/ui/torre2-campaign/';
-export function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
+export function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5,panY=.5){
  const key='torre2-art-'+name;
  const slot=scene.add.container(0,0);layer.add(slot);
  const draw=()=>{
@@ -328,8 +328,8 @@ export function ownerArt(scene,layer,name,x,y,w,h,placeholder,pan=.5){
   const tex=scene.textures.get(key),src=tex.getSourceImage();
   const sw=src.width,sh=src.height,a=w/h;
   const cw=Math.min(sw,Math.round(sh*a)),ch=Math.min(sh,Math.round(cw/a));
-  const ox=Math.round((sw-cw)*pan),frame='crop-'+cw+'x'+ch+'-'+ox;
-  if(!tex.has(frame))tex.add(frame,0,ox,Math.round((sh-ch)/2),cw,ch);
+  const ox=Math.round((sw-cw)*pan),oy=Math.round((sh-ch)*panY),frame='crop-'+cw+'x'+ch+'-'+ox+'-'+oy;
+  if(!tex.has(frame))tex.add(frame,0,ox,oy,cw,ch);
   tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
   slot.removeAll(true);
   slot.add(scene.add.image(x,y,key,frame).setOrigin(0).setDisplaySize(w,h));
@@ -375,7 +375,7 @@ function frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,fw,fh],stage,variant){
  }
  return true;
 }
-function gymInterior(scene,layer,x,y,w,h,stage,variant=0){
+export function gymInterior(scene,layer,x,y,w,h,stage,variant=0){
  const info=gymCrop(stage);
  if(!info)return false;
  const [cx,cy,cw,ch]=info.rect;
@@ -464,6 +464,8 @@ function npc(scene,layer,kind,x,y,scale=2.3){
  const g=scene.add.graphics();drawTrainer(g,x,y-16,kind,1.3);layer.add(g);
  return g;
 }
+export function leaderSpriteKind(stage){return LEADERS[stage]||'rival'}
+export function trainerSpriteKind(stage,index){return npcKind(stage,index,false)}
 function npcKind(stage,index,leader=false){
  if(leader)return LEADERS[stage]||'rival';
  const n=STAGES[stage];

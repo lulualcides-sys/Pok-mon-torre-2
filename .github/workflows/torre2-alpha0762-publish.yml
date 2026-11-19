@@ -20,6 +20,7 @@ on:
       - 'tools/pokearena/torre2-campaign-scene.js'
       - 'tools/pokearena/torre2-trainer-name.mjs'
       - 'tools/pokearena/torre2-frlg-npc.js'
+      - 'tools/pokearena/torre2-battle-report.js'
       - 'tools/pokearena/campaign-art/**'
       - '.github/workflows/torre2-alpha0762-publish.yml'
       - 'tests/alpha0762-new-species-moves-browser.cjs'
@@ -54,6 +55,7 @@ on:
       - 'tools/pokearena/torre2-campaign-scene.js'
       - 'tools/pokearena/torre2-trainer-name.mjs'
       - 'tools/pokearena/torre2-frlg-npc.js'
+      - 'tools/pokearena/torre2-battle-report.js'
       - 'tools/pokearena/campaign-art/**'
   workflow_dispatch:
 
