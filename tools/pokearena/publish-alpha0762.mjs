@@ -350,6 +350,12 @@ if(baseAlpha==='0.77.3'){
   await fs.writeFile(target,bytes);gymArenas++;
  }
  await fs.writeFile(path.join(root,'assets/arenas/gimnasios/PROVENANCE.json'),JSON.stringify(arenaProvenance,null,1));
+ // Owner authorization 2026-11-20: turn on the native animated fire/lava of
+ // the Cinnabar gym arena (off in the 0.77.3 client data). Only this flag.
+ const vivaFile=path.join(dest,'arena_viva.js');
+ const viva=await read(vivaFile);
+ exactly(viva,'cinnabar:{activa:false,','Cinnabar live-arena flag');
+ await fs.writeFile(vivaFile,viva.replace('cinnabar:{activa:false,','cinnabar:{activa:true,'));
 }
 // CC0 campaign music (campaign-music/PROVENANCE.json), verified by SHA-256.
 const musicSource='tools/pokearena/campaign-music';

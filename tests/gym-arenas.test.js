@@ -19,3 +19,9 @@ test('leader battles use their own gym arena; others keep theirs',()=>{
  assert.ok(core.includes('arena:leader&&LEADER_ARENAS[s.stage]||gym.arena'));
  for(const id of Object.values(map))assert.ok(prov.files['gimnasios/'+id+'-amplia.jpg'],'art for '+id);
 });
+test('Cinnabar live arena (fire/lava) is switched on in the published copy only (owner authorization)',()=>{
+ const pub=fs.readFileSync(new URL('../tools/pokearena/publish-alpha0762.mjs',import.meta.url),'utf8');
+ assert.ok(pub.includes("const vivaFile=path.join(dest,'arena_viva.js');"),'patch the new module tree, never the rollback tree');
+ assert.ok(pub.includes("exactly(viva,'cinnabar:{activa:false,','Cinnabar live-arena flag');"));
+ assert.ok(pub.includes("viva.replace('cinnabar:{activa:false,','cinnabar:{activa:true,')"));
+});
