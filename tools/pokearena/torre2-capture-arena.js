@@ -11,6 +11,13 @@ import {ballArc,drawRedBeam,drawReleaseBurst,drawGotchaSparkles,snapshotBody,pos
 const FONT='Pixelify Sans,monospace';
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 // One ball atlas drives captures, party switch, and Pokéball HUD.
+// Secret title "Captura Perfeita" (owner list item 20): the player's
+// fighter has at least the HP it started the battle with (no damage taken).
+function playerUntouched(scene,save){
+ const f=scene?.luchadores?.[0],m=save?.team?.[save?.active];
+ if(!f||!(f.hpMax>0)||!m)return false;
+ return Math.round(f.hp/f.hpMax*100)>=Math.round(Number(m.hp??100));
+}
 export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opened=false){
  return drawBallSprite(g,cx,cy,kind,scale,rotation,opened);
 }
@@ -259,7 +266,8 @@ export function installWildCapture(scene){
     scene.__torre2CaptureDebug.hits=true;
     try{
      result=attemptCapture(save,scene.__torre2CaptureRandom||Math.random,kind,
-       {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy),persistentStatus:serializeGen3Status(enemy)});
+       {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy),persistentStatus:serializeGen3Status(enemy),
+        playerUntouched:playerUntouched(scene,save)});
     }catch(error){
      // A blocked primary/backup write is not a completed throw. Restore the
      // native enemy and controls; keep the Pokéball for a genuine retry.

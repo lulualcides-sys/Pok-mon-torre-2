@@ -46,7 +46,14 @@ export const TITLES=Object.freeze([
  {id:'shiny5',name:'Colecionador Brilhante',desc:'Capture 5 espécies shiny',rarity:'gold',test:(s,l)=>Math.max(l.bestShiny,count(s?.dexShinyCaught))>=5},
  {id:'shiny10',name:'Aurora Shiny',desc:'Capture 10 espécies shiny',rarity:'rainbow',test:(s,l)=>Math.max(l.bestShiny,count(s?.dexShinyCaught))>=10},
  {id:'birds',name:'Guardião das Aves',desc:'Capture Articuno, Zapdos e Moltres',rarity:'gold',test:s=>LEGENDARY_BIRDS.every(id=>list(s?.dexCaught).includes(id))},
- {id:'mew',name:'Sombra Mítica',desc:'Capture Mew',rarity:'rainbow',test:s=>list(s?.dexCaught).includes('mew')}
+ {id:'mew',name:'Sombra Mítica',desc:'Capture Mew',rarity:'rainbow',test:s=>list(s?.dexCaught).includes('mew')},
+ // Secret titles (owner list 2026-11-20, item 20): shown as "???" until earned.
+ {id:'monotype',name:'Especialista',desc:'Vença um líder com a equipe toda de um mesmo tipo',rarity:'gold',secret:true,
+  test:s=>!!s?.secretFlags?.monoLeader},
+ {id:'cleancatch',name:'Captura Perfeita',desc:'Capture um Pokémon sem seu Pokémon tomar dano',rarity:'silver',secret:true,
+  test:s=>!!s?.secretFlags?.cleanCatch},
+ {id:'towermaster',name:'Mestre da Torre',desc:'Chegue ao andar 25 da Torre de desafios',rarity:'rainbow',secret:true,
+  test:s=>(Number(s?.tower?.best)||0)>=25}
 ]);
 // Update the legacy from the live campaign; returns the titles earned now.
 export function syncLegacy(state,legacy=emptyLegacy(),now=Date.now(),{name=null}={}){

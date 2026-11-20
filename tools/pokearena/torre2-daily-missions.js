@@ -62,3 +62,36 @@ export function claimDaily(s,id,typesOf=()=>[]){
  if(!m||list(d.claimed).includes(id)||missionProgress(s,m,typesOf)<m.goal)return null;
  next.daily.claimed=[...list(d.claimed),id];applyReward(next,m.reward);return next;
 }
+
+// --- Mission points + points shop (owner list 2026-11-20, item 19) ---------
+// Each claimed mission gives points; the daily bonus gives more. Points are
+// spent in the shop on existing campaign items. The Master Ball can be bought
+// once per journey. Points live in the campaign save (missionPoints).
+export const POINTS_PER_MISSION=10,POINTS_BONUS=25;
+export const POINT_SHOP=Object.freeze([
+ {id:'master',name:'Master Ball',cost:250,items:{masterball:1},oncePerJourney:true},
+ {id:'ultra5',name:'5× Ultra Ball',cost:60,items:{ultraball:5}},
+ {id:'great10',name:'10× Great Ball',cost:40,items:{greatball:10}},
+ {id:'super5',name:'5× Super Poção',cost:50,items:{superpotion:5}},
+ {id:'fullheal3',name:'3× Cura Total',cost:40,items:{fullheal:3}}
+]);
+export function missionPoints(s){return Math.max(0,Math.floor(Number(s?.missionPoints)||0))}
+export function claimDailyWithPoints(s,id,typesOf=()=>[]){
+ const next=claimDaily(s,id,typesOf);if(!next)return null;
+ next.missionPoints=missionPoints(s)+(id==='bonus'?POINTS_BONUS:POINTS_PER_MISSION);
+ return next;
+}
+export function shopItemState(s,item){
+ if(item.oncePerJourney&&list(s?.pointShopBought).includes(item.id))return {ok:false,reason:'Já comprado nesta jornada'};
+ if(missionPoints(s)<item.cost)return {ok:false,reason:'Faltam '+(item.cost-missionPoints(s))+' pontos'};
+ return {ok:true,reason:''};
+}
+export function buyWithPoints(s,id){
+ const item=POINT_SHOP.find(x=>x.id===id);if(!item)return null;
+ if(!shopItemState(s,item).ok)return null;
+ const next=JSON.parse(JSON.stringify(s));
+ next.missionPoints=missionPoints(s)-item.cost;
+ applyReward(next,{items:item.items});
+ if(item.oncePerJourney)next.pointShopBought=[...list(s?.pointShopBought),item.id];
+ return next;
+}

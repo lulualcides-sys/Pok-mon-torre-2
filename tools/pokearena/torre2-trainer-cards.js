@@ -604,6 +604,7 @@ function extrasPage(scene,state,handlers){
  actions.push([handlers.lightLabel?.()||'MODO LEVE',handlers.lightMode,'fullscreen']);
  actions.push(['MISSÕES',handlers.missions,'badges']);
  actions.push(['TROCA',handlers.trade,'team']);
+ actions.push(['INSTALAR APP',handlers.installApp,'fullscreen']);
  // Four columns, five rows: every option fits above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
   const x=104+(i%4)*110,y=82+Math.floor(i/4)*40;

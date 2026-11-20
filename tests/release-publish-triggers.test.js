@@ -47,6 +47,7 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-story.js',
   'tools/pokearena/torre2-route-weather.js',
   'tools/pokearena/torre2-challenge-tower.js',
+  'tools/pokearena/torre2-dex-filter.js',
   'tools/pokearena/torre2-multiplayer-core.js',
   'tools/pokearena/torre2-multiplayer.js'
  ],'Any changed or added release overlay must be reviewed explicitly');
