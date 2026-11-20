@@ -630,6 +630,9 @@ create(){
     Math.min(3,maxSize/Math.max(box.w,box.h));
    const sprite=this.add.sprite(x,y,key,0).setOrigin(.5,feet.get(key)).setScale(s).setDepth(depth).play(anim)
     .setData('torre2-idle-sprite-image',id);
+   // Closing a window destroys the owner zone: the sprite goes with it
+   // (it was left on screen after cancelling a trade).
+   owner.once('destroy',()=>{if(sprite.active)sprite.destroy()});
    onReady?.(sprite);
   };
   if(this.textures.exists(key))show();
@@ -863,7 +866,7 @@ create(){
    center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
    training:()=>this.enterTraining(state),
-   capture:()=>this.grassScreen(state),
+   capture:at=>this.grassScreen(state,Number.isInteger(at)?at:null),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    dex:()=>this.dexScreen(state),
    badges:()=>this.badgeCaseScreen(state),
@@ -941,7 +944,7 @@ create(){
     center:()=>this.centerScreen(state),mart:()=>this.martScreen(state),
     gym:()=>this.gymScreen(state),bag:()=>this.bagScreen(state),
     dex:()=>this.dexScreen(state),badges:()=>this.badgeCaseScreen(state),
-    capture:()=>this.grassScreen(state),
+    capture:at=>this.grassScreen(state,Number.isInteger(at)?at:null),
     pokemon:i=>state.team[i]&&this.showSummary(state,i),
     trainer:(i,status)=>{
      if(status==='current')return this.enterBattle(state);
@@ -964,7 +967,7 @@ create(){
    battle:()=>this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
-   capture:()=>this.grassScreen(state),
+   capture:at=>this.grassScreen(state,Number.isInteger(at)?at:null),
    pokemon:i=>state.team[i]&&this.showSummary(state,i),
    bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),badges:()=>this.badgeCaseScreen(state),
@@ -989,7 +992,7 @@ create(){
    center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
    training:()=>this.enterTraining(state),
-   capture:()=>this.grassScreen(state),
+   capture:at=>this.grassScreen(state,Number.isInteger(at)?at:null),
    rematchAtlas:()=>this.rematchAtlasScreen(state)
   };
   if(!this.__torre2CardsMapOnly)
@@ -2470,7 +2473,7 @@ create(){
   // Defer only when no VS was rendered, to protect the original tap.
   this.time.delayedCall(0,enterCombat);
  }
- grassScreen(state){
+ grassScreen(state,areaStage=null){
   // Do not destroy the loaded overworld when entering tall grass. Removing
   // all scene children invalidated the map and its hotspot/hover references.
   // This modal uses separate high-depth Phaser objects, so Close restores
@@ -2499,13 +2502,16 @@ create(){
     .setInteractive({useHandCursor:true}).on('pointerdown',callback);
   };
   this.campaignMusic('route');
-  const area=wildAvailability(state.stage);
+  // areaStage: a completed city chosen on the Kanto map (hunt there again).
+  const revisit=Number.isInteger(areaStage)&&areaStage!==state.stage;
+  const area=wildAvailability(revisit?areaStage:state.stage);
   // Landscape header from the owner's journey art (top strip: forest/town).
   ownerArt(this,{add:o=>o.setDepth?.(613)},'journey-bg',32,26,576,84,null,.5,0);
   const head=this.add.graphics().setDepth(614);
   nativeAro(head,31,25,578,86,MENU_UI.panelBorde,6);
   head.fillStyle(0x061433,.55).fillRect(32,80,576,30);
   label(320,48,'Grama alta · '+area.label,15,MENU_UI.amarillo);
+  if(revisit)label(320,70,'Voltando a '+(STAGES[areaStage]?.city||'Kanto')+' para caçar',9,'#9ff0bf');
   label(320,94,area.area+'  ·  Encontros regionais (FireRed)',8,'#ffffff');
   // Green means genuinely caught (Pokédex), never merely available in grass.
   const caught=new Set(state.dexCaught||[]);
@@ -2519,13 +2525,17 @@ create(){
    nativeRect(cards,x+1,y+1,134,40,owned?0x24553f:0x223345,5,available?1:.6);
    nativeRect(cards,x+6,y+6,30,30,TIPOS[types[0]]??0x5f86bd,5,available?.55:.3);
    const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
-   if(key&&this.textures.exists(key)){
+   const putPortrait=()=>{
+    if(!cards.active||!this.textures.exists(key))return;
     // Original PMD pixel portrait, with no silhouette substitution or VFX.
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     // Approved size (visual guard): the original 22 px PMD portrait.
     this.add.image(x+21,y+21,key).setDisplaySize(22,22).setAlpha(available?1:.55)
      .setDepth(619).setData('torre2-grass-sprite',id);
-   }
+   };
+   if(key&&this.textures.exists(key))putPortrait();
+   // A revisited city's portraits are not preloaded: fetch them now.
+   else if(key)requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',putPortrait);
    const nice=id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
    estrechar(this.uiLabel(x+44,y+13,nice,8,owned?'#d7ffda':available?'#ffffff':MENU_UI.tenue,[0,.5],620),72)
     .setData('torre2-grass-name',id);
@@ -2538,7 +2548,7 @@ create(){
   modalButton(174,292,224,30,'◀ VOLTAR AO MAPA',close);
   modalButton(466,292,224,30,'PROCURAR POKÉMON',()=>{
    let found;
-   try{found=startWildEncounter(state);}
+   try{found=startWildEncounter(state,Math.random,revisit?areaStage:null);}
    catch(error){
     console.warn('Torre 2: wild encounter not saved',error);
     const notice=text(this,320,266,'ENCONTRO NÃO SALVO · TENTE NOVAMENTE',{

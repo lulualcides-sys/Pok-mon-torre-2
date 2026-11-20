@@ -305,6 +305,15 @@ const dest=path.join(root,newModule);
 await fs.cp(original,dest,{recursive:true,force:false,errorOnExist:true});
 for(const {target,content} of overlays)await fs.writeFile(path.join(dest,target),content);
 for(const {target,content} of newModules)await fs.writeFile(path.join(dest,target),content);
+// Owner request (2026-11-19/20): no news on screen. The base client mounts a
+// sliding NEWS side tab (noticias.js) and a patch-notes popup (comunicado.js)
+// from main.js; neither is started in the published copy.
+{
+ const mainFile=path.join(dest,'main.js');
+ const main=await read(mainFile);
+ exactly(main,'iniciarNoticias(juego);iniciarComunicado(juego);','native news/patch-notes start');
+ await fs.writeFile(mainFile,main.replace('iniciarNoticias(juego);iniciarComunicado(juego);',''));
+}
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);

@@ -406,7 +406,7 @@ function townView(scene,layer,x,y,w,h,stage,variant=0){
  return frlgWindow(scene,layer,x,y,w,h,loc,[fx,fy,ww,wh],stage,variant);
 }
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
- id='',size=10,icon=null,center=false}={}){
+ id='',size=10,icon=null,center=false,wrap=false}={}){
  const g=scene.add.graphics();layer.add(g);
  const paint=(hover=false)=>{
   g.clear();
@@ -418,7 +418,13 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  const caption=text(scene,layer,x+w/2+(icon&&!center?12:0),y+h/2,label,size,
   muted?UI.apagadoTexto:gold?UI.textoOscuro:UI.texto);
  if(gold)caption.setStroke(UI.oroLuz,0);
- estrechar(caption,w-(icon?38:10));
+ if(wrap){
+  // Label in the free area right of the icon, up to two centred lines.
+  const tx=x+(icon?32:6),tw=w-(icon?36:12);
+  caption.setPosition(Math.round(tx+tw/2),Math.round(y+h/2));
+  caption.setWordWrapWidth(tw,true).setAlign('center');caption.setLineSpacing?.(-3);
+  if(caption.width>tw)estrechar(caption,tw);
+ }else estrechar(caption,w-(icon?38:10));
  // Hover ring is paint only: no additional interactive surface or larger target.
  const focus=scene.add.graphics();layer.add(focus);
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
@@ -602,7 +608,7 @@ function extrasPage(scene,state,handlers){
   const x=104+(i%4)*110,y=82+Math.floor(i/4)*40;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
   control(scene,layer,x,y,104,34,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
-   {id:'cards-extras-'+i,size:9,icon,center:true});
+   {id:'cards-extras-'+i,size:9,icon,wrap:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
@@ -760,10 +766,12 @@ export function journeyPage(scene,state,handlers){
    .setData('torre2-journey-city',i);
   z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();
    if(current)layer.destroy(true);
+   // Completed city: go back to its tall grass to hunt its Pokémon.
+   else if(done&&i<8&&handlers.capture){layer.destroy(true);handlers.capture(i)}
    else toast(scene,layer,done?'Cidade concluída!':'Vença os líderes anteriores');
   });layer.add(z);
  }
- banner(338,440,'Toque na cidade atual para continuar a jornada!',11);
+ banner(338,560,'Cidade atual: continuar · Cidade concluída: caçar Pokémon de lá',10);
  scene.__torre2Journey={stage:state.stage,current:here};
  return layer;
 }
