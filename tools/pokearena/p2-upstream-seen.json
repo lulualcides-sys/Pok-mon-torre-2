@@ -1,0 +1,5 @@
+{
+ "note": "Versão do Poké Arena 2D em que o Torre 2 se baseia. A varredura diária (p2-version-scan.yml) compara com o version.json público deles e abre um aviso quando mudar. Nada é baixado nem hospedado com eles; atualizar é decisão do dono.",
+ "base": {"version": "0.76.2", "src": "src-5bf1a1a788"},
+ "lastSeen": {"version": "0.77.3", "src": "src-712ba03dbb", "at": "2026-11-20"}
+}

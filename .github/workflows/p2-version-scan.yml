@@ -1,0 +1,43 @@
+name: Poké Arena 2D — varredura diária de versão
+# Lê só o version.json público do Poké Arena 2D. Não baixa o jogo deles, não
+# hospeda nada com eles e não contorna proteções. Quando a versão muda, abre
+# (ou atualiza) um aviso para o dono decidir quando atualizar o Torre 2.
+on:
+  schedule:
+    - cron: '17 11 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Compare upstream version.json with what we last saw
+        id: scan
+        run: |
+          set -euo pipefail
+          out=$(node tools/pokearena/p2-version-scan.mjs)
+          echo "$out"
+          echo "json=$out" >> "$GITHUB_OUTPUT"
+      - name: Open or update the update notice
+        if: fromJSON(steps.scan.outputs.json).changed == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCAN: ${{ steps.scan.outputs.json }}
+        run: |
+          set -euo pipefail
+          ver=$(echo "$SCAN" | jq -r .upstream.version)
+          src=$(echo "$SCAN" | jq -r .upstream.src)
+          title="Poké Arena 2D atualizou para $ver"
+          body="A varredura diária viu a versão **$ver** (\`$src\`) no site público do Poké Arena 2D.
+
+          O Torre 2 está na **$(echo "$SCAN" | jq -r .base.version)** (cópia permanente nossa). Nada foi baixado.
+          Quando quiser atualizar juntos, peça para comparar as mudanças; depois registre a versão vista em \`tools/pokearena/p2-upstream-seen.json\`."
+          num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number -q '.[0].number' || true)
+          if [ -n "$num" ]; then gh issue comment "$num" --repo "$GITHUB_REPOSITORY" --body "Ainda em $ver ($src)."; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"; fi
