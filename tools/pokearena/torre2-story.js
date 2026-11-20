@@ -7,6 +7,10 @@
  *    plus one line that reacts to the player's lead Pokémon type
  *    (advantage / disadvantage, Gen III type chart, no Fairy).
  *    After a loss, a short retry line (rotates with the number of losses).
+ *  - Rival (item 13): a line about the player's starter, a reaction to the
+ *    previous Rival battle and retry lines after losing to him.
+ *  - Leaders/Elite Four/Champion first meeting: entrance:true (item 18, the
+ *    campaign scene slides the leader in with a name band).
  */
 const list=v=>Array.isArray(v)?v:[];
 export const SPEAKERS=Object.freeze({
@@ -166,6 +170,53 @@ export const LEADERS=Object.freeze([
    'Volte quantas vezes quiser. Eu continuo o Campeão!',
    'De novo? Tá bom, eu e o {rival} te esperamos.']}
 ]);
+// Rival variety (owner list 2026-11-20, item 13): a line about the player's
+// ORIGINAL starter at each Rival scene, a reaction to how the previous Rival
+// battle went (won first try / lost at least once before winning), and
+// retry lines after losing to him (they rotate with the number of losses).
+// Rival scene stages in order: 0, 1, 2, 4, 5, 8, then the Champion.
+export const RIVAL_STAGES=Object.freeze([0,1,2,4,5,8]);
+export const RIVAL_STARTER=Object.freeze({
+ bulbasaur:{
+  0:'Planta? Fogo queima planta. Já ganhei antes de começar!',
+  1:'Seu Pokémon de planta ainda está de pé? Achei que já tinha murchado.',
+  2:'Aqui no mar não tem terra pra sua plantinha crescer!',
+  4:'Seu Pokémon de planta cresceu, hein. Mas fogo continua queimando.',
+  5:'Venusaur ou não, eu treinei o {rival} só pra te vencer.',
+  8:'Planta contra fogo, de novo. A história vai se repetir!',
+  champion:'Desde o primeiro dia eu escolhi o fogo pra queimar a sua planta.'},
+ charmander:{
+  0:'Fogo? A água apaga isso rapidinho!',
+  1:'Essa chaminha do seu Pokémon ainda não apagou?',
+  2:'No meio do oceano, quero ver o seu fogo resistir!',
+  4:'Seu Pokémon de fogo está forte... mas água é água.',
+  5:'Pode virar Charizard, eu vou apagar ele mesmo assim.',
+  8:'Fogo contra água. Você sabe quem leva vantagem, né?',
+  champion:'Desde o primeiro dia eu escolhi a água pra apagar o seu fogo.'},
+ squirtle:{
+  0:'Água? Planta bebe água e fica mais forte!',
+  1:'Seu Pokémon de água ainda está molhado de medo?',
+  2:'Estamos num navio, mas não ache que a água vai te ajudar!',
+  4:'Seu Pokémon de água cresceu. Minhas plantas também.',
+  5:'Pode virar Blastoise, as minhas raízes aguentam.',
+  8:'Água contra planta. Eu cresço com cada golpe seu!',
+  champion:'Desde o primeiro dia eu escolhi a planta pra secar a sua água.'}
+});
+export const RIVAL_PREVIOUS=Object.freeze({
+ firstTry:['Da última vez você ganhou de primeira. Sorte de principiante!',
+  'Você me venceu de primeira da última vez. Isso não vai se repetir.',
+  'Ainda estou pensando naquela derrota. Hoje é diferente!'],
+ retried:['Lembra da última vez? Eu te venci antes de você conseguir passar.',
+  'Da última vez você precisou de mais de uma tentativa. Hoje também vai!',
+  'Na última luta eu ganhei pelo menos uma vez. Vou ganhar de novo!']
+});
+export const RIVAL_RETRY=Object.freeze([
+ 'Voltou? Achei que tinha ido chorar pro Professor Carvalho.',
+ 'De novo? Tudo bem, o {rival} adora uma revanche.',
+ 'Você não desiste, hein. Vem!',
+ 'Treinou mais um pouco? Vamos ver se adiantou.'
+]);
+const rivalKeyRetry=stage=>'rival-retry-'+stage;
 // Gen III: which attacking types are super effective against `type`.
 const BEATS=Object.freeze({
  ROCK:['WATER','GRASS','FIGHTING','GROUND','STEEL'],WATER:['GRASS','ELECTRIC'],
@@ -237,12 +288,31 @@ export function storyFor(state,opponent,ctx={}){
    return done(key,L.place,[[L.who,L.retry[losses%L.retry.length]]],L.bg);
   }
   const extra=L[matchup(L.type,ctx.leadTypes)];
-  return done(key,L.place,[...L.intro,...(extra?[extra]:[])].map(t=>[L.who,t]),L.bg);
+  const champ=L.who==='rival'?RIVAL_STARTER[state?.starter]?.champion:null;
+  return {...done(key,L.place,[...L.intro,...(champ?[champ]:[]),...(extra?[extra]:[])].map(t=>[L.who,t]),L.bg),entrance:true};
  }
  if(!['rival','rocket'].includes(opponent.kind))return null;
  const key=storyKey(stage,opponent.kind),scene=STORY[key];
- if(!scene||seen.includes(key))return null;
+ if(!scene)return null;
+ if(opponent.kind==='rival')return rivalScene(state,opponent,stage,key,scene,seen,done);
+ if(seen.includes(key))return null;
  return done(key,scene.place,scene.lines,scene.bg);
+}
+function rivalScene(state,opponent,stage,key,scene,seen,done){
+ const losses=Math.max(0,Number(state?.losses)||0);
+ if(seen.includes(key)){
+  // Lost to him at this stage at least once: a short retry line.
+  return done(rivalKeyRetry(stage),scene.place,[['rival',RIVAL_RETRY[losses%RIVAL_RETRY.length]]],scene.bg);
+ }
+ const lines=[...scene.lines];
+ const at=RIVAL_STAGES.indexOf(stage),prev=at>0?RIVAL_STAGES[at-1]:null;
+ if(prev!==null&&seen.includes(storyKey(prev,'rival'))){
+  const pool=seen.includes(rivalKeyRetry(prev))?RIVAL_PREVIOUS.retried:RIVAL_PREVIOUS.firstTry;
+  lines.splice(1,0,['rival',pool[stage%pool.length]]);
+ }
+ const taunt=RIVAL_STARTER[state?.starter]?.[stage];
+ if(taunt)lines.push(['rival',taunt]);
+ return done(key,scene.place,lines,scene.bg);
 }
 export function markStorySeen(state,key){
  return {...state,storySeen:[...new Set([...list(state?.storySeen),key])]};

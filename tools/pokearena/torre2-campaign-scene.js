@@ -31,7 +31,10 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
- startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade} from './campaign-core.js';
+ startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
+ startTowerBattle,resolveTowerBattle,currentTowerFloor} from './campaign-core.js';
+import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
+import {routeWeather,ROUTE_WEATHERS,weatherWeight} from './route-weather.js';
 import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
 import {drawLegendaryLair,drawLairAmbient,LAIR_SPOT,drawSilphOfficeArt} from './legendary-lairs.js';
 import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
@@ -259,6 +262,10 @@ create(){
       outcome=resolveRematch(next,marker.ticket,!!completed.won);
       kind='rematch';
      }
+    }else if(marker.kind==='tower'){
+     applyPartyBattleResult(next,marker.party);
+     outcome=resolveTowerBattle(next,marker.token,!!completed.won);
+     kind='trainer';
     }else if(marker.kind==='silph'){
      applyPartyBattleResult(next,marker.party);
      outcome=resolveSilphBattle(next,marker.token,!!completed.won);
@@ -310,8 +317,13 @@ create(){
    panel.button.on('pointerdown',()=>{
     if(!this.scene.isActive())return;
     // Evolutions from this battle get their own cutscene, then Eevee's choice.
+    const towerNext=completed?.marker?.kind==='tower';
     this.evolutionScene(battleReport.evolutions,()=>{
-     if(this.scene.isActive())this.promptPendingEeveeEvolution(readCampaign());
+     if(!this.scene.isActive())return;
+     const cur=readCampaign();
+     // Torre de desafios: straight back to the tower (next floor or result).
+     if(towerNext&&cur&&!cur.pendingEeveeEvolution)return this.towerScreen(cur);
+     this.promptPendingEeveeEvolution(cur);
     });
    });
   }
@@ -875,6 +887,7 @@ create(){
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
    legendaries:()=>this.legendaryHub(state),
+   tower:()=>this.towerScreen(state),
    missions:()=>this.missionsScreen(state),
    trade:()=>this.tradeScreen(state),
    lightMode:()=>{this.toggleLightMode();this.renderCampaign(state)},
@@ -1352,31 +1365,33 @@ create(){
  // List of the five legendaries and where they wait.
  legendaryHub(state){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
-  this.screenBanner(20,300,'Lendários de Kanto','badges');
+  this.screenBanner(20,300,'Lendários','badges');
   this.uiLabel(320,46,'Um encontro único em cada lugar · lute, enfraqueça e capture',8,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,250);
   const g=this.add.graphics().setDepth(3);
   const colors={ELECTRIC:0xf2c232,ICE:0x7fd0f0,FIRE:0xf07030,PSYCHIC:0xd070c0};
+  // Card width follows the number of legendaries (5 in Kanto, 7 after Lugia/Ho-Oh).
+  const step=Math.floor(616/LEGENDARIES.length),cw=step-4,mid=Math.round(cw/2);
   LEGENDARIES.forEach((leg,i)=>{
-   const x=16+i*122,y=64,st=this.legendaryStatusFor(state,leg.id),locked=st.state==='locked';
+   const x=16+i*step,y=64,st=this.legendaryStatusFor(state,leg.id),locked=st.state==='locked';
    const col=colors[leg.type]??MENU_UI.panelBorde;
-   nativeRect(g,x,y,118,234,locked?MENU_UI.apagadoBorde:col,8);nativeRect(g,x+2,y+2,114,230,locked?0x0a1638:0x1b1446,7);
+   nativeRect(g,x,y,cw,234,locked?MENU_UI.apagadoBorde:col,8);nativeRect(g,x+2,y+2,cw-4,230,locked?0x0a1638:0x1b1446,7);
    // A slice of the lair illustration behind the legendary (darker if locked).
    const art=this.add.container(0,0).setDepth(4);
-   ownerArt(this,art,'lair-'+leg.scene,x+3,y+3,112,140,null,.5,.5);
-   const veil=this.add.graphics().setDepth(4.5);veil.fillStyle(0x0a0a20,locked?.62:.18).fillRect(x+3,y+3,112,140);
-   veil.fillStyle(locked?MENU_UI.apagadoBorde:col,1).fillRect(x+3,y+143,112,2);
+   ownerArt(this,art,'lair-'+leg.scene,x+3,y+3,cw-6,140,null,.5,.5);
+   const veil=this.add.graphics().setDepth(4.5);veil.fillStyle(0x0a0a20,locked?.62:.18).fillRect(x+3,y+3,cw-6,140);
+   veil.fillStyle(locked?MENU_UI.apagadoBorde:col,1).fillRect(x+3,y+143,cw-6,2);
    const seen=(state.dexSeen||[]).includes(leg.id)||!locked;
    const ground=Math.round(y+3+140*(LAIR_SPOT[leg.scene]??.82));
-   const spr=this.pokemonIdleSprite(leg.id,x+59,ground,58,6,s=>{if(!seen)s.setTint(0x101828)},'height');
+   const spr=this.pokemonIdleSprite(leg.id,x+mid,ground,Math.min(58,cw-30),6,s=>{if(!seen)s.setTint(0x101828)},'height');
    if(spr&&!seen)spr.setTint?.(0x101828);
-   if(!seen)this.uiLabel(x+59,ground-30,'?',22,'#4a5f8c',[.5,.5],7);
-   this.uiLabel(x+59,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]);
-   estrechar(this.uiLabel(x+59,y+170,leg.place,7,'#dcf4fb',[.5,.5]),110);
+   if(!seen)this.uiLabel(x+mid,ground-30,'?',22,'#4a5f8c',[.5,.5],7);
+   estrechar(this.uiLabel(x+mid,y+152,seen?leg.name:'???',11,locked?'#8ea2c8':MENU_UI.amarillo,[.5,.5]),cw-8);
+   estrechar(this.uiLabel(x+mid,y+170,leg.place,7,'#dcf4fb',[.5,.5]),cw-8);
    const label={caught:'✔ CAPTURADO',available:'DISPONÍVEL · '+st.reason,locked:'BLOQUEADO',gone:'FOI EMBORA'}[st.state]||'';
-   estrechar(this.uiLabel(x+59,y+190,label,7,st.state==='caught'?'#9ff0bf':st.state==='available'?'#ffe08a':'#ff9daa',[.5,.5]),110);
-   if(st.state!=='available'&&st.state!=='caught')estrechar(this.uiLabel(x+59,y+206,st.reason,6,MENU_UI.tenue,[.5,.5]),110);
-   const z=this.add.zone(x+59,y+117,118,234).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-legendary-card',leg.id);
+   estrechar(this.uiLabel(x+mid,y+190,label,7,st.state==='caught'?'#9ff0bf':st.state==='available'?'#ffe08a':'#ff9daa',[.5,.5]),cw-8);
+   if(st.state!=='available'&&st.state!=='caught')estrechar(this.uiLabel(x+mid,y+206,st.reason,6,MENU_UI.tenue,[.5,.5]),cw-8);
+   const z=this.add.zone(x+mid,y+117,cw,234).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-legendary-card',leg.id);
    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();sfx('seleccion');this.legendaryLair(state,leg.id)});
   });
   this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state)).setData('torre2-legendary-back',true);
@@ -1406,7 +1421,7 @@ create(){
   nativeAro(this.add.graphics().setDepth(2.8),LX-2,LY-2,LW+4,LH+4,MENU_UI.panelBorde,7);
   if(st.state==='available'){
    const s=this.pokemonIdleSprite(id,spot.x,spot.y,78,6,null,'height');
-   if(s&&['zapdos','articuno','moltres','mew'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
+   if(s&&['zapdos','articuno','moltres','mew','lugia','hooh'].includes(id))this.tweens.add({targets:s,y:s.y-6,duration:900,yoyo:true,repeat:-1,ease:'Sine.inOut'});
   }else{
    const note={caught:'Você já capturou '+leg.name+'.',gone:leg.name+' foi embora. '+st.reason+'.',locked:'Algo poderoso vive aqui… '+st.reason+'.'}[st.state];
    const box=this.add.graphics().setDepth(5);nativeRect(box,spot.x-170,spot.y-40,340,34,MENU_UI.panelBorde,7);nativeRect(box,spot.x-168,spot.y-38,336,30,0x0a1a46,6);
@@ -1417,7 +1432,7 @@ create(){
   this.uiLabel(24,260,show?leg.name+' · Nv '+legendaryLevel(state,leg,currentLevelCap(state.stage))+(state.champion?'':' (limite da sua etapa)'):'???',10,MENU_UI.amarillo,[0,.5],4);
   const inv=state.inventory||{};
   estrechar(this.uiLabel(616,260,'Ultra ×'+(inv.ultraball||0)+' · Great ×'+(inv.greatball||0)+' · Poké ×'+(inv.pokeball||0)+' · Master ×'+(inv.masterball||0)+' · Dica: sono/paralisia e HP baixo',7,'#dcf4fb',[1,.5],4),360);
-  const LORE={powerplant:'Uma usina abandonada onde a eletricidade nunca para de estalar.',seafoam:'Ilhas geladas no meio do mar, varridas por neve o ano inteiro.',ember:'Dizem que o pico deste vulcão brilha em chamas durante a noite.',cave:'A caverna mais profunda de Kanto. Só os campeões podem entrar.',faraway:'Uma ilha escondida, coberta de mata e grama alta.'};
+  const LORE={powerplant:'Uma usina abandonada onde a eletricidade nunca para de estalar.',seafoam:'Ilhas geladas no meio do mar, varridas por neve o ano inteiro.',ember:'Dizem que o pico deste vulcão brilha em chamas durante a noite.',cave:'A caverna mais profunda de Kanto. Só os campeões podem entrar.',faraway:'Uma ilha escondida, coberta de mata e grama alta.','navel-base':'Uma gruta inundada pelo mar, na base da Rocha Navel. Algo enorme dorme sob as ondas.','navel-peak':'O cume da Rocha Navel, acima das nuvens. Penas brilhantes cobrem o chão.'};
   estrechar(this.uiLabel(320,296,LORE[leg.scene]||'',9,'#dcf4fb',[.5,.5],4),600);
   this.button(130,334,220,28,'◀ VOLTAR',()=>this.legendaryHub(state)).setData('torre2-lair-back',true);
   if(st.state==='available')
@@ -1427,6 +1442,71 @@ create(){
     this.enterBattle(state,true);
    },true).setData('torre2-lair-fight',id);
   this.__torre2Lair={id,state:st.state,scene:leg.scene};
+ }
+ // Torre de desafios (owner list item 14): floors in a row, no healing
+ // between them, a reward every 5 floors. Separate from the trainer ladder.
+ towerScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const st=towerStatus(state),run=towerRun(state),best=towerBest(state);
+  this.screenBanner(20,300,'Torre de desafios','badges');
+  // Tower drawn in pixel blocks on the left.
+  const g=this.add.graphics().setDepth(2);
+  nativeRect(g,14,44,196,244,MENU_UI.contorno,8);nativeRect(g,16,46,192,240,0x101c3c,7);
+  for(let i=0;i<9;i++){const y=258-i*24,w=112-i*6,x=112-w/2,lit=run&&i<Math.min(9,run.floor-1);
+   g.fillStyle(lit?0x2f5aa8:0x223152,1).fillRect(x,y,w,22);g.fillStyle(0x0a1430,1).fillRect(x,y+20,w,2);
+   for(let k=0;k<3;k++)g.fillStyle(lit?0xffe08a:0x3a4a6c,1).fillRect(x+10+k*(w-28)/2,y+7,8,8)}
+  g.fillStyle(0xf2c232,1).fillTriangle(112,40+12,82,66+4,142,66+4);
+  this.uiLabel(112,276,run?'Andar '+run.floor:'Melhor: andar '+best,9,MENU_UI.amarillo,[.5,.5],3);
+  this.uiSection(220,44,406,244);
+  const label=(x,y,t,size=9,color='#ffffff',o=[0,.5])=>this.uiLabel(x,y,t,size,color,o,4);
+  label(236,62,'Lute andar por andar sem curar a equipe entre as lutas.',8,'#dcf4fb');
+  label(236,78,'Curar fora da Torre, perder ou sair encerra a sequência.',8,'#dcf4fb');
+  label(236,94,'A cada '+TOWER_REWARD_EVERY+' andares: prêmio em dinheiro e itens.',8,'#dcf4fb');
+  label(236,116,'Melhor marca: andar '+best,10,MENU_UI.amarillo);
+  this.__torre2Tower={state:st.state,active:!!run,floor:run?.floor||0,best};
+  if(st.state==='locked'){label(236,150,st.reason,10,'#ff9daa');
+   this.button(130,334,220,28,'◀ VOLTAR',()=>this.renderCampaign(state)).setData('torre2-tower-back',true);return}
+  if(!run){
+   this.button(130,334,220,28,'◀ VOLTAR',()=>this.renderCampaign(state)).setData('torre2-tower-back',true);
+   this.button(470,334,260,28,'COMEÇAR NO ANDAR 1',()=>{
+    const r=startTowerRun(readCampaign()||state);if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+    try{saveCampaign(r.state)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9daa')}
+    this.towerScreen(r.state);
+   },true).setData('torre2-tower-start',true);
+   return;
+  }
+  const floor=currentTowerFloor(state),next=Math.ceil(run.floor/TOWER_REWARD_EVERY)*TOWER_REWARD_EVERY,rw=towerReward(next);
+  label(236,140,'Andar '+run.floor+(floor?.boss?' · ANDAR DE PRÊMIO':'')+' · Próximo prêmio no andar '+next,10,'#9ff0bf');
+  if(rw)label(236,158,'Prêmio: $'+rw.money+' + '+Object.entries(rw.items).map(([k,v])=>v+'× '+(TOWER_ITEM_NAMES[k]||k)).join(', '),8,'#ffe08a');
+  if(floor){
+   this.npcSprite(spriteIdForTrainer(floor.trainer),270,262,3,5);
+   floor.team.forEach((m,i)=>{const x=340+i*92;
+    this.pokemonIdleSprite(m.id,x,250,46,5,null,'height');
+    label(x,272,m.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase())+' Nv '+m.level,7,'#ffffff',[.5,.5])});
+  }
+  this.button(110,334,180,28,'SAIR DA TORRE',()=>{
+   const cur=readCampaign()||state,ended=endTowerRun(cur,'Você saiu da Torre no andar '+run.floor+'.');
+   try{saveCampaign(ended)}catch{}
+   this.towerScreen(ended);this.campaignNotice(ended.lastMessage);
+  }).setData('torre2-tower-leave',true);
+  this.button(470,334,260,28,'LUTAR · ANDAR '+run.floor,()=>this.enterTowerBattle(state),true).setData('torre2-tower-fight',run.floor);
+ }
+ enterTowerBattle(state){
+  const r=startTowerBattle(state);
+  if(!r.ok){this.campaignNotice(r.reason,'#ff9daa');return this.towerScreen(readCampaign()||state)}
+  const ace=r.floor.team.at(-1),base={...state,stage:Math.min(state.stage,STAGES.length-1)};
+  const party=createPartyMatch(base,{id:ace.id,level:ace.level,leader:false,kind:'trainer'},false);
+  party.foes=r.floor.team.map(({id,level})=>({id,level,hp:100,shiny:false,
+   loadout:resolveLoadout({id,progression:{species:id,level}})}));
+  party.enemyIndex=0;party.strategic=true;
+  const p=party.friend[party.playerIndex],e=party.foes[0];
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:r.floor.floor>=10?'dificil':'normal',arena:'estadio',mandos:[touch?'tactil':'kbm','cpu'],
+   torre2:{stage:state.stage,trainer:state.trainer,kind:'tower',token:r.token,party,
+    versus:{name:'ANDAR '+r.floor.floor,city:'TORRE DE DESAFIOS',kind:r.floor.trainer,
+     texture:'frlg-npc-'+spriteIdForTrainer(r.floor.trainer),title:r.floor.boss?'ANDAR DE PRÊMIO':'DESAFIANTE'},
+    playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},
+   torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
  }
  // Silph Co., president's office: beat Giovanni to get the Master Ball.
  // The owner's room art (campaign-art silph-office.png) with Giovanni and his
@@ -1756,11 +1836,44 @@ create(){
    if(shown<full.length){timer?.remove();shown=full.length;txt.setText(full);arrow.setVisible(true);return}
    line++;if(line>=scene.lines.length)return finish();show()};
   const z=this.add.zone(320,180,640,360).setDepth(D+4).setInteractive({useHandCursor:true}).setData('torre2-story-next',true);
-  z.on('pointerdown',()=>{sfx('seleccion');advance()});
+  let entering=!!scene.entrance;
+  z.on('pointerdown',()=>{if(entering)return;sfx('seleccion');advance()});
   this.button(580,64,90,22,'PULAR',()=>finish(),false,8).setDepth?.(D+6);
   this.children.list.slice(-3).forEach(o=>{o.setDepth?.(D+6);o.setData?.('torre2-story-skip',true)});
-  show();
-  this.__torre2Story={key:scene.key,lines:scene.lines.length};
+  // First meeting with a leader / Elite Four / Champion (owner list item 18):
+  // FireRed-style entrance, the leader slides in and a band with the name
+  // crosses the screen; the dialogue starts after it (a tap skips it).
+  if(entering)this.storyEntrance(who,tone,D,()=>{entering=false;show()},z);else show();
+  this.__torre2Story={key:scene.key,lines:scene.lines.length,entrance:!!scene.entrance};
+ }
+ storyEntrance(who,tone,D,start,zone){
+  const id=spriteIdForTrainer(who);
+  // Band across the top (above both figures, below the place banner).
+  const band=this.add.container(640,40).setDepth(D+5).setData('torre2-story-entrance',true);
+  const g=this.add.graphics();
+  g.fillStyle(0x000000,.55).fillRect(0,-4,640,72);
+  g.fillStyle(tone[1],1).fillRect(0,0,640,64);g.fillStyle(tone[0],1).fillRect(0,0,640,6).fillRect(0,58,640,6);
+  const title=['lorelei','bruno','agatha','lance'].includes(who)?'ELITE FOUR':who==='rival'?'CAMPEÃO':'LÍDER DE GINÁSIO';
+  band.add([g,this.uiLabel(320,20,title,9,'#ffe9a8',[.5,.5],0),this.uiLabel(320,42,SPEAKERS[who]||'',20,'#ffffff',[.5,.5],0)]);
+  let ended=false;
+  const end=()=>{if(ended)return;ended=true;zone.off('pointerdown',skip);
+   this.tweens.add({targets:band,alpha:0,duration:220,onComplete:()=>band.destroy()});
+   const img=this.children.list.find(o=>o.getData?.('torre2-npc-sprite')===id);
+   if(img){this.tweens.killTweensOf(img);img.x=200}
+   start()};
+  const skip=()=>end();
+  zone.on('pointerdown',skip);
+  this.tweens.add({targets:band,x:0,duration:380,ease:'Cubic.easeOut'});
+  // The leader walks in from the left edge (once the sprite is loaded).
+  this.time.delayedCall(0,()=>{
+   const img=this.children.list.find(o=>o.getData?.('torre2-npc-sprite')===id);
+   if(img&&!ended){img.x=-60;this.tweens.add({targets:img,x:200,duration:700,ease:'Quad.easeOut'})}
+  });
+  sfx('confirmar');
+  this.time.delayedCall(1500,end);
+  // Slow phones run the game clock behind real time: never wait more than 2 s.
+  const t=setTimeout(()=>{if(this.scene.isActive())end()},2000);
+  this.events.once('shutdown',()=>clearTimeout(t));
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
@@ -2473,6 +2586,32 @@ create(){
   // Defer only when no VS was rendered, to protect the original tap.
   this.time.delayedCall(0,enterCombat);
  }
+ // Light weather animation over a header strip (rain, sun, sand, hail, fog).
+ routeWeatherFx(kind,x,y,w,h,depth){
+  if(kind==='clear')return;
+  const rnd=(a,b)=>a+Math.random()*(b-a),objs=[];
+  const add=o=>{o.setDepth(depth).setData('torre2-weather-fx',kind);objs.push(o);return o};
+  if(kind==='sun'){
+   const g=add(this.add.graphics());g.fillStyle(0xfff0a0,.16);
+   for(let i=0;i<5;i++)g.fillTriangle(x+40+i*30,y,x+120+i*70,y+h,x+150+i*70,y+h);
+   this.tweens.add({targets:g,alpha:{from:.6,to:1},duration:1400,yoyo:true,repeat:-1});
+   return;
+  }
+  if(kind==='fog'){
+   for(let i=0;i<3;i++){const b=add(this.add.rectangle(x+rnd(0,w),y+18+i*24,w*.7,14,0xdfe6f2,.22));
+    this.tweens.add({targets:b,x:b.x+120*(i%2?1:-1),duration:5000+i*900,yoyo:true,repeat:-1,ease:'Sine.inOut'})}
+   return;
+  }
+  const n=kind==='rain'?36:kind==='sand'?44:26;
+  const col=kind==='rain'?0x9cc8ff:kind==='sand'?0xe0c080:0xffffff;
+  for(let i=0;i<n;i++){
+   const px=x+rnd(0,w),py=y+rnd(0,h);
+   const o=add(kind==='rain'?this.add.rectangle(px,py,2,8,col,.75):this.add.rectangle(px,py,kind==='hail'?3:2,kind==='hail'?3:2,col,.85));
+   const dur=kind==='rain'?rnd(380,620):kind==='sand'?rnd(900,1500):rnd(1100,1800);
+   const dx=kind==='rain'?-10:kind==='sand'?140:-12;
+   this.tweens.add({targets:o,y:{from:y,to:y+h},x:{from:px,to:Math.min(x+w,Math.max(x,px+dx))},duration:dur,repeat:-1,delay:rnd(0,dur)});
+  }
+ }
  grassScreen(state,areaStage=null){
   // Do not destroy the loaded overworld when entering tall grass. Removing
   // all scene children invalidated the map and its hotspot/hover references.
@@ -2487,7 +2626,7 @@ create(){
   nativeMarco(panel,22,16,596,328,'panel',{borde:MENU_UI.panelLuz});
   const close=()=>{
    const list=this.children.list.slice(start);
-   list.forEach(obj=>obj.active&&obj.destroy());
+   list.forEach(obj=>{this.tweens.killTweensOf(obj);obj.active&&obj.destroy()});
    this.__torre2GrassOverlay=null;
    this.campaignMusic('town');
   };
@@ -2512,7 +2651,12 @@ create(){
   head.fillStyle(0x061433,.55).fillRect(32,80,576,30);
   label(320,48,'Grama alta · '+area.label,15,MENU_UI.amarillo);
   if(revisit)label(320,70,'Voltando a '+(STAGES[areaStage]?.city||'Kanto')+' para caçar',9,'#9ff0bf');
-  label(320,94,area.area+'  ·  Encontros regionais (FireRed)',8,'#ffffff');
+  // Route weather (owner list item 16): visual + how often each species of
+  // this route's own table appears. Never battle weather, never new species.
+  const sky=routeWeather(revisit?areaStage:state.stage),SKY=ROUTE_WEATHERS[sky];
+  this.routeWeatherFx(sky,32,26,576,84,613.5);
+  estrechar(label(320,94,area.area+'  ·  '+SKY.name+(sky==='clear'?'':': '+SKY.hint),8,'#ffffff'),560)
+   .setData('torre2-route-weather',sky);
   // Green means genuinely caught (Pokédex), never merely available in grass.
   const caught=new Set(state.dexCaught||[]);
   const cards=this.add.graphics().setDepth(616);
@@ -2543,12 +2687,15 @@ create(){
    if(available)types.slice(0,2).forEach((t,k)=>{pastillaTipo(cards,x+44+k*44,y+24,t,41,11);
     this.uiLabel(x+64+k*44,y+30,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],620)});
    else this.uiLabel(x+44,y+30,'Aparece mais tarde',7,MENU_UI.apagadoTexto,[0,.5],620);
+   const ww=available?weatherWeight(sky,kantoTypes(id)):1;
+   if(ww!==1)this.uiLabel(x+131,y+33,ww>1?'▲':'▼',8,ww>1?'#7dff8a':'#ff8a7a',[.5,.5],621)
+    .setData('torre2-weather-mark',ww>1?'more':'less');
   });
   label(320,262,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
   modalButton(174,292,224,30,'◀ VOLTAR AO MAPA',close);
   modalButton(466,292,224,30,'PROCURAR POKÉMON',()=>{
    let found;
-   try{found=startWildEncounter(state,Math.random,revisit?areaStage:null);}
+   try{found=startWildEncounter(state,Math.random,revisit?areaStage:null,sky);}
    catch(error){
     console.warn('Torre 2: wild encounter not saved',error);
     const notice=text(this,320,266,'ENCONTRO NÃO SALVO · TENTE NOVAMENTE',{

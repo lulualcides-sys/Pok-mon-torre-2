@@ -8,6 +8,7 @@
  *  - running away keeps it there; knocking it out makes it leave until the
  *    League is beaten (or, after the League, until 10 more victories);
  *  - one Master Ball per journey: beat Giovanni at Silph Co. (Saffron).
+ *  - after the League: Lugia and Ho-Oh at Navel Rock (Johto, native kits).
  */
 export const LEGENDARIES=Object.freeze([
  {id:'zapdos',name:'Zapdos',place:'Usina Elétrica',scene:'powerplant',type:'ELECTRIC',
@@ -20,7 +21,14 @@ export const LEGENDARIES=Object.freeze([
   level:70,arena:'ruinas',champion:true,unlock:'Depois de zerar a Liga'},
  {id:'mew',name:'Mew',place:'Ilha Distante',scene:'faraway',type:'PSYCHIC',
   level:30,arena:'ruinas',champion:true,needs:['zapdos','articuno','moltres','mewtwo'],
-  unlock:'Depois de capturar os outros 4'}
+  unlock:'Depois de capturar os outros 4'},
+ // After the League (owner list 2026-11-20, item 12), FireRed's Navel Rock:
+ // Lugia at the base, Ho-Oh on the summit, level 70, catch rate 3. Both
+ // fight with their untouched native Poké Arena 2D kits.
+ {id:'lugia',name:'Lugia',place:'Rocha Navel · Gruta',scene:'navel-base',type:'PSYCHIC',
+  level:70,arena:'ruinas',champion:true,unlock:'Depois de zerar a Liga'},
+ {id:'hooh',name:'Ho-Oh',place:'Rocha Navel · Cume',scene:'navel-peak',type:'FIRE',
+  level:70,arena:'crater',champion:true,unlock:'Depois de zerar a Liga'}
 ]);
 // Silph Co. (Saffron): beating Giovanni in the president's office gives the
 // journey's single Master Ball, as in FireRed. FireRed team and levels; they

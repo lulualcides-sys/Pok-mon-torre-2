@@ -14,7 +14,9 @@ import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 import {regionalTrainer,regionalRocket} from './torre2-trainer-rosters.js';
 import {legendaryEncounter,markLegendaryDefeated,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
 import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
-import {KANTO_151_IDS} from './all-kanto-species.js';
+import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
+import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
+import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -803,7 +805,14 @@ export function wildAvailability(stage){
 // areaStage: optional completed city (0-7) chosen on the Kanto map, to hunt
 // its tall grass again (its own table and levels). The encounter still
 // belongs to the current stage, so battle, capture and saves are unchanged.
-export function startWildEncounter(s,random=Math.random,areaStage=null){
+// Types of a Kanto species (route weather weights).
+export function kantoTypes(id){
+ const row=KANTO_151.find(r=>r.id===id);
+ return row?row.tipos:(ROSTER.find(p=>p.id===id)?.tipos||[]);
+}
+// weather: optional route weather key (route-weather.js). It only changes how
+// often each species of THIS route's table appears; null/clear = uniform.
+export function startWildEncounter(s,random=Math.random,areaStage=null,weather=null){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
  const revisit=Number.isInteger(areaStage)&&areaStage!==s.stage;
  if(revisit&&!(areaStage>=0&&areaStage<GYMS.length&&(areaStage<s.stage||s.champion)))
@@ -823,7 +832,9 @@ export function startWildEncounter(s,random=Math.random,areaStage=null){
  const areaAt=revisit?areaStage:s.stage;
  const area=wildAvailability(areaAt);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
- const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
+ const sky=weather&&weather!=='clear'&&ROUTE_WEATHERS[weather]?weather:null;
+ const id=sky?pickWeighted(area.available,area.available.map(x=>weatherWeight(sky,kantoTypes(x))),random()):
+  area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
  // An independent single 1% roll belongs to this encounter, never to a
  // Poké Ball, evolution, scene restart or a loaded checkpoint.
  const shinyRoll=Number(random());
@@ -831,7 +842,7 @@ export function startWildEncounter(s,random=Math.random,areaStage=null){
  const wild={id,stage:s.stage,trainer:s.trainer,shiny,
   level:revisit?wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt)):
    wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100,
-  ...(revisit?{areaStage:areaAt}:{})};
+  ...(revisit?{areaStage:areaAt}:{}),...(sky?{weather:sky}:{})};
  // Stage the encounter, counter and Pokédex together. Storage denial
  // must leave the original route and RNG retry available without a phantom
  // encounter, incremented counter or newly seen species in memory.
@@ -926,6 +937,42 @@ export function resolveSilphBattle(s,token,won){
   next.lastMessage='Você expulsou a Equipe Rocket! O presidente da Silph Co. te deu a MASTER BALL. +'+reward+' EXP · +$'+SILPH_GIOVANNI.money+'.';
   return {won:true,message:next.lastMessage,reward,growth:silphShare.gains.find(g=>g.index===next.active),
    sharedExp:silphShare.gains,evolutions:silphShare.evolutions};
+ });
+}
+// Torre de desafios (challenge-tower.js): species the engine can field.
+export function towerSpeciesPool(){return KANTO_151_IDS.filter(id=>supportedKanto.has(id))}
+export function currentTowerFloor(s){
+ const t=towerRun(s);if(!t)return null;
+ return towerFloor(t.seed,t.floor,towerSpeciesPool(),currentLevelCap(Math.min(s.stage,STAGES.length-1)));
+}
+export function startTowerBattle(s){
+ const t=towerRun(s);if(!t)return {ok:false,reason:'Comece uma sequência na Torre primeiro.'};
+ const heal=towerCheckHeal(s);
+ if(!heal.ok){if(heal.state){saveCampaign(heal.state);Object.assign(s,heal.state)}return {ok:false,reason:heal.state?.lastMessage||heal.reason}}
+ if(!ensureConsciousActive(s))return {ok:false,reason:'Sua equipe desmaiou. A sequência terminou.'};
+ const floor=currentTowerFloor(s);if(!floor)return {ok:false,reason:'Torre indisponível.'};
+ const next={...s,dexSeen:[...(s.dexSeen||[])]};
+ floor.team.forEach(m=>recordSeen(next,m.id));
+ saveCampaign(next);s.dexSeen=next.dexSeen;
+ return {ok:true,token:towerToken(s),floor};
+}
+export function resolveTowerBattle(s,token,won){
+ const t=towerRun(s);
+ if(!t||token!==towerToken(s))return {ok:false,reason:'Resultado antigo da Torre ignorado.'};
+ return commitBattleOutcome(s,next=>{
+  let share=null,xp=0;
+  if(won){
+   const st=Math.min(next.stage,STAGES.length-1);
+   xp=Math.round(xpRewardFor(st,TRAINERS_PER_GYM(st),'trainer'));
+   share=awardSharedTeamExperience(next,xp,{kind:'trainer'});
+   next.wins++;rechargeRematches(next);
+  }else next.losses++;
+  const r=resolveTowerFloor(next,token,!!won);
+  Object.assign(next,r.state);
+  const message=r.message+(won?' +'+xp+' EXP.':'');
+  next.lastMessage=message;
+  return {won:!!won,message,reward:xp,tower:r.reward||null,
+   growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
  });
 }
 export function startWildBattle(s){
