@@ -299,6 +299,7 @@ await Promise.all([
  // Legendary encounters (pure rules), imported by campaign-core and campanha.
  ['tools/pokearena/torre2-legendaries.js','legendaries.js'],
  ['tools/pokearena/torre2-legendary-lairs.js','legendary-lairs.js'],
+ ['tools/pokearena/torre2-daily-missions.js','daily-missions.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
