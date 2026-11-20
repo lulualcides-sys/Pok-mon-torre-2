@@ -88,7 +88,11 @@ const newModuleNames=[
  // Pokémon trade by code (pure), imported by campaign-core.js.
  ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js'],
  // FireRed story scenes (pure data), imported by campanha.js.
- ['tools/pokearena/torre2-story.js','torre2/story.js']
+ ['tools/pokearena/torre2-story.js','torre2/story.js'],
+ // Multiplayer by code (main menu): WebRTC link + emulated room server for
+ // the base client's own 1v1 friendly match. Registered in main.js below.
+ ['tools/pokearena/torre2-multiplayer-core.js','torre2/multiplayer-core.js'],
+ ['tools/pokearena/torre2-multiplayer.js','torre2/multiplayer.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);
@@ -276,11 +280,16 @@ const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 // Offline game: the mandatory online-account screen becomes a trainer-name screen.
 const redPatched=patchAccountRequirement(await read(path.join(original,'red.js')));
 const accountPatched=patchAccountScene(await read(path.join(original,'escenas/cuenta.js')));
-const title=removeMessagesTitleButton(removeUpdatesTitleButton(removeNewsTitleOption(originalTitle)));
+const titleBase=removeMessagesTitleButton(removeUpdatesTitleButton(removeNewsTitleOption(originalTitle)));
+// Main menu: MULTIPLAYER (by code) right after PLAY.
+const PLAY_ENTRY='{id:"jugar",txt:"PLAY",menu:"jugar",ico:"pokeball"},';
+exactly(titleBase,PLAY_ENTRY,'title PLAY entry');
+const title=titleBase.replace(PLAY_ENTRY,PLAY_ENTRY+'{id:"multi",txt:"MULTIPLAYER",escena:"torre2Multi",ico:"personas"},');
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
 must(!title.includes('this.scene.start("novedades")'),'UPDATES/News shortcut remains in title');
 must(!title.includes('this.esquinaStreamer();'),'STREAMER MODE toggle remains in title');
 must(!title.includes('["mensaje",'),'MESSAGES button remains in title');
+must(title.includes('escena:"torre2Multi"'),'MULTIPLAYER entry missing in title');
 
 // Update exclusively missing artist-sourced Magmortar combat animations.
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.
@@ -321,9 +330,16 @@ for(const {target,content} of newModules)await fs.writeFile(path.join(dest,targe
 // from main.js; neither is started in the published copy.
 {
  const mainFile=path.join(dest,'main.js');
- const main=await read(mainFile);
+ let main=await read(mainFile);
  exactly(main,'iniciarNoticias(juego);iniciarComunicado(juego);','native news/patch-notes start');
- await fs.writeFile(mainFile,main.replace('iniciarNoticias(juego);iniciarComunicado(juego);',''));
+ main=main.replace('iniciarNoticias(juego);iniciarComunicado(juego);','');
+ // Multiplayer by code: register the Torre 2 link scene next to the campaign.
+ exactly(main,'import{Campanha}from"./torre2/campanha.js";','campaign scene import');
+ exactly(main,'scene:[Carga,Campanha,','native scene list');
+ main=main.replace('import{Campanha}from"./torre2/campanha.js";',
+  'import{Campanha}from"./torre2/campanha.js";import{Torre2Multi}from"./torre2/multiplayer.js";')
+  .replace('scene:[Carga,Campanha,','scene:[Carga,Campanha,Torre2Multi,');
+ await fs.writeFile(mainFile,main);
 }
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
