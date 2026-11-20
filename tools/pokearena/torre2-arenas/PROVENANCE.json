@@ -1,0 +1,120 @@
+{
+ "owner": "Dono do projeto Pokémon Torre 2",
+ "supplied": "2026-11-20",
+ "source": "Prancha das 5 arenas (Giovanni, Lorelei, Bruno, Agatha e Campeão) gerada pelo dono a partir do prompt do Torre 2 e enviada na conversa; uso autorizado no jogo.",
+ "method": "Cada quadro recortado e ampliado (vizinho mais próximo) para 2000x1334 com o chão interno do anel no mesmo lugar do ovalo dos ginásios nativos (centro 1000,670 e rx 824 px); esticado na vertical no máximo 25%. Bordas que faltavam foram completadas repetindo a última linha.",
+ "files": {
+  "viridian.jpg": "df0f8147956a89f8c0165137b19598399f09e28581d48779aabcf86250653d2c",
+  "lorelei.jpg": "6f2fdb1fb48519a7cc73c124278a3c9766fc0becf59853a0c73f32d0f326ad7a",
+  "bruno.jpg": "4b9556d83793b8336bb57d9e49c0e891cc5efcd9f76b04c034f2b30e1cad6764",
+  "agatha.jpg": "3c9679ac656db0eff6651c1e197289048eda800c6efd358df39592265f17a847",
+  "champion.jpg": "13eb47aead65fd8729d388282bded76c0b0931d1cdd39eafaa1f54cd3ea0f37f"
+ },
+ "arenas": {
+  "viridian": {
+   "panel": [
+    10,
+    9,
+    545,
+    453
+   ],
+   "innerEllipse": [
+    277,
+    299,
+    220,
+    59
+   ],
+   "stretchY": 1.25,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 153
+   }
+  },
+  "lorelei": {
+   "panel": [
+    567,
+    9,
+    541,
+    453
+   ],
+   "innerEllipse": [
+    276,
+    300,
+    218,
+    60
+   ],
+   "stretchY": 1.25,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 157
+   }
+  },
+  "bruno": {
+   "panel": [
+    1120,
+    9,
+    542,
+    453
+   ],
+   "innerEllipse": [
+    276,
+    300,
+    221,
+    60
+   ],
+   "stretchY": 1.25,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 154
+   }
+  },
+  "agatha": {
+   "panel": [
+    10,
+    478,
+    771,
+    454
+   ],
+   "innerEllipse": [
+    392,
+    279,
+    307,
+    69
+   ],
+   "stretchY": 1.25,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 128
+   }
+  },
+  "champion": {
+   "panel": [
+    800,
+    478,
+    862,
+    454
+   ],
+   "innerEllipse": [
+    455,
+    280,
+    335,
+    80
+   ],
+   "stretchY": 1.25,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 136
+   }
+  }
+ }
+}

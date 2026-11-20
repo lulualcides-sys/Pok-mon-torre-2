@@ -444,7 +444,7 @@ export function swapPokemon(s,teamIndex,boxIndex){
 // Blackthorn dragon temple. Viridian and the other Elite Four keep their
 // arena. Unknown ids fall back to the native default arena (arenaDe).
 export const LEADER_ARENAS=Object.freeze({0:'pewter',1:'cerulean',2:'vermilion',3:'celadon',
- 4:'fuchsia',5:'saffron',6:'cinnabar',11:'blackthorn'});
+ 4:'fuchsia',5:'saffron',6:'cinnabar',7:'t2-viridian',8:'t2-lorelei',9:'t2-bruno',10:'t2-agatha',11:'blackthorn',12:'t2-champion'});
 export function campaignDifficultyTier(stage,leader=false,role='trainer'){
  const level=Math.max(0,Math.trunc(Number(stage)||0));
  if(leader)return level>=8?'maestro':level>=4?'dificil':'normal';
