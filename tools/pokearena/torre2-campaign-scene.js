@@ -13,10 +13,11 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
-// Native graphics options (light mode). Loaded lazily and tolerantly: an older
-// base client without these exports must never stop the campaign from loading.
-let nativeGraphics=null;
-import('../calidad.js').then(m=>{if(typeof m?.ponerOpcion==='function'&&typeof m?.opcionElegida==='function')nativeGraphics=m}).catch(()=>{});
+// Native graphics options (light mode). The 0.76.2 publisher exposes the base
+// client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
+// no such module, so the campaign never requests it.
+const nativeGraphicsApi=()=>{const m=globalThis.__torre2NativeGraphics;
+ return typeof m?.ponerOpcion==='function'&&typeof m?.opcionElegida==='function'?m:null};
 import {readLegacy,saveLegacy,syncLegacy,TITLES,titleById,ACHIEVEMENT_REWARDS,rewardLabel,claimAchievement,
  encodeTrainerCode,decodeTrainerCode,readRanking,saveRanking,addFriend,rankingRows} from './legacy.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
@@ -1510,10 +1511,11 @@ create(){
  }
  // Light mode (Mais): the base client's own graphics options. Turns off the
  // ground marks and the glow, and lowers particles; switching off restores them.
- lightModeOn(){return !!nativeGraphics&&nativeGraphics.opcionElegida('marcas')==='no'&&nativeGraphics.opcionElegida('particulas')==='baja'}
+ lightModeOn(){const Q=nativeGraphicsApi();return !!Q&&Q.opcionElegida('marcas')==='no'&&Q.opcionElegida('particulas')==='baja'}
  toggleLightMode(){
-  if(!nativeGraphics){this.campaignNotice('Modo leve indisponível nesta versão.','#ff9daa');return false}
-  const on=!this.lightModeOn(),Q=nativeGraphics;
+  const Q=nativeGraphicsApi();
+  if(!Q){this.campaignNotice('Modo leve indisponível nesta versão.','#ff9daa');return false}
+  const on=!this.lightModeOn();
   Q.ponerOpcion('marcas',on?'no':'si');Q.ponerOpcion('particulas',on?'baja':'auto');Q.ponerOpcion('brillo',on?'no':'auto');
   this.campaignNotice(on?'Modo leve LIGADO: sem marcas no chão, menos partículas e brilho.':'Modo leve DESLIGADO: gráficos normais.',on?'#9ff0bf':MENU_UI.amarillo);
   return on;
