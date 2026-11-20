@@ -9,6 +9,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {patchFriendlyRoomTeams} from './torre2-sala-teams-patch.mjs';
 import {patchOnlineResult} from './torre2-online-result-patch.mjs';
+import {pwaManifest,serviceWorker,PWA_HOOK} from './torre2-pwa.mjs';
 import {removeNewsTitleOption,removeUpdatesTitleButton,removeMessagesTitleButton} from './torre2-title-pokedex-fast.mjs';
 import {patchFireTrailMarks} from './torre2-fire-trail-patch.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
@@ -98,6 +99,8 @@ const newModuleNames=[
  ['tools/pokearena/torre2-route-weather.js','torre2/route-weather.js'],
  // Torre de desafios rules (pure), imported by campaign-core and the scene.
  ['tools/pokearena/torre2-challenge-tower.js','torre2/challenge-tower.js'],
+ // Pokédex filters (pure), imported by the campaign scene.
+ ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
  // the base client's own 1v1 friendly match. Registered in main.js below.
  ['tools/pokearena/torre2-multiplayer-core.js','torre2/multiplayer-core.js'],
@@ -445,6 +448,12 @@ const perfHook='<script>if(new URLSearchParams(location.search).get("torre2-perf
  '{const s=document.createElement("script");s.src="./torre2-performance-monitor.js";document.head.append(s)}</script>';
 must(html.split('</body>').length===2,'native index body changed');
 html=html.replace('</body>',perfHook+'</body>');
+// Install as an app (owner list item 25): Torre 2 manifest, service worker
+// for this release and the install-prompt hook.
+must(html.split('</head>').length===2,'native index head changed');
+html=html.replace('</head>',PWA_HOOK+'</head>');
+await fs.writeFile(path.join(root,'manifest.webmanifest'),pwaManifest(await read(path.join(root,'manifest.webmanifest'))));
+await fs.writeFile(path.join(root,'sw.js'),serviceWorker(newModule));
 await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
 const release={alpha:baseAlpha,source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},

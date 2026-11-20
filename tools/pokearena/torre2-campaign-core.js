@@ -684,6 +684,8 @@ export function resolveBattle(s,won,random=Math.random){
   next.money=(next.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+next.stage*60);
   next.pendingCapture=null;
   if(opponent.leader){
+   // Secret title "Especialista": the whole team shares one type.
+   if(monoTypeTeam(next.team))next.secretFlags={...(next.secretFlags||{}),monoLeader:true};
    const awards=next.stage<GYMS.length?next.badges:(next.leagueHonors??=[]);
    if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
    const tm=grantGymTM(next,next.stage);
@@ -700,6 +702,12 @@ export function resolveBattle(s,won,random=Math.random){
 }
 // Wild captures are requested from the live battle while the foe still has HP.
 // Previously finished trainer fights keep their existing reward-capture flow.
+// Secret titles (legacy.js): every team member shares at least one type.
+export function monoTypeTeam(team){
+ const t=(Array.isArray(team)?team:[]).map(m=>kantoTypes(m?.id));
+ if(!t.length||t.some(x=>!x.length))return false;
+ return t[0].some(type=>t.every(x=>x.includes(type)));
+}
 export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  const inWild=options?.duringBattle===true;
  if(!inWild)return {ok:false,reason:'Pokémon de treinadores não podem ser capturados.'};
@@ -736,6 +744,8 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   if(member.shiny)recordShiny(next,candidate.id,true);
   const destination=next.team.length<6?'Equipe':'PC';
   if(destination==='Equipe')next.team.push(member);else next.box.push(member);
+  // Secret title "Captura Perfeita": the player's Pokémon took no damage.
+  if(options.playerUntouched===true)next.secretFlags={...(s.secretFlags||{}),cleanCatch:true};
   next.lastMessage=candidate.id+' capturado! '+destination+
    ' · '+Math.round(outcome.chance*100)+'% de chance.';
  }
@@ -746,6 +756,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  s.lastMessage=next.lastMessage;
  if(!outcome.caught)return {ok:false,reason:s.lastMessage,...outcome};
  s.pendingWild=null;
+ if(next.secretFlags)s.secretFlags=next.secretFlags;
  recordCaught(s,candidate.id);
  if(member.shiny){
   s.dexShinySeen=next.dexShinySeen;
