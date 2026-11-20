@@ -30,7 +30,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
- startSilphBattle,resolveSilphBattle} from './campaign-core.js';
+ startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade} from './campaign-core.js';
 import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
 import {drawLegendaryLair,drawLairAmbient,LAIR_SPOT,drawSilphOfficeArt} from './legendary-lairs.js';
 import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
@@ -872,6 +872,7 @@ create(){
    ranking:()=>this.rankingScreen(state),
    legendaries:()=>this.legendaryHub(state),
    missions:()=>this.missionsScreen(state),
+   trade:()=>this.tradeScreen(state),
    lightMode:()=>{this.toggleLightMode();this.renderCampaign(state)},
    lightLabel:()=>'MODO LEVE: '+(this.lightModeOn()?'ON':'OFF'),
    silph:()=>this.silphScreen(state),
@@ -1562,6 +1563,109 @@ create(){
   else this.uiLabel(540,271,(d.missions.filter(m=>missionProgress(cur,m,typesOf)>=m.goal).length)+'/3',11,'#8ea2c8',[.5,.5]);
   this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-daily-back',true);
   this.__torre2Daily={day:d.day,missions:d.missions.map(m=>({kind:m.kind,goal:m.goal,progress:missionProgress(cur,m,typesOf)})),bonus:d.bonus};
+ }
+ // Pokémon trade by code (Mais → TROCA). Send moves the Pokémon out of this
+ // save into a code; Receive pastes a friend's code once.
+ tradeOverlay(build){
+  const D=9400,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const close=()=>{objs.forEach(o=>o?.active&&o.destroy())};
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive());
+  const g=keep(this.add.graphics().setDepth(D+1));g.fillStyle(0x020814,.88).fillRect(0,0,640,360);
+  nativeMarco(g,90,70,460,214,'panel',{borde:MENU_UI.oro});
+  const lift=btn=>{this.children.list.slice(-3).forEach(o=>{if(o!==btn)o.setDepth?.(D+3)});btn.setDepth(D+4);
+   this.children.list.slice(-3).forEach(o=>keep(o));return keep(btn)};
+  build({D,g,keep,lift,close});
+  return close;
+ }
+ tradeScreen(state,mode='send',page=0){
+  this.children.removeAll(true);this.backdrop();
+  const cur=readCampaign()||state;
+  let name='Treinador';try{name=localStorage.getItem('torre2-trainer-name')||name}catch{}
+  this.screenBanner(20,300,'Troca de Pokémon','bag');
+  this.uiLabel(320,46,'Troque com seus amigos por código · o Pokémon enviado sai do seu save',8,MENU_UI.suave,[.5,.5]);
+  this.button(220,72,180,24,'ENVIAR',()=>this.tradeScreen(cur,'send'),mode==='send',9).setData('torre2-trade-tab','send');
+  this.button(420,72,180,24,'RECEBER',()=>this.tradeScreen(cur,'receive'),mode==='receive',9).setData('torre2-trade-tab','receive');
+  this.uiSection(8,90,624,218);
+  const g=this.add.graphics().setDepth(3);
+  if(mode==='send'){
+   const all=[...(cur.team||[]).map(m=>({m,where:'Equipe'})),...(cur.box||[]).map(m=>({m,where:'PC'}))];
+   const per=12,pages=Math.max(1,Math.ceil(all.length/per));page=Math.max(0,Math.min(pages-1,page));
+   all.slice(page*per,page*per+per).forEach(({m,where},i)=>{
+    const x=18+(i%6)*101,y=98+Math.floor(i/6)*104,lv=m.progression?.level||5;
+    nativeRect(g,x,y,97,98,m.shiny?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,x+2,y+2,93,94,0x0f2352,6);
+    g.fillStyle(0x000000,.25).fillEllipse(x+48,y+60,46,9);
+    this.pokemonIdleSprite(m.id,x+48,y+61,44,5,null,'height');
+    const nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+    estrechar(this.uiLabel(x+48,y+74,nice+(m.shiny?' ✦':''),8,m.shiny?MENU_UI.amarillo:'#ffffff',[.5,.5]),90);
+    this.uiLabel(x+48,y+88,'Nv '+lv+' · '+where,6,MENU_UI.suave,[.5,.5]);
+    const z=this.add.zone(x+48,y+49,97,98).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-trade-pick',m.uid);
+    z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();this.confirmSendTrade(cur,m,name)});
+   });
+   if(!all.length)this.uiLabel(320,190,'Nenhum Pokémon para enviar.',10,'#ffffff',[.5,.5]);
+   if(pages>1){
+    this.button(470,334,100,26,'◀',()=>this.tradeScreen(cur,'send',(page-1+pages)%pages),false,9);
+    this.uiLabel(530,334,(page+1)+'/'+pages,8,MENU_UI.amarillo,[.5,.5]);
+    this.button(590,334,80,26,'▶',()=>this.tradeScreen(cur,'send',(page+1)%pages),false,9);
+   }
+  }else{
+   originalBallSprite(this,320,150,'pokeball',40,5);
+   this.uiLabel(320,190,'Peça para seu amigo enviar um Pokémon',11,'#ffffff',[.5,.5]);
+   this.uiLabel(320,208,'Ele toca em ENVIAR, copia o código e te manda (WhatsApp etc.)',8,MENU_UI.suave,[.5,.5]);
+   this.uiLabel(320,224,'O nível fica no limite da sua etapa, como na obediência do FireRed.',7,MENU_UI.tenue,[.5,.5]);
+   this.button(320,268,240,30,'COLAR CÓDIGO',()=>{
+    const code=window.prompt('Cole o código de troca (começa com T2P-):','');
+    if(code)this.confirmReceiveTrade(readCampaign()||cur,code.trim());
+   },true,10).setData('torre2-trade-paste',true);
+  }
+  this.button(150,334,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-trade-back',true);
+  this.__torre2Trade={mode,count:(cur.team||[]).length+(cur.box||[]).length};
+ }
+ confirmSendTrade(state,m,name){
+  const lv=m.progression?.level||5,nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  this.tradeOverlay(({D,g,keep,lift,close})=>{
+   keep(this.uiLabel(320,94,'Enviar '+nice+' Nv '+lv+'?',13,MENU_UI.amarillo,[.5,.5],D+2));
+   keep(this.pokemonIdleSprite(m.id,320,170,60,D+2,null,'height'));
+   keep(this.uiLabel(320,196,'Ele sai do seu save e vira um código para o seu amigo.',8,'#ffffff',[.5,.5],D+2));
+   keep(this.uiLabel(320,212,'Só envie se for mesmo trocar: o código vale uma vez.',7,'#ffb0b0',[.5,.5],D+2));
+   lift(this.button(230,252,160,28,'CANCELAR',close,false,9));
+   lift(this.button(410,252,160,28,'ENVIAR',()=>{
+    const r=sendTrade(readCampaign()||state,m.uid,name);close();
+    if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+    this.tradeScreen(readCampaign()||state,'send');this.showTradeCode(r.code,nice,lv);
+   },true,9).setData('torre2-trade-send',m.uid));
+  });
+ }
+ showTradeCode(code,nice,lv){
+  this.tradeOverlay(({D,g,keep,lift,close})=>{
+   keep(this.uiLabel(320,94,'Código de troca: '+nice+' Nv '+lv,12,MENU_UI.amarillo,[.5,.5],D+2));
+   keep(this.uiLabel(320,114,'Mande para seu amigo: ele cola em TROCA → RECEBER',7,MENU_UI.suave,[.5,.5],D+2));
+   nativeRect(g,110,130,420,52,0xf4f1e6,6);
+   const t=keep(textoMenu(this,320,156,code,{tam:8,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(.5).setDepth(D+2));
+   estrechar(t,400);t.setData('torre2-trade-code',code);
+   keep(this.uiLabel(320,198,'Guarde o código até seu amigo receber.',7,'#ffd47a',[.5,.5],D+2));
+   lift(this.button(230,252,160,28,'COPIAR',async()=>{
+    try{await navigator.clipboard.writeText(code);this.campaignNotice('Código copiado!','#9ff0bf')}
+    catch{window.prompt('Copie o código:',code)}
+   },true,9).setData('torre2-trade-copy',true));
+   lift(this.button(410,252,160,28,'FECHAR',close,false,9));
+  });
+ }
+ confirmReceiveTrade(state,code){
+  const p=previewTrade(state,code);
+  if(!p.ok)return this.campaignNotice(p.reason,'#ff9daa');
+  const nice=String(p.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  this.tradeOverlay(({D,g,keep,lift,close})=>{
+   keep(this.uiLabel(320,94,nice+(p.shiny?' ✦':'')+' Nv '+p.level,13,p.shiny?MENU_UI.amarillo:'#ffffff',[.5,.5],D+2));
+   keep(this.pokemonIdleSprite(p.id,320,170,60,D+2,null,'height'));
+   keep(this.uiLabel(320,196,'Enviado por '+p.from,9,MENU_UI.amarillo,[.5,.5],D+2));
+   if(p.originalLevel>p.level)keep(this.uiLabel(320,212,'Nível '+p.originalLevel+' → '+p.level+' (limite da sua etapa)',7,'#ffd47a',[.5,.5],D+2));
+   lift(this.button(230,252,160,28,'CANCELAR',close,false,9));
+   lift(this.button(410,252,160,28,'RECEBER',()=>{
+    const r=receiveTrade(readCampaign()||state,code);close();
+    if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
+    this.tradeScreen(readCampaign()||state,'receive');this.campaignNotice(nice+' chegou! Foi para: '+r.dest,'#9ff0bf');
+   },true,9).setData('torre2-trade-receive',true));
+  });
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
