@@ -39,7 +39,7 @@ export const STORY=Object.freeze({
  'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{loc:'rockethideout',feet:[190,440],d:72},lines:[
   ['rocket','Ei! O Cassino é só fachada... você achou o esconderijo da Equipe Rocket!'],
   ['rocket','Ninguém que descobre o nosso segredo sai daqui!']]},
- 'rocket-5':{place:'Silph Co. · Saffron',bg:{art:'silph-office',feet:[330,290],d:200},lines:[
+ 'rocket-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',feet:[880,1724],d:72},lines:[
   ['rocket','A Silph Co. agora pertence à Equipe Rocket!'],
   ['rocket','O chefe quer a Master Ball. Você não vai atrapalhar!']]},
  'rocket-7':{place:'Viridian',bg:{loc:'viridian',feet:[490,372],d:72},lines:[
@@ -113,9 +113,9 @@ export const LEADERS=Object.freeze([
   retry:['Voltou pro vulcão? Gosto de quem não esfria!',
    'Hah! A chama da sua vontade ainda queima!',
    'Mais uma rodada no calor?']},
- {who:'giovanni',type:'GROUND',place:'Ginásio de Viridian',bg:{loc:'viridian',feet:[1100,372],d:72},intro:[
+ {who:'giovanni',type:'GROUND',place:'Sala do Giovanni',bg:{art:'silph-office',feet:[330,290],d:200},intro:[
   'Então é você quem atrapalhou a Equipe Rocket tantas vezes.',
-  'Este é o meu ginásio. Aqui, eu sou o líder mais forte de Kanto.',
+  'Esta é a minha sala. Aqui, eu sou o líder mais forte de Kanto.',
   'Vou mostrar por que a Rocket me obedece.'],
   strong:'Água, Planta ou Gelo. Você veio pronto. Não vai adiantar.',
   weak:'Fogo, Elétrico, Pedra... o chão vai engolir tudo isso.',

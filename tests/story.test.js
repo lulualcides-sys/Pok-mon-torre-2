@@ -68,8 +68,9 @@ test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()
  }
  assert.equal(storyFor({stage:3},{kind:'leader',leader:true,id:'vileplume'}).bg.loc,'celadon');
 });
-test('Silph Rocket scene happens in Giovanni\'s office (owner art)',()=>{
- const sc=storyFor({stage:5},{kind:'rocket',id:'koffing'});
- assert.equal(sc.bg.art,'silph-office');
- const [x,y,w,h]=sc.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
+test('Giovanni speaks in his own office (owner art); Silph Rocket stays on 11F',()=>{
+ const g=storyFor({stage:7},{kind:'leader',leader:true,id:'rhyhorn'});
+ assert.equal(g.speaker,'giovanni');assert.equal(g.bg.art,'silph-office');
+ const [x,y,w,h]=g.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
+ assert.equal(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg.loc,'silph');
 });
