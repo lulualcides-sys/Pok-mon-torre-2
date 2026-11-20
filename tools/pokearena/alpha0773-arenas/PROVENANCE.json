@@ -1,0 +1,24 @@
+{
+ "supplied": "2026-11-20",
+ "source": "Enviadas pelo dono do projeto na conversa: arenas dos ginásios e folhas do fogo animado de Cinnabar do Poké Arena 2D 0.77.3 (captura autorizada pelos donos do site; /assets/ do site responde 403 para acesso automatizado).",
+ "install": "publish-alpha0762.mjs copia para arena2d/assets/arenas/gimnasios/ (caminho que o cliente 0.77.3 já usa em ARENAS_GIMNASIO e arena_viva.js).",
+ "note": "Imagens 2000x1334 (o cliente desenha na proporção 2129x1420, a mesma 3:2). O fogo animado de Cinnabar está desligado no próprio cliente 0.77.3 (VIVAS.cinnabar.activa=false); as folhas ficam instaladas sem alterar esse dado nativo.",
+ "files": {
+  "gimnasios/blackthorn-amplia.jpg": "0032f9f773ba3fde2dba7902d149ebacc781ee00932ab73b39d227fdaf684566",
+  "gimnasios/celadon-amplia.jpg": "b68fca7dd549f4aef6593d1afb897e45ed24dc68f035cf231afccae862227d89",
+  "gimnasios/cerulean-amplia.jpg": "cc52d845341579a82f6e39910ce513b5905d5ce4c643330ea8e9c08bc92edcbf",
+  "gimnasios/cinnabar-amplia.jpg": "84c53f6e5803919a36ee4db7cad01cb5e31d4c85b1419cd8f956c5e966b3069f",
+  "gimnasios/fuchsia-amplia.jpg": "ac5007f58d623f0ef0c30818c27fe364d7602e96ef413866318a5ffefb8b8320",
+  "gimnasios/pewter-amplia.jpg": "d7218735bbe2239d7603f63f87712ca9c8a10e0e648a6b40ad2fcb2dd5922667",
+  "gimnasios/saffron-amplia.jpg": "28e58cf829fd0a3ec21ab91bc14197d36f3bf2b39756cce17e557e34e18a1429",
+  "gimnasios/vermilion-amplia.jpg": "30fe3a3f5f7ffc3491ad856f25637da8b9b0297325eb63883e3eb1a15725a69f",
+  "gimnasios/vivas/cinnabar-burbuja.png": "35cb080ea93f7fc2cf028d7203d27171caa192c32bcd03990c9e81fa01a00b9e",
+  "gimnasios/vivas/cinnabar-humo.png": "d1ddf02a7db73ad969e6725606686ae3eefa329430721017285f3cc5fdb2e31d",
+  "gimnasios/vivas/cinnabar-lava-mascara.png": "7e63e92633bfb61dc5d8cab5b4b29b6b398e147917194c581975d96dd07c61e6",
+  "gimnasios/vivas/cinnabar-lava.png": "6d91ddff6be2c348c637e6b22906612310c6647f87e15da2d5b6eb7547c841ea",
+  "gimnasios/vivas/cinnabar-llama-chica.png": "a438e322e30c861f25b1459b7e53a141d3c3af91563baa0e4d9e67204f28acca",
+  "gimnasios/vivas/cinnabar-llama-grande.png": "4fd17bd014125d20b29e7b18e691538f7d422f54466465092f7d2a148f025671",
+  "gimnasios/vivas/cinnabar-llama-lateral.png": "7c75ed5244e3f903825d31c3561ceda47a8dd51aec21a0871f8dabc7f621a5a5",
+  "gimnasios/vivas/cinnabar-llama-media.png": "57421714c3aff92b5c74fb67a8f1eac18011fc2f91bc40c16e8a66b3193162b6"
+ }
+}

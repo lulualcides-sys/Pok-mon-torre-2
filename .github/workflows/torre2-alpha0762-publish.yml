@@ -36,6 +36,7 @@ on:
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
+      - 'tools/pokearena/alpha0773-arenas/**'
       - '.github/workflows/torre2-alpha0762-publish.yml'
       - 'tests/alpha0762-new-species-moves-browser.cjs'
       - 'tests/alpha0713-hotfix-navigation-browser.cjs'
@@ -85,6 +86,7 @@ on:
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/campaign-art/**'
       - 'tools/pokearena/campaign-music/**'
+      - 'tools/pokearena/alpha0773-arenas/**'
   workflow_dispatch:
 
 permissions:
