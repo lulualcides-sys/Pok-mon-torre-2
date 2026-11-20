@@ -14,7 +14,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
 import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from './daily-missions.js';
-import {storyFor,markStorySeen} from './story.js';
+import {storyFor,markStorySeen,SPEAKERS} from './story.js';
 // Native graphics options (light mode). The 0.76.2 publisher exposes the base
 // client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
 // no such module, so the campaign never requests it.
@@ -1668,17 +1668,19 @@ create(){
    },true,9).setData('torre2-trade-receive',true));
   });
  }
- // Story scene before the first Rival / Team Rocket battle of a stage
- // (FireRed plot). Tap: finish the line / next line. PULAR skips. Shown once.
+ // Story scene before a battle: first Rival / Team Rocket battle of a stage,
+ // gym leaders, Elite Four and Champion (intro, type reaction, retry line).
+ // Tap: finish the line / next line. PULAR skips.
  playStory(state,scene,onDone){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
-  const D=50,who=scene.lines[0][0];
+  const D=50,who=scene.speaker||scene.lines[0][0];
+  const tone=who==='rocket'?[0x5a2a3a,0xb83a4a]:who==='rival'?[0x2a4a8c,0x4a7ad8]:[0x6a4a1a,0xc8962a];
   const g=this.add.graphics().setDepth(D);
   g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
   this.screenBanner(20,300,scene.place,'badges');
   // Two figures facing each other on a shared stage.
   g.fillStyle(0x000000,.3).fillEllipse(200,236,120,22).fillEllipse(440,236,120,22);
-  g.fillStyle(who==='rocket'?0x5a2a3a:0x2a4a8c,.9).fillEllipse(200,232,104,16);
+  g.fillStyle(tone[0],.9).fillEllipse(200,232,104,16);
   g.fillStyle(0x2a4a8c,.9).fillEllipse(440,232,104,16);
   this.npcSprite(spriteIdForTrainer(who),200,234,4,D+1);
   this.npcSprite(playerSpriteId(),440,234,4,D+1);
@@ -1688,8 +1690,8 @@ create(){
   box.fillStyle(0x6a8ad0,1).fillRoundedRect(20,260,600,82,8);
   box.fillStyle(0xf8f8f8,1).fillRoundedRect(25,265,590,72,6);
   const tag=this.add.graphics().setDepth(D+2);
-  tag.fillStyle(0x283c68,1).fillRoundedRect(28,240,150,24,6);tag.fillStyle(who==='rocket'?0xb83a4a:0x4a7ad8,1).fillRoundedRect(30,242,146,20,5);
-  this.uiLabel(103,252,who==='rocket'?'EQUIPE ROCKET':'RIVAL',9,'#ffffff',[.5,.5],D+3);
+  tag.fillStyle(0x283c68,1).fillRoundedRect(28,240,150,24,6);tag.fillStyle(tone[1],1).fillRoundedRect(30,242,146,20,5);
+  this.uiLabel(103,252,SPEAKERS[who]||'RIVAL',9,'#ffffff',[.5,.5],D+3);
   const txt=textoMenu(this,40,282,'',{tam:11,color:'#303030',borde:0,literal:true}).setOrigin(0,0).setDepth(D+3);
   txt.setWordWrapWidth?.(560);
   const arrow=this.uiLabel(598,326,'▼',9,'#d04848',[.5,.5],D+3);
@@ -2300,8 +2302,8 @@ create(){
   this.launchBattle(match,false);
  }
  enterBattle(state,wild=false,{skipStory=false}={}){
-  // First Rival / Team Rocket battle of a stage: FireRed story scene first.
-  if(!wild&&!skipStory){const story=storyFor(state,currentOpponent(state));
+  // Rival / Team Rocket / leader: FireRed-style story scene first.
+  if(!wild&&!skipStory){const story=storyFor(state,currentOpponent(state),{leadTypes:this.speciesTypes(state.team?.[state.active]?.id)});
    if(story)return this.playStory(state,story,next=>this.enterBattle(next,false,{skipStory:true}));}
   // A KO party cannot be resurrected by Phaser's native reiniciar().
   // Offer the real healing Center without consuming a trainer attempt,
