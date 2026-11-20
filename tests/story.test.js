@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {STORY,storyFor,markStorySeen} from '../tools/pokearena/torre2-story.js';
+import {STORY,LEADERS,SPEAKERS,storyFor,markStorySeen,matchup} from '../tools/pokearena/torre2-story.js';
+import fs from 'node:fs';
+// Stage leaders/types straight from the campaign source (core imports build-time names).
+const SRC=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
+const STAGES=[...SRC.matchAll(/leader:'([^']+)',badge:'[^']+',arena:'[a-z]+',type:'([A-Z]+)'/g)].map(m=>({leader:m[1],type:m[2]}));
 test('one story scene per Rival/Rocket stage, shown once',()=>{
  assert.deepEqual(Object.keys(STORY).sort(),['rival-0','rival-1','rival-2','rival-4','rival-5','rival-8','rocket-1','rocket-3','rocket-5','rocket-7'].sort());
  const s={stage:1};
@@ -9,6 +13,40 @@ test('one story scene per Rival/Rocket stage, shown once',()=>{
  assert.equal(storyFor({stage:6},{kind:'rival'}),null,'no scene where FireRed has none');
  const seen=markStorySeen(s,'rocket-1');
  assert.equal(storyFor(seen,{kind:'rocket'}),null);
- assert.equal(storyFor(seen,{kind:'rival'}).key,'rival-1');
- for(const sc of Object.values(STORY))for(const [who,text] of sc.lines){assert.ok(['rival','rocket'].includes(who));assert.ok(text.length<90,text)}
+ assert.equal(storyFor(seen,{kind:'rival',id:'wartortle'}).key,'rival-1');
+});
+test('the Rival names his real starter',()=>{
+ const sc=storyFor({stage:0},{kind:'rival',id:'squirtle'});
+ assert.match(sc.lines.at(-1)[1],/Squirtle/);
+ assert.ok(sc.lines.every(([,t])=>!t.includes('{')));
+});
+test('every gym, Elite Four and Champion stage has a leader scene',()=>{
+ assert.equal(LEADERS.length,STAGES.length);
+ LEADERS.forEach((L,i)=>{
+  assert.ok(SPEAKERS[L.who],L.who);
+  if(i<12)assert.equal(L.type,STAGES[i].type,'leader type matches the stage');
+  assert.ok(L.intro.length>=2&&L.retry.length>=2);
+ });
+});
+test('leaders react to the player lead type and change after a loss',()=>{
+ const brock={kind:'leader',leader:true,id:'onix'};
+ assert.equal(matchup('ROCK',['WATER']),'strong');
+ assert.equal(matchup('ROCK',['FIRE']),'weak');
+ assert.equal(matchup('ROCK',['NORMAL']),'neutral');
+ const strong=storyFor({stage:0},brock,{leadTypes:['GRASS','POISON']});
+ const weak=storyFor({stage:0},brock,{leadTypes:['FIRE']});
+ const neutral=storyFor({stage:0},brock,{leadTypes:['NORMAL']});
+ assert.equal(strong.speaker,'brock');
+ assert.equal(strong.lines.length,neutral.lines.length+1);
+ assert.notEqual(strong.lines.at(-1)[1],weak.lines.at(-1)[1]);
+ const after=markStorySeen({stage:0,losses:0},strong.key);
+ const r0=storyFor(after,brock),r1=storyFor({...after,losses:1},brock);
+ assert.equal(r0.lines.length,1);assert.notEqual(r0.lines[0][1],r1.lines[0][1]);
+ const champ=storyFor({stage:12},{kind:'leader',leader:true,id:'blastoise'},{leadTypes:['GRASS']});
+ assert.equal(champ.speaker,'rival');assert.match(champ.lines.at(-1)[1],/Blastoise/);
+});
+test('every line fits the FireRed box',()=>{
+ const all=[...Object.values(STORY).flatMap(s=>s.lines.map(l=>l[1])),
+  ...LEADERS.flatMap(L=>[...L.intro,...L.retry,L.strong||'',L.weak||''])];
+ for(const t of all)assert.ok(t.length<90,t);
 });
