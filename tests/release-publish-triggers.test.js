@@ -32,6 +32,9 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   // Master Ball row / Master Ball sprite.
   'tools/pokearena/torre2-capture-arena.js',
   'tools/pokearena/torre2-ball-sprites.js',
+  // Reviewed 2026-11-20: identical to the audited build before the Fly/Dig
+  // visibility restore on a party switch.
+  'tools/pokearena/torre2-combat-boundary.js',
   // Reviewed NEW module (not in the audited build): legacy, rewards, ranking.
   'tools/pokearena/torre2-legacy.js',
   'tools/pokearena/torre2-legendaries.js',

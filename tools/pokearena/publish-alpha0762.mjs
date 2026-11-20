@@ -66,7 +66,10 @@ const overlayNames=[
  ['tools/pokearena/torre2-move-pool.js','torre2/move-pool.js'],
  // Legendaries: Master Ball row in the wild capture menu and its ball sprite.
  ['tools/pokearena/torre2-capture-arena.js','torre2/capture-arena.js'],
- ['tools/pokearena/torre2-ball-sprites.js','torre2/ball-sprites.js']
+ ['tools/pokearena/torre2-ball-sprites.js','torre2/ball-sprites.js'],
+ // Reviewed 2026-11-20: byte-identical to the audited build module before the
+ // fix that brings a fighter caught mid-Fly/Dig back into view on a switch.
+ ['tools/pokearena/torre2-combat-boundary.js','torre2/combat-boundary.js']
 ];
 // New Torre 2 modules (not in the audited build): written next to the
 // overlays; refused if the audited build already has a file with that name.
@@ -115,6 +118,9 @@ const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  if(target==='torre2/party-battle.js')
   must(content.includes('scene.__torre2PlayerSwitchLimit=3;')&&content.includes('this.__torre2PlayerSwitches=0;'),
    'Party battle switch limit or per-round reset missing');
+ if(target==='torre2/combat-boundary.js')
+  must(content.includes('if(!actor.ko&&(actor.ocultoVuelo||actor.est?.vuelo||(actor.spr&&!actor.spr.visible))){'),
+   'Fly/Dig visibility restore on switch missing');
  if(target==='torre2/move-pool.js')
   must(content.includes('export function balanceCampaignQuickCooldown(move)')&&content.includes("'cross-poison':5"),
    'Campaign-only cooldown table missing');

@@ -25,3 +25,15 @@ test('Mais opções labels sit right of the icon and wrap instead of overlapping
  assert.ok(cards.includes("{id:'cards-extras-'+i,size:9,icon,wrap:true}"));
  assert.ok(cards.includes('caption.setWordWrapWidth(tw,true).setAlign(\'center\')'));
 });
+test('VS intro: the biker sheet (32x32 cells) is not cut in half',async()=>{
+ const {npcCellWidth}=await import('../tools/pokearena/torre2-frlg-npc.js');
+ assert.equal(npcCellWidth(320,32),32);
+ assert.equal(npcCellWidth(160,32),16);
+ assert.equal(npcCellWidth(48,32),16);
+});
+test('party switch brings a fighter caught mid-Fly/Dig back into view',()=>{
+ const src=read('torre2-combat-boundary.js');
+ assert.ok(src.includes('actor.ocultoVuelo=null;actor.salto=0;'));
+ assert.ok(src.includes('delete actor.est.vuelo;delete actor.est.invul;'));
+ assert.ok(src.indexOf('actor.ocultoVuelo=null')<src.indexOf('actor.accion=null'),'restore before cancelling the action');
+});

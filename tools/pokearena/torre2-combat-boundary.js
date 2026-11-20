@@ -20,6 +20,16 @@ export function clearDepartingCombat(scene){
  }
  for(const actor of scene.luchadores||[]){
   if(!actor)continue;
+  // Cancelling an action skips its native fin(): a fighter caught mid-Fly
+  // (alpha 0, high in the air, invulnerable) or mid-Dig/Dive (hidden sprite,
+  // ring and shadow) would stay invisible after a party switch. Bring it
+  // back down and visible, without the fin() damage/landing effects.
+  if(!actor.ko&&(actor.ocultoVuelo||actor.est?.vuelo||(actor.spr&&!actor.spr.visible))){
+   actor.ocultoVuelo=null;actor.salto=0;
+   if(actor.est){delete actor.est.vuelo;delete actor.est.invul;}
+   if(actor.spr?.active&&!actor.enHumo)actor.spr.setVisible(true).setAlpha(1);
+   actor.sombra?.setVisible?.(true);actor.anillo?.setVisible?.(true);
+  }
   actor.accion=null;actor.animAccion=null;actor.animAccionHasta=0;
   actor.dash=null;actor.mediaCarga=null;actor.cargaTipo=null;
   actor.vx=0;actor.vy=0;actor.empX=0;actor.empY=0;

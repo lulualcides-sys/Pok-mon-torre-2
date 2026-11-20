@@ -23,12 +23,16 @@ export function spriteIdForTrainer(kind){
 // A cropped Image still uses the ORIGINAL sheet dimensions as its geometry.
  // A dedicated texture frame has true 16x32 bounds and fixes NPCs shifted
  // outside the map / incorrect hover targets on mobile.
+// Most FRLG overworld sheets use 16x32 cells; the biker sheet uses 32x32
+// cells (10 frames in 320 px). A 16 px crop showed half the cyclist (VS intro).
+export function npcCellWidth(width,height){return width===320&&height===32?32:16}
 function frontFrame(texture,key){
  const source=texture.source?.[0];
  if(!source||source.width<16||source.height<16)return null;
- const frame='torre2-front-16x32';
+ const cell=npcCellWidth(source.width,source.height);
+ const frame=cell===16?'torre2-front-16x32':'torre2-front-32x32';
  if(!texture.has(frame))
-  texture.add(frame,0,0,0,16,Math.min(32,source.height));
+  texture.add(frame,0,0,0,cell,Math.min(32,source.height));
  return frame;
 }
 export function addFireRedNPC(scene,kind,x,y,{scale=1,depth=8}={}){
