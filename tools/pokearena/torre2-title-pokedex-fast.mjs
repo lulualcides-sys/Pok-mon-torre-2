@@ -67,6 +67,17 @@ export function removeUpdatesTitleButton(original){
  return source;
 }
 
+// Alpha 0.77.3 adds a MESSAGES envelope (online news from the P2 team) to
+// the title corner. Owner request: no news on the title, as with NEWS/UPDATES.
+// The gift icon moves into its slot; 0.76.2 titles are returned unchanged.
+const MESSAGES_0773='[["regalo",600],["mensaje",576],["tiktok",552],["youtube",528],["instagram",504],["discord",D]]';
+export function removeMessagesTitleButton(original){
+ const source=String(original);
+ if(!source.includes('botonMensajes('))return source;
+ return replaceOnce(source,MESSAGES_0773,
+  '[["regalo",576],["tiktok",552],["youtube",528],["instagram",504],["discord",D]]','title MESSAGES button');
+}
+
 export function preloadPokedexOnePage(original){
  let source=String(original);
  const oldPreload='preload(){const m=this.registry.get("manifiesto");this._torre2DexForms=soloFormas(m,new Set(ROSTER.map(p=>p.dex)));cargarPMD(this,this._torre2DexForms,["Idle"]);}create(){crearAnimsPMD(this,this._torre2DexForms,["Idle"]);';

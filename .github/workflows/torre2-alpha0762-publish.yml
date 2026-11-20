@@ -1,4 +1,4 @@
-name: Torre 2 — Alpha 0.76.2 (cliente-base atualizado) — QA e publicação
+name: Torre 2 — Alpha 0.77.3 (cliente-base atualizado) — QA e publicação
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
     paths:
       - 'tools/pokearena/publish-alpha0762.mjs'
       - 'tools/pokearena/restore-audited-alpha0762.sh'
+      - 'tools/pokearena/restore-audited-alpha0773.sh'
       - 'tools/pokearena/torre2-arena-move-policy.js'
       - 'tools/pokearena/torre2-johto-100-species.js'
       - 'tools/pokearena/torre2-auto-battle.js'
@@ -55,6 +56,7 @@ on:
     paths:
       - 'tools/pokearena/publish-alpha0762.mjs'
       - 'tools/pokearena/restore-audited-alpha0762.sh'
+      - 'tools/pokearena/restore-audited-alpha0773.sh'
       - 'tools/pokearena/torre2-arena-move-policy.js'
       - 'tools/pokearena/torre2-johto-100-species.js'
       - 'tools/pokearena/torre2-auto-battle.js'
@@ -89,11 +91,14 @@ permissions:
   contents: read
   actions: read
 
-# Audited Torre 2 build of the Alpha 0.76.2 base client (PR #647).
+# Audited Torre 2 build of the Alpha 0.77.3 base client
+# (pokearena-alpha0773-port.yml on port/alpha-0773-cliente, docs/PORTA-ALPHA-0773.md).
+# Rollback: the 0.76.2 build stays in release torre2-audited-site-alpha0762
+# (run 44451995630, commit 6caf532, restore-audited-alpha0762.sh).
 env:
-  TORRE2_ALPHA0762_RUN: '44451995630'
-  TORRE2_ALPHA0762_COMMIT: '6caf5329280a351e86b33bcfa6d20db1e8b9dba1'
-  TORRE2_ALPHA0762_DIGEST: 'sha256:b2696a5f7d4366db3799311b6ad26f0499fffe39c4ac399ad2137f849c23bae7'
+  TORRE2_ALPHA0773_RUN: '44740488716'
+  TORRE2_ALPHA0773_COMMIT: 'a604fa1427b3e2e6f0d5b5f9c485ca5f0e29ac67'
+  TORRE2_ALPHA0773_DIGEST: 'sha256:5c2cc6ffe849cb4392e70a50cb38a522cd1342b0bbba674fc75bf793f7e18fa7'
 
 jobs:
   qa:
@@ -109,32 +114,32 @@ jobs:
           node-version: '24'
       - name: Install project-declared test dependencies
         run: npm install --no-audit --no-fund
-      - name: Recover audited 0.76.2 build from pinned Actions artifact or release
+      - name: Recover audited 0.77.3 build from pinned Actions artifact or release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          bash tools/pokearena/restore-audited-alpha0762.sh _site
-      - name: Keep the audited 0.76.2 build as a permanent release (artifact expires)
+          bash tools/pokearena/restore-audited-alpha0773.sh _site
+      - name: Keep the audited 0.77.3 build as a permanent release (artifact expires)
         if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          tag=torre2-audited-site-alpha0762
+          tag=torre2-audited-site-alpha0773
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "release exists"; exit 0; fi
           pkg="$RUNNER_TEMP/pkg"; mkdir -p "$pkg/site"
           cp -a _site/. "$pkg/site/"
-          printf 'run=%s\ncommit=%s\ntorre2-alpha0762-port=%s\n' "$TORRE2_ALPHA0762_RUN" "$TORRE2_ALPHA0762_COMMIT" "$TORRE2_ALPHA0762_DIGEST" > "$pkg/MANIFEST.txt"
-          tar -czf "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz" -C "$pkg" MANIFEST.txt site
-          (cd "$RUNNER_TEMP" && sha256sum torre2-audited-site-alpha0762.tar.gz > torre2-audited-site-alpha0762.tar.gz.sha256)
+          printf 'run=%s\ncommit=%s\ntorre2-alpha0773-port=%s\n' "$TORRE2_ALPHA0773_RUN" "$TORRE2_ALPHA0773_COMMIT" "$TORRE2_ALPHA0773_DIGEST" > "$pkg/MANIFEST.txt"
+          tar -czf "$RUNNER_TEMP/torre2-audited-site-alpha0773.tar.gz" -C "$pkg" MANIFEST.txt site
+          (cd "$RUNNER_TEMP" && sha256sum torre2-audited-site-alpha0773.tar.gz > torre2-audited-site-alpha0773.tar.gz.sha256)
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Torre 2 — build auditado da Alpha 0.76.2 (antes do overlay)" \
-            --notes "Build do Torre 2 sobre o cliente-base Alpha 0.76.2 (run $TORRE2_ALPHA0762_RUN, commit $TORRE2_ALPHA0762_COMMIT). Uso não comercial; créditos em arena2d/." \
-            "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz" "$RUNNER_TEMP/torre2-audited-site-alpha0762.tar.gz.sha256"
-      - name: Overlay current main gameplay and verify the 0.76.2 release tree
+            --title "Torre 2 — build auditado da Alpha 0.77.3 (antes do overlay)" \
+            --notes "Build do Torre 2 sobre o cliente-base Alpha 0.77.3 (run $TORRE2_ALPHA0773_RUN, commit $TORRE2_ALPHA0773_COMMIT). Captura autorizada pelos donos do Poké Arena 2D (20/11/2026). Uso não comercial; créditos em arena2d/." \
+            "$RUNNER_TEMP/torre2-audited-site-alpha0773.tar.gz" "$RUNNER_TEMP/torre2-audited-site-alpha0773.tar.gz.sha256"
+      - name: Overlay current main gameplay and verify the 0.77.3 release tree
         run: |
           set -euo pipefail
           node tools/pokearena/publish-alpha0762.mjs
@@ -143,17 +148,17 @@ jobs:
           import path from 'node:path';
           const root='_site/arena2d',v=JSON.parse(fs.readFileSync(root+'/version.json'));
           const rel=JSON.parse(fs.readFileSync('_site/RELEASE-0762.json','utf8'));
-          if(v.src!=='src-5bf1a1a788'||rel.alpha!=='0.76.2'||v.modules!==rel.modules||v.modules===rel.baseModules)
-            throw Error('Pinned 0.76.2 client not incremented');
+          if(v.src!=='src-712ba03dbb'||rel.alpha!=='0.77.3'||v.modules!==rel.modules||v.modules===rel.baseModules)
+            throw Error('Pinned 0.77.3 client not incremented');
           const cfg=fs.readFileSync(path.join(root,v.modules,'config.js'),'utf8');
-          if(!/VERSION="0\.76\.2"/.test(cfg))throw Error('Not official Alpha 0.76.2 config.js');
+          if(!/VERSION="0\.77\.3"/.test(cfg))throw Error('Not official Alpha 0.77.3 config.js');
           const m=path.join(root,v.modules),s=fs.readFileSync(m+'/habilidades.js','utf8');
           const p=fs.readFileSync(m+'/torre2/arena-move-policy.js','utf8');
           if(!s.includes('...TORRE2_WOBBUFFET_FORMS')||
              !p.includes("'discharge':3")||!p.includes("'psybeam':3.5")||!p.includes("'hydro-pump':3.5")||!p.includes("'hidrobomba':3.5"))
             throw Error('Requested Discharge/Psybeam/Wobbuffet correction absent');
           if(!fs.existsSync(path.join(root,rel.baseModules,'habilidades.js')))
-            throw Error('Pre-overlay 0.76.2 source must remain for rollback');
+            throw Error('Pre-overlay 0.77.3 source must remain for rollback');
           const earth=fs.readFileSync(m+'/torre2/batch24/runtime.js','utf8');
           const campaign=fs.readFileSync(m+'/torre2/campaign-core.js','utf8');
           const cards=fs.readFileSync(m+'/torre2/trainer-cards.js','utf8');
@@ -201,6 +206,7 @@ jobs:
           node tests/arena-scyther-visible-sprite-browser.cjs
           node tests/alpha0713-projectile-contact-webgl-browser.cjs
           node tests/alpha0762-new-species-moves-browser.cjs _site test-evidence/alpha0762
+          TORRE2_NEW_SPECIES=grimer,staryu node tests/alpha0762-new-species-moves-browser.cjs _site test-evidence/alpha0773
       - name: Save real mobile/Pokedex performance samples
         if: always()
         uses: actions/upload-artifact@v4
@@ -254,10 +260,10 @@ jobs:
           cat > _site/index.html <<'HTML'
           <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
           <meta name="viewport" content="width=device-width,initial-scale=1">
-          <title>Pokémon Torre 2 — Alpha 0.76.2</title>
-          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-alpha=0.76.2">
-          <script>location.replace('./arena2d/index.html?torre2-alpha=0.76.2'+location.hash)</script>
-          </head><body><a href="./arena2d/index.html?torre2-alpha=0.76.2">Abrir jogo</a></body></html>
+          <title>Pokémon Torre 2 — Alpha 0.77.3</title>
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-alpha=0.77.3">
+          <script>location.replace('./arena2d/index.html?torre2-alpha=0.77.3'+location.hash)</script>
+          </head><body><a href="./arena2d/index.html?torre2-alpha=0.77.3">Abrir jogo</a></body></html>
           HTML
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
@@ -266,4 +272,4 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v4
       - name: Release URL
-        run: echo "Published Alpha 0.76.2 at ${{ steps.deploy.outputs.page_url }}"
+        run: echo "Published Alpha 0.77.3 at ${{ steps.deploy.outputs.page_url }}"
