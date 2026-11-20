@@ -15,34 +15,34 @@ export const SPEAKERS=Object.freeze({
  lorelei:'LORELEI',bruno:'BRUNO',agatha:'AGATHA',lance:'LANCE'
 });
 export const STORY=Object.freeze({
- 'rival-0':{place:'Rota 22',bg:{loc:'viridian',rect:[0,214,384,216]},lines:[
+ 'rival-0':{place:'Rota 22',bg:{loc:'viridian',feet:[70,325],d:72},lines:[
   ['rival','Ei! Achei você! O Professor Carvalho deu um Pokémon pra cada um de nós.'],
   ['rival','Eu peguei o {rival} de propósito: ele tem vantagem contra o seu. Batalha!']]},
- 'rival-1':{place:'Ponte Pepita · Cerulean',bg:{loc:'route24',rect:[8,300,384,216]},lines:[
+ 'rival-1':{place:'Ponte Pepita · Cerulean',bg:{loc:'route24',feet:[146,262],d:100},lines:[
   ['rival','Você também está indo pra Cerulean? Eu já peguei um monte de Pokémon!'],
   ['rival','O meu {rival} está cada vez mais forte. Quero ver o seu!']]},
- 'rival-2':{place:'S.S. Anne',bg:{loc:'ssanne',rect:[12,600,378,212]},lines:[
+ 'rival-2':{place:'S.S. Anne',bg:{loc:'ssanne',feet:[90,712],d:96},lines:[
   ['rival','Também foi convidado pro S.S. Anne? Que coincidência...'],
   ['rival','Já que estamos aqui, vamos ver quem manda neste navio!']]},
- 'rival-4':{place:'Torre Pokémon · Lavender',bg:{loc:'pokemontower',rect:[402,90,380,214]},lines:[
+ 'rival-4':{place:'Torre Pokémon · Lavender',bg:{loc:'pokemontower',feet:[150,236],d:72},lines:[
   ['rival','O que você está fazendo na Torre Pokémon? Seus Pokémon não morreram, né?'],
   ['rival','Hmm, eles parecem fortes. O {rival} vai testar isso!']]},
- 'rival-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',rect:[100,100,400,225]},lines:[
+ 'rival-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',feet:[200,330],d:96},lines:[
   ['rival','Cheguei antes de você na Silph Co.! A Equipe Rocket está em todo lugar aqui.'],
   ['rival','Mas antes de resolver isso, vamos ver quem é mais forte!']]},
- 'rival-8':{place:'Rota 22 · Planalto Índigo',bg:{loc:'indigo',rect:[8,40,384,216]},lines:[
+ 'rival-8':{place:'Rota 22 · Planalto Índigo',bg:{loc:'indigo',feet:[470,282],d:96},lines:[
   ['rival','Juntei as 8 insígnias também. Vou ser o próximo Campeão!'],
   ['rival','Você é o último obstáculo antes da Liga. Vem, {rival}!']]},
- 'rocket-1':{place:'Mt. Moon',bg:{loc:'mtmoon',rect:[1400,60,560,315]},lines:[
+ 'rocket-1':{place:'Mt. Moon',bg:{loc:'mtmoon',feet:[300,132],d:64},lines:[
   ['rocket','Somos da Equipe Rocket! Esses fósseis do Mt. Moon são nossos!'],
   ['rocket','Some daqui, criança, ou vai se arrepender!']]},
- 'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{loc:'rockethideout',rect:[20,350,284,160]},lines:[
+ 'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{loc:'rockethideout',feet:[190,440],d:72},lines:[
   ['rocket','Ei! O Cassino é só fachada... você achou o esconderijo da Equipe Rocket!'],
   ['rocket','Ninguém que descobre o nosso segredo sai daqui!']]},
- 'rocket-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',rect:[800,1530,256,144]},lines:[
+ 'rocket-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',feet:[880,1724],d:72},lines:[
   ['rocket','A Silph Co. agora pertence à Equipe Rocket!'],
   ['rocket','O chefe quer a Master Ball. Você não vai atrapalhar!']]},
- 'rocket-7':{place:'Viridian',bg:{loc:'viridian',rect:[330,60,384,216]},lines:[
+ 'rocket-7':{place:'Viridian',bg:{loc:'viridian',feet:[490,372],d:72},lines:[
   ['rocket','O chefe está ocupado e ninguém passa por aqui.'],
   ['rocket','Você derrotou a gente tantas vezes... desta vez não!']]}
 });
@@ -59,7 +59,7 @@ export const LEADERS=Object.freeze([
   retry:['Voltou! Uma rocha só se quebra com insistência.',
    'Treinou mais um pouco? Então vamos de novo.',
    'Gosto de quem não desiste. Pode vir!']},
- {who:'misty',type:'WATER',place:'Ginásio de Cerulean',bg:{loc:'cerulean',rect:[1033,24,258,317],panY:.08},intro:[
+ {who:'misty',type:'WATER',place:'Ginásio de Cerulean',bg:{loc:'cerulean',feet:[1125,198],d:72},intro:[
   'Oi! Eu sou a Misty, a melhor treinadora de Pokémon de Água!',
   'Minha estratégia é atacar com tudo, como uma onda.',
   'Pronto pra se molhar?'],
@@ -77,7 +77,7 @@ export const LEADERS=Object.freeze([
   retry:['Voltou pra levar outro choque?',
    'Você tem coragem, soldado. Vamos de novo!',
    'Recarregou as baterias? Eu também!']},
- {who:'erika',type:'GRASS',place:'Ginásio de Celadon',bg:{loc:'celadon',rect:[1154,700,204,298],panY:.08},intro:[
+ {who:'erika',type:'GRASS',place:'Ginásio de Celadon',bg:{loc:'celadon',feet:[1210,868],d:72},intro:[
   'Ah, bom dia... Eu sou a Erika, líder de Celadon.',
   'Adoro arranjos de flores e Pokémon de Planta.',
   'Mas não se engane: em batalha eu não perco por gentileza.'],
@@ -95,7 +95,7 @@ export const LEADERS=Object.freeze([
   retry:['Ainda de pé? O veneno não te convenceu?',
    'Um ninja respeita quem se levanta. Venha!',
    'Fwahaha! Mais uma lição, então.']},
- {who:'sabrina',type:'PSYCHIC',place:'Ginásio de Saffron',bg:{loc:'saffron',rect:[1550,21,402,330],panY:.08},intro:[
+ {who:'sabrina',type:'PSYCHIC',place:'Ginásio de Saffron',bg:{loc:'saffron',feet:[1650,125],d:72},intro:[
   'Eu já sabia que você viria.',
   'Desde criança tenho poderes psíquicos. Eu vi esta batalha.',
   'Mas o futuro não me disse quem venceria.'],
@@ -104,7 +104,7 @@ export const LEADERS=Object.freeze([
   retry:['Eu vi você voltar. E vi que ainda falta algo.',
    'Sua mente está mais forte. Será o bastante?',
    'De novo. Desta vez, não feche os olhos.']},
- {who:'blaine',type:'FIRE',place:'Ginásio de Cinnabar',bg:{loc:'cinnabar',rect:[712,22,484,395],panY:.08},intro:[
+ {who:'blaine',type:'FIRE',place:'Ginásio de Cinnabar',bg:{loc:'cinnabar',feet:[945,140],d:72},intro:[
   'Hah! Eu sou o Blaine, o líder escaldante de Cinnabar!',
   'Meus Pokémon de Fogo transformam tudo em cinzas!',
   'Pegou o Antiqueimadura? Vai precisar!'],
@@ -113,7 +113,7 @@ export const LEADERS=Object.freeze([
   retry:['Voltou pro vulcão? Gosto de quem não esfria!',
    'Hah! A chama da sua vontade ainda queima!',
    'Mais uma rodada no calor?']},
- {who:'giovanni',type:'GROUND',place:'Ginásio de Viridian',bg:{loc:'viridian',rect:[1030,24,320,385],panY:.08},intro:[
+ {who:'giovanni',type:'GROUND',place:'Ginásio de Viridian',bg:{loc:'viridian',feet:[1100,372],d:72},intro:[
   'Então é você quem atrapalhou a Equipe Rocket tantas vezes.',
   'Este é o meu ginásio. Aqui, eu sou o líder mais forte de Kanto.',
   'Vou mostrar por que a Rocket me obedece.'],
@@ -191,11 +191,21 @@ export function matchup(leaderType,leadTypes){
  return 'neutral';
 }
 // Background of a scene: a 16:9 slice of the real FireRed map of the place
-// (assets/ui/frlg/<loc>.png, the same sheets as the gym cards), taken from
-// the room's rectangle; panY picks how far down the room it sits (leaders
-// stand at the top of their gym). Returns {loc,crop:[x,y,w,h]} or null.
+// (assets/ui/frlg/<loc>.png, the same sheets as the gym cards).
+//  - feet:[x,y],d: the map point where the left character's feet stand and
+//    the map distance to the right one (both on walkable floor). The slice
+//    is placed so the two figures (screen x 200 and 440, feet at y 238)
+//    land exactly there.
+//  - rect (+panY): a room rectangle; a centred 16:9 slice of it.
+// Returns {loc,crop:[x,y,w,h]} or null.
+export const STORY_FIGURES=Object.freeze({left:200,right:440,feet:238});
 export function storyCrop(bg){
- if(!bg?.loc||!Array.isArray(bg.rect))return null;
+ if(!bg?.loc)return null;
+ if(Array.isArray(bg.feet)&&bg.d>0){
+  const k=(STORY_FIGURES.right-STORY_FIGURES.left)/bg.d,w=Math.round(640/k),h=Math.round(360/k);
+  return {loc:bg.loc,crop:[Math.round(bg.feet[0]-STORY_FIGURES.left/k),Math.round(bg.feet[1]-STORY_FIGURES.feet/k),w,h]};
+ }
+ if(!Array.isArray(bg.rect))return null;
  const [x,y,w,h]=bg.rect,cw=Math.round(Math.min(w,h*16/9)),ch=Math.round(cw*9/16);
  const pan=Number.isFinite(bg.panY)?bg.panY:.5;
  return {loc:bg.loc,crop:[x+Math.round((w-cw)/2),y+Math.round((h-ch)*pan),cw,ch]};

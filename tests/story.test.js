@@ -57,7 +57,13 @@ test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()
   assert.ok(SHEETS.includes(bg.loc),bg.loc);
   const c=storyCrop(bg).crop;
   assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+bg.loc);
-  assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
+  assert.ok(c[0]>=0&&c[1]>=0,'inside the sheet '+bg.loc);
+  if(bg.rect)assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
+  // Feet anchors: the two figures land exactly on the chosen floor points.
+  // (crop rounded to whole map pixels: within one map pixel on screen)
+  if(bg.feet){const k=640/c[2];
+   assert.ok(Math.abs((bg.feet[0]-c[0])*k-200)<=k&&Math.abs((bg.feet[0]+bg.d-c[0])*k-440)<=k,'figures x '+bg.loc);
+   assert.ok(Math.abs((bg.feet[1]-c[1])*k-238)<=k,'figures feet y '+bg.loc);}
  }
  assert.equal(storyFor({stage:3},{kind:'leader',leader:true,id:'vileplume'}).bg.loc,'celadon');
 });
