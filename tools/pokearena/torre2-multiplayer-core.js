@@ -66,3 +66,39 @@ export function createRoomServer(deliver,{hostName='Anfitrião',guestName='Amigo
  }};
 }
 
+
+// 3x3: a team is exactly three different, known Pokémon.
+export const TEAM_SIZE=3;
+export function checkTeam(team,known=()=>true){
+ if(!Array.isArray(team)||team.length!==TEAM_SIZE)return {ok:false,reason:'faltam Pokémon'};
+ if(!team.every(id=>typeof id==='string'&&known(id)))return {ok:false,reason:'faltam Pokémon'};
+ if(new Set(team).size!==TEAM_SIZE)return {ok:false,reason:'repetido'};
+ return {ok:true,team:team.slice()};
+}
+
+// 4G/5G: mobile networks (CGNAT) usually block a direct link, so a TURN relay
+// is needed. The relay is configured at publish time (secret TORRE2_TURN):
+// either a JSON list of RTCIceServer entries or an https URL that returns one
+// (e.g. a Metered "turn/credentials?apiKey=..." URL). Anything else is ignored.
+const ICE_URL=/^(?:stun|turn|turns):[A-Za-z0-9.\-]+(?::\d{1,5})?(?:\?transport=(?:udp|tcp))?$/;
+export function cleanIceServers(list){
+ if(!Array.isArray(list))return [];
+ const out=[];
+ for(const s of list.slice(0,8)){
+  const urls=(Array.isArray(s?.urls)?s.urls:[s?.urls]).filter(u=>typeof u==='string'&&ICE_URL.test(u)).slice(0,6);
+  if(!urls.length)continue;
+  const e={urls};
+  if(typeof s.username==='string'&&s.username.length<=256)e.username=s.username;
+  if(typeof s.credential==='string'&&s.credential.length<=256)e.credential=s.credential;
+  if(urls.some(u=>!u.startsWith('stun:'))&&!(e.username&&e.credential))continue;
+  out.push(e);
+ }
+ return out;
+}
+export function turnConfig(raw){
+ const text=String(raw??'').trim();
+ if(!text)return {servers:[],url:null};
+ if(/^https:\/\/[A-Za-z0-9.\-]+(?::\d+)?\/[^\s"'<>`]*$/.test(text))return {servers:[],url:text};
+ try{return {servers:cleanIceServers(JSON.parse(text)),url:null}}catch{return {servers:[],url:null}}
+}
+export const hasRelay=list=>list.some(s=>s.urls.some(u=>!u.startsWith('stun:')));

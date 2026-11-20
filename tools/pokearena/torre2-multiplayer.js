@@ -14,14 +14,33 @@
  */
 import {red,STUN} from '../red.js';
 
-import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer} from './multiplayer-core.js';
-import {FUENTE_CSS} from '../config.js';
+import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer,checkTeam,TEAM_SIZE,cleanIceServers,hasRelay} from './multiplayer-core.js';
+import {TURN,TURN_URL} from './turn.js';
+import {FUENTE_CSS,VERSION,texto} from '../config.js';
+import {ROSTER} from '../datos.js';
+import {aspectoJuego} from '../aspectos.js';
+import {cosDe} from '../skins.js';
+
 export {encodeSignal,decodeSignal,createRoomServer};
 
 // Socket object that red.js treats as its open WebSocket.
 function fakeSocket(send){
  return {readyState:1,send,close(){this.readyState=3}};
 }
+// STUN (same as the base client) + the optional TURN relay for 4G/5G.
+let relayCache=null;
+export async function iceServers(){
+ if(!relayCache){
+  relayCache=cleanIceServers(TURN);
+  if(TURN_URL){
+   try{const r=await fetch(TURN_URL,{signal:AbortSignal.timeout(5000)});
+    if(r.ok)relayCache=[...relayCache,...cleanIceServers(await r.json())];
+   }catch{}
+  }
+ }
+ return relayCache;
+}
+const relayConfigured=()=>TURN.length>0||!!TURN_URL;
 const nameOf=fallback=>{try{return localStorage.getItem('torre2-trainer-name')||fallback}catch{return fallback}};
 
 // --- Link (one per session) ---------------------------------------------------
@@ -31,8 +50,9 @@ export class MultiLink{
   this.pc=null;this.dc=null;this.role=null;this.server=null;this.closed=false;
  }
  state(s,extra){this.onState(s,extra)}
- newPeer(){
-  const pc=new RTCPeerConnection({iceServers:[...STUN]});
+ newPeer(relay=[]){
+  this.relay=relay;
+  const pc=new RTCPeerConnection({iceServers:[...STUN,...relay]});
   pc.onconnectionstatechange=()=>{
    if(['failed','closed','disconnected'].includes(pc.connectionState))this.lost();
   };
@@ -45,7 +65,7 @@ export class MultiLink{
  }
  // Host: step 1, returns the code to send to the friend.
  async createOffer(){
-  this.role='host';const pc=this.newPeer();
+  this.role='host';const pc=this.newPeer(await iceServers());
   this.wire(pc.createDataChannel('torre2',{ordered:true}));
   await pc.setLocalDescription(await pc.createOffer());
   await this.gathered(pc);
@@ -55,7 +75,7 @@ export class MultiLink{
  async acceptOffer(code){
   this.role='guest';const desc=await decodeSignal(code);
   if(desc.type!=='offer')throw Error('Esse é o código de resposta. Cole o código de quem criou a sala.');
-  const pc=this.newPeer();
+  const pc=this.newPeer(await iceServers());
   pc.ondatachannel=e=>this.wire(e.channel);
   await pc.setRemoteDescription(desc);
   await pc.setLocalDescription(await pc.createAnswer());
@@ -80,6 +100,9 @@ export class MultiLink{
  opened(){
   // Never touch the real online server while linked.
   red.mantener=false;red.salir?.();
+  // Same message the base client's server sends: native P2P also gets the relay.
+  const relay=(this.relay||[]).filter(s=>hasRelay([s]));
+  if(relay.length)red.recibir(JSON.stringify({t:'$turn',ice:relay}),'servidor');
   if(this.role==='host'){
    this.server=createRoomServer((side,obj)=>side==='host'?this.toRed(obj):this.sendRaw(obj),
     {hostName:nameOf('Anfitrião'),guestName:'Amigo'});
@@ -113,6 +136,87 @@ export class MultiLink{
  }
  close(){try{this.dc?.close()}catch{}try{this.pc?.close()}catch{}this.lost()}
 }
+
+// --- 3x3 in the friendly room ------------------------------------------------
+// Hooks called by the patched native room (torre2-sala-teams-patch.mjs). They
+// only act while the code link is open; otherwise the native room is unchanged.
+// The host picks 1x1 or 3x3. In 3x3 the native "CHANGE POKÉMON" button picks
+// the lead and two extra slot buttons pick the 2nd and 3rd Pokémon. The match
+// starts with the base client's own team battle (Equipo, synced switches).
+const linkOpen=()=>{const l=globalThis.__torre2MultiLink;return !!(l&&!l.closed&&l.dc?.readyState==='open')};
+const known=id=>ROSTER.some(p=>p.id===id);
+const nameOf3=(id,max=12)=>{const p=ROSTER.find(r=>r.id===id);return p?p.nombre.slice(0,max):'?'};
+const fmtOf=reg=>reg.get('torre2SalaFmt')==='3x3'?'3x3':'1x1';
+const teamOf=sala=>{const t=sala.registry.get('torre2SalaEq');return Array.isArray(t)?t.slice(0,TEAM_SIZE):[]};
+export const salaTeams={
+ vista(sala){
+  if(!linkOpen())return;
+  const reg=sala.registry,team=teamOf(sala);
+  const slot=reg.get('torre2SalaSlot');
+  if(slot===1||slot===2){
+   reg.remove('torre2SalaSlot');
+   team[slot]=sala.miId;sala.miId=known(team[0])?team[0]:sala.miId;
+   try{localStorage.setItem('pa-pokemon-online',sala.miId)}catch{}
+  }
+  team[0]=sala.miId;reg.set('torre2SalaEq',team);
+  const fmt=fmtOf(reg);
+  if(red.anfitrion)
+   sala.boton(80,96,120,22,'MODO '+fmt,()=>{reg.set('torre2SalaFmt',fmt==='3x3'?'1x1':'3x3');sala.vistaSala()});
+  else sala.pon(texto(sala,80,96,'MODO '+fmt,{tam:8,color:'#ffd23c'}).setOrigin(.5));
+  sala.torre2Slots=[];
+  if(fmt==='3x3')for(const k of [1,2]){
+   sala.torre2Slots[k]=sala.boton(84,k===1?146:186,100,18,'+ '+(k+1)+'º',()=>this.escolher(sala,k));
+  }
+  sala.torre2Rival=sala.pon(texto(sala,485,247,'',{tam:8,color:'#8fb3e6'}).setOrigin(.5,0));
+  sala.pintarSala();
+ },
+ escolher(sala,k){
+  const team=teamOf(sala);
+  sala.registry.set('torre2SalaSlot',k);
+  red.enviar({t:'hola',v:VERSION,id:null,listo:false});
+  sala.scene.start('seleccion',{previo:{modo:'online',p1:known(team[k])?team[k]:sala.miId,arena:sala.arena,mandos:[sala.dispositivo,'pad0']}});
+ },
+ pintar(sala){
+  if(!linkOpen()||!sala.torre2Rival?.active)return;
+  const team=teamOf(sala),fmt=fmtOf(sala.registry);
+  for(const k of [1,2])sala.torre2Slots?.[k]?.texto?.(known(team[k])?(k+1)+'º '+nameOf3(team[k],10):'+ '+(k+1)+'º');
+  const rv=sala.torre2RivalEq;
+  sala.torre2Rival.setText(fmt==='3x3'&&sala.rival?(rv?.length===TEAM_SIZE?'+ '+nameOf3(rv[1])+' · '+nameOf3(rv[2]):'MONTANDO O TIME...'):'');
+ },
+ hola(sala){
+  if(!linkOpen())return {};
+  const out={t2eq:teamOf(sala)};
+  if(globalThis.__torre2MultiLink.role==='host')out.t2fmt=fmtOf(sala.registry);
+  return out;
+ },
+ alHola(sala,m){
+  if(!linkOpen())return;
+  sala.torre2RivalEq=Array.isArray(m.t2eq)?m.t2eq.slice(0,TEAM_SIZE).filter(known):null;
+  if(globalThis.__torre2MultiLink.role!=='host'&&(m.t2fmt==='1x1'||m.t2fmt==='3x3')&&m.t2fmt!==fmtOf(sala.registry)){
+   sala.registry.set('torre2SalaFmt',m.t2fmt);
+   sala.time.delayedCall(0,()=>{if(sala.vista==='sala')sala.vistaSala()});
+  }
+ },
+ empezar(sala,m){
+  if(!linkOpen()||fmtOf(sala.registry)!=='3x3')return true;
+  const mine=checkTeam(teamOf(sala),known),theirs=checkTeam(sala.torre2RivalEq,known);
+  if(!mine.ok){sala.aviso('ESCOLHA OS 3 POKÉMON DO SEU TIME ('+mine.reason+')','#f2c230');return false}
+  if(!theirs.ok){sala.aviso('ESPERANDO O TIME 3x3 DO SEU AMIGO','#f2c230');return false}
+  m.equipos=[mine.team,theirs.team];m.p1=mine.team[0];m.p2=theirs.team[0];
+  return true;
+ },
+ combate(sala,m){
+  if(!Array.isArray(m?.equipos)||m.equipos.length!==2)return {};
+  const lado=red.lado===1?1:0;
+  const eq=m.equipos.map(t=>t.slice(0,TEAM_SIZE));
+  const none=()=>eq[0].map(()=>null);
+  const mineAsp=eq[lado].map(id=>aspectoJuego(id)??null),mineCos=eq[lado].map(id=>cosDe(id));
+  return {equipos:eq,
+   aspectosEq:lado===0?[mineAsp,none()]:[none(),mineAsp],
+   cosEq:lado===0?[mineCos,none()]:[none(),mineCos]};
+ },
+};
+globalThis.__torre2Sala=salaTeams;
 
 // --- Screen (main menu → MULTIPLAYER) -----------------------------------------
 // DOM panel over the canvas (same approach as the base client's code box).
@@ -158,7 +262,7 @@ export class Torre2Multi extends Phaser.Scene{
   const box=this.panel('MULTIPLAYER',`<p>Lute com um amigo, cada um no seu aparelho, sem servidor.</p>
    <p><b>1.</b> Um cria a sala e manda o código (WhatsApp).<br><b>2.</b> O outro cola e manda a resposta.<br>
    <b>3.</b> Quem criou cola a resposta. Depois cada um escolhe o Pokémon e toca em READY.</p>
-   <p style="color:#9fb6e6;font-size:11px">Funciona melhor com os dois no Wi-Fi. Em algumas redes de celular a conexão direta é bloqueada.</p>
+   <p style="color:#9fb6e6;font-size:11px">${relayConfigured()?'Funciona no Wi-Fi e no 4G/5G.':'Funciona melhor com os dois no Wi-Fi. Em algumas redes de celular a conexão direta é bloqueada.'}</p>
    <div class="row"></div>`);
   this.button(box,'CRIAR SALA',()=>this.host(),true);
   this.button(box,'ENTRAR COM CÓDIGO',()=>this.guest());

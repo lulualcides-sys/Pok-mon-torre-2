@@ -35,6 +35,7 @@ on:
       - 'tools/pokearena/torre2-multiplayer-core.js'
       - 'tools/pokearena/torre2-multiplayer.js'
       - 'tools/pokearena/torre2-fire-trail-patch.mjs'
+      - 'tools/pokearena/torre2-sala-teams-patch.mjs'
       - 'tools/pokearena/torre2-capture-arena.js'
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/torre2-combat-boundary.js'
@@ -89,6 +90,7 @@ on:
       - 'tools/pokearena/torre2-multiplayer-core.js'
       - 'tools/pokearena/torre2-multiplayer.js'
       - 'tools/pokearena/torre2-fire-trail-patch.mjs'
+      - 'tools/pokearena/torre2-sala-teams-patch.mjs'
       - 'tools/pokearena/torre2-capture-arena.js'
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/torre2-combat-boundary.js'
@@ -150,6 +152,9 @@ jobs:
             --notes "Build do Torre 2 sobre o cliente-base Alpha 0.77.3 (run $TORRE2_ALPHA0773_RUN, commit $TORRE2_ALPHA0773_COMMIT). Captura autorizada pelos donos do Poké Arena 2D (20/11/2026). Uso não comercial; créditos em arena2d/." \
             "$RUNNER_TEMP/torre2-audited-site-alpha0773.tar.gz" "$RUNNER_TEMP/torre2-audited-site-alpha0773.tar.gz.sha256"
       - name: Overlay current main gameplay and verify the 0.77.3 release tree
+        env:
+          # Optional multiplayer relay for 4G/5G (empty = direct links only).
+          TORRE2_TURN: ${{ secrets.TORRE2_TURN }}
         run: |
           set -euo pipefail
           node tools/pokearena/publish-alpha0762.mjs

@@ -7,6 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {patchFriendlyRoomTeams} from './torre2-sala-teams-patch.mjs';
 import {removeNewsTitleOption,removeUpdatesTitleButton,removeMessagesTitleButton} from './torre2-title-pokedex-fast.mjs';
 import {patchFireTrailMarks} from './torre2-fire-trail-patch.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
@@ -100,6 +101,15 @@ const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  must(!(await fs.stat(path.join(original,target)).catch(()=>null)),'new module would overwrite '+target);
  return {target,content};
 }));
+// Multiplayer 4G/5G relay (optional): repository secret TORRE2_TURN, validated.
+{
+ const {turnConfig}=await import('./torre2-multiplayer-core.js');
+ const turn=turnConfig(process.env.TORRE2_TURN);
+ newModules.push({target:'torre2/turn.js',content:
+  '// Generated at publish time from the TORRE2_TURN secret (empty = direct links only).\n'+
+  'export const TURN='+JSON.stringify(turn.servers)+';export const TURN_URL='+JSON.stringify(turn.url)+';\n'});
+ console.log('MULTIPLAYER_RELAY',turn.servers.length?'servers':turn.url?'url':'none');
+}
 const overlays=await Promise.all(overlayNames.map(async([source,target])=>{
  const incoming=await read(source);
  must(incoming.length>900,'truncated '+source);
@@ -280,6 +290,9 @@ const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 // Offline game: the mandatory online-account screen becomes a trainer-name screen.
 const redPatched=patchAccountRequirement(await read(path.join(original,'red.js')));
 const accountPatched=patchAccountScene(await read(path.join(original,'escenas/cuenta.js')));
+// Multiplayer 3x3: hooks in the native friendly room (no-op without the link).
+const salaPatched=patchFriendlyRoomTeams(await read(path.join(original,'escenas/sala.js')));
+must(salaPatched.includes('globalThis.__torre2Sala?.combate?.(this,m)'),'friendly room 3x3 hooks missing');
 const titleBase=removeMessagesTitleButton(removeUpdatesTitleButton(removeNewsTitleOption(originalTitle)));
 // Main menu: MULTIPLAYER (by code) right after PLAY.
 const PLAY_ENTRY='{id:"jugar",txt:"PLAY",menu:"jugar",ico:"pokeball"},';
@@ -318,7 +331,7 @@ inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
 inputHash.update(virtualDex);inputHash.update(arenaPrepared);
 inputHash.update(perfScript);
-inputHash.update(redPatched);inputHash.update(accountPatched);
+inputHash.update(redPatched);inputHash.update(accountPatched);inputHash.update(salaPatched);
 const newModule='src-'+inputHash.digest('hex').slice(0,10);
 must(newModule!==oldModule,'unchanged release hash');
 const dest=path.join(root,newModule);
@@ -347,6 +360,7 @@ await fs.writeFile(path.join(dest,'luchador.js'),fighter);
 await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'red.js'),redPatched);
 await fs.writeFile(path.join(dest,'escenas/cuenta.js'),accountPatched);
+await fs.writeFile(path.join(dest,'escenas/sala.js'),salaPatched);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
 await fs.writeFile(path.join(dest,'marcas.js'),marksPatched);
 await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
