@@ -13,6 +13,8 @@ import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignEx
 import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 import {regionalTrainer,regionalRocket} from './torre2-trainer-rosters.js';
 import {legendaryEncounter,markLegendaryDefeated,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
+import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
+import {KANTO_151_IDS} from './all-kanto-species.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -829,6 +831,39 @@ export function startWildEncounter(s,random=Math.random){
  s.dexSeen=dexSeen;
  s.dexShinySeen=next.dexShinySeen;
  return {ok:true,encounter:wild};
+}
+// Trade by code: sending MOVES the Pokémon out of this save into a code; the
+// friend receives it once (each code has its own id). Level is capped to the
+// receiver's current campaign cap, like obedience in FireRed.
+export function sendTrade(s,uid,from='Treinador'){
+ const ok=canSend(s,uid);if(!ok.ok)return ok;
+ const next=JSON.parse(JSON.stringify(s));
+ const arr=ok.where==='team'?next.team:next.box;const [member]=arr.splice(ok.index,1);
+ if(ok.where==='team'){if(next.active===ok.index)next.active=0;else if(ok.index<next.active)next.active--;}
+ const code=encodeTradeCode({id:member.id,level:member.progression?.level,shiny:member.shiny===true,from});
+ next.lastMessage=member.id+' foi enviado para troca.';
+ saveCampaign(next);Object.assign(s,next);
+ return {ok:true,code,member};
+}
+export function previewTrade(s,code){
+ const d=decodeTradeCode(code);
+ if(!d)return {ok:false,reason:'Código inválido. Confira se copiou o código inteiro.'};
+ if(!KANTO_151_IDS.includes(d.id))return {ok:false,reason:'Esse Pokémon não existe na campanha de Kanto.'};
+ if((s.tradeIn||[]).includes(d.tradeId))return {ok:false,reason:'Esse código já foi recebido neste save.'};
+ return {ok:true,...d,level:Math.min(d.level,currentLevelCap(s.stage)),originalLevel:d.level};
+}
+export function receiveTrade(s,code){
+ const p=previewTrade(s,code);if(!p.ok)return p;
+ const next=JSON.parse(JSON.stringify(s));
+ const member=newMember(p.id,p.level);member.shiny=p.shiny;member.ot=p.from;member.traded=true;
+ next.tradeIn=[...(next.tradeIn||[]),p.tradeId].slice(-500);
+ next.dexSeen=[...(next.dexSeen||[])];next.dexCaught=[...(next.dexCaught||[])];
+ next.dexShinySeen=[...(next.dexShinySeen||[])];next.dexShinyCaught=[...(next.dexShinyCaught||[])];
+ recordSeen(next,p.id);recordCaught(next,p.id);if(member.shiny)recordShiny(next,p.id,true);
+ const dest=next.team.length<6?'Equipe':'PC';(dest==='Equipe'?next.team:next.box).push(member);
+ next.lastMessage=p.id+' chegou de '+p.from+'! Foi para: '+dest+'.';
+ saveCampaign(next);Object.assign(s,next);
+ return {ok:true,member,dest,from:p.from,capped:p.originalLevel>p.level?p.originalLevel:null};
 }
 // Legendary lair: stage its single fixed encounter as the wild battle.
 export function startLegendaryEncounter(s,id,random=Math.random){
