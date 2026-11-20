@@ -13,6 +13,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
+import {ponerOpcion,opcionElegida} from '../calidad.js';
 import {readLegacy,saveLegacy,syncLegacy,TITLES,titleById,ACHIEVEMENT_REWARDS,rewardLabel,claimAchievement,
  encodeTrainerCode,decodeTrainerCode,readRanking,saveRanking,addFriend,rankingRows} from './legacy.js';
 import {cargarPMD,soloFormas} from '../sprites.js';
@@ -818,12 +819,14 @@ create(){
     pastillaTipo(p,px,y+106,t,46,10);this.uiLabel(px+23,y+111,t[0]+t.slice(1).toLowerCase(),6,'#ffffff',[.5,.5],8)});
   });
   if(!hall.team.length)center(400,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
-  center(480,332,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
-   8,'#adcbe0');
+  center(400,318,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
+   7,'#adcbe0');
   this.button(92,332,150,26,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}),false,8)
    .setData('torre2-hall-back',true);
   this.button(250,332,150,26,'HISTÓRICO',()=>this.hallHistoryScreen(state,0,()=>this.hallOfFameScreen(state)),true,8)
    .setData('torre2-hall-history',true);
+  this.button(408,332,150,26,'COMPARTILHAR',()=>this.shareHallImage(state),true,8)
+   .setData('torre2-hall-share',true);
   this.__torre2HallOfFame={...hall};
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
@@ -863,6 +866,8 @@ create(){
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
    legendaries:()=>this.legendaryHub(state),
+   lightMode:()=>{this.toggleLightMode();this.renderCampaign(state)},
+   lightLabel:()=>'MODO LEVE: '+(this.lightModeOn()?'ON':'OFF'),
    silph:()=>this.silphScreen(state),
    audio:()=>this.__torre2AudioSettings?.open(),
    reset:()=>this.confirmResetJourney()
@@ -1472,6 +1477,42 @@ create(){
      texture:'frlg-npc-'+spriteIdForTrainer('giovanni'),title:'CHEFE DA EQUIPE ROCKET'},
     playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},
    torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+ }
+ // Hall of Fame picture to share (WhatsApp etc.): the screen above the button
+ // bar plus a caption strip. Uses the share sheet on phones, else downloads.
+ shareHallImage(state){
+  const game=this.game,cv=game.canvas;if(!cv||!game.renderer?.snapshotArea)return;
+  const h=Math.round(cv.height*(312/360));
+  game.renderer.snapshotArea(0,0,cv.width,h,img=>{
+   try{
+    let name='Treinador';try{name=localStorage.getItem('torre2-trainer-name')||name}catch{}
+    const legacy=readLegacy(),t=titleById(legacy.activeTitle);
+    const out=document.createElement('canvas');out.width=cv.width;out.height=h+Math.round(cv.height*.09);
+    const c=out.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#0b1336';c.fillRect(0,0,out.width,out.height);
+    c.drawImage(img,0,0);
+    const fs=Math.round(out.height*.045);c.font='bold '+fs+'px monospace';c.textBaseline='middle';
+    c.fillStyle='#ffd23c';c.fillText('Pokémon Torre 2 · Salão da Fama',fs,h+(out.height-h)/2);
+    c.fillStyle='#ffffff';c.textAlign='right';
+    c.fillText(name+(t?' · '+t.name:'')+' · zerou '+legacy.championRuns.length+'×',out.width-fs,h+(out.height-h)/2);
+    out.toBlob(async blob=>{
+     if(!blob)return;
+     const file=new File([blob],'torre2-salao-da-fama.png',{type:'image/png'});
+     try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Pokémon Torre 2 · Salão da Fama'});return}}catch(e){if(e?.name==='AbortError')return}
+     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;document.body.appendChild(a);a.click();
+     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+     if(this.scene.isActive())this.campaignNotice('Imagem salva: torre2-salao-da-fama.png');
+    },'image/png');
+   }catch(e){console.warn('Torre 2: hall image failed',e)}
+  });
+ }
+ // Light mode (Mais): the base client's own graphics options. Turns off the
+ // ground marks and the glow, and lowers particles; switching off restores them.
+ lightModeOn(){return opcionElegida('marcas')==='no'&&opcionElegida('particulas')==='baja'}
+ toggleLightMode(){
+  const on=!this.lightModeOn();
+  ponerOpcion('marcas',on?'no':'si');ponerOpcion('particulas',on?'baja':'auto');ponerOpcion('brillo',on?'no':'auto');
+  this.campaignNotice(on?'Modo leve LIGADO: sem marcas no chão, menos partículas e brilho.':'Modo leve DESLIGADO: gráficos normais.',on?'#9ff0bf':MENU_UI.amarillo);
+  return on;
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
