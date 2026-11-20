@@ -7,7 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {removeNewsTitleOption,removeUpdatesTitleButton} from './torre2-title-pokedex-fast.mjs';
+import {removeNewsTitleOption,removeUpdatesTitleButton,removeMessagesTitleButton} from './torre2-title-pokedex-fast.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
 import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.mjs';
@@ -15,17 +15,21 @@ import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.m
 const site=path.resolve(process.env.TORRE2_SITE_ROOT||'_site');
 const root=path.join(site,'arena2d');
 const read=file=>fs.readFile(file,'utf8');
-const must=(ok,message)=>{if(!ok)throw Error('Alpha 0.76.2 release: '+message)};
+const must=(ok,message)=>{if(!ok)throw Error('Alpha 0.76.2/0.77.3 release: '+message)};
 const exactly=(text,part,label)=>must(text.split(part).length===2,'Unexpected '+label);
 const versionFile=path.join(root,'version.json');
 const version=JSON.parse(await read(versionFile));
-must(version.src==='src-5bf1a1a788'&&/^src-[a-f0-9]{10}$/.test(version.modules||''),
- 'not the audited 0.76.2 site');
+// Audited base clients this publisher accepts (docs/PORTA-ALPHA-0762.md and
+// docs/PORTA-ALPHA-0773.md). Anything else is refused.
+const BASES={'src-5bf1a1a788':'0.76.2','src-712ba03dbb':'0.77.3'};
+const baseAlpha=BASES[version.src];
+must(baseAlpha&&/^src-[a-f0-9]{10}$/.test(version.modules||''),
+ 'not an audited 0.76.2/0.77.3 site');
 const oldModule=version.modules;
 const original=path.join(root,oldModule);
 must((await fs.stat(path.join(original,'config.js'))).isFile(),'native Phaser source missing');
 const config=await read(path.join(original,'config.js'));
-must(/\bVERSION\s*=\s*["']0\.76\.2["']/.test(config),'official native Alpha changed');
+must(new RegExp('\\bVERSION\\s*=\\s*["\']'+baseAlpha.replaceAll('.','\\.')+'["\']').test(config),'official native Alpha changed');
 const audits=JSON.parse(await read(path.join(root,'rights-audit-0713.json')));
 // Art and its rights audit are inherited unchanged from the audited 0.71.3 release.
 must(audits.alpha==='0.71.3'&&audits.src==='src-5ccc174cb8'&&audits.summary?.forms===30,
@@ -261,10 +265,11 @@ const originalTitle=await read(path.join(original,'escenas/titulo.js'));
 // Offline game: the mandatory online-account screen becomes a trainer-name screen.
 const redPatched=patchAccountRequirement(await read(path.join(original,'red.js')));
 const accountPatched=patchAccountScene(await read(path.join(original,'escenas/cuenta.js')));
-const title=removeUpdatesTitleButton(removeNewsTitleOption(originalTitle));
+const title=removeMessagesTitleButton(removeUpdatesTitleButton(removeNewsTitleOption(originalTitle)));
 must(!/\btxt\s*:\s*["']NEWS["']/i.test(title),'NEWS remains in title');
 must(!title.includes('this.scene.start("novedades")'),'UPDATES/News shortcut remains in title');
 must(!title.includes('this.esquinaStreamer();'),'STREAMER MODE toggle remains in title');
+must(!title.includes('["mensaje",'),'MESSAGES button remains in title');
 
 // Update exclusively missing artist-sourced Magmortar combat animations.
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.
@@ -354,7 +359,7 @@ must(html.split('</body>').length===2,'native index body changed');
 html=html.replace('</body>',perfHook+'</body>');
 await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
-const release={alpha:'0.76.2',source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},
+const release={alpha:baseAlpha,source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},
  baseModules:oldModule,modules:newModule,baseRun:Number(process.env.TORRE2_ALPHA0762_RUN)||null,
  patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length,campaignMusic:musicFiles.length};
 await fs.writeFile(path.join(site,'RELEASE-0762.json'),JSON.stringify(release,null,2));

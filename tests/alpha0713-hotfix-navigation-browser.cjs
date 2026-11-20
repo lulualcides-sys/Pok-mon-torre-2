@@ -28,7 +28,7 @@ const server=http.createServer(async(req,res)=>{
    '--use-gl=angle','--use-angle=swiftshader']});
  try{
   const v=JSON.parse(await fs.readFile(path.join(root,'arena2d/version.json'),'utf8'));
-  assert.ok(['src-5ccc174cb8','src-5bf1a1a788'].includes(v.src),'unexpected base client '+v.src);
+  assert.ok(['src-5ccc174cb8','src-5bf1a1a788','src-712ba03dbb'].includes(v.src),'unexpected base client '+v.src);
   for(const mobile of [false,true]){
    const page=await browser.newPage({viewport:mobile?{width:740,height:414}:{width:1000,height:650},
     isMobile:mobile,hasTouch:mobile});
