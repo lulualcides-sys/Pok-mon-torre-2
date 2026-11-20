@@ -1,119 +1,124 @@
 {
  "owner": "Dono do projeto Pokémon Torre 2",
  "supplied": "2026-11-20",
- "source": "Prancha das 5 arenas (Giovanni, Lorelei, Bruno, Agatha e Campeão) gerada pelo dono a partir do prompt do Torre 2 e enviada na conversa; uso autorizado no jogo.",
- "method": "Cada quadro recortado e ampliado (vizinho mais próximo) para 2000x1334 com o chão interno do anel no mesmo lugar do ovalo dos ginásios nativos (centro 1000,670 e rx 824 px); esticado na vertical no máximo 25%. Bordas que faltavam foram completadas repetindo a última linha.",
+ "source": "Arenas geradas uma a uma pelo dono (Giovanni, Lorelei, Bruno, Agatha e Campeão) a partir dos prompts do Torre 2 e enviadas na conversa; uso autorizado no jogo.",
+ "method": "Imagem 1536x1024 ampliada (Lanczos) para 2000x1334 com o chão interno do anel no lugar do ovalo dos ginásios nativos (centro 1000,670 e rx 824 px); esticada na vertical no máximo 25%.",
  "files": {
-  "viridian.jpg": "df0f8147956a89f8c0165137b19598399f09e28581d48779aabcf86250653d2c",
-  "lorelei.jpg": "6f2fdb1fb48519a7cc73c124278a3c9766fc0becf59853a0c73f32d0f326ad7a",
-  "bruno.jpg": "4b9556d83793b8336bb57d9e49c0e891cc5efcd9f76b04c034f2b30e1cad6764",
-  "agatha.jpg": "3c9679ac656db0eff6651c1e197289048eda800c6efd358df39592265f17a847",
-  "champion.jpg": "13eb47aead65fd8729d388282bded76c0b0931d1cdd39eafaa1f54cd3ea0f37f"
+  "champion.jpg": "cbb950807bdb92525adbb400e93333663c2b6422882c59c58455db6213744d6f",
+  "agatha.jpg": "30c4f86a6565dbffeec3a78698429300833551914c939bee8452927c3a19aeb8",
+  "bruno.jpg": "7cdb13fb4eb6602c5e0d87d21e74cfb081601c22578f7cffa622bfa85f4598bd",
+  "lorelei.jpg": "1e87d9c77b995134f0ec0eb018f0630a91a6d37aca6c6c7a12cb9797162d7db2",
+  "viridian.jpg": "6b52ce4caff69d9bb3c222402748816212a644e01bdbe585d0ab47e0946b894a"
  },
  "arenas": {
-  "viridian": {
-   "panel": [
-    10,
-    9,
+  "champion": {
+   "image": "47.webp 1536x1024",
+   "innerEllipse": [
+    769,
+    602,
     545,
-    453
+    173
    ],
-   "innerEllipse": [
-    277,
-    299,
-    220,
-    59
-   ],
-   "stretchY": 1.25,
-   "ovalo": {
-    "cx": 480,
-    "cy": 222,
-    "rx": 455,
-    "ry": 153
-   }
-  },
-  "lorelei": {
-   "panel": [
-    567,
-    9,
-    541,
-    453
-   ],
-   "innerEllipse": [
-    276,
-    300,
-    218,
-    60
-   ],
-   "stretchY": 1.25,
-   "ovalo": {
-    "cx": 480,
-    "cy": 222,
-    "rx": 455,
-    "ry": 157
-   }
-  },
-  "bruno": {
-   "panel": [
-    1120,
-    9,
-    542,
-    453
-   ],
-   "innerEllipse": [
-    276,
-    300,
+   "crop": [
+    108,
     221,
-    60
+    1323,
+    759
    ],
-   "stretchY": 1.25,
+   "stretchY": 1.162,
    "ovalo": {
     "cx": 480,
     "cy": 222,
     "rx": 455,
-    "ry": 154
+    "ry": 168
    }
   },
   "agatha": {
-   "panel": [
-    10,
-    478,
-    771,
-    454
-   ],
+   "image": "48.webp 1536x1024",
    "innerEllipse": [
-    392,
-    279,
-    307,
-    69
+    768,
+    619,
+    558,
+    171
    ],
-   "stretchY": 1.25,
+   "crop": [
+    91,
+    242,
+    1354,
+    750
+   ],
+   "stretchY": 1.204,
    "ovalo": {
     "cx": 480,
     "cy": 222,
     "rx": 455,
-    "ry": 128
+    "ry": 168
    }
   },
-  "champion": {
-   "panel": [
-    800,
-    478,
-    862,
-    454
-   ],
+  "bruno": {
+   "image": "49.webp 1536x1024",
    "innerEllipse": [
-    455,
-    280,
-    335,
-    80
+    766,
+    589,
+    542,
+    164
    ],
-   "stretchY": 1.25,
+   "crop": [
+    108,
+    228,
+    1316,
+    720
+   ],
+   "stretchY": 1.219,
    "ovalo": {
     "cx": 480,
     "cy": 222,
     "rx": 455,
-    "ry": 136
+    "ry": 168
+   }
+  },
+  "lorelei": {
+   "image": "50.webp 1536x1024",
+   "innerEllipse": [
+    770,
+    601,
+    560,
+    176
+   ],
+   "crop": [
+    90,
+    213,
+    1359,
+    772
+   ],
+   "stretchY": 1.174,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 168
+   }
+  },
+  "viridian": {
+   "image": "51.webp 1536x1024",
+   "innerEllipse": [
+    766,
+    589,
+    543,
+    170
+   ],
+   "crop": [
+    107,
+    214,
+    1318,
+    746
+   ],
+   "stretchY": 1.178,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 168
    }
   }
  }
