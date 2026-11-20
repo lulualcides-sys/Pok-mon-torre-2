@@ -14,9 +14,10 @@
  */
 import {red,STUN} from '../red.js';
 
-import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer,checkTeam,TEAM_SIZE,cleanIceServers,hasRelay} from './multiplayer-core.js';
+import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer,checkTeam,TEAM_SIZE,cleanIceServers,hasRelay,
+ HISTORY_KEY,recordMatch,historySummary,profileFromSave,encodeProfile,decodeProfile,PROFILE_ROWS} from './multiplayer-core.js';
 import {TURN,TURN_URL} from './turn.js';
-import {FUENTE_CSS,VERSION,texto} from '../config.js';
+import {FUENTE_CSS,VERSION,ANCHO,texto} from '../config.js';
 import {ROSTER} from '../datos.js';
 import {aspectoJuego} from '../aspectos.js';
 import {cosDe} from '../skins.js';
@@ -159,6 +160,17 @@ export const salaTeams={
    try{localStorage.setItem('pa-pokemon-online',sala.miId)}catch{}
   }
   team[0]=sala.miId;reg.set('torre2SalaEq',team);
+  // TROCAR TIME (end screen): pick the lead, then (3x3) the 2nd and 3rd in a row.
+  const seq=reg.get('torre2TrocaSeq');
+  if(seq){
+   const fmt3=fmtOf(reg)==='3x3';
+   const next=seq==='lead'?(fmt3?'slot1':null):seq==='slot1'?'slot2':null;
+   if(next)reg.set('torre2TrocaSeq',next);else reg.remove('torre2TrocaSeq');
+   sala.time.delayedCall(200,()=>{
+    if(sala.vista!=='sala')return;
+    if(seq==='lead')sala.cambiarPokemon();else this.escolher(sala,seq==='slot1'?1:2);
+   });
+  }
   const fmt=fmtOf(reg);
   if(red.anfitrion)
    sala.boton(80,96,120,22,'MODO '+fmt,()=>{reg.set('torre2SalaFmt',fmt==='3x3'?'1x1':'3x3');sala.vistaSala()});
@@ -218,6 +230,29 @@ export const salaTeams={
 };
 globalThis.__torre2Sala=salaTeams;
 
+// --- End of a match (owner list items 3, 5, 6) -------------------------------
+const readJSON=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
+export const fimPartida={
+ placar(c,ganador){
+  if(!linkOpen()||!c.equipo?.kos)return undefined;
+  const k=c.equipo.kos();return `${k[ganador]}-${k[1-ganador]} K.O.`;
+ },
+ fim(c,ganador){
+  // Once per match: the scene object is reused on REMATCH, fighters are not.
+  const run=c.luchadores?.[0];
+  if(!linkOpen()||!run||run.__torre2Fim)return;
+  run.__torre2Fim=true;
+  const d=c.datos||{},lado=d.lado===1?1:0;
+  const eq=Array.isArray(d.equipos)?d.equipos:null;
+  const score=eq&&c.equipo?.kos?c.equipo.kos():c.victorias||[0,0];
+  try{localStorage.setItem(HISTORY_KEY,JSON.stringify(recordMatch(readJSON(HISTORY_KEY,[]),{
+   rival:d.nombres?.[1-lado]||red.rivalNombre,won:ganador===lado,fmt:eq?'3x3':'1x1',
+   score:`${score[lado]}-${score[1-lado]}`,mine:eq?eq[lado]:[lado===0?d.p1:d.p2],theirs:eq?eq[1-lado]:[lado===0?d.p2:d.p1]})))}catch{}
+  c.botonTexto?.(ANCHO/2,276,'TROCAR TIME',()=>{c.registry.set('torre2TrocaSeq','lead');c.salir()})?.setDepth?.(8002);
+ },
+};
+globalThis.__torre2Fim=fimPartida;
+
 // --- Screen (main menu → MULTIPLAYER) -----------------------------------------
 // DOM panel over the canvas (same approach as the base client's code box).
 const CSS=`.t2mp{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -232,7 +267,11 @@ background:#f4f1e6;color:#202020;padding:6px;word-break:break-all}
 .t2mp button{flex:1;min-width:130px;padding:10px 8px;font-size:14px;border-radius:6px;border:2px solid #0a1838;
 background:#2f5aa8;color:#fff;cursor:pointer;font-family:${FUENTE_CSS}}
 .t2mp button.gold{background:#f2c230;color:#202020}
-.t2mp .msg{min-height:18px;color:#ffd47a;font-size:12px;margin-top:6px}`;
+.t2mp .msg{min-height:18px;color:#ffd47a;font-size:12px;margin-top:6px}
+.t2mp .t2tab{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0}
+.t2mp .t2tab td,.t2mp .t2tab th{padding:5px 6px;border-bottom:1px solid #2c4a80;text-align:left}
+.t2mp .w{color:#7dff8a}.t2mp .l{color:#ff8a7a}
+.t2mp .t2list{margin:4px 0;padding-left:18px;font-size:12px;line-height:1.4}`;
 export class Torre2Multi extends Phaser.Scene{
  constructor(){super({key:'torre2Multi'})}
  create(){
@@ -258,6 +297,41 @@ export class Torre2Multi extends Phaser.Scene{
  button(box,label,fn,gold=false){const b=document.createElement('button');b.textContent=label;if(gold)b.className='gold';
   b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){this.status(String(e?.message||e))}finally{b.disabled=false}};
   (box.querySelector('.row')||box).appendChild(b);return b}
+ history(){
+  const h=readJSON(HISTORY_KEY,[]),sum=historySummary(h);
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const name=id=>esc(ROSTER.find(r=>r.id===id)?.nombre||id);
+  const rows=sum.length?sum.map(r=>`<tr><td>${esc(r.rival)}</td><td class="w">${r.wins} V</td><td class="l">${r.losses} D</td></tr>`).join(''):'<tr><td>Nenhuma partida ainda.</td></tr>';
+  const last=h.slice(0,10).map(m=>`<li><b class="${m.won?'w':'l'}">${m.won?'VITÓRIA':'DERROTA'}</b> ${m.fmt} ${esc(m.score)} contra ${esc(m.rival)}<br><small>${m.mine.map(name).join(', ')} × ${m.theirs.map(name).join(', ')} · ${new Date(m.at).toLocaleDateString('pt-BR')}</small></li>`).join('');
+  const box=this.panel('HISTÓRICO',`<table class="t2tab">${rows}</table>${last?`<p><b>Últimas partidas</b></p><ul class="t2list">${last}</ul>`:''}<div class="row"></div>`);
+  this.button(box,'VOLTAR',()=>this.home());
+ }
+ compare(){
+  const save=readJSON('pokemon-torre-2-kanto-campaign-v1',{});
+  const mine=profileFromSave(save,readJSON(HISTORY_KEY,[]),nameOf('Treinador'));
+  const code=encodeProfile(mine);
+  const box=this.panel('COMPARAR COM AMIGO',`<p><b>1.</b> Mande o seu código:</p>${this.copyArea(code)}<div class="row" data-r1></div>
+   <p><b>2.</b> Cole o código do seu amigo:</p><textarea data-t2cp-friend placeholder="T2CP1:..."></textarea><div class="row" data-r2></div><div data-t2cp-out></div>`);
+  const r1=box.querySelector('[data-r1]'),r2=box.querySelector('[data-r2]');
+  const c=document.createElement('button');c.textContent='COPIAR CÓDIGO';c.onclick=()=>this.copy(code);r1.appendChild(c);
+  if(navigator.share){const sh=document.createElement('button');sh.textContent='COMPARTILHAR';sh.onclick=()=>navigator.share({text:code}).catch(()=>{});r1.appendChild(sh)}
+  const go=document.createElement('button');go.className='gold';go.textContent='COMPARAR';go.setAttribute('data-t2cp-go','1');
+  go.onclick=()=>{
+   try{
+    const f=decodeProfile(box.querySelector('[data-t2cp-friend]').value);
+    const esc=t=>String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const show=(k,v)=>k==='ch'?(v?'SIM':'—'):v;
+    let a=0,b=0;
+    const rows=PROFILE_ROWS.map(([k,label])=>{const x=mine[k],y=f[k];if(x>y)a++;else if(y>x)b++;
+     return `<tr><td>${label}</td><td class="${x>y?'w':''}">${show(k,x)}</td><td class="${y>x?'w':''}">${show(k,y)}</td></tr>`}).join('');
+    box.querySelector('[data-t2cp-out]').innerHTML=`<table class="t2tab"><tr><th></th><th>${esc(mine.n)}</th><th>${esc(f.n)}</th></tr>${rows}</table>
+     <p style="text-align:center"><b>${a>b?esc(mine.n)+' está na frente!':b>a?esc(f.n)+' está na frente!':'Empate!'}</b> (${a} × ${b})</p>`;
+    this.status('');
+   }catch(e){this.status(e.message)}
+  };
+  r2.appendChild(go);
+  const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>this.home();r2.appendChild(back);
+ }
  home(){
   const box=this.panel('MULTIPLAYER',`<p>Lute com um amigo, cada um no seu aparelho, sem servidor.</p>
    <p><b>1.</b> Um cria a sala e manda o código (WhatsApp).<br><b>2.</b> O outro cola e manda a resposta.<br>
@@ -266,6 +340,8 @@ export class Torre2Multi extends Phaser.Scene{
    <div class="row"></div>`);
   this.button(box,'CRIAR SALA',()=>this.host(),true);
   this.button(box,'ENTRAR COM CÓDIGO',()=>this.guest());
+  this.button(box,'HISTÓRICO',()=>this.history());
+  this.button(box,'COMPARAR COM AMIGO',()=>this.compare());
   this.button(box,'VOLTAR',()=>{this.link.close();this.scene.start('titulo',{})});
  }
  copyArea(code){

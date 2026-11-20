@@ -77,3 +77,38 @@ test('4G/5G relay config: only valid TURN/STUN entries or an https URL',async()=
  assert.equal(turnConfig('https://x.example/"+alert(1)+"').url,null);
  assert.ok(!hasRelay(cleanIceServers([{urls:'stun:stun.l.google.com:19302'}])));
 });
+
+test('match history: newest first, capped, summary per friend',async()=>{
+ const {recordMatch,historySummary,HISTORY_MAX}=await import('../tools/pokearena/torre2-multiplayer-core.js');
+ let h=[];
+ h=recordMatch(h,{rival:'Ana',won:true,fmt:'3x3',score:'3-1',mine:['a','b','c'],theirs:['d','e','f'],at:1});
+ h=recordMatch(h,{rival:'Ana',won:false,fmt:'1x1',score:'0-2',mine:['a'],theirs:['d'],at:2});
+ h=recordMatch(h,{rival:'<b>Rui</b>',won:true,fmt:'x',score:'2-0',mine:['a'],theirs:['d'],at:3});
+ assert.equal(h[0].rival,'bRui/b');assert.equal(h[0].fmt,'1x1');
+ assert.deepEqual(historySummary(h).map(r=>[r.rival,r.wins,r.losses]),[['bRui/b',1,0],['Ana',1,1]]);
+ for(let i=0;i<80;i++)h=recordMatch(h,{rival:'X',won:true});
+ assert.equal(h.length,HISTORY_MAX);
+});
+
+test('compare code: round trip, unicode name, tampered values clamped',async()=>{
+ const {profileFromSave,encodeProfile,decodeProfile}=await import('../tools/pokearena/torre2-multiplayer-core.js');
+ const save={badges:['boulder','cascade'],dexCaught:['a','b','b'],dexSeen:['a','b','c'],dexShinyCaught:['a'],champion:true,wins:40,losses:3};
+ const p=profileFromSave(save,[{won:true},{won:false},{won:true}],'Alcídes');
+ assert.deepEqual(p,{n:'Alcídes',b:2,c:2,v:3,sh:1,ch:1,w:40,l:3,mw:2,ml:1});
+ assert.deepEqual(decodeProfile(encodeProfile(p)),p);
+ const bad=decodeProfile(encodeProfile({n:'x',b:99,c:-5,v:'7',w:1e12}));
+ assert.equal(bad.b,8);assert.equal(bad.c,0);assert.equal(bad.v,7);assert.equal(bad.w,99999);
+ assert.throws(()=>decodeProfile('T2MP1:abc'),/não é um código/);
+ assert.throws(()=>decodeProfile('T2CP1:%%%'),/incompleto/);
+});
+
+test('online result patch: score and end hooks only inside resultadoOnline',async()=>{
+ const {patchOnlineResult}=await import('../tools/pokearena/torre2-online-result-patch.mjs');
+ const score='texto(this,ANCHO/2,128,`${l.nombre} ${this.victorias[ganador]}-${this.victorias[1-ganador]}`,{tam:8})';
+ const src='otra(){'+score+'}resultadoOnline(ganador){const l=1;'+score+';alTeclado(this,"keydown-R",()=>this.pedirRevancha())}resultadoRanked(g){}';
+ const out=patchOnlineResult(src);
+ assert.ok(out.startsWith('otra(){'+score+'}'),'other result screens untouched');
+ assert.equal(out.split('globalThis.__torre2Fim?.placar?.(this,ganador)').length,2);
+ assert.ok(out.includes('this.pedirRevancha());globalThis.__torre2Fim?.fim?.(this,ganador)}resultadoRanked('));
+ assert.throws(()=>patchOnlineResult(src.replace('resultadoRanked','x')),/base client changed/);
+});
