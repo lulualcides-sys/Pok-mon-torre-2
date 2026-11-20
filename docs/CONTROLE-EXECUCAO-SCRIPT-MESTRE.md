@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Registro 20/11/2026 — entregas de 19 a 20/11 (sem marcar seções como concluídas)
+- **Publicado no Pages, com SHA conferido em `RELEASE-0762.json`:** de #649 a #676, sobre o cliente-base Alpha 0.77.3. A lista está na `FILA-CONTINUE-SCRIPT-MESTRE.md`, checkpoint de 20/11.
+- **Evidência:** testes Node em cada PR, Chromium/Phaser com save preparado, QA do workflow de publicação e Pages no SHA exato.
+- **Seções:** nenhuma seção das 37 mudou de estado. Os critérios pedem campanha jogada normalmente, o que **não foi verificado**.
+- **Kits nativos:**
+  - nenhum golpe, slot, cooldown ou VFX de espécie nativa foi alterado;
+  - Lugia e Ho-Oh usam o kit nativo 0.77.3 sem mudança;
+  - Grimer, Muk, Staryu e Starmie passaram a ser nativos na 0.77.3, com o kit nativo deles.
+
 ## T19 — Misty natural COMPROVADA pela CI (31/10/2026)
 - PR #403, HEAD anterior `04f9e184`, workflow #41194363962 **SUCCESS** (job #124517430468): 15 treinadores de Cerulean + Misty vencidos no jogo real Phaser/WebGL, Insígnia Cascata, TM03, XP e reload; relatório exato `PASS T19 FIFTEEN CERULEAN TRAINERS + MISTY CASCATA TM03 XP RELOAD {"saveUnchanged":true,"stage":2,"trainer":0,"wins":42,"losses":0}`. Artefato #13041220602. Seed original de 10 treinadores #13033958812, checkpoint verificado e luta natural, sem injeção de recompensas.
 - Prova no HEAD antigo; sincronizado para testar com o código mais recente `70fabdee` (T13/T14/T24). **Não declarar prova pós-integração antes do workflow verde no novo SHA.**

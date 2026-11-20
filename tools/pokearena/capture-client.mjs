@@ -320,5 +320,17 @@ main().catch(async e=>{
  await fs.mkdir('site-capture',{recursive:true});
  details.fatalError=String(e?.stack||e);
  await fs.writeFile('site-capture/CAPTURE-REPORT.json',JSON.stringify(details,null,2));
- console.error(e);process.exitCode=1;
+ console.error(e);
+ // The live site refuses CI (HTTP 403): never retry or bypass it. Rebuild
+ // the exact published game from our own authorized archived build instead
+ // (published-build-fallback.mjs), so the legacy tests still run.
+ if(/HTTP 403/.test(String(e?.message||e))&&process.env.TORRE2_NO_PUBLISHED_FALLBACK!=='1'){
+  try{
+   const {restorePublishedBuild}=await import('./published-build-fallback.mjs');
+   await restorePublishedBuild();
+   console.log('LIVE_SITE_403_PUBLISHED_BUILD_USED');
+   return;
+  }catch(fallback){console.error(fallback)}
+ }
+ process.exitCode=1;
 });

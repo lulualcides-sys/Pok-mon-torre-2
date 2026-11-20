@@ -1,5 +1,31 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## CHECKPOINT 20/11/2026 — o que foi publicado de 19 a 20/11 (item 29 da lista do dono)
+
+**Base atual:** cliente-base Poké Arena 2D **Alpha 0.77.3** (`src-712ba03dbb`), captura autorizada pelos donos (#662, #667). Publicação pelo workflow `torre2-alpha0762-publish.yml`; conferir sempre o `patchCommit` de `RELEASE-0762.json` no Pages.
+
+**Publicado e conferido no Pages (SHA exato no `RELEASE-0762.json`):**
+- **Campanha, telas e arte:** redesign em pixel art com as ilustrações do dono, Equipe, Bolsa, Centro, Pokédex, PC, Insígnias, Remédios, Sumário, Red e Leaf (#649–#652).
+- **Campanha, encontros e Liga:** Ginásio com o Pokémon principal, Grama alta, VS Seeker, Casas, relatório e Salão da Fama (#653); Professor Oak, inicial, Poké Mart e cena de evolução (#654).
+- **Cartão e progresso:** Cartão do treinador, conquistas, títulos permanentes, ranking, cópia do save e música CC0 (#655, #656).
+- **Lendários:** lendários de Kanto, covis, Silph Co. e Master Ball (#658).
+- **Desempenho:** limites de fogo (#659, #673) e modo leve (#661).
+- **Sistemas novos:** missões diárias (#663), troca por código (#664).
+- **História:** cenas do Rival e da Rocket (#665), falas dos líderes (#666), cenas com fundo (#668, #669).
+- **Arenas:** arenas dos ginásios (#670) e fogo de Cinnabar (#671).
+- **Correções:** NEWS removida, Mais opções, caçar em cidade anterior, troca, ciclista e Fly (#672).
+- **Multiplayer por código:** 1x1 e 3x3, revanche, TROCAR TIME, histórico, comparar com amigo e relay TURN opcional (#674, #675).
+- **Pós-Liga e extras da campanha:** Lugia e Ho-Oh, falas do rival, Torre de desafios, clima nas rotas e entrada dos líderes (#676).
+
+**Evidência real:** `npm test` em cada PR; testes Chromium/Phaser com save preparado ou fixture; QA do workflow de publicação. **Não é prova de campanha jogada normalmente nem de Android físico.** Nenhuma seção do Script Mestre foi marcada como concluída por estes PRs.
+
+**Pendências abertas (20/11):**
+- Lote 3 (#677): loja de pontos, títulos secretos, medalha da Pokédex, filtros e instalar como app. Aguarda aprovação.
+- Relay TURN real para 4G/5G: precisa do secret `TORRE2_TURN` (conta do dono).
+- Arenas do Giovanni, da Elite Four e do Campeão: dependem das imagens do dono.
+- Testes antigos do CI: o 403 foi resolvido usando o nosso build publicado; a triagem das falhas restantes está em `docs/TESTES-ANTIGOS-CI-2026-11-20.md`.
+- Campanha natural completa e Android físico: **não verificado**.
+
 ## T19 — Misty provada no Phaser real (31/10/2026)
 - CI #41194363962 PASS: rota natural acumulada de 15 treinadores Cerulean, Misty, Cascata, TM03, XP e reload, 42 vitórias / 0 derrotas no save exportado de CI; artifact #13041220602. PR #403 sincronizada com main `70fabdee`, revalidação obrigatória no novo HEAD. Próxima etapa legítima: Lt. Surge / Vermilion a partir do save realmente conquistado; não usar saves fabricados e não repetir Brock/Cerulean.
 
