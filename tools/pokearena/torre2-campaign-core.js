@@ -800,21 +800,28 @@ export function wildAvailability(stage){
  const route=routeEncounterTable(stage);
  return {...route,available:route.wild.filter(id=>supportedKanto.has(id))};
 }
-export function startWildEncounter(s,random=Math.random){
+// areaStage: optional completed city (0-7) chosen on the Kanto map, to hunt
+// its tall grass again (its own table and levels). The encounter still
+// belongs to the current stage, so battle, capture and saves are unchanged.
+export function startWildEncounter(s,random=Math.random,areaStage=null){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
+ const revisit=Number.isInteger(areaStage)&&areaStage!==s.stage;
+ if(revisit&&!(areaStage>=0&&areaStage<GYMS.length&&(areaStage<s.stage||s.champion)))
+  return {ok:false,reason:'Só dá para voltar a cidades já concluídas.'};
  // Stage 8 has genuine Victory Road trainers before Lorelei. Keep those
  // encounters, but do not allow fresh wild battles after the final route
  // trainer has been defeated and the Elite Four chamber is unlocked.
  // Stages 9-12 are exclusively Elite Four / Champion chambers.
- if(s.stage>GYMS.length||
-    (s.stage===GYMS.length&&s.trainer>=TRAINERS_PER_GYM(s.stage)))
+ if(!revisit&&(s.stage>GYMS.length||
+    (s.stage===GYMS.length&&s.trainer>=TRAINERS_PER_GYM(s.stage))))
   return {ok:false,reason:'Sem grama alta nas câmaras da Elite Four.'};
  // Tall grass is repeatable in FireRed. A per-region five-encounter hard
  // stop stranded teams after ordinary failed catches, especially pre-Brock.
  // The existing stage level cap, Pokeball inventory and catch RNG still apply.
  // Keep wildEncountersStage as a historical statistic; never grant free items.
 
- const area=wildAvailability(s.stage);
+ const areaAt=revisit?areaStage:s.stage;
+ const area=wildAvailability(areaAt);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
  // An independent single 1% roll belongs to this encounter, never to a
@@ -822,7 +829,9 @@ export function startWildEncounter(s,random=Math.random){
  const shinyRoll=Number(random());
  const shiny=Number.isFinite(shinyRoll)&&shinyRoll>=0&&shinyRoll<.01;
  const wild={id,stage:s.stage,trainer:s.trainer,shiny,
-  level:wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100};
+  level:revisit?wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt)):
+   wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100,
+  ...(revisit?{areaStage:areaAt}:{})};
  // Stage the encounter, counter and Pokédex together. Storage denial
  // must leave the original route and RNG retry available without a phantom
  // encounter, incremented counter or newly seen species in memory.
