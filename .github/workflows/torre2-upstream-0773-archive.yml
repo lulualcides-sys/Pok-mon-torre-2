@@ -1,0 +1,76 @@
+name: Torre 2 — cópia de segurança da fonte Poké Arena 2D 0.77.3
+# Authorized capture (owners of Poké Arena 2D, 20/11/2026). Re-downloads the
+# 128 pinned public modules, requires every SHA-256 to match
+# data/alpha0773-source-modules.json and keeps them in a permanent Release.
+# Never deploys to Pages and never touches the game build.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/torre2-upstream-0773-archive.yml'
+      - 'tools/pokearena/archive-upstream-capture.mjs'
+      - 'data/alpha0773-source-modules.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/torre2-upstream-0773-archive.yml'
+      - 'tools/pokearena/archive-upstream-capture.mjs'
+      - 'data/alpha0773-source-modules.json'
+  workflow_dispatch:
+
+jobs:
+  capture-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rebuild capture from the pin (fail closed on any SHA change)
+        run: node tools/pokearena/archive-upstream-capture.mjs data/alpha0773-source-modules.json "$RUNNER_TEMP/capture"
+      - name: Check archive contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          c="$RUNNER_TEMP/capture"
+          test "$(find "$c/source/src-712ba03dbb" -name '*.js' | wc -l)" -eq 128
+          grep -Fxq 'alpha=0.77.3' "$c/MANIFEST.txt"
+          grep -q '^authorization=2026-11-20 ' "$c/MANIFEST.txt"
+          cat "$c/MANIFEST.txt"
+
+  archive:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: capture-qa
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Preserve capture in a permanent GitHub Release with checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=torre2-upstream-source-alpha0773-20261120
+          asset=torre2-upstream-source-alpha0773.tar.gz
+          if gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release view "$tag" --repo "$GH_REPO" --json assets --jq '.assets[].name' | grep -Fxq "$asset"
+            gh release view "$tag" --repo "$GH_REPO" --json assets --jq '.assets[].name' | grep -Fxq "$asset.sha256"
+            echo "UPSTREAM_0773_ALREADY_ARCHIVED $tag"
+            exit 0
+          fi
+          node tools/pokearena/archive-upstream-capture.mjs data/alpha0773-source-modules.json archive
+          tar -czf "$asset" -C archive .
+          sha256sum "$asset" > "$asset.sha256"
+          gh release create "$tag" "$asset" "$asset.sha256" --repo "$GH_REPO" --target "$GITHUB_SHA" \
+            --title 'Cópia de segurança — Poké Arena 2D Alpha 0.77.3 (fonte pública, 20/11/2026)' \
+            --notes 'Captura autorizada pelos donos do Poké Arena 2D (informado pelo dono do Torre 2 em 20/11/2026). 128 módulos públicos de src-712ba03dbb conferidos pelo SHA-256 de data/alpha0773-source-modules.json, mais o index.html ao vivo. /assets/ responde 403 (Cloudflare) e não foi contornado. Projeto pessoal, gratuito e sem vendas. Detalhes em docs/CAPTURA-ALPHA-0773.md.'
+          cat "$asset.sha256"
