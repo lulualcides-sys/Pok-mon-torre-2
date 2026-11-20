@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {patchFriendlyRoomTeams} from './torre2-sala-teams-patch.mjs';
+import {patchOnlineResult} from './torre2-online-result-patch.mjs';
 import {removeNewsTitleOption,removeUpdatesTitleButton,removeMessagesTitleButton} from './torre2-title-pokedex-fast.mjs';
 import {patchFireTrailMarks} from './torre2-fire-trail-patch.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
@@ -273,8 +274,11 @@ const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of 
 const fireCapHook="import {installFireParticleCap} from '../torre2/fire-particle-cap.js';installFireParticleCap();\n"+
  // Light mode (campaign Mais): expose the 0.76.2 graphics options module.
  "import * as torre2NativeGraphics from '../calidad.js';globalThis.__torre2NativeGraphics=torre2NativeGraphics;\n";
-const combatPatched=fireCapHook+combat.replace(nativeSpriteLoad,
- branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad);
+// Multiplayer end screen (3x3 K.O. score, history, TROCAR TIME): no-op hooks
+// without the Torre 2 link; ranked results untouched.
+const combatPatched=fireCapHook+patchOnlineResult(combat.replace(nativeSpriteLoad,
+ branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad));
+must(combatPatched.includes('globalThis.__torre2Fim?.fim?.(this,ganador)'),'multiplayer end hooks missing');
 must(combatPatched.startsWith(fireCapHook),'fire particle cap hook missing');
 // Whole game: at most 6 new fire scorch marks per second (each mark was two
 // new GPU textures; ~60 per Flare Blitz froze phones).

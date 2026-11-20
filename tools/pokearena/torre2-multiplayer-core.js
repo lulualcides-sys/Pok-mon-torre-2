@@ -102,3 +102,47 @@ export function turnConfig(raw){
  try{return {servers:cleanIceServers(JSON.parse(text)),url:null}}catch{return {servers:[],url:null}}
 }
 export const hasRelay=list=>list.some(s=>s.urls.some(u=>!u.startsWith('stun:')));
+
+// --- Match history with friends (owner list item 6) -------------------------
+export const HISTORY_KEY='torre2-multiplayer-historico';
+export const HISTORY_MAX=50;
+const clip=(v,n=16)=>String(v??'').replace(/[\u0000-\u001f<>]/g,'').slice(0,n);
+const ids=t=>Array.isArray(t)?t.filter(x=>typeof x==='string').slice(0,TEAM_SIZE).map(x=>clip(x,24)):[];
+export function recordMatch(history,{rival,won,fmt,score,mine,theirs,at}){
+ const list=Array.isArray(history)?history.slice():[];
+ list.unshift({at:Number.isFinite(at)?at:Date.now(),rival:clip(rival)||'Amigo',won:!!won,
+  fmt:fmt==='3x3'?'3x3':'1x1',score:clip(score,12),mine:ids(mine),theirs:ids(theirs)});
+ return list.slice(0,HISTORY_MAX);
+}
+export function historySummary(history){
+ const by=new Map();
+ for(const m of Array.isArray(history)?history:[]){
+  const r=by.get(m.rival)||{rival:m.rival,wins:0,losses:0,last:0};
+  if(m.won)r.wins++;else r.losses++;r.last=Math.max(r.last,m.at||0);by.set(m.rival,r);
+ }
+ return [...by.values()].sort((a,b)=>b.last-a.last);
+}
+
+// --- Compare with a friend by code (owner list item 9) ----------------------
+export const PROFILE_PREFIX='T2CP1:';
+const count=v=>Array.isArray(v)?new Set(v).size:0;
+const int=(v,max=99999)=>Math.max(0,Math.min(max,Math.floor(Number(v)||0)));
+export function profileFromSave(save,history,name){
+ const s=save&&typeof save==='object'?save:{};
+ const h=Array.isArray(history)?history:[];
+ return {n:clip(name)||'Treinador',b:int(count(s.badges),8),c:int(count(s.dexCaught)),v:int(count(s.dexSeen)),
+  sh:int(count(s.dexShinyCaught)),ch:s.champion?1:0,w:int(s.wins),l:int(s.losses),
+  mw:int(h.filter(m=>m.won).length),ml:int(h.filter(m=>!m.won).length)};
+}
+const b64=t=>btoa(String.fromCharCode(...new TextEncoder().encode(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64=t=>new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)));
+export function encodeProfile(p){return PROFILE_PREFIX+b64(JSON.stringify(p))}
+export function decodeProfile(code){
+ const t=String(code??'').trim().replace(/\s+/g,'');
+ if(!t.startsWith(PROFILE_PREFIX))throw Error('Esse não é um código de comparação do Torre 2.');
+ let o;try{o=JSON.parse(unb64(t.slice(PROFILE_PREFIX.length)))}catch{throw Error('Código incompleto. Copie de novo.')}
+ return {n:clip(o?.n)||'Amigo',b:int(o?.b,8),c:int(o?.c),v:int(o?.v),sh:int(o?.sh),ch:o?.ch?1:0,
+  w:int(o?.w),l:int(o?.l),mw:int(o?.mw),ml:int(o?.ml)};
+}
+export const PROFILE_ROWS=[['b','Insígnias'],['c','Pokédex: capturados'],['v','Pokédex: vistos'],['sh','Shiny capturados'],
+ ['ch','Campeão da Liga'],['w','Vitórias na campanha'],['mw','Vitórias no multiplayer']];
