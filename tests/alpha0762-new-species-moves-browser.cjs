@@ -15,7 +15,10 @@ const server=http.createServer(async(req,res)=>{
  try{const d=await fs.readFile(abs);res.writeHead(200,{'content-type':types[path.extname(abs)]||'application/octet-stream'});res.end(d)}
  catch{res.writeHead(404);res.end()}
 });
-const SPECIES=['mimejr','porygon','treecko','sableye','chimchar','solosis','honedge','regice','darkrai','zeraora','hoopa'];
+// TORRE2_NEW_SPECIES=grimer,staryu (comma list) overrides the 0.76.2 set,
+// e.g. for the species that became native in Alpha 0.77.3.
+const SPECIES=process.env.TORRE2_NEW_SPECIES?process.env.TORRE2_NEW_SPECIES.split(','):
+ ['mimejr','porygon','treecko','sableye','chimchar','solosis','honedge','regice','darkrai','zeraora','hoopa'];
 (async()=>{
  await fs.mkdir(out,{recursive:true});
  await new Promise(r=>server.listen(4291,'127.0.0.1',r));
