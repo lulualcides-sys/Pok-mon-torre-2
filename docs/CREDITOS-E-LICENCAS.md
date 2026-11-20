@@ -24,6 +24,8 @@ Pokémon Torre 2 é um projeto de fã independente, gratuito e sem comercializa�
 
 O responsável pelo Pokémon Torre 2 declarou que recebeu autorização do autor do site para usar os recursos e código-fonte acessíveis do site **pokearena2d.com** exclusivamente no projeto pessoal sem vendas. A cópia técnica respeita essa declaração e preserva créditos da origem. Os termos escritos da autorização não foram fornecidos aqui; não atribuir autorização a outras obras, serviços externos ou proprietários de marcas além do escopo informado.
 
+**20/11/2026 — captura da Alpha 0.77.3 autorizada:** o dono do Pokémon Torre 2 informou que os donos do Poké Arena 2D liberaram para ele a captura da nova versão do site (0.77.3, `src-712ba03dbb`). O escopo continua o mesmo: projeto pessoal, gratuito e sem vendas, mantendo proveniência e créditos. Detalhes, hashes e o que continua bloqueado (403 da Cloudflare em `/assets/`) estão em `docs/CAPTURA-ALPHA-0773.md`.
+
 O repositório do Pokémon Torre 2 está atualmente público: a captura original é guardada primeiro em artefato de CI para evitar publicar arquivos de terceiros acidentalmente sem revisar o escopo de redistribuição.
 
 ### Insígnias de Kanto — Trainer Card FRLG
