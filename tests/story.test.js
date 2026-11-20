@@ -53,7 +53,7 @@ test('every line fits the FireRed box',()=>{
 test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()=>{
  const SHEETS=['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian','indigo',
   'route24','ssanne','pokemontower','silph','mtmoon','rockethideout'];
- for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg).filter(b=>!b.room)]){
+ for(const bg of [...LEADERS.map(L=>L.bg).filter(b=>!b.room)]){
   if(bg.art)assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+bg.art+'.png',import.meta.url)),bg.art);
   else assert.ok(SHEETS.includes(bg.loc),bg.loc);
   const c=storyCrop(bg).crop;
@@ -70,9 +70,15 @@ test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()
  for(const st of [0,1,2,3,4,5,6,8,9,10,11,12])
   assert.deepEqual(storyFor({stage:st},{kind:'leader',leader:true,id:'x'}).bg,{room:true},'stage '+st);
 });
-test('Giovanni speaks in his own office (owner art); Silph Rocket stays on 11F',()=>{
+test('Giovanni speaks in his own office (owner art); Silph Rocket in the drawn office',()=>{
  const g=storyFor({stage:7},{kind:'leader',leader:true,id:'rhyhorn'});
  assert.equal(g.speaker,'giovanni');assert.equal(g.bg.art,'silph-office');
  const [x,y,w,h]=g.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
- assert.equal(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg.loc,'silph');
+ assert.deepEqual(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg,{place:'office'});
+});
+test('Rival and Rocket scenes use the Torre 2 pixel-art places',()=>{
+ const KINDS=['route22','bridge','ship','tower','silph','indigo','cave','hideout','office','town'];
+ const used=Object.values(STORY).map(s=>s.bg.place);
+ assert.deepEqual([...used].sort(),[...KINDS].sort());
+ assert.deepEqual(storyFor({stage:2},{kind:'rival',id:'wartortle'}).bg,{place:'ship'});
 });
