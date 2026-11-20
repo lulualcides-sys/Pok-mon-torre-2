@@ -14,6 +14,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
 import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from './daily-missions.js';
+import {storyFor,markStorySeen} from './story.js';
 // Native graphics options (light mode). The 0.76.2 publisher exposes the base
 // client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
 // no such module, so the campaign never requests it.
@@ -1667,6 +1668,50 @@ create(){
    },true,9).setData('torre2-trade-receive',true));
   });
  }
+ // Story scene before the first Rival / Team Rocket battle of a stage
+ // (FireRed plot). Tap: finish the line / next line. PULAR skips. Shown once.
+ playStory(state,scene,onDone){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const D=50,who=scene.lines[0][0];
+  const g=this.add.graphics().setDepth(D);
+  g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
+  this.screenBanner(20,300,scene.place,'badges');
+  // Two figures facing each other on a shared stage.
+  g.fillStyle(0x000000,.3).fillEllipse(200,236,120,22).fillEllipse(440,236,120,22);
+  g.fillStyle(who==='rocket'?0x5a2a3a:0x2a4a8c,.9).fillEllipse(200,232,104,16);
+  g.fillStyle(0x2a4a8c,.9).fillEllipse(440,232,104,16);
+  this.npcSprite(spriteIdForTrainer(who),200,234,4,D+1);
+  this.npcSprite(playerSpriteId(),440,234,4,D+1);
+  // FireRed dialogue box.
+  const box=this.add.graphics().setDepth(D+2);
+  box.fillStyle(0x283c68,1).fillRoundedRect(16,256,608,90,10);
+  box.fillStyle(0x6a8ad0,1).fillRoundedRect(20,260,600,82,8);
+  box.fillStyle(0xf8f8f8,1).fillRoundedRect(25,265,590,72,6);
+  const tag=this.add.graphics().setDepth(D+2);
+  tag.fillStyle(0x283c68,1).fillRoundedRect(28,240,150,24,6);tag.fillStyle(who==='rocket'?0xb83a4a:0x4a7ad8,1).fillRoundedRect(30,242,146,20,5);
+  this.uiLabel(103,252,who==='rocket'?'EQUIPE ROCKET':'RIVAL',9,'#ffffff',[.5,.5],D+3);
+  const txt=textoMenu(this,40,282,'',{tam:11,color:'#303030',borde:0,literal:true}).setOrigin(0,0).setDepth(D+3);
+  txt.setWordWrapWidth?.(560);
+  const arrow=this.uiLabel(598,326,'▼',9,'#d04848',[.5,.5],D+3);
+  this.tweens.add({targets:arrow,y:330,duration:400,yoyo:true,repeat:-1});
+  let line=0,shown=0,timer=null,finished=false;
+  const finish=()=>{if(finished)return;finished=true;timer?.remove();
+   const cur=readCampaign()||state,next=markStorySeen(cur,scene.key);
+   try{saveCampaign(next)}catch{}
+   onDone(next)};
+  const show=()=>{const full=scene.lines[line][1];shown=0;arrow.setVisible(false);timer?.remove();
+   timer=this.time.addEvent({delay:24,repeat:full.length-1,callback:()=>{shown++;txt.setText(full.slice(0,shown));
+    if(shown>=full.length)arrow.setVisible(true)}})};
+  const advance=()=>{const full=scene.lines[line][1];
+   if(shown<full.length){timer?.remove();shown=full.length;txt.setText(full);arrow.setVisible(true);return}
+   line++;if(line>=scene.lines.length)return finish();show()};
+  const z=this.add.zone(320,180,640,360).setDepth(D+4).setInteractive({useHandCursor:true}).setData('torre2-story-next',true);
+  z.on('pointerdown',()=>{sfx('seleccion');advance()});
+  this.button(580,64,90,22,'PULAR',()=>finish(),false,8).setDepth?.(D+6);
+  this.children.list.slice(-3).forEach(o=>{o.setDepth?.(D+6);o.setData?.('torre2-story-skip',true)});
+  show();
+  this.__torre2Story={key:scene.key,lines:scene.lines.length};
+ }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
  trainerCardScreen(state){
@@ -2254,7 +2299,10 @@ create(){
   match.mandos=[touch?'tactil':'kbm','cpu'];
   this.launchBattle(match,false);
  }
- enterBattle(state,wild=false){
+ enterBattle(state,wild=false,{skipStory=false}={}){
+  // First Rival / Team Rocket battle of a stage: FireRed story scene first.
+  if(!wild&&!skipStory){const story=storyFor(state,currentOpponent(state));
+   if(story)return this.playStory(state,story,next=>this.enterBattle(next,false,{skipStory:true}));}
   // A KO party cannot be resurrected by Phaser's native reiniciar().
   // Offer the real healing Center without consuming a trainer attempt,
   // progressing a route, resetting the save, or launching combat.

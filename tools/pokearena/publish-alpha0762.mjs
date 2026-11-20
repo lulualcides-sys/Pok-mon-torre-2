@@ -78,7 +78,9 @@ const newModuleNames=[
  // Daily missions (pure rules), imported by campanha.js.
  ['tools/pokearena/torre2-daily-missions.js','torre2/daily-missions.js'],
  // Pokémon trade by code (pure), imported by campaign-core.js.
- ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js']
+ ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js'],
+ // FireRed story scenes (pure data), imported by campanha.js.
+ ['tools/pokearena/torre2-story.js','torre2/story.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);

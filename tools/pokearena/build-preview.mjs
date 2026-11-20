@@ -301,6 +301,7 @@ await Promise.all([
  ['tools/pokearena/torre2-legendary-lairs.js','legendary-lairs.js'],
  ['tools/pokearena/torre2-daily-missions.js','daily-missions.js'],
  ['tools/pokearena/torre2-trade-code.js','trade-code.js'],
+ ['tools/pokearena/torre2-story.js','story.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
