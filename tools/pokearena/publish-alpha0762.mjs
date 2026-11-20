@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {removeNewsTitleOption,removeUpdatesTitleButton} from './torre2-title-pokedex-fast.mjs';
+import {patchFireTrailMarks} from './torre2-fire-trail-patch.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
 import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.mjs';
@@ -236,6 +237,10 @@ const fireCapHook="import {installFireParticleCap} from '../torre2/fire-particle
 const combatPatched=fireCapHook+combat.replace(nativeSpriteLoad,
  branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad);
 must(combatPatched.startsWith(fireCapHook),'fire particle cap hook missing');
+// Whole game: at most 6 new fire scorch marks per second (each mark was two
+// new GPU textures; ~60 per Flare Blitz froze phones).
+const marksPatched=patchFireTrailMarks(await read(path.join(original,'marcas.js')));
+must(marksPatched.includes('m.torre2Quemados'),'fire scorch patch missing');
 
 // Virtualize only the native Pokedex graphics in the isolated SHA-addressed
 // hotfix tree. The original P2 client and battle roster are never modified.
@@ -280,7 +285,7 @@ const inputHash=createHash('sha256');
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 for(const {target,content} of newModules)inputHash.update(target+'\0'+content);
-inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
+inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);inputHash.update(marksPatched);
 inputHash.update(packsPatched);
 inputHash.update(rosterPatched);
 inputHash.update(virtualDex);inputHash.update(arenaPrepared);
@@ -299,6 +304,7 @@ await fs.writeFile(path.join(dest,'escenas/titulo.js'),title);
 await fs.writeFile(path.join(dest,'red.js'),redPatched);
 await fs.writeFile(path.join(dest,'escenas/cuenta.js'),accountPatched);
 await fs.writeFile(path.join(dest,'escenas/combate.js'),combatPatched);
+await fs.writeFile(path.join(dest,'marcas.js'),marksPatched);
 await fs.writeFile(path.join(dest,'datos.js'),rosterPatched);
 await fs.writeFile(path.join(dest,'escenas/pokedex.js'),virtualDex);
 await fs.writeFile(path.join(dest,'escenas/preparar.js'),arenaPrepared);
