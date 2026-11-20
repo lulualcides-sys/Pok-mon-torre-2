@@ -445,6 +445,12 @@ export function campaignDifficultyTier(stage,leader=false,role='trainer'){
  if(level>=3||role==='rival')return 'normal';
  return 'facil';
 }
+// Leader battles use the gym arena of the 0.77.3 base client
+// (ARENAS_GIMNASIO ids, art in alpha0773-arenas/). Lance fights in the
+// Blackthorn dragon temple. Viridian and the other Elite Four keep their
+// arena. Unknown ids fall back to the native default arena (arenaDe).
+export const LEADER_ARENAS=Object.freeze({0:'pewter',1:'cerulean',2:'vermilion',3:'celadon',
+ 4:'fuchsia',5:'saffron',6:'cinnabar',11:'blackthorn'});
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
  const gym=STAGES[s.stage];
@@ -469,7 +475,7 @@ export function currentOpponent(s){
    (encounter?.spriteKind||'youngster'),
   name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':
    (encounter?.name||'Treinador '+(s.trainer+1)),
-  level,arena:gym.arena,city:gym.city};
+  level,arena:leader&&LEADER_ARENAS[s.stage]||gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.
 // Resume with an already-conscious reserve, or let the player use the Center.

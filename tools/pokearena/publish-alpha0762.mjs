@@ -331,6 +331,26 @@ for(const [file,sha] of artFiles){
  await fs.writeFile(path.join(artDest,file),bytes);
 }
 await fs.writeFile(path.join(artDest,'PROVENANCE.json'),JSON.stringify(artProvenance,null,1));
+// Gym arenas of the 0.77.3 base client (ARENAS_GIMNASIO / arena_viva.js),
+// supplied by the project owner because /assets/ of the site answers 403.
+// Installed at the exact paths the native client already loads; SHA-256
+// checked against alpha0773-arenas/PROVENANCE.json. 0.76.2 has no gym arenas.
+let gymArenas=0;
+if(baseAlpha==='0.77.3'){
+ const arenaSource='tools/pokearena/alpha0773-arenas';
+ const arenaProvenance=JSON.parse(await read(path.join(arenaSource,'PROVENANCE.json')));
+ const arenaFiles=Object.entries(arenaProvenance.files||{});
+ must(arenaFiles.filter(([f])=>/^gimnasios\/[a-z]+-amplia\.jpg$/.test(f)).length===8,'eight gym arenas required');
+ for(const [file,sha] of arenaFiles){
+  must(/^gimnasios\/(?:[a-z]+-amplia\.jpg|vivas\/cinnabar-[a-z-]+\.png)$/.test(file),'unexpected gym arena file '+file);
+  const bytes=await fs.readFile(path.join(arenaSource,file));
+  must(createHash('sha256').update(bytes).digest('hex')===sha,'gym arena hash mismatch '+file);
+  const target=path.join(root,'assets/arenas',file);
+  await fs.mkdir(path.dirname(target),{recursive:true});
+  await fs.writeFile(target,bytes);gymArenas++;
+ }
+ await fs.writeFile(path.join(root,'assets/arenas/gimnasios/PROVENANCE.json'),JSON.stringify(arenaProvenance,null,1));
+}
 // CC0 campaign music (campaign-music/PROVENANCE.json), verified by SHA-256.
 const musicSource='tools/pokearena/campaign-music';
 const musicProvenance=JSON.parse(await read(path.join(musicSource,'PROVENANCE.json')));
@@ -361,6 +381,6 @@ await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
 const release={alpha:baseAlpha,source:version.src,assetBase:{alpha:'0.71.3',src:'src-5ccc174cb8'},
  baseModules:oldModule,modules:newModule,baseRun:Number(process.env.TORRE2_ALPHA0762_RUN)||null,
- patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length,campaignMusic:musicFiles.length};
+ patchCommit:process.env.GITHUB_SHA||'unverified',noncommercial:true,pmdForms:Object.keys(manifest).length,campaignArt:artFiles.length,campaignMusic:musicFiles.length,gymArenas};
 await fs.writeFile(path.join(site,'RELEASE-0762.json'),JSON.stringify(release,null,2));
 console.log('ALPHA0762_RELEASE_READY',JSON.stringify(release));
