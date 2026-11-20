@@ -5,9 +5,20 @@ import {LEGENDARIES,legendaryStatus,legendaryEncounter,legendaryLevel,markLegend
 
 const base=(o={})=>({stage:3,trainer:0,badges:['Rocha','Cascata','Trovao'],dexCaught:[],wins:30,champion:false,...o});
 
-test('five legendaries in their own places, never in tall grass',()=>{
- assert.deepEqual(LEGENDARIES.map(l=>l.id),['zapdos','articuno','moltres','mewtwo','mew']);
- assert.deepEqual(LEGENDARIES.map(l=>l.scene),['powerplant','seafoam','ember','cave','faraway']);
+test('legendaries in their own places, never in tall grass (Kanto + Navel Rock)',()=>{
+ assert.deepEqual(LEGENDARIES.map(l=>l.id),['zapdos','articuno','moltres','mewtwo','mew','lugia','hooh']);
+ assert.deepEqual(LEGENDARIES.map(l=>l.scene),['powerplant','seafoam','ember','cave','faraway','navel-base','navel-peak']);
+});
+
+test('Lugia and Ho-Oh: only after the League, level 70, catch rate 3',async()=>{
+ const {catchRate}=await import('../tools/pokearena/torre2-capture-mechanics.js');
+ for(const id of ['lugia','hooh']){
+  assert.equal(legendaryStatus(base({stage:12,badges:Array(8).fill('x')}),id).state,'locked');
+  const champ=base({champion:true,stage:13,badges:Array(8).fill('x')});
+  assert.equal(legendaryStatus(champ,id).state,'available');
+  assert.equal(legendaryEncounter(champ,id,63,()=>.5).level,70);
+  assert.equal(catchRate(id),3);
+ }
 });
 
 test('unlock order: badges, then the League, then Mew after the other four',()=>{

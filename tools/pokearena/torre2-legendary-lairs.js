@@ -6,7 +6,7 @@
  * Original drawing for this project: no third-party map image is used.
  */
 export const LAIR_SCALE=2;
-const KINDS=['powerplant','seafoam','ember','cave','faraway'];
+const KINDS=['powerplant','seafoam','ember','cave','faraway','navel-base','navel-peak'];
 
 // ---- low-resolution pixel painter -----------------------------------------
 function painter(g){
@@ -154,7 +154,52 @@ function drawFaraway(p,W,H,rnd){
   const c=rnd()<.5?0xf890c0:0xfff070;p.px(x,y,c);p.px(x-1,y,c);p.px(x+1,y,c);p.px(x,y-1,c);p.px(x,y,0xffffff)}
  return {spot:{x:cx,y:cy-2},anim:'fireflies',back};
 }
-const DRAW={powerplant:drawPowerPlant,seafoam:drawSeafoam,ember:drawEmber,cave:drawCave,faraway:drawFaraway};
+// Navel Rock (after the League, owner list item 12): Lugia rests in the sea
+// grotto at its base, Ho-Oh on the summit above the clouds.
+function drawNavelBase(p,W,H,rnd){
+ const back=50;
+ // Dark grotto wall: layered rock with blue sheen and hanging stalactites.
+ p.rect(0,0,W,back+8,0x141c34);
+ for(let i=0;i<60;i++){const x=rnd()*W|0,y=rnd()*back|0,r=4+rnd()*7|0;p.disc(x,y,r,Math.round(r*.7),i%3?0x1c2846:0x24345a);p.px(x-2,y-2,0x3a5288)}
+ for(let x=2;x<W;x+=9){const h=6+((x*7)%14);for(let j=0;j<h;j++){const w=Math.max(1,Math.round(3*(1-j/h)));p.rect(x-w+1,j,w*2-1,1,j<2?0x2c3c64:0x1a2440)}p.px(x,h,0x6ab0e8)}
+ // Sea water fills the floor: deep blue, dithered light, foam lines.
+ p.rect(0,back,W,H-back,0x0e3a78);
+ p.dither(0,back,W,H-back,0x0e3a78,0x14508f,.32);
+ for(let y=back+4;y<H;y+=7)for(let x=(y%14?0:6);x<W;x+=16)p.rect(x,y,6,1,0x3a7ac4);
+ // Rock island in the middle where Lugia rests.
+ const cx=Math.round(W/2),cy=back+42;
+ p.outlinedDisc(cx,cy+3,52,13,0x0a1428,0x2a3858);p.disc(cx,cy+1,46,10,0x3c4c74);p.disc(cx-6,cy-1,34,7,0x4e6090);
+ p.dither(cx-30,cy-4,60,6,0x4e6090,0x5c70a4,.35);
+ for(let i=0;i<9;i++){const x=cx-44+i*11;p.rect(x,cy+12,6,1,0xb8dcff)}
+ // Light shafts from cracks in the ceiling.
+ for(const lx of [Math.round(W*.3),Math.round(W*.68)])for(let y=0;y<back+30;y++)if((y+lx)%3)p.px(lx+Math.round(y*.25),y,0x6a9ad0);
+ return {spot:{x:cx,y:cy-3},anim:'ripples',back,pools:[[0,cx-56],[cx+56,W-cx-56]]};
+}
+function drawNavelPeak(p,W,H,rnd){
+ const back=58;
+ // Sunset sky: banded gradient with a pale rainbow arc.
+ const bands=[0x2a1c5a,0x48286e,0x7a3478,0xb44a6a,0xe0705a,0xf49a58,0xf8c470];
+ const bh=Math.ceil(back/bands.length);
+ bands.forEach((c,i)=>p.rect(0,i*bh,W,bh,c));
+ for(let i=0;i<bands.length-1;i++)p.dither(0,(i+1)*bh-2,W,3,bands[i],bands[i+1],.5);
+ const rx=Math.round(W*.5),ry=back+30;
+ [[0xff6a6a,62],[0xffb04a,59],[0xfff06a,56],[0x7ae07a,53],[0x6ab0ff,50],[0xb07aff,47]].forEach(([c,r])=>{
+  for(let a=0;a<=180;a+=1){const t=a*Math.PI/180,x=Math.round(rx+Math.cos(t)*r*1.6),y=Math.round(ry-Math.sin(t)*r*.9);if(y<back-6&&(a+r)%4)p.px(x,y,c)}});
+ // Sea of clouds below the summit.
+ for(let i=0;i<40;i++){const x=rnd()*W|0,y=back-6+rnd()*12|0,r=6+rnd()*9|0;p.disc(x,y,r,Math.round(r*.45),0xf6e2d8);p.disc(x-2,y-1,Math.round(r*.7),Math.round(r*.3),0xffffff)}
+ // Rocky summit platform.
+ p.rect(0,back+6,W,H-back-6,0x5a3a2a);
+ p.dither(0,back+6,W,H-back-6,0x5a3a2a,0x6c4a34,.4);
+ for(let i=0;i<30;i++){const x=rnd()*W|0,y=back+10+rnd()*(H-back-12)|0;p.rect(x,y,3+(i%3),1,0x3e2618);p.px(x,y-1,0x8a6448)}
+ const cx=Math.round(W/2),cy=back+40;
+ p.outlinedDisc(cx,cy+2,50,12,0x3a2214,0x8a5a3a);p.disc(cx,cy,44,9,0xa8744a);p.disc(cx-4,cy-2,30,5,0xc68e5a);
+ // Sacred feathers around the platform.
+ for(let i=0;i<8;i++){const t=i/8*Math.PI*2,x=Math.round(cx+Math.cos(t)*38),y=Math.round(cy+Math.sin(t)*8);
+  p.rect(x,y-2,1,4,0xffd040);p.px(x+1,y-1,0xff7030);p.px(x-1,y,0x40c070)}
+ return {spot:{x:cx,y:cy-3},anim:'embers',back};
+}
+const DRAW={powerplant:drawPowerPlant,seafoam:drawSeafoam,ember:drawEmber,cave:drawCave,faraway:drawFaraway,
+ 'navel-base':drawNavelBase,'navel-peak':drawNavelPeak};
 
 // ---- public: draw a lair into the scene ------------------------------------
 // x,y,w,h are screen (logical 640×360) coordinates. Returns the screen spot
@@ -220,9 +265,15 @@ export function drawLairAmbient(scene,kind,x,y,w,h){
  }else if(kind==='seafoam'){
   for(let i=0;i<26;i++){const sx=x+rnd()*w,d=dot(0xffffff,sx,y);d.setAlpha(.9);
    tw({targets:d,y:y+h-S,x:sx+S*10,duration:4200+rnd()*2600,repeat:-1,delay:rnd()*4200})}
- }else if(kind==='ember'){
+ }else if(kind==='ember'||kind==='navel-peak'){
   for(let i=0;i<24;i++){const sx=x+rnd()*w,sy=y+h-4-rnd()*24,d=dot(i%2?0xffd040:0xff8a2a,sx,sy);
    tw({targets:d,y:y+S*4,x:sx+(rnd()-.5)*S*12,alpha:{from:1,to:0},duration:2800+rnd()*2400,repeat:-1,delay:rnd()*2800})}
+ }else if(kind==='navel-base'){
+  // Drops from the stalactites and glints on the water.
+  for(let i=0;i<12;i++){const sx=x+rnd()*w,d=dot(0x9ad8ff,sx,y+S*6);
+   tw({targets:d,y:y+h*.55,alpha:{from:1,to:.2},duration:1400+rnd()*1200,repeat:-1,delay:rnd()*3000})}
+  for(let i=0;i<16;i++){const d=dot(0xffffff,x+rnd()*w,y+h*.6+rnd()*h*.38);d.setAlpha(0);
+   tw({targets:d,alpha:{from:0,to:.9},duration:400,yoyo:true,repeat:-1,repeatDelay:700+rnd()*1800,delay:rnd()*2000})}
  }else if(kind==='cave'){
   for(let i=0;i<14;i++){const d=dot(i%3?0x9ad8ff:0xffffff,x+rnd()*w,y+rnd()*h*.7);d.setAlpha(0);
    tw({targets:d,alpha:{from:0,to:1},duration:500,yoyo:true,repeat:-1,repeatDelay:900+rnd()*2200,delay:rnd()*2400})}
@@ -240,7 +291,7 @@ export function drawLairAmbient(scene,kind,x,y,w,h){
  return {objects,tweens};
 }
 // Where the platform sits in each lair illustration (fraction of the frame).
-export const LAIR_SPOT=Object.freeze({cave:.80,ember:.80,seafoam:.86,powerplant:.84,faraway:.84});
+export const LAIR_SPOT=Object.freeze({cave:.80,ember:.80,seafoam:.86,powerplant:.84,faraway:.84,'navel-base':.82,'navel-peak':.82});
 
 // Silph Co. president's office (Saffron), the Giovanni battle that gives the
 // Master Ball. Same pixel painter: night windows, Silph plaque, shelves, desk.

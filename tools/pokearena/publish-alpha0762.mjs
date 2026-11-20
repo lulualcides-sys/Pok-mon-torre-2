@@ -72,7 +72,10 @@ const overlayNames=[
  ['tools/pokearena/torre2-ball-sprites.js','torre2/ball-sprites.js'],
  // Reviewed 2026-11-20: byte-identical to the audited build module before the
  // fix that brings a fighter caught mid-Fly/Dig back into view on a switch.
- ['tools/pokearena/torre2-combat-boundary.js','torre2/combat-boundary.js']
+ ['tools/pokearena/torre2-combat-boundary.js','torre2/combat-boundary.js'],
+ // Reviewed 2026-11-20: identical to the audited build before the Lugia /
+ // Ho-Oh catch rates (post-League legendaries).
+ ['tools/pokearena/torre2-capture-mechanics.js','torre2/capture-mechanics.js']
 ];
 // New Torre 2 modules (not in the audited build): written next to the
 // overlays; refused if the audited build already has a file with that name.
@@ -91,6 +94,10 @@ const newModuleNames=[
  ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js'],
  // FireRed story scenes (pure data), imported by campanha.js.
  ['tools/pokearena/torre2-story.js','torre2/story.js'],
+ // Route weather (visual + encounter weights only), imported by campaign-core.
+ ['tools/pokearena/torre2-route-weather.js','torre2/route-weather.js'],
+ // Torre de desafios rules (pure), imported by campaign-core and the scene.
+ ['tools/pokearena/torre2-challenge-tower.js','torre2/challenge-tower.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
  // the base client's own 1v1 friendly match. Registered in main.js below.
  ['tools/pokearena/torre2-multiplayer-core.js','torre2/multiplayer-core.js'],

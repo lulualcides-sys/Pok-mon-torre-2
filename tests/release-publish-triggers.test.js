@@ -35,6 +35,8 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   // Reviewed 2026-11-20: identical to the audited build before the Fly/Dig
   // visibility restore on a party switch.
   'tools/pokearena/torre2-combat-boundary.js',
+  // Reviewed 2026-11-20: identical to the audited build before the Lugia/Ho-Oh rates.
+  'tools/pokearena/torre2-capture-mechanics.js',
   // Reviewed NEW module (not in the audited build): legacy, rewards, ranking.
   'tools/pokearena/torre2-legacy.js',
   'tools/pokearena/torre2-legendaries.js',
@@ -43,6 +45,8 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-daily-missions.js',
   'tools/pokearena/torre2-trade-code.js',
   'tools/pokearena/torre2-story.js',
+  'tools/pokearena/torre2-route-weather.js',
+  'tools/pokearena/torre2-challenge-tower.js',
   'tools/pokearena/torre2-multiplayer-core.js',
   'tools/pokearena/torre2-multiplayer.js'
  ],'Any changed or added release overlay must be reviewed explicitly');
