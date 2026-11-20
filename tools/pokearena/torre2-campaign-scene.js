@@ -1671,15 +1671,17 @@ create(){
  // Full-screen FireRed map slice for a story scene (bg from story.js
  // storyCrop). Loads the location sheet on demand; false when no place.
  storyBackdrop(bg,depth){
-  if(!bg?.loc||!Array.isArray(bg.crop))return false;
-  const key='frlg-location-'+bg.loc,frame='torre2-story-'+bg.crop.join('-');
+  if(!(bg?.loc||bg?.art)||!Array.isArray(bg.crop))return false;
+  // FireRed map sheets are nearest-filtered; owner illustrations smooth.
+  const key=bg.art?'torre2-art-'+bg.art:'frlg-location-'+bg.loc,frame='torre2-story-'+bg.crop.join('-');
+  const url=bg.art?'assets/ui/torre2-campaign/'+bg.art+'.png':'assets/ui/frlg/'+bg.loc+'.png';
   const slot=this.add.container(0,0).setDepth(depth);
   const draw=()=>{
    if(!slot.active||!this.textures.exists(key))return;
    const tex=this.textures.get(key),src=tex.getSourceImage(),[x,y,w,h]=bg.crop;
    if(x+w>src.width||y+h>src.height)return;
    if(!tex.has(frame))tex.add(frame,0,x,y,w,h);
-   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   tex.setFilter(bg.art?Phaser.Textures.FilterMode.LINEAR:Phaser.Textures.FilterMode.NEAREST);
    slot.removeAll(true);
    slot.add(this.add.image(0,0,key,frame).setOrigin(0).setDisplaySize(640,360));
    // Soft shade: light over the room, darker under the title and the
@@ -1694,7 +1696,7 @@ create(){
   slot.add(this.add.graphics().fillStyle(0x16243a,1).fillRect(0,0,640,360));
   this.load.once('filecomplete-image-'+key,draw);
   const queued=[this.load.list,this.load.inflight].some(set=>(set?.entries||[]).some(f=>f?.key===key));
-  if(!queued){this.load.image(key,'assets/ui/frlg/'+bg.loc+'.png');if(!this.load.isLoading())this.load.start()}
+  if(!queued){this.load.image(key,url);if(!this.load.isLoading())this.load.start()}
   return true;
  }
  // Story scene before a battle: first Rival / Team Rocket battle of a stage,

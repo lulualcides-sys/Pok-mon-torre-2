@@ -54,9 +54,10 @@ test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()
  const SHEETS=['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian','indigo',
   'route24','ssanne','pokemontower','silph','mtmoon','rockethideout'];
  for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg)]){
-  assert.ok(SHEETS.includes(bg.loc),bg.loc);
+  if(bg.art)assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+bg.art+'.png',import.meta.url)),bg.art);
+  else assert.ok(SHEETS.includes(bg.loc),bg.loc);
   const c=storyCrop(bg).crop;
-  assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+bg.loc);
+  assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+(bg.loc||bg.art));
   assert.ok(c[0]>=0&&c[1]>=0,'inside the sheet '+bg.loc);
   if(bg.rect)assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
   // Feet anchors: the two figures land exactly on the chosen floor points.
@@ -66,4 +67,9 @@ test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()
    assert.ok(Math.abs((bg.feet[1]-c[1])*k-238)<=k,'figures feet y '+bg.loc);}
  }
  assert.equal(storyFor({stage:3},{kind:'leader',leader:true,id:'vileplume'}).bg.loc,'celadon');
+});
+test('Silph Rocket scene happens in Giovanni\'s office (owner art)',()=>{
+ const sc=storyFor({stage:5},{kind:'rocket',id:'koffing'});
+ assert.equal(sc.bg.art,'silph-office');
+ const [x,y,w,h]=sc.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
 });

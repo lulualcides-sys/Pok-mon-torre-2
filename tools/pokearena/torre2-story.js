@@ -39,7 +39,7 @@ export const STORY=Object.freeze({
  'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{loc:'rockethideout',feet:[190,440],d:72},lines:[
   ['rocket','Ei! O Cassino é só fachada... você achou o esconderijo da Equipe Rocket!'],
   ['rocket','Ninguém que descobre o nosso segredo sai daqui!']]},
- 'rocket-5':{place:'Silph Co. · Saffron',bg:{loc:'silph',feet:[880,1724],d:72},lines:[
+ 'rocket-5':{place:'Silph Co. · Saffron',bg:{art:'silph-office',feet:[330,290],d:200},lines:[
   ['rocket','A Silph Co. agora pertence à Equipe Rocket!'],
   ['rocket','O chefe quer a Master Ball. Você não vai atrapalhar!']]},
  'rocket-7':{place:'Viridian',bg:{loc:'viridian',feet:[490,372],d:72},lines:[
@@ -197,13 +197,16 @@ export function matchup(leaderType,leadTypes){
 //    is placed so the two figures (screen x 200 and 440, feet at y 238)
 //    land exactly there.
 //  - rect (+panY): a room rectangle; a centred 16:9 slice of it.
-// Returns {loc,crop:[x,y,w,h]} or null.
+//  - art instead of loc: one of the owner's campaign illustrations
+//    (campaign-art/<art>.png), e.g. Giovanni's Silph office.
+// Returns {loc|art,crop:[x,y,w,h]} or null.
 export const STORY_FIGURES=Object.freeze({left:200,right:440,feet:238});
 export function storyCrop(bg){
- if(!bg?.loc)return null;
+ if(!bg?.loc&&!bg?.art)return null;
+ const src=bg.art?{art:bg.art}:{loc:bg.loc};
  if(Array.isArray(bg.feet)&&bg.d>0){
   const k=(STORY_FIGURES.right-STORY_FIGURES.left)/bg.d,w=Math.round(640/k),h=Math.round(360/k);
-  return {loc:bg.loc,crop:[Math.round(bg.feet[0]-STORY_FIGURES.left/k),Math.round(bg.feet[1]-STORY_FIGURES.feet/k),w,h]};
+  return {...src,crop:[Math.round(bg.feet[0]-STORY_FIGURES.left/k),Math.round(bg.feet[1]-STORY_FIGURES.feet/k),w,h]};
  }
  if(!Array.isArray(bg.rect))return null;
  const [x,y,w,h]=bg.rect,cw=Math.round(Math.min(w,h*16/9)),ch=Math.round(cw*9/16);
