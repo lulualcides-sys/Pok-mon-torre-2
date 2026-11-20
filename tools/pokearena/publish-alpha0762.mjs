@@ -72,7 +72,9 @@ const newModuleNames=[
  // Legendary encounters (pure rules), imported by campaign-core and campanha.
  ['tools/pokearena/torre2-legendaries.js','torre2/legendaries.js'],
  // Pixel-art lairs of the legendaries (original drawing, no map images).
- ['tools/pokearena/torre2-legendary-lairs.js','torre2/legendary-lairs.js']
+ ['tools/pokearena/torre2-legendary-lairs.js','torre2/legendary-lairs.js'],
+ // Fire particle cap for the whole game, imported by escenas/combate.js.
+ ['tools/pokearena/torre2-fire-particle-cap.js','torre2/fire-particle-cap.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);
@@ -228,8 +230,12 @@ exactly(combat,nativeSpriteLoad,'native fighter sprite preload');
 const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of '+
  '[["0240",["0126","0467"]],["0236",["0107","0106","0237"]],["0123",["0212"]]])'+
  'if(dexs.has(baby))for(const dex of stages)if(m[dex])dexs.add(dex);';
-const combatPatched=combat.replace(nativeSpriteLoad,
+// Whole game (owner request 2026-11-20): cap live fire particles per emitter
+// so fire moves stop freezing phones. Installed once at boot, before any scene.
+const fireCapHook="import {installFireParticleCap} from '../torre2/fire-particle-cap.js';installFireParticleCap();\n";
+const combatPatched=fireCapHook+combat.replace(nativeSpriteLoad,
  branchPreload+'window.__torre2HotfixPreloads=[...dexs];'+nativeSpriteLoad);
+must(combatPatched.startsWith(fireCapHook),'fire particle cap hook missing');
 
 // Virtualize only the native Pokedex graphics in the isolated SHA-addressed
 // hotfix tree. The original P2 client and battle roster are never modified.
