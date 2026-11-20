@@ -595,7 +595,8 @@ function extrasPage(scene,state,handlers){
  actions.push(['LENDÁRIOS',handlers.legendaries,'capture']);
  actions.push(['SILPH CO.',handlers.silph,'bag']);
  actions.push([handlers.lightLabel?.()||'MODO LEVE',handlers.lightMode,'fullscreen']);
- // Four columns so all sixteen options fit above VOLTAR.
+ actions.push(['MISSÕES',handlers.missions,'badges']);
+ // Four columns, five rows: every option fits above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
   const x=104+(i%4)*110,y=82+Math.floor(i/4)*40;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
