@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {STORY,LEADERS,SPEAKERS,storyFor,markStorySeen,matchup} from '../tools/pokearena/torre2-story.js';
+import {STORY,LEADERS,SPEAKERS,storyFor,storyCrop,markStorySeen,matchup} from '../tools/pokearena/torre2-story.js';
 import fs from 'node:fs';
 // Stage leaders/types straight from the campaign source (core imports build-time names).
 const SRC=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
@@ -49,4 +49,15 @@ test('every line fits the FireRed box',()=>{
  const all=[...Object.values(STORY).flatMap(s=>s.lines.map(l=>l[1])),
   ...LEADERS.flatMap(L=>[...L.intro,...L.retry,L.strong||'',L.weak||''])];
  for(const t of all)assert.ok(t.length<90,t);
+});
+test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()=>{
+ const SHEETS=['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian','indigo',
+  'route24','ssanne','pokemontower','silph','mtmoon','rockethideout'];
+ for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg)]){
+  assert.ok(SHEETS.includes(bg.loc),bg.loc);
+  const c=storyCrop(bg).crop;
+  assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+bg.loc);
+  assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
+ }
+ assert.equal(storyFor({stage:3},{kind:'leader',leader:true,id:'vileplume'}).bg.loc,'celadon');
 });

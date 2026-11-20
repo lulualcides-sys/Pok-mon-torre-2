@@ -1668,6 +1668,35 @@ create(){
    },true,9).setData('torre2-trade-receive',true));
   });
  }
+ // Full-screen FireRed map slice for a story scene (bg from story.js
+ // storyCrop). Loads the location sheet on demand; false when no place.
+ storyBackdrop(bg,depth){
+  if(!bg?.loc||!Array.isArray(bg.crop))return false;
+  const key='frlg-location-'+bg.loc,frame='torre2-story-'+bg.crop.join('-');
+  const slot=this.add.container(0,0).setDepth(depth);
+  const draw=()=>{
+   if(!slot.active||!this.textures.exists(key))return;
+   const tex=this.textures.get(key),src=tex.getSourceImage(),[x,y,w,h]=bg.crop;
+   if(x+w>src.width||y+h>src.height)return;
+   if(!tex.has(frame))tex.add(frame,0,x,y,w,h);
+   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   slot.removeAll(true);
+   slot.add(this.add.image(0,0,key,frame).setOrigin(0).setDisplaySize(640,360));
+   // Soft shade: light over the room, darker under the title and the
+   // dialogue box so the text stays readable.
+   const s=this.add.graphics();
+   s.fillStyle(0x0a1424,.18).fillRect(0,0,640,360);
+   for(let i=0;i<8;i++){s.fillStyle(0x0a1424,.07).fillRect(0,0,640,56-i*6);s.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14)}
+   slot.add(s);
+  };
+  if(this.textures.exists(key)){draw();return true}
+  // Plain night-blue until the sheet arrives (cached after the first time).
+  slot.add(this.add.graphics().fillStyle(0x16243a,1).fillRect(0,0,640,360));
+  this.load.once('filecomplete-image-'+key,draw);
+  const queued=[this.load.list,this.load.inflight].some(set=>(set?.entries||[]).some(f=>f?.key===key));
+  if(!queued){this.load.image(key,'assets/ui/frlg/'+bg.loc+'.png');if(!this.load.isLoading())this.load.start()}
+  return true;
+ }
  // Story scene before a battle: first Rival / Team Rocket battle of a stage,
  // gym leaders, Elite Four and Champion (intro, type reaction, retry line).
  // Tap: finish the line / next line. PULAR skips.
@@ -1675,13 +1704,18 @@ create(){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
   const D=50,who=scene.speaker||scene.lines[0][0];
   const tone=who==='rocket'?[0x5a2a3a,0xb83a4a]:who==='rival'?[0x2a4a8c,0x4a7ad8]:[0x6a4a1a,0xc8962a];
+  // The real place behind them: a slice of its FireRed map (gym room,
+  // Elite Four room, S.S. Anne deck, Silph lobby...), as on the gym cards.
+  const hasPlace=this.storyBackdrop(scene.bg,D-1);
   const g=this.add.graphics().setDepth(D);
-  g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
+  if(!hasPlace)g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
   this.screenBanner(20,300,scene.place,'badges');
-  // Two figures facing each other on a shared stage.
-  g.fillStyle(0x000000,.3).fillEllipse(200,236,120,22).fillEllipse(440,236,120,22);
-  g.fillStyle(tone[0],.9).fillEllipse(200,232,104,16);
-  g.fillStyle(0x2a4a8c,.9).fillEllipse(440,232,104,16);
+  // Two figures facing each other, standing on the floor of the place.
+  g.fillStyle(0x000000,.38).fillEllipse(200,238,84,16).fillEllipse(440,238,84,16);
+  if(!hasPlace){
+   g.fillStyle(tone[0],.9).fillEllipse(200,232,104,16);
+   g.fillStyle(0x2a4a8c,.9).fillEllipse(440,232,104,16);
+  }
   this.npcSprite(spriteIdForTrainer(who),200,234,4,D+1);
   this.npcSprite(playerSpriteId(),440,234,4,D+1);
   // FireRed dialogue box.
