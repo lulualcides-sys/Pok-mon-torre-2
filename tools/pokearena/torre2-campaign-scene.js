@@ -13,6 +13,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
+import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from './daily-missions.js';
 // Native graphics options (light mode). The 0.76.2 publisher exposes the base
 // client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
 // no such module, so the campaign never requests it.
@@ -870,6 +871,7 @@ create(){
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
    legendaries:()=>this.legendaryHub(state),
+   missions:()=>this.missionsScreen(state),
    lightMode:()=>{this.toggleLightMode();this.renderCampaign(state)},
    lightLabel:()=>'MODO LEVE: '+(this.lightModeOn()?'ON':'OFF'),
    silph:()=>this.silphScreen(state),
@@ -1519,6 +1521,47 @@ create(){
   Q.ponerOpcion('marcas',on?'no':'si');Q.ponerOpcion('particulas',on?'baja':'auto');Q.ponerOpcion('brillo',on?'no':'auto');
   this.campaignNotice(on?'Modo leve LIGADO: sem marcas no chão, menos partículas e brilho.':'Modo leve DESLIGADO: gráficos normais.',on?'#9ff0bf':MENU_UI.amarillo);
   return on;
+ }
+ // Daily missions (Mais → MISSÕES): three per day, claimed once each, bonus.
+ speciesTypes(id){try{const {def,etapa}=buscar(id);return (etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{return []}}
+ missionsScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  let cur=readCampaign()||state;const today=ensureDaily(cur);
+  if(today!==cur){try{saveCampaign(today)}catch{}cur=today}
+  const d=cur.daily,typesOf=id=>this.speciesTypes(id);
+  this.screenBanner(20,300,'Missões do dia','badges');
+  this.uiLabel(320,46,'Novas missões todo dia · '+d.day.split('-').reverse().join('/'),8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  const claim=id=>{const now=readCampaign()||cur,next=claimDaily(now,id,typesOf);
+   if(!next)return this.missionsScreen(now);
+   try{saveCampaign(next)}catch{return this.campaignNotice('Recompensa não salva: tente de novo','#ff9d9d')}
+   const r=id==='bonus'?DAILY_BONUS:now.daily.missions.find(m=>m.id===id)?.reward;
+   this.missionsScreen(next);this.campaignNotice('Recompensa: '+rewardLabel(r),'#9ff0bf')};
+  d.missions.forEach((m,i)=>{
+   const y=66+i*58,p=missionProgress(cur,m,typesOf),done=p>=m.goal,claimed=(d.claimed||[]).includes(m.id);
+   nativeRect(g,18,y,604,52,done?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,20,y+2,600,48,claimed?0x183a2e:done?0x2a3f78:0x0a1a46,6);
+   g.fillStyle(MENU_UI.contorno,1).fillCircle(44,y+26,15);g.fillStyle(done?MENU_UI.oroBorde:0x3a4a6a,1).fillCircle(44,y+26,13);
+   this.uiLabel(44,y+26,claimed?'★':String(i+1),10,done?MENU_UI.textoOscuro:'#c8d6f0',[.5,.5],5);
+   estrechar(this.uiLabel(70,y+16,m.text,10,done?MENU_UI.amarillo:'#ffffff'),360);
+   // Progress bar.
+   nativeRect(g,70,y+30,250,10,MENU_UI.contorno,4);
+   g.fillStyle(done?0x5ad86a:0x4a8ad8,1).fillRect(72,y+32,Math.round(246*p/m.goal),6);
+   this.uiLabel(332,y+35,p+'/'+m.goal,8,'#dcf4fb',[0,.5]);
+   estrechar(this.uiLabel(470,y+16,'Prêmio: '+rewardLabel(m.reward),8,'#ffd47a',[.5,.5]),190);
+   if(done&&!claimed)this.button(470,y+36,150,20,'Resgatar',()=>claim(m.id),true,8).setData('torre2-daily-claim',m.id);
+   else if(claimed)this.uiLabel(470,y+36,'Resgatado',8,'#9ff0bf',[.5,.5]);
+  });
+  const all=d.missions.every(m=>missionProgress(cur,m,typesOf)>=m.goal);
+  nativeRect(g,18,242,604,58,MENU_UI.oroBorde,8);nativeRect(g,20,244,600,54,0x2a1d52,7);
+  originalBallSprite(this,46,271,'ultraball',24,5);
+  this.uiLabel(70,262,'Bônus: complete as 3 missões',10,MENU_UI.amarillo);
+  this.uiLabel(70,280,rewardLabel(DAILY_BONUS),8,'#e8c8ff');
+  if(d.bonus)this.uiLabel(540,271,'Resgatado',9,'#9ff0bf',[.5,.5]);
+  else if(all)this.button(540,271,140,24,'Resgatar bônus',()=>claim('bonus'),true,8).setData('torre2-daily-claim','bonus');
+  else this.uiLabel(540,271,(d.missions.filter(m=>missionProgress(cur,m,typesOf)>=m.goal).length)+'/3',11,'#8ea2c8',[.5,.5]);
+  this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-daily-back',true);
+  this.__torre2Daily={day:d.day,missions:d.missions.map(m=>({kind:m.kind,goal:m.goal,progress:missionProgress(cur,m,typesOf)})),bonus:d.bonus};
  }
  // Trainer Card, FireRed style: the player's character, name, ID, money,
  // Pokédex, wins and the eight badges. Read-only (never writes the save).
