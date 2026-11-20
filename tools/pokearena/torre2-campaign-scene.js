@@ -1708,7 +1708,16 @@ create(){
   const tone=who==='rocket'?[0x5a2a3a,0xb83a4a]:who==='rival'?[0x2a4a8c,0x4a7ad8]:[0x6a4a1a,0xc8962a];
   // The real place behind them: a slice of its FireRed map (gym room,
   // Elite Four room, S.S. Anne deck, Silph lobby...), as on the gym cards.
-  const hasPlace=this.storyBackdrop(scene.bg,D-1);
+  // Leaders: their own pixel-art room in the gym type colour (as on the gym
+  // challenge screen), full screen, with a soft shade under the text.
+  let hasPlace=false;
+  if(scene.bg?.room){
+   const st=Number(state?.stage)||0,spec=STAGES[st]||{};
+   this.leaderRoom(0,0,640,360,st,spec.type||(st>=8?'DRAGON':'NORMAL'));
+   const sh=this.add.graphics().setDepth(D-1);
+   for(let i=0;i<8;i++)sh.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14);
+   hasPlace=true;
+  }else hasPlace=this.storyBackdrop(scene.bg,D-1);
   const g=this.add.graphics().setDepth(D);
   if(!hasPlace)g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
   this.screenBanner(20,300,scene.place,'badges');

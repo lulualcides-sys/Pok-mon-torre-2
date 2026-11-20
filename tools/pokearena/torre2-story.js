@@ -50,7 +50,7 @@ export const STORY=Object.freeze({
 // intro: first challenge · strong: player's lead hits the leader's type hard
 // weak: the leader's type hits the player's lead hard · retry: after a loss.
 export const LEADERS=Object.freeze([
- {who:'brock',type:'ROCK',place:'Ginásio de Pewter',bg:{loc:'pewter',rect:[790,544,190,247],panY:.08},intro:[
+ {who:'brock',type:'ROCK',place:'Ginásio de Pewter',bg:{room:true},intro:[
   'Sou o Brock, líder do Ginásio de Pewter.',
   'Meus Pokémon de Pedra são duros como a minha determinação.',
   'Mostre do que você é capaz!'],
@@ -59,7 +59,7 @@ export const LEADERS=Object.freeze([
   retry:['Voltou! Uma rocha só se quebra com insistência.',
    'Treinou mais um pouco? Então vamos de novo.',
    'Gosto de quem não desiste. Pode vir!']},
- {who:'misty',type:'WATER',place:'Ginásio de Cerulean',bg:{loc:'cerulean',feet:[1125,198],d:72},intro:[
+ {who:'misty',type:'WATER',place:'Ginásio de Cerulean',bg:{room:true},intro:[
   'Oi! Eu sou a Misty, a melhor treinadora de Pokémon de Água!',
   'Minha estratégia é atacar com tudo, como uma onda.',
   'Pronto pra se molhar?'],
@@ -68,7 +68,7 @@ export const LEADERS=Object.freeze([
   retry:['De novo por aqui? A maré ainda está a meu favor!',
    'Você não desiste mesmo, hein? Gostei.',
    'Desta vez vê se aguenta a correnteza!']},
- {who:'surge',type:'ELECTRIC',place:'Ginásio de Vermilion',bg:{loc:'vermilion',rect:[1034,24,168,340],panY:.08},intro:[
+ {who:'surge',type:'ELECTRIC',place:'Ginásio de Vermilion',bg:{room:true},intro:[
   'Ei, garoto! Eu sou o Lt. Surge, o Relâmpago Americano!',
   'Na guerra, os Pokémon Elétricos salvaram a minha vida.',
   'Vou deixar você paralisado igual eles fizeram com os inimigos!'],
@@ -77,7 +77,7 @@ export const LEADERS=Object.freeze([
   retry:['Voltou pra levar outro choque?',
    'Você tem coragem, soldado. Vamos de novo!',
    'Recarregou as baterias? Eu também!']},
- {who:'erika',type:'GRASS',place:'Ginásio de Celadon',bg:{loc:'celadon',feet:[1210,868],d:72},intro:[
+ {who:'erika',type:'GRASS',place:'Ginásio de Celadon',bg:{room:true},intro:[
   'Ah, bom dia... Eu sou a Erika, líder de Celadon.',
   'Adoro arranjos de flores e Pokémon de Planta.',
   'Mas não se engane: em batalha eu não perco por gentileza.'],
@@ -86,7 +86,7 @@ export const LEADERS=Object.freeze([
   retry:['Ah... você voltou. Que persistência adorável.',
    'Um jardim cresce devagar. Treinadores também.',
    'Vamos tentar mais uma vez, com calma.']},
- {who:'koga',type:'POISON',place:'Ginásio de Fuchsia',bg:{loc:'fuchsia',rect:[1030,23,247,365],panY:.08},intro:[
+ {who:'koga',type:'POISON',place:'Ginásio de Fuchsia',bg:{room:true},intro:[
   'Fwahahaha! Eu sou o Koga, mestre ninja de Fuchsia!',
   'Veneno, confusão e paciência: essas são as minhas armas.',
   'Você vai sentir o poder do ninja!'],
@@ -95,7 +95,7 @@ export const LEADERS=Object.freeze([
   retry:['Ainda de pé? O veneno não te convenceu?',
    'Um ninja respeita quem se levanta. Venha!',
    'Fwahaha! Mais uma lição, então.']},
- {who:'sabrina',type:'PSYCHIC',place:'Ginásio de Saffron',bg:{loc:'saffron',feet:[1650,125],d:72},intro:[
+ {who:'sabrina',type:'PSYCHIC',place:'Ginásio de Saffron',bg:{room:true},intro:[
   'Eu já sabia que você viria.',
   'Desde criança tenho poderes psíquicos. Eu vi esta batalha.',
   'Mas o futuro não me disse quem venceria.'],
@@ -104,7 +104,7 @@ export const LEADERS=Object.freeze([
   retry:['Eu vi você voltar. E vi que ainda falta algo.',
    'Sua mente está mais forte. Será o bastante?',
    'De novo. Desta vez, não feche os olhos.']},
- {who:'blaine',type:'FIRE',place:'Ginásio de Cinnabar',bg:{loc:'cinnabar',feet:[945,140],d:72},intro:[
+ {who:'blaine',type:'FIRE',place:'Ginásio de Cinnabar',bg:{room:true},intro:[
   'Hah! Eu sou o Blaine, o líder escaldante de Cinnabar!',
   'Meus Pokémon de Fogo transformam tudo em cinzas!',
   'Pegou o Antiqueimadura? Vai precisar!'],
@@ -122,7 +122,7 @@ export const LEADERS=Object.freeze([
   retry:['Ainda insiste? Admiro a teimosia. Não a ingenuidade.',
    'Volte quantas vezes quiser. O resultado é o mesmo.',
    'Hm. Você está melhorando. Mostre.']},
- {who:'lorelei',type:'ICE',place:'Liga Pokémon · Elite Four',bg:{loc:'indigo',rect:[8,368,208,208],panY:.4},intro:[
+ {who:'lorelei',type:'ICE',place:'Liga Pokémon · Elite Four',bg:{room:true},intro:[
   'Bem-vindo à Liga Pokémon. Eu sou a Lorelei, da Elite Four.',
   'Ninguém lida melhor com Pokémon de Gelo do que eu.',
   'Seus Pokémon vão congelar onde estão!'],
@@ -131,7 +131,7 @@ export const LEADERS=Object.freeze([
   retry:['De volta ao frio? Que bom que não desistiu.',
    'O gelo não derrete sozinho. Tente outra vez.',
    'Vamos ver se agora você esquenta a batalha.']},
- {who:'bruno',type:'FIGHTING',place:'Liga Pokémon · Elite Four',bg:{loc:'indigo',rect:[224,368,208,208],panY:.4},intro:[
+ {who:'bruno',type:'FIGHTING',place:'Liga Pokémon · Elite Four',bg:{room:true},intro:[
   'Eu sou o Bruno, da Elite Four!',
   'Treino meus Pokémon e meu corpo todos os dias até o limite.',
   'Hoo hah! Prepare-se para a força bruta!'],
@@ -140,7 +140,7 @@ export const LEADERS=Object.freeze([
   retry:['Hoo hah! Voltou pra mais uma rodada!',
    'Músculos crescem depois da derrota. Vamos!',
    'Mostre o que o seu treino rendeu!']},
- {who:'agatha',type:'GHOST',place:'Liga Pokémon · Elite Four',bg:{loc:'indigo',rect:[440,368,208,208],panY:.4},intro:[
+ {who:'agatha',type:'GHOST',place:'Liga Pokémon · Elite Four',bg:{room:true},intro:[
   'Eu sou a Agatha, da Elite Four.',
   'O Carvalho e eu já fomos rivais, sabia? Bons tempos...',
   'Vou te mostrar como um treinador de verdade luta!'],
@@ -149,7 +149,7 @@ export const LEADERS=Object.freeze([
   retry:['Hehehe... voltou do além?',
    'Os fantasmas gostaram de você. Mais uma vez.',
    'Os jovens não aprendem... ou aprendem?']},
- {who:'lance',type:'DRAGON',place:'Liga Pokémon · Elite Four',bg:{loc:'indigo',rect:[8,620,208,190],panY:.4},intro:[
+ {who:'lance',type:'DRAGON',place:'Liga Pokémon · Elite Four',bg:{room:true},intro:[
   'Ah, eu ouvi falar de você. Eu sou o Lance, o mestre dos Dragões.',
   'Dragões são Pokémon lendários, quase impossíveis de capturar.',
   'Não há como derrotá-los. Vou provar!'],
@@ -158,7 +158,7 @@ export const LEADERS=Object.freeze([
   retry:['Você voltou. Dragões respeitam quem persiste.',
    'Mais uma vez, então. Com tudo!',
    'Mostre que é digno do último desafio.']},
- {who:'rival',type:null,place:'Liga Pokémon · Campeão',bg:{loc:'indigo',rect:[464,600,208,320],panY:.3},intro:[
+ {who:'rival',type:null,place:'Liga Pokémon · Campeão',bg:{room:true},intro:[
   'Ei! Que bom que chegou até aqui. Eu sou o Campeão agora!',
   'Enquanto você treinava, eu montei o time perfeito.',
   'Agora eu sou o melhor treinador do mundo. Vem, {rival}!'],
@@ -200,6 +200,9 @@ export function matchup(leaderType,leadTypes){
 //  - art instead of loc: one of the owner's campaign illustrations
 //    (campaign-art/<art>.png), e.g. Giovanni's Silph office.
 // Returns {loc|art,crop:[x,y,w,h]} or null.
+// Leaders, Elite Four and Champion use {room:true}: the Torre 2 pixel-art
+// leader's room in the gym type colour (campaign scene leaderRoom), the
+// same room as the gym challenge screen; Giovanni talks in his Silph office.
 export const STORY_FIGURES=Object.freeze({left:200,right:440,feet:238});
 export function storyCrop(bg){
  if(!bg?.loc&&!bg?.art)return null;
@@ -221,7 +224,7 @@ const fill=(text,opponent)=>text.replaceAll('{rival}',pretty(opponent?.id)||'meu
 export function storyFor(state,opponent,ctx={}){
  if(!opponent)return null;
  const stage=Number(state?.stage),seen=list(state?.storySeen);
- const done=(key,place,lines,bg=null)=>({key,place,bg:storyCrop(bg),speaker:lines[0][0],
+ const done=(key,place,lines,bg=null)=>({key,place,bg:bg?.room?{room:true}:storyCrop(bg),speaker:lines[0][0],
   lines:lines.map(([who,text])=>[who,fill(text,opponent)])});
  if(opponent.kind==='leader'||opponent.leader){
   const L=LEADERS[stage];if(!L)return null;
