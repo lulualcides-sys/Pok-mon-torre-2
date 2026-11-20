@@ -13,6 +13,13 @@ import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre
 import {skinMenuScene} from './torre2-noncombat-button-skin.mjs';
 import {removeCustomizeTitleOption,removeNewsTitleOption,preloadPokedexOnePage} from './torre2-title-pokedex-fast.mjs';
 import {restoreNativePokedexFamilies} from './torre2-pokedex-native-reset.mjs';
+// Legacy CI (owner list item 30): when capture-client.mjs restored the exact
+// published game because the live site answered 403, keep that site.
+{
+ const {publishedBuildPresent}=await import('./published-build-fallback.mjs');
+ const kept=await publishedBuildPresent();
+ if(kept){console.log('TORRE2_PUBLISHED_BUILD_KEPT',JSON.stringify(kept));process.exit(0)}
+}
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
