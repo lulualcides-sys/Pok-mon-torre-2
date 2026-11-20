@@ -1671,15 +1671,17 @@ create(){
  // Full-screen FireRed map slice for a story scene (bg from story.js
  // storyCrop). Loads the location sheet on demand; false when no place.
  storyBackdrop(bg,depth){
-  if(!bg?.loc||!Array.isArray(bg.crop))return false;
-  const key='frlg-location-'+bg.loc,frame='torre2-story-'+bg.crop.join('-');
+  if(!(bg?.loc||bg?.art)||!Array.isArray(bg.crop))return false;
+  // FireRed map sheets are nearest-filtered; owner illustrations smooth.
+  const key=bg.art?'torre2-art-'+bg.art:'frlg-location-'+bg.loc,frame='torre2-story-'+bg.crop.join('-');
+  const url=bg.art?'assets/ui/torre2-campaign/'+bg.art+'.png':'assets/ui/frlg/'+bg.loc+'.png';
   const slot=this.add.container(0,0).setDepth(depth);
   const draw=()=>{
    if(!slot.active||!this.textures.exists(key))return;
    const tex=this.textures.get(key),src=tex.getSourceImage(),[x,y,w,h]=bg.crop;
    if(x+w>src.width||y+h>src.height)return;
    if(!tex.has(frame))tex.add(frame,0,x,y,w,h);
-   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   tex.setFilter(bg.art?Phaser.Textures.FilterMode.LINEAR:Phaser.Textures.FilterMode.NEAREST);
    slot.removeAll(true);
    slot.add(this.add.image(0,0,key,frame).setOrigin(0).setDisplaySize(640,360));
    // Soft shade: light over the room, darker under the title and the
@@ -1694,7 +1696,7 @@ create(){
   slot.add(this.add.graphics().fillStyle(0x16243a,1).fillRect(0,0,640,360));
   this.load.once('filecomplete-image-'+key,draw);
   const queued=[this.load.list,this.load.inflight].some(set=>(set?.entries||[]).some(f=>f?.key===key));
-  if(!queued){this.load.image(key,'assets/ui/frlg/'+bg.loc+'.png');if(!this.load.isLoading())this.load.start()}
+  if(!queued){this.load.image(key,url);if(!this.load.isLoading())this.load.start()}
   return true;
  }
  // Story scene before a battle: first Rival / Team Rocket battle of a stage,
@@ -1706,7 +1708,16 @@ create(){
   const tone=who==='rocket'?[0x5a2a3a,0xb83a4a]:who==='rival'?[0x2a4a8c,0x4a7ad8]:[0x6a4a1a,0xc8962a];
   // The real place behind them: a slice of its FireRed map (gym room,
   // Elite Four room, S.S. Anne deck, Silph lobby...), as on the gym cards.
-  const hasPlace=this.storyBackdrop(scene.bg,D-1);
+  // Leaders: their own pixel-art room in the gym type colour (as on the gym
+  // challenge screen), full screen, with a soft shade under the text.
+  let hasPlace=false;
+  if(scene.bg?.room){
+   const st=Number(state?.stage)||0,spec=STAGES[st]||{};
+   this.leaderRoom(0,0,640,360,st,spec.type||(st>=8?'DRAGON':'NORMAL'));
+   const sh=this.add.graphics().setDepth(D-1);
+   for(let i=0;i<8;i++)sh.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14);
+   hasPlace=true;
+  }else hasPlace=this.storyBackdrop(scene.bg,2);
   const g=this.add.graphics().setDepth(D);
   if(!hasPlace)g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
   this.screenBanner(20,300,scene.place,'badges');
@@ -2079,6 +2090,7 @@ create(){
    fontSize:'12px',color:C.muted}).setOrigin(.5);
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
+
  // VS Seeker on every previously cleared Kanto map without changing progress.
  // The leader's own room: simple pixel-art gym hall in the gym type colour —
  // panelled wall with banners and the gym badge, tiled battle-court floor.

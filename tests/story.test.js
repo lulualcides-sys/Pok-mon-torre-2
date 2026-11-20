@@ -53,11 +53,34 @@ test('every line fits the FireRed box',()=>{
 test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()=>{
  const SHEETS=['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian','indigo',
   'route24','ssanne','pokemontower','silph','mtmoon','rockethideout'];
- for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg)]){
-  assert.ok(SHEETS.includes(bg.loc),bg.loc);
+ for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg).filter(b=>!b.room)]){
+  if(bg.art)assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+bg.art+'.png',import.meta.url)),bg.art);
+  else assert.ok(SHEETS.includes(bg.loc),bg.loc);
   const c=storyCrop(bg).crop;
-  assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+bg.loc);
-  assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
+  assert.ok(Math.abs(c[2]/c[3]-16/9)<.02,'16:9 '+(bg.loc||bg.art));
+  assert.ok(c[0]>=0&&c[1]>=0,'inside the sheet '+bg.loc);
+  if(bg.rect)assert.ok(c[0]>=bg.rect[0]&&c[1]>=bg.rect[1]&&c[0]+c[2]<=bg.rect[0]+bg.rect[2]&&c[1]+c[3]<=bg.rect[1]+bg.rect[3],'inside the room '+bg.loc);
+  // Feet anchors: the two figures land exactly on the chosen floor points.
+  // (crop rounded to whole map pixels: within one map pixel on screen)
+  if(bg.feet){const k=640/c[2];
+   assert.ok(Math.abs((bg.feet[0]-c[0])*k-200)<=k&&Math.abs((bg.feet[0]+bg.d-c[0])*k-440)<=k,'figures x '+bg.loc);
+   assert.ok(Math.abs((bg.feet[1]-c[1])*k-238)<=k,'figures feet y '+bg.loc);}
  }
- assert.equal(storyFor({stage:3},{kind:'leader',leader:true,id:'vileplume'}).bg.loc,'celadon');
+ // Leaders (but Giovanni) stand in the Torre 2 pixel-art leader's room.
+ for(const st of [0,1,2,3,4,5,6,8,9,10,11,12])
+  assert.deepEqual(storyFor({stage:st},{kind:'leader',leader:true,id:'x'}).bg,{room:true},'stage '+st);
+});
+test('Giovanni speaks in his own office (owner art); Silph Rocket in the drawn office',()=>{
+ const g=storyFor({stage:7},{kind:'leader',leader:true,id:'rhyhorn'});
+ assert.equal(g.speaker,'giovanni');assert.equal(g.bg.art,'silph-office');
+ const [x,y,w,h]=g.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
+ assert.equal(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg.art,'story-office');
+});
+test('Rival and Rocket scenes use the owner pixel-art illustrations',()=>{
+ const used=Object.values(STORY).map(s=>s.bg.art).sort();
+ assert.deepEqual(used,['story-bridge','story-cave','story-hideout','story-indigo','story-office','story-route22','story-ship','story-silph','story-tower','story-town']);
+ for(const s of Object.values(STORY)){
+  assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+s.bg.art+'.png',import.meta.url)),s.bg.art);
+  const c=storyCrop(s.bg).crop;assert.ok(Math.abs(c[2]/c[3]-16/9)<.02&&c[1]+c[3]<=468,'slice '+s.bg.art);
+ }
 });
