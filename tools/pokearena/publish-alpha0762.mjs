@@ -84,7 +84,9 @@ const newModuleNames=[
  // Pokémon trade by code (pure), imported by campaign-core.js.
  ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js'],
  // FireRed story scenes (pure data), imported by campanha.js.
- ['tools/pokearena/torre2-story.js','torre2/story.js']
+ ['tools/pokearena/torre2-story.js','torre2/story.js'],
+ // Original pixel art of the Rival/Rocket story places, imported by campanha.js.
+ ['tools/pokearena/torre2-story-art.js','torre2/story-art.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);

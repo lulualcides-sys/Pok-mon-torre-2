@@ -15,6 +15,7 @@ import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
 import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from './daily-missions.js';
 import {storyFor,markStorySeen,SPEAKERS} from './story.js';
+import {paintStoryPlace,STORY_ART} from './story-art.js';
 // Native graphics options (light mode). The 0.76.2 publisher exposes the base
 // client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
 // no such module, so the campaign never requests it.
@@ -1711,7 +1712,7 @@ create(){
   // Leaders: their own pixel-art room in the gym type colour (as on the gym
   // challenge screen), full screen, with a soft shade under the text.
   let hasPlace=false;
-  if(scene.bg?.place){this.storyPlace(scene.bg.place);hasPlace=true}
+  if(scene.bg?.place)hasPlace=this.storyPlace(scene.bg.place);
   else if(scene.bg?.room){
    const st=Number(state?.stage)||0,spec=STAGES[st]||{};
    this.leaderRoom(0,0,640,360,st,spec.type||(st>=8?'DRAGON':'NORMAL'));
@@ -2092,117 +2093,22 @@ create(){
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
 
- // Story places for the Rival and Team Rocket scenes, drawn in the same
- // Torre 2 pixel-art style as the leader's room: back (sky or wall) on the
- // top 46%, then the floor where both characters stand (feet at y 238).
- // Flat 4 px blocks, no external art. kind: route22, bridge, ship, tower,
- // silph, indigo, cave, hideout, office, town.
+ // Story places for the Rival and Team Rocket scenes: original pixel art
+ // (story-art.js) painted on a 214x120 canvas, uploaded once as a texture and
+ // shown at 3x with nearest filtering, like the leader's room. false if the
+ // place is unknown.
  storyPlace(kind){
-  const g=this.add.graphics().setDepth(2),H=166;
-  const R=(c,x,y,w,h,a=1)=>g.fillStyle(c,a).fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
-  const sky=(top,mid,low)=>{R(top,0,0,640,56);R(mid,0,56,640,56);R(low,0,112,640,H-112)};
-  const cloud=(x,y)=>{R(0xffffff,x+8,y,32,8);R(0xffffff,x,y+8,56,8);R(0xe4f2fb,x+4,y+16,48,4)};
-  const tree=(x,y,c1=0x3f9a46,c2=0x2f7a38,c3=0x6cc25c)=>{R(0x6a4a2a,x+10,y+28,8,12);
-   R(c2,x,y+8,28,22);R(c1,x+2,y+2,24,24);R(c1,x+6,y-2,16,6);R(c3,x+6,y+4,8,6);R(c2,x+4,y+24,20,4)};
-  const pine=(x,y)=>{R(0x5a3a22,x+10,y+30,6,8);for(let i=0;i<4;i++){R(0x2f7a46,x+10-i*3,y+i*8,6+i*6,8);R(0x4aa060,x+11-i*3,y+i*8,3,4)}};
-  const tiles=(c1,c2,y0,sz=16)=>{R(c1,0,y0,640,360-y0);for(let y=y0;y<360;y+=sz)for(let x=((y-y0)/sz%2)*sz;x<640;x+=sz*2)R(c2,x,y,sz,sz)};
-  const shadow=y=>R(0x000000,0,y,640,6,.18);
-  if(kind==='route22'||kind==='bridge'){
-   sky(0x7ec8f0,0x9ad6f4,0xb8e4f8);cloud(70,26);cloud(420,40);cloud(260,14);
-   R(0x8cc078,0,118,640,48);for(let x=0;x<640;x+=48)R(0x7ab068,x,110+(x/48%2)*4,40,12);
-   for(let x=-8;x<640;x+=44)kind==='route22'?pine(x,120+(x%3)*2):tree(x,122);
-   if(kind==='route22'){
-    R(0x7fcc5a,0,H,640,360-H);for(let y=H+6;y<360;y+=18)for(let x=(y%36?10:28);x<640;x+=40){R(0x5fae46,x,y,4,4);R(0x5fae46,x+6,y+2,4,4)}
-    R(0xbfa36c,0,206,640,4);R(0xd8c08a,0,210,640,52);R(0xbfa36c,0,262,640,4);
-    for(let x=12;x<640;x+=64)R(0xc9ae78,x,222+(x%3)*8,12,4);
-    R(0x7a5a34,560,180,6,26);R(0xd8b878,548,172,30,16);R(0x7a5a34,548,186,30,2);
-    R(0x9a8a7a,0,H,44,26);R(0x7a6a5a,0,H+20,44,6);R(0x9a8a7a,596,H,44,22);R(0x7a6a5a,596,H+16,44,6);
-   }else{
-    R(0x7fcc5a,0,H,640,26);R(0x5fae46,0,H+22,640,4);
-    R(0x3c8ad8,0,H+26,640,360-H-26);for(let y=H+34;y<360;y+=12)for(let x=(y%24?0:20);x<640;x+=40)R(0x7ab8f0,x,y,16,3);
-    R(0x8a6438,0,198,640,6);R(0xc8a060,0,204,640,62);for(let x=0;x<640;x+=20)R(0xa98048,x,204,3,62);
-    R(0x8a6438,0,266,640,8);for(let x=8;x<640;x+=56){R(0x6a4a2a,x,190,8,22);R(0xe8d0a0,x,190,8,4)}
-    R(0x000000,0,274,640,6,.2);
-   }
-  }else if(kind==='ship'){
-   sky(0x6ab8ec,0x8ccaf2,0xaedcf6);cloud(90,22);cloud(470,34);
-   R(0x2f6cc0,0,112,640,40);for(let x=0;x<640;x+=36)R(0x5a94dc,x+(x%72?0:12),122,18,3);
-   R(0xf4f4f4,0,140,640,26);for(let x=0;x<640;x+=32){R(0xd8dde4,x+4,144,4,22)}R(0x3a5aa8,0,138,640,6);R(0x5a7ac8,0,138,640,2);
-   R(0xf4f4f4,520,40,120,126);R(0xd8dde4,520,40,6,126);for(let x=536;x<640;x+=30){R(0x3a5aa8,x,70,18,18);R(0x9ad0f4,x+4,74,10,10)}
-   R(0xd84a3a,560,0,40,40);R(0x2a2a2a,560,0,40,8);
-   R(0xe84a4a,60,146,20,20);R(0xffffff,64,150,12,12);R(0xe84a4a,68,154,4,4);
-   R(0xc89a5a,0,H,640,360-H);for(let y=H;y<360;y+=12)R(0xa87a40,0,y,640,2);for(let y=H;y<360;y+=24)for(let x=(y%48?0:40);x<640;x+=80)R(0xa87a40,x,y,2,12);
-   shadow(H);
-   for(const x of [40,566]){R(0xf0f0f0,x,180,34,10);R(0xc8c8c8,x+4,190,4,16);R(0xc8c8c8,x+26,190,4,16)}
-   R(0xb07a3a,300,170,40,12);R(0x8a5a2a,300,182,40,4);
-  }else if(kind==='tower'){
-   R(0x2a2040,0,0,640,H);for(let x=0;x<640;x+=80){R(0x3a2e58,x+8,20,64,H-40);R(0x241a38,x+24,30,32,60);R(0x5a4a8a,x+28,34,24,52);R(0x7a6aaa,x+30,36,4,48)}
-   for(let x=40;x<640;x+=80){R(0xffe08a,x,96,4,8);R(0xfff6c8,x+1,92,2,4);R(0xc8c0b0,x-2,104,8,4)}
-   R(0x1a1428,0,H-10,640,10);
-   tiles(0x4a6a58,0x557a64,H,20);shadow(H);
-   const grave=(x,y)=>{R(0x6a6a7a,x,y,24,28);R(0x8a8a9a,x+2,y-4,20,6);R(0x9a9aaa,x+4,y,4,22);R(0x4a4a5a,x,y+26,24,4);R(0x5a5a6a,x+8,y+8,8,2)};
-   for(const [x,y] of [[16,178],[60,182],[104,176],[520,176],[564,182],[606,178],[24,226],[592,226]])grave(x,y);
-   for(let i=0;i<5;i++)R(0xffffff,0,H+20+i*30,640,10,.05);
-  }else if(kind==='silph'||kind==='office'){
-   const wall=kind==='silph'?0xc8d4e0:0x5a6a80,panel=kind==='silph'?0xb4c2d2:0x4a586c;
-   R(wall,0,0,640,H);for(let x=0;x<640;x+=64)R(panel,x,0,4,H);
-   if(kind==='silph'){
-    for(const x of [40,440]){R(0x5a6a7a,x,24,160,92);R(0x8ac0e8,x+6,30,148,80);for(let i=0;i<4;i++)R(0x5a6a7a,x+6+i*37,30,3,80);R(0xd8eefa,x+10,34,30,6)}
-    R(0x2a3240,250,28,140,60);R(0x3a4456,254,32,132,52);this.uiLabel(320,50,'SILPH CO.',12,'#e8eef6',[.5,.5],2.2);
-    R(0x8ec0d0,280,120,80,30);R(0xbfe4ee,286,126,68,18);R(0xffffff,316,104,8,20);R(0xd8f4fa,312,100,16,6);
-    tiles(0x9ed0d8,0x8cc4ce,H,16);
-   }else{
-    R(0x101c34,60,22,520,96);for(let i=0;i<14;i++){const bx=70+i*36,bh=30+(i*37%50);R(0x22304e,bx,118-bh,30,bh);for(let wy=122-bh;wy<114;wy+=10)for(let wx=bx+4;wx<bx+28;wx+=8)if((wx+wy+i)%3)R(0xf4d878,wx,wy,3,4)}
-    for(let i=0;i<5;i++)R(0x6a7a90,60+i*130,22,4,96);R(0x6a7a90,60,20,524,4);R(0x6a7a90,60,116,524,4);
-    R(0x8a3a48,0,H,640,360-H);R(0xb05a64,24,H+10,592,4);R(0xb05a64,24,H+10,4,180);R(0xb05a64,612,H+10,4,180);
-    for(let y=H+20;y<360;y+=20)for(let x=36;x<604;x+=40)R(0x7a3240,x,y,20,4);
-   }
-   shadow(H);
-   const plant=(x,y)=>{R(0xb0603a,x,y+16,20,16);R(0x8a4a2a,x,y+28,20,4);R(0x3a9a4a,x-4,y,28,18);R(0x6ac25a,x+2,y-6,8,10);R(0x6ac25a,x+12,y-4,8,8)};
-   plant(14,H+8);plant(606,H+8);
-  }else if(kind==='indigo'){
-   sky(0xf4a868,0xf8c488,0xfadcaa);cloud(60,30);cloud(500,18);
-   R(0x6a8a6a,60,70,520,20);R(0x5a7a5a,60,86,520,6);R(0xece4d4,80,92,480,74);
-   for(let x=96;x<560;x+=48){R(0xd6ccb8,x,92,12,74);R(0xfaf6ee,x+2,92,3,74)}
-   R(0x3a4a6a,290,110,60,56);R(0x5a6a9a,296,116,48,50);R(0xffd860,316,96,8,8);
-   for(const x of [70,566]){R(0x7a5a3a,x,40,4,60);R(0xd84a4a,x+4,42,24,14)}
-   tiles(0xd8d0c0,0xc8bea8,H,24);shadow(H);
-   for(const x of [24,596]){R(0x8a8a9a,x,H+8,22,10);R(0xa8a8b8,x+4,H-24,14,34);R(0xc8c8d8,x+6,H-30,10,8)}
-  }else if(kind==='cave'){
-   R(0x3a2e26,0,0,640,H);for(let x=0;x<640;x+=40)for(let y=8;y<H-10;y+=28)R(0x4e3e32,x+((y/28)%2)*20,y,32,20);
-   for(let x=10;x<640;x+=46){R(0x5e4c3e,x,0,14,18+(x%5)*6);R(0x5e4c3e,x+4,18+(x%5)*6,6,8)}
-   R(0x9ad8f8,300,60,10,10);R(0xd8f4ff,302,62,4,4);R(0x7ab8e8,330,74,6,6);
-   R(0x2a2018,0,H-10,640,10);
-   R(0xb8a07a,0,H,640,360-H);for(let y=H+8;y<360;y+=16)for(let x=(y%32?6:22);x<640;x+=34)R(0xa08a66,x,y,8,4);
-   shadow(H);
-   const rock=(x,y,w)=>{R(0x7a6a58,x,y,w,w*.6);R(0x9a8a74,x+4,y+2,w*.4,w*.2);R(0x5a4c3e,x,y+w*.6-4,w,4)};
-   rock(10,H+6,48);rock(586,H+10,44);rock(40,300,36);
-   R(0xd8c8a0,560,212,22,16);R(0xa89870,566,216,10,8);R(0xd8c8a0,64,214,20,14);R(0xa89870,70,218,8,6);
-  }else if(kind==='hideout'){
-   R(0x2e3238,0,0,640,H);for(let x=0;x<640;x+=80){R(0x262a30,x,0,4,H);R(0x3a4048,x+8,20,64,40);R(0x343a42,x+8,74,64,60)}
-   R(0x4a5058,0,30,640,8);R(0x5a6068,0,30,640,2);R(0x4a5058,0,140,640,6);
-   R(0x1e2226,268,52,104,84);R(0xc83a3a,276,60,88,68);this.uiLabel(320,94,'R',30,'#ffffff',[.5,.5],2.2);
-   for(const x of [60,566]){R(0xd84a3a,x,46,14,14);R(0xff8a7a,x+3,49,6,6)}
-   R(0x5a6068,0,H,640,360-H);for(let y=H;y<360;y+=32)for(let x=0;x<640;x+=32){R(0x4a5058,x,y,32,2);R(0x4a5058,x,y,2,32);R(0x7a8088,x+4,y+4,2,2)}
-   shadow(H);
-   const arrow=(x,y)=>{R(0x3a8a5a,x,y,32,32);R(0x8ae0a8,x+6,y+14,20,4);R(0x8ae0a8,x+18,y+8,4,16);R(0x8ae0a8,x+22,y+12,4,8)};
-   arrow(32,200);arrow(576,200);arrow(64,300);arrow(544,300);
-  }else{ // town (Viridian)
-   sky(0x7ec8f0,0x9ad6f4,0xb8e4f8);cloud(300,20);cloud(40,40);
-   const house=(x,w,roof,wall,label)=>{R(roof,x-6,62,w+12,30);R(0x000000,x-6,88,w+12,4,.2);R(wall,x,92,w,74);
-    for(let wx=x+10;wx<x+w-20;wx+=34){R(0x5a8ac8,wx,104,20,18);R(0xb8dcf8,wx+2,106,8,6)}
-    R(0x4a5a7a,x+w/2-12,130,24,36);if(label)this.uiLabel(x+w/2,76,label,9,'#ffffff',[.5,.5],2.2)};
-   house(40,170,0xd84a4a,0xf4f0e8,'CENTRO');house(430,160,0x3a6ad8,0xf4f0e8,'MART');
-   tree(250,110);tree(286,116);tree(330,110);tree(600,110);
-   R(0x7fcc5a,0,150,640,16);
-   R(0xdcd8d0,0,H,640,360-H);for(let y=H;y<360;y+=20)for(let x=((y-H)/20%2)*20;x<640;x+=40)R(0xceC8be,x,y,20,20);
-   shadow(H);
-   for(const x of [16,600]){R(0x3a9a4a,x,H+4,26,14);R(0xe84a6a,x+4,H+2,6,6);R(0xf8d84a,x+14,H+6,6,6)}
+  const key='torre2-story-art-'+kind;
+  if(!this.textures.exists(key)){
+   const art=paintStoryPlace(kind);if(!art)return false;
+   const tex=this.textures.createCanvas(key,art.w,art.h),ctx=tex.getContext(),img=ctx.createImageData(art.w,art.h);
+   for(let i=0;i<art.data.length;i++){const v=art.data[i];img.data[i*4]=(v>>16)&255;img.data[i*4+1]=(v>>8)&255;img.data[i*4+2]=v&255;img.data[i*4+3]=255}
+   ctx.putImageData(img,0,0);tex.refresh();tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
-  // Soft shade under the title band and the dialogue box (as on the maps).
+  this.add.image(0,0,key).setOrigin(0).setDisplaySize(STORY_ART.w*STORY_ART.scale,STORY_ART.h*STORY_ART.scale).setDepth(2);
   const s2=this.add.graphics().setDepth(2.3);
   for(let i=0;i<8;i++){s2.fillStyle(0x0a1424,.05).fillRect(0,0,640,56-i*6);s2.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14)}
-  return g;
+  return true;
  }
  // VS Seeker on every previously cleared Kanto map without changing progress.
  // The leader's own room: simple pixel-art gym hall in the gym type colour —

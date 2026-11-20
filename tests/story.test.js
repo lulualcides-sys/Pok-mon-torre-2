@@ -82,3 +82,15 @@ test('Rival and Rocket scenes use the Torre 2 pixel-art places',()=>{
  assert.deepEqual([...used].sort(),[...KINDS].sort());
  assert.deepEqual(storyFor({stage:2},{kind:'rival',id:'wartortle'}).bg,{place:'ship'});
 });
+test('every Rival/Rocket place is original pixel art painted in story-art.js',async()=>{
+ const {paintStoryPlace,STORY_ART_PLACES,STORY_ART}=await import('../tools/pokearena/torre2-story-art.js');
+ for(const s of Object.values(STORY)){
+  assert.ok(STORY_ART_PLACES.includes(s.bg.place),s.bg.place);
+  const a=paintStoryPlace(s.bg.place);
+  assert.equal(a.data.length,STORY_ART.w*STORY_ART.h);
+  // every pixel painted (no black holes) and a real picture (many colours)
+  assert.equal([...a.data].filter(v=>v===0).length,0,'unpainted pixels in '+s.bg.place);
+  assert.ok(new Set(a.data).size>=12,'too few colours in '+s.bg.place);
+ }
+ assert.equal(paintStoryPlace('nope'),null);
+});
