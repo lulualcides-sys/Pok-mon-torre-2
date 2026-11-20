@@ -1,14 +1,15 @@
 {
  "owner": "Dono do projeto Pokémon Torre 2",
  "supplied": "2026-11-20",
- "source": "Arenas geradas uma a uma pelo dono (Giovanni, Lorelei, Bruno, Agatha e Campeão) a partir dos prompts do Torre 2 e enviadas na conversa; uso autorizado no jogo.",
+ "source": "Arenas geradas uma a uma pelo dono (Giovanni, Lorelei, Bruno, Agatha, Lance e Campeão) a partir dos prompts do Torre 2 e enviadas na conversa; uso autorizado no jogo.",
  "method": "Imagem 1536x1024 ampliada (Lanczos) para 2000x1334 com o chão interno do anel no lugar do ovalo dos ginásios nativos (centro 1000,670 e rx 824 px); esticada na vertical no máximo 25%.",
  "files": {
   "champion.jpg": "cbb950807bdb92525adbb400e93333663c2b6422882c59c58455db6213744d6f",
   "agatha.jpg": "30c4f86a6565dbffeec3a78698429300833551914c939bee8452927c3a19aeb8",
   "bruno.jpg": "7cdb13fb4eb6602c5e0d87d21e74cfb081601c22578f7cffa622bfa85f4598bd",
   "lorelei.jpg": "1e87d9c77b995134f0ec0eb018f0630a91a6d37aca6c6c7a12cb9797162d7db2",
-  "viridian.jpg": "6b52ce4caff69d9bb3c222402748816212a644e01bdbe585d0ab47e0946b894a"
+  "viridian.jpg": "6b52ce4caff69d9bb3c222402748816212a644e01bdbe585d0ab47e0946b894a",
+  "lance.jpg": "87086da6d06ad70d60352174827fd8d51e36a44db77b7f899726c76ec7cba25b"
  },
  "arenas": {
   "champion": {
@@ -114,6 +115,28 @@
     746
    ],
    "stretchY": 1.178,
+   "ovalo": {
+    "cx": 480,
+    "cy": 222,
+    "rx": 455,
+    "ry": 168
+   }
+  },
+  "lance": {
+   "image": "52.webp 1536x1024",
+   "innerEllipse": [
+    770,
+    618,
+    590,
+    182
+   ],
+   "crop": [
+    54,
+    217,
+    1432,
+    799
+   ],
+   "stretchY": 1.196,
    "ovalo": {
     "cx": 480,
     "cy": 222,

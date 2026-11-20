@@ -16,7 +16,7 @@ test('leader battles use their own gym arena; others keep theirs',()=>{
  const m=core.match(/LEADER_ARENAS=Object\.freeze\((\{[^)]*\})\)/);assert.ok(m);
  const map=Function('return '+m[1])();
  assert.deepEqual(map,{0:'pewter',1:'cerulean',2:'vermilion',3:'celadon',4:'fuchsia',5:'saffron',6:'cinnabar',
-  7:'t2-viridian',8:'t2-lorelei',9:'t2-bruno',10:'t2-agatha',11:'blackthorn',12:'t2-champion'});
+  7:'t2-viridian',8:'t2-lorelei',9:'t2-bruno',10:'t2-agatha',11:'t2-lance',12:'t2-champion'});
  assert.ok(core.includes('arena:leader&&LEADER_ARENAS[s.stage]||gym.arena'));
  const t2=JSON.parse(fs.readFileSync(new URL('../tools/pokearena/torre2-arenas/PROVENANCE.json',import.meta.url),'utf8'));
  for(const id of Object.values(map)){
@@ -31,10 +31,10 @@ test('Cinnabar live arena (fire/lava) is switched on in the published copy only 
  assert.ok(pub.includes("viva.replace('cinnabar:{activa:false,','cinnabar:{activa:true,')"));
 });
 
-test('owner arenas for Giovanni, Elite Four and Champion: hashes and ovals',()=>{
+test('owner arenas for Giovanni, Elite Four, Lance and Champion: hashes and ovals',()=>{
  const t2dir=new URL('../tools/pokearena/torre2-arenas/',import.meta.url);
  const t2=JSON.parse(fs.readFileSync(new URL('PROVENANCE.json',t2dir),'utf8'));
- assert.deepEqual(Object.keys(t2.arenas).sort(),['agatha','bruno','champion','lorelei','viridian']);
+ assert.deepEqual(Object.keys(t2.arenas).sort(),['agatha','bruno','champion','lance','lorelei','viridian']);
  for(const [f,sha] of Object.entries(t2.files))assert.equal(createHash('sha256').update(fs.readFileSync(new URL(f,t2dir))).digest('hex'),sha,f);
  for(const a of Object.values(t2.arenas)){
   assert.deepEqual([a.ovalo.cx,a.ovalo.cy,a.ovalo.rx],[480,222,455],'same field position/width as native gyms');

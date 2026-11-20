@@ -336,13 +336,13 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
    'Magmortar '+name+' art absent');
 }
 
-// Owner arenas 2026-11-20 (Giovanni, Lorelei, Bruno, Agatha, Champion):
-// five NEW gym arenas appended after the native list (native ones untouched),
+// Owner arenas 2026-11-20 (Giovanni, Lorelei, Bruno, Agatha, Lance, Champion):
+// six NEW gym arenas appended after the native list (native ones untouched),
 // art in assets/arenas/torre2/, SHA-256 and oval in torre2-arenas/PROVENANCE.json.
 {
  const src='tools/pokearena/torre2-arenas',prov=JSON.parse(await read(path.join(src,'PROVENANCE.json')));
  const ids=Object.keys(prov.arenas||{});
- must(ids.length===5&&ids.every(id=>/^[a-z]+$/.test(id)),'five Torre 2 arenas required');
+ must(ids.length===6&&ids.every(id=>/^[a-z]+$/.test(id)),'six Torre 2 arenas required');
  const extra=[];
  for(const id of ids){
   const file=id+'.jpg',bytes=await fs.readFile(path.join(src,file));
@@ -350,7 +350,7 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
   const o=prov.arenas[id].ovalo;must([o.cx,o.cy,o.rx,o.ry].every(Number.isFinite),'bad oval '+id);
   const target=path.join(root,'assets/arenas/torre2',file);
   await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);
-  extra.push({id:'t2-'+id,nombre:{viridian:'VIRIDIAN GYM',lorelei:'LORELEI',bruno:'BRUNO',agatha:'AGATHA',champion:'CHAMPION'}[id]||id.toUpperCase(),
+  extra.push({id:'t2-'+id,nombre:{viridian:'VIRIDIAN GYM',lorelei:'LORELEI',bruno:'BRUNO',agatha:'AGATHA',lance:'LANCE',champion:'CHAMPION'}[id]||id.toUpperCase(),
    imagen:'assets/arenas/torre2/'+file,ovalo:{cx:o.cx,cy:o.cy,rx:o.rx,ry:o.ry}});
  }
  await fs.writeFile(path.join(root,'assets/arenas/torre2/PROVENANCE.json'),JSON.stringify(prov,null,1));
