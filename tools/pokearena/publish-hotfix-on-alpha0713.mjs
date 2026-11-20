@@ -230,10 +230,13 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
 // New pure module imported by campaign-core.js (legendary encounters). It is
 // not in the audited build, so it is added next to the overlays, never over one.
 const legendaries=await read('tools/pokearena/torre2-legendaries.js');
+const tradeCode=await read('tools/pokearena/torre2-trade-code.js');
+must(tradeCode.length>900,'truncated trade-code module');
+must(!(await fs.stat(path.join(original,'torre2/trade-code.js')).catch(()=>null)),'trade-code.js would overwrite the audited build');
 must(legendaries.length>900,'truncated legendaries module');
 must(!(await fs.stat(path.join(original,'torre2/legendaries.js')).catch(()=>null)),'legendaries.js would overwrite the audited build');
 const inputHash=createHash('sha256');
-inputHash.update('torre2/legendaries.js\0'+legendaries);
+inputHash.update('torre2/legendaries.js\0'+legendaries);inputHash.update('torre2/trade-code.js\0'+tradeCode);
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);
@@ -247,6 +250,7 @@ const dest=path.join(root,newModule);
 await fs.cp(original,dest,{recursive:true,force:false,errorOnExist:true});
 for(const {target,content} of overlays)await fs.writeFile(path.join(dest,target),content);
 await fs.writeFile(path.join(dest,'torre2/legendaries.js'),legendaries);
+await fs.writeFile(path.join(dest,'torre2/trade-code.js'),tradeCode);
 await fs.writeFile(path.join(dest,'habilidades.js'),skillUpdate);
 await fs.writeFile(path.join(dest,'paquetes.js'),packsPatched);
 await fs.writeFile(path.join(dest,'luchador.js'),fighter);

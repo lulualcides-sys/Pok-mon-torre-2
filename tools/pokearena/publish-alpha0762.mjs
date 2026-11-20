@@ -76,7 +76,9 @@ const newModuleNames=[
  // Fire particle cap for the whole game, imported by escenas/combate.js.
  ['tools/pokearena/torre2-fire-particle-cap.js','torre2/fire-particle-cap.js'],
  // Daily missions (pure rules), imported by campanha.js.
- ['tools/pokearena/torre2-daily-missions.js','torre2/daily-missions.js']
+ ['tools/pokearena/torre2-daily-missions.js','torre2/daily-missions.js'],
+ // Pokémon trade by code (pure), imported by campaign-core.js.
+ ['tools/pokearena/torre2-trade-code.js','torre2/trade-code.js']
 ];
 const newModules=await Promise.all(newModuleNames.map(async([source,target])=>{
  const content=await read(source);
