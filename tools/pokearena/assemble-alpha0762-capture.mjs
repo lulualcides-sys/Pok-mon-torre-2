@@ -16,11 +16,13 @@ import {createHash} from 'node:crypto';
 import {getPublicClientResource} from './public-client-http.mjs';
 
 const archive=path.resolve(process.argv[2]||'');
-const pin=JSON.parse(await fs.readFile('data/alpha0762-source-modules.json','utf8'));
+// Optional 2nd argument: another pin (e.g. data/alpha0773-source-modules.json).
+const pinFile=process.argv[3]||'data/alpha0762-source-modules.json';
+const pin=JSON.parse(await fs.readFile(pinFile,'utf8'));
 const dest=path.resolve('site-capture/pokearena-client');
 const ORIGIN='https://www.pokearena2d.com';
 const sha=b=>createHash('sha256').update(b).digest('hex');
-const fail=m=>{throw Error('ALPHA0762_ASSEMBLY: '+m)};
+const fail=m=>{throw Error('ALPHA_ASSEMBLY '+pin.alpha+': '+m)};
 
 for(const d of ['source/src-5ccc174cb8','site/arena2d/assets/pmd/manifest.json'])
  try{await fs.access(path.join(archive,d))}catch{fail('audited 0.71.3 archive incomplete: '+d)}
@@ -60,15 +62,21 @@ for(const [name,info] of Object.entries(vfx.files)){
 // 0.76.2 modules, pinned.
 const modules=Object.entries(pin.modules);
 let bytes=0;
+// TORRE2_UPSTREAM_ARCHIVE: our permanent copy (release made by
+// torre2-upstream-*-archive.yml, unpacked) instead of the live site.
+// Same SHA-256 check either way.
+const local=process.env.TORRE2_UPSTREAM_ARCHIVE?path.resolve(process.env.TORRE2_UPSTREAM_ARCHIVE):null;
+const getFile=async(rel,max)=>local?{data:await fs.readFile(path.join(local,'source',rel))}:
+ getPublicClientResource(`${ORIGIN}/${rel}`,max);
 for(const [rel,expected] of modules){
- const {data}=await getPublicClientResource(`${ORIGIN}/${pin.src}/${rel}`);
+ const {data}=await getFile(pin.src+'/'+rel);
  if(sha(data)!==expected)fail('module changed upstream (re-pin required): '+rel);
  const file=path.join(dest,pin.src,rel);
  await fs.mkdir(path.dirname(file),{recursive:true});
  await fs.writeFile(file,data);bytes+=data.length;
 }
 // Live index.html (references pin.src) + audited 0.71.3 pack index.
-const live=(await getPublicClientResource(ORIGIN+'/',2*1024*1024)).data.toString('utf8');
+const live=(await getFile('index.html',2*1024*1024)).data.toString('utf8');
 if(!live.includes(`src="${pin.src}/main.js"`))fail('live index.html no longer serves '+pin.src);
 const PAQ=/(<script type="application\/json" id="paq">)([\s\S]*?)(<\/script>)/;
 const audited=await fs.readFile(path.join(archive,'source/index.html'),'utf8');
@@ -78,11 +86,11 @@ await fs.writeFile(path.join(dest,'index.html'),live.replace(PAQ,(_,a,__,c)=>a+p
 
 await fs.writeFile(path.join(dest,'version.json'),JSON.stringify({
  officialAlpha:pin.alpha,src:pin.src,assetAlpha:pin.assetBase.alpha,assetSrc:pin.assetBase.src,
- capturedFrom:pin.origin,note:'Modulos publicos 0.76.2 (SHA fixado); assets herdados do release auditado 0.71.3 porque /assets/ responde 403'})+'\n');
+ capturedFrom:pin.origin,note:'Modulos publicos '+pin.alpha+' (SHA fixado); assets herdados do release auditado 0.71.3 porque /assets/ responde 403'})+'\n');
 const total=(await fs.readdir(dest,{recursive:true})).length;
 await fs.writeFile(path.resolve('site-capture/CAPTURE-REPORT.json'),JSON.stringify({
  source:pin.origin,totalFiles:total,sourceVersions:{selected:pin.src,officialAlpha:pin.alpha},
- sourceCatalog:'data/alpha0762-source-modules.json',completed:new Date().toISOString(),
+ sourceCatalog:pinFile,completed:new Date().toISOString(),
  assetsInheritedFrom:pin.assetBase,ownerSuppliedVfx:Object.keys(vfx.files),
  blockedAssets:pin.blockedAssets.filter(a=>!vfx.files[a.split('/').pop()])},null,1));
-console.log('ALPHA0762_CAPTURE_ASSEMBLED',JSON.stringify({modules:modules.length,bytes,nativePmd:copied,ownerVfx:Object.keys(vfx.files).length,files:total}));
+console.log('ALPHA_CAPTURE_ASSEMBLED '+pin.alpha,JSON.stringify({modules:modules.length,bytes,nativePmd:copied,ownerVfx:Object.keys(vfx.files).length,files:total}));

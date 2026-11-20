@@ -16,7 +16,7 @@ const PRELOADED_0762=PRELOADED
 const ORIGINAL='const h=p.kit[slot];const ky=';
 const GUARDED='const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=';
 export function adaptModernSelection(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return null;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return null;
  if(typeof source!=='string' ||
   [BASE,PRELOADED,PRELOADED_0762].filter(entry=>source.split(entry).length===2).length!==1 ||
   !source.includes('trioMenu') ||

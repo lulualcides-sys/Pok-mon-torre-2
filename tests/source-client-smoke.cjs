@@ -11,7 +11,7 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 // Alpha 0.76.2 adds 19 non-Kanto/Johto native species (Mime Jr., Porygon-Z,
 // Treecko/Chimchar/Solosis/Honedge lines, Sableye, Regice, Zeraora, Hoopa).
 const builtSrc=JSON.parse(fs.readFileSync(path.join(root,'arena2d/version.json'),'utf8')).src;
-const SPECIES=builtSrc==='src-5bf1a1a788'?297:278;
+const SPECIES=['src-5bf1a1a788','src-712ba03dbb'].includes(builtSrc)?297:278;
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg',
  '.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.mp3':'audio/mpeg',

@@ -6,7 +6,7 @@
 const NATIVE="const dexs=formasDe(d.jugadores?d.jugadores.flatMap(j=>j.lista??[j.id]):d.equipos?d.equipos.flat():[d.p1,d.p2],d.jugadores?d.jugadores.flatMap(j=>j.listaAsp??(j.lista?j.lista.map(()=>null):[j.aspecto])):d.equipos?d.aspectosEq?.flat()??[]:d.aspectos);";
 const BRIDGE='const dexs=d.torre2?.party?new Set([...d.torre2.party.friend,...d.torre2.party.foes].map(m=>m.id).map(id=>{const found=buscar(id);return found?.etapa?found.def.evoluciones[found.etapa-1]?.dex??found.def.dex:found?.def?.dex}).filter(Boolean)):'+NATIVE.slice('const dexs='.length);
 export function adaptModernCombatPreload(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return null;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return null;
  if(typeof source!=='string'||!source.includes('import{REGLAS,buscar,')||
   !source.includes('soltarPMD(this,m,dexs);const formas=soloFormas(m,dexs);'))
   throw Error('Unrecognized modern native combat module');

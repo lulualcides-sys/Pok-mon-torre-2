@@ -92,7 +92,7 @@ export function patchGreninjaModernSelection(source){
 }
 
 export function patchGreninjaSelectionSource(source,alpha=null){
- if(['0.71.3','0.76.2'].includes(alpha))return patchGreninjaModernSelection(source);
+ if(['0.71.3','0.76.2','0.77.3'].includes(alpha))return patchGreninjaModernSelection(source);
  if(typeof source!=='string')throw TypeError('Missing native selection scene');
  let s=source;
  const original='this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);';

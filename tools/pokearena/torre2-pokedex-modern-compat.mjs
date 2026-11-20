@@ -2,7 +2,7 @@
  * moves. Preserve that official implementation; never inject the old grid.
  */
 export function preserveModernPokedex(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return false;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return false;
  const nativeGrid=typeof source==='string'&&
    source.includes('const COLS=(()=>{for(let c=5;c<12;c++)');
  const approvedPaged=typeof source==='string'&&

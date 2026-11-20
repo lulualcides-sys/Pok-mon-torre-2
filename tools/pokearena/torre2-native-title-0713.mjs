@@ -3,7 +3,7 @@
  * Fail closed on unknown menus or accidentally still-active versus.
  */
 export function acceptRemovedVersusEntry(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return false;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return false;
  if(typeof source!=='string' ||
     !source.includes('jugar:[{id:"liga",txt:"LEAGUE"') ||
     !source.includes('{id:"cpu",txt:"LOCAL",escena:"seleccion"') ||
@@ -19,7 +19,7 @@ export function acceptRemovedVersusEntry(source,alpha){
  * button to the public menu or removing the current LOCAL button.
  */
 export function acceptRemovedTrainingTile(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return false;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return false;
  if(typeof source!=='string'||
   !source.includes('jugar:[{id:"kanto",txt:"KANTO CAMPAIGN"')||
   !source.includes('{id:"cpu",txt:"LOCAL",escena:"seleccion"')||
@@ -39,7 +39,7 @@ export function fitJohtoLabTitleMenu(source,alpha) {
  if(typeof source!=='string')throw TypeError('Invalid title scene source');
  const lab='{id:"johto-lab",txt:"MEWTWO TEST LAB"';
  if(!source.includes(lab)){
-  if(!['0.71.3','0.76.2'].includes(alpha))throw Error('Missing Johto Lab entry for legacy menu');
+  if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))throw Error('Missing Johto Lab entry for legacy menu');
   acceptRemovedTrainingTile(source,alpha);
   return {source,labIncluded:false};
  }

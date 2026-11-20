@@ -8,12 +8,12 @@ const strict=(s,from,to)=>{
  return s.replace(from,to);
 };
 export function unblockLocalBattleStarts(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return source;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('class Seleccion extends Phaser.Scene'))
   throw Error('Unrecognized native selection module');
  let s=source;
  // 0.76.2 adds the `cos` (costume) argument right after `aspectos`.
- const c=alpha==='0.76.2'?',cos':'';
+ const c=['0.76.2','0.77.3'].includes(alpha)?',cos':'';
  // Preserve online ticket checks and async boss story loading.
  s=strict(s,'const datos=datosReto(this.dispositivos,this.eleccion[0]);alTerminarCarga(this,()=>this.scene.start("combate",datos));return',
    'const datos=datosReto(this.dispositivos,this.eleccion[0]);this.scene.start("combate",datos);return');

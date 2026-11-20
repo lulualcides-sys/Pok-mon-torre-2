@@ -80,7 +80,7 @@ const {installJohtoSpriteCollabAssets}=await import('./install-johto-sprites.mjs
 await installJohtoSpriteCollabAssets(dest);
 // Alpha 0.76.2 new native species: their base-client packs answer HTTP 403;
 // install the same credited SpriteCollab art (additive, never overwrites).
-if(JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha==='0.76.2'){
+if(JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha==='0.76.2'||JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha==='0.77.3'){
  const {installAlpha0762SpeciesSprites}=await import('./install-alpha0762-species-sprites.mjs');
  console.log('Alpha 0.76.2 species sprites',JSON.stringify(await installAlpha0762SpeciesSprites(dest)));
 }
@@ -161,7 +161,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
  catch(error){if(error?.code!=='ENOENT')throw error;}
  if(nativePack){
   const captureVersion=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8'));
-  if(['0.70.0','0.71.3','0.76.2'].includes(captureVersion.officialAlpha)){
+  if(['0.70.0','0.71.3','0.76.2','0.77.3'].includes(captureVersion.officialAlpha)){
    // The latest official 0.70 PMD index includes 267 forms, while 19
    // costume packs are HTTP-403. This conditional is evaluated ONLY for
    // exactly that known Alpha and its original source fingerprint.
@@ -189,7 +189,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
      throw Error('Alpha 0.70 substitute graphic provenance mismatch');
     substitutions=evidence.forms;
    }catch(e){if(e.code!=='ENOENT')throw e}
-   if(['0.71.3','0.76.2'].includes(captureVersion.officialAlpha)){
+   if(['0.71.3','0.76.2','0.77.3'].includes(captureVersion.officialAlpha)){
     try{
      const priority=JSON.parse(await fs.readFile(
       path.join(dest,'priority-licensed-pmd-report.json'),'utf8'));
@@ -208,7 +208,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    // 0.76.2 new species are installed loose from SpriteCollab (their base
    // packs answer 403): route exactly those 21 forms to assets/pmd.
    let looseForms=coverage.verifiedLooseForms;
-   if(captureVersion.officialAlpha==='0.76.2'){
+   if(['0.76.2','0.77.3'].includes(captureVersion.officialAlpha)||JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha==='0.77.3'){
     const {ALPHA0762_SPRITE_FORMS}=await import('./install-alpha0762-species-sprites.mjs');
     const index=JSON.parse(html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/)[1]);
     const extra=ALPHA0762_SPRITE_FORMS.map(f=>f[0]).filter(k=>!index.formas?.[k]&&!looseForms.includes(k));
@@ -286,7 +286,7 @@ const {loadNativeSelectionPage0713}=await import('./torre2-selection-load-0713.m
 const nativeSelectionAlpha=JSON.parse(await fs.readFile(path.join(dest,'version.json'),'utf8')).officialAlpha;
 await fs.writeFile(selectionFile,loadNativeSelectionPage0713(
  paginateSelectionSource(await fs.readFile(selectionFile,'utf8')),nativeSelectionAlpha));
-if(['0.71.3','0.76.2'].includes(nativeSelectionAlpha))console.log('P2_ALPHA0713_NATIVE_SELECTION_PACK_PRELOAD');
+if(['0.71.3','0.76.2','0.77.3'].includes(nativeSelectionAlpha))console.log('P2_ALPHA0713_NATIVE_SELECTION_PACK_PRELOAD');
  // The six-player Arena uses a DIFFERENT picker (selector.js), not the
  // VS CPU selection scene above. Its old 13-column grid overflowed mobile
  // and showed missing portrait markers. Group its native ROSTER into family
@@ -1316,7 +1316,7 @@ for(const [filename,changes] of patches){
     continue;
    }
    // Alpha 0.76.2: re-anchor the same Torre 2 patch on the new native code.
-   if(captureAlpha==='0.76.2'){
+   if(['0.76.2','0.77.3'].includes(captureAlpha)){
     const {adaptAnchor0762}=await import('./torre2-alpha0762-anchors.mjs');
     const ported=adaptAnchor0762(filename,from,to,body);
     if(ported!==null){body=ported;continue;}
@@ -1385,7 +1385,7 @@ for(const scene of ['titulo','seleccion','preparar','pokedex']){
  const before=await fs.readFile(filename,'utf8');
  const after=skinMenuScene(before,scene,skinAlpha);
  if(before===after){
-  if(scene==='pokedex'&&['0.71.3','0.76.2'].includes(skinAlpha)){
+  if(scene==='pokedex'&&['0.71.3','0.76.2','0.77.3'].includes(skinAlpha)){
    console.log('P2_ALPHA0713_NATIVE_POKEDEX_SKIN_PRESERVED');
    continue;
   }
@@ -1476,11 +1476,11 @@ await fs.writeFile(localSelection,unblockLocalBattleStarts(selectionBefore,modVe
 const combatPreload=path.join(dest,clientSource,'escenas/combate.js');
 const oldCombat=await fs.readFile(combatPreload,'utf8');
 await fs.writeFile(combatPreload,fixNativeBattleIds0713(oldCombat,modVersion));
-if(['0.71.3','0.76.2'].includes(modVersion))console.log('T2_COMBAT_PRELOAD_EEVEE_IDS_REFERENCE_FIXED');
+if(['0.71.3','0.76.2','0.77.3'].includes(modVersion))console.log('T2_COMBAT_PRELOAD_EEVEE_IDS_REFERENCE_FIXED');
 const sourceDatos=path.join(dest,clientSource,'datos.js');
 const nativeDataSource=await fs.readFile(sourceDatos,'utf8');
 await fs.writeFile(sourceDatos,setNativeStoneEdgeCooldown0713(nativeDataSource,modVersion,3.5));
-if(['0.71.3','0.76.2'].includes(modVersion))console.log('T2_LOCAL_ARENA_LEAGUE_BATTLE_STARTS_AND_STONE_EDGE_3_5S');
+if(['0.71.3','0.76.2','0.77.3'].includes(modVersion))console.log('T2_LOCAL_ARENA_LEAGUE_BATTLE_STARTS_AND_STONE_EDGE_3_5S');
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const {guardNativePokedexPagination}=await import('./torre2-pokedex-final-gate-0713.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
@@ -1495,7 +1495,7 @@ const paginatedPokedex=labelModernPokedexRoles(
  loadModernPokedexPage0713(
   paginateModernPokedex0713(verifiedDexPage,paginationAlpha),paginationAlpha),
  paginationAlpha);
-if(['0.71.3','0.76.2'].includes(paginationAlpha))console.log('P2_ALPHA0713_NATIVE_POKEDEX_25_CARD_PAGES');
+if(['0.71.3','0.76.2','0.77.3'].includes(paginationAlpha))console.log('P2_ALPHA0713_NATIVE_POKEDEX_25_CARD_PAGES');
 // Display-only adapter for native incomplete kits, including Ho-Oh,
 // Crobat and Steelix; do NOT alter a single original P2 combat slot.
 const safeSparsePokedex=`
@@ -1533,9 +1533,9 @@ const pokedexParse=(await import('node:child_process')).spawnSync(
  process.execPath,['--check',pokedexPath],{encoding:'utf8'});
 if(pokedexParse.status!==0)
  throw Error('Compiled Pokédex has invalid JavaScript syntax: '+pokedexParse.stderr);
-if(['0.71.3','0.76.2'].includes(paginationAlpha))
+if(['0.71.3','0.76.2','0.77.3'].includes(paginationAlpha))
  console.log('T2_EVOLUTION_FAMILIES_RESTORED_AND_DIRECT_LOOSE_SPRITES');
-if(['0.71.3','0.76.2'].includes(paginationAlpha))
+if(['0.71.3','0.76.2','0.77.3'].includes(paginationAlpha))
  console.log('P2_ALPHA0713_POKEDEX_INDIVIDUAL_SPECIES_AND_JOHTO_PRELOAD');
 
 // The base client already ships the five Greninja styles for Froakie,
@@ -1637,7 +1637,7 @@ await fs.writeFile(johtoSelectionPath,
  const finalDex=modernPokedexOrLegacy(dex,dexAlpha,
   source=>restoreNativePokedexFamilies(preloadPokedexOnePage(source)));
  if(finalDex!==dex)await fs.writeFile(dexFile,finalDex);
- console.log(['0.71.3','0.76.2'].includes(dexAlpha)
+ console.log(['0.71.3','0.76.2','0.77.3'].includes(dexAlpha)
   ?'Alpha 0.71.3: native responsive Pokedex preserved; obsolete legacy family-grid rewrite omitted'
   :'Legacy National Dex family pages and lazy portrait preload restored');
 }

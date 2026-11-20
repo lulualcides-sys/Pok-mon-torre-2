@@ -1,4 +1,4 @@
-/* Alpha 0.76.2 equivalents for Torre 2 native patches written against 0.71.3.
+/* Alpha 0.76.2 / 0.77.3 equivalents for Torre 2 native patches written against 0.71.3.
  * Each entry maps the exact 0.71.3 anchor to the exact 0.76.2 native code and
  * returns the patched body, or null when the 0.76.2 code is not the expected
  * one (the caller then records adapter drift and blocks the release).
@@ -39,9 +39,19 @@ const OBSOLETE={
  'escenas/preparar.js':body=>body.includes('if(pedirBasicas(this,[p.dex,dex,...formasDe([pl.id],[aspecto])],()=>{if(this.scene.isActive()){t.mostrado=null;this.refrescar()}})){'),
 };
 
+// Alpha 0.77.3: native imports that only gained extra names. The Torre 2
+// patch appends its own imports after the native one, so keep the native
+// import exactly as it is and append the same Torre 2 text after it.
+const GROWN_IMPORTS={
+ 'luchador.js\nimport{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";':
+  'import{CAMPO,COLOR,RADIO,limitarCampo,estiloFuente}from"./config.js";',
+};
+
 export function adaptAnchor0762(filename,from,to,body){
  const adapter=ADAPTERS[filename+'\n'+from];
  if(adapter)return adapter(body,to);
+ const grown=GROWN_IMPORTS[filename+'\n'+from];
+ if(grown&&to.startsWith(from))return once(body,grown,grown+to.slice(from.length));
  const obsolete=OBSOLETE[filename];
  if(obsolete&&from.startsWith('if(dex!==p.dex&&!this.anims.exists(`${dex}-Idle-0`)){precargarLineas(')&&obsolete(body))
   return body;

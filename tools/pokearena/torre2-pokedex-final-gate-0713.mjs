@@ -16,7 +16,7 @@ export function modernPokedexOrLegacy(source,alpha,legacy) {
 // upstream API change cannot be silently patched by legacy Kanto code.
 export function guardNativePokedexPagination(source,alpha,legacy) {
  const output=modernPokedexOrLegacy(source,alpha,legacy);
- if(['0.71.3','0.76.2'].includes(alpha) && (
+ if(['0.71.3','0.76.2','0.77.3'].includes(alpha) && (
    output.split('class Pokedex extends Phaser.Scene').length!==2 ||
    output.split('movimientos(c,p,et,tam){').length!==2
  ))throw Error('Unrecognized modern Pokédex move renderer; refusing unsafe compatibility patch');

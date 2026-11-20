@@ -36,7 +36,7 @@ const replaceOnce=(source,from,to)=>{
  return source.replace(from,to);
 };
 export function paginateModernPokedex0713(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return source;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return source;
  if(typeof source!=='string'||!source.includes('trioMenu')||
     !source.includes('const out=slot==="e"?["ULT"]:[];')||
     !source.includes('movimientos(c,p,et,tam){'))
@@ -44,7 +44,7 @@ export function paginateModernPokedex0713(source,alpha){
  let updated=replaceOnce(source,GRID,'const COLS=5;const CEL=44;const PAGE_SIZE=COLS*5;');
  updated=replaceOnce(updated,CARDS,
   'this.dexPage=Math.floor(this.foco/PAGE_SIZE);this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+(i%PAGE_SIZE)%COLS*CEL,GY+Math.floor((i%PAGE_SIZE)/COLS)*CEL,i));this.actualizarPaginaDex();this.controlesPaginaDex();');
- updated=alpha==='0.76.2'?replaceOnce(updated,CELL_0762,
+ updated=['0.76.2','0.77.3'].includes(alpha)?replaceOnce(updated,CELL_0762,
   'casilla(p,x,y,i){const {g,img}=casillaRetrato(this,x,y,CEL-2,p.dex,casillaFav(p.id));const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2,g,img,zone}}'):replaceOnce(updated,CELL,
   'casilla(p,x,y,i){const {g,img}=casillaRetrato(this,x,y,CEL-2,p.dex);const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on("pointerdown",()=>this.elegir(i));return{p,x,y,w:CEL-2,h:CEL-2,g,img,zone}}');
  updated=replaceOnce(updated,PICK,

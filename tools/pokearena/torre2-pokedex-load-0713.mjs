@@ -52,13 +52,13 @@ torre2EnsureIdle(dex){
 }
 `;
 export function loadModernPokedexPage0713(source,alpha){
- if(!['0.71.3','0.76.2'].includes(alpha))return source;
+ if(!['0.71.3','0.76.2','0.77.3'].includes(alpha))return source;
  if(typeof source!=='string'||
    !source.includes('const COLS=5;const CEL=44;const PAGE_SIZE=COLS*5;')||
    !source.includes('this.actualizarPaginaDex();this.controlesPaginaDex();')||
    !source.includes('movimientos(c,p,et,tam){'))
   throw Error('Unexpected newer Pokédex loading contract');
- const modern=alpha==='0.76.2';
+ const modern=['0.76.2','0.77.3'].includes(alpha);
  let s=modern?change(source,
   'import{atacarEnMenu,trioMenu,pedirBasicas,formasDe}from"../sprites.js";',
   'import{atacarEnMenu,trioMenu,pedirBasicas,formasDe,cargarPMD,crearAnimsPMD,soloFormas}from"../sprites.js";'):change(source,

@@ -3,7 +3,8 @@ const SUPPORTED=Object.freeze({
  '0.70.0':Object.freeze({src:'src-3cc4979f18',forms:267}),
  '0.71.3':Object.freeze({src:'src-5ccc174cb8',forms:278}),
  // 0.76.2 modules + audited 0.71.3 pack index (278 packed native forms).
- '0.76.2':Object.freeze({src:'src-5bf1a1a788',forms:278})
+ '0.76.2':Object.freeze({src:'src-5bf1a1a788',forms:278}),
+ '0.77.3':Object.freeze({src:'src-712ba03dbb',forms:278})
 });
 export function verifyNativeVisualGate({alpha,src,forms,missing,unclearedRights=0,diagnostic=false}){
  const known=SUPPORTED[alpha];
