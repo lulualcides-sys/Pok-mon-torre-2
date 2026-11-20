@@ -15,7 +15,6 @@ import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
 import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from './daily-missions.js';
 import {storyFor,markStorySeen,SPEAKERS} from './story.js';
-import {paintStoryPlace,STORY_ART} from './story-art.js';
 // Native graphics options (light mode). The 0.76.2 publisher exposes the base
 // client's calidad.js as globalThis.__torre2NativeGraphics; older clients have
 // no such module, so the campaign never requests it.
@@ -1712,14 +1711,13 @@ create(){
   // Leaders: their own pixel-art room in the gym type colour (as on the gym
   // challenge screen), full screen, with a soft shade under the text.
   let hasPlace=false;
-  if(scene.bg?.place)hasPlace=this.storyPlace(scene.bg.place);
-  else if(scene.bg?.room){
+  if(scene.bg?.room){
    const st=Number(state?.stage)||0,spec=STAGES[st]||{};
    this.leaderRoom(0,0,640,360,st,spec.type||(st>=8?'DRAGON':'NORMAL'));
    const sh=this.add.graphics().setDepth(D-1);
    for(let i=0;i<8;i++)sh.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14);
    hasPlace=true;
-  }else hasPlace=this.storyBackdrop(scene.bg,D-1);
+  }else hasPlace=this.storyBackdrop(scene.bg,2);
   const g=this.add.graphics().setDepth(D);
   if(!hasPlace)g.fillStyle(0x000000,.35).fillRect(0,0,640,360);
   this.screenBanner(20,300,scene.place,'badges');
@@ -2093,23 +2091,6 @@ create(){
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
 
- // Story places for the Rival and Team Rocket scenes: original pixel art
- // (story-art.js) painted on a 214x120 canvas, uploaded once as a texture and
- // shown at 3x with nearest filtering, like the leader's room. false if the
- // place is unknown.
- storyPlace(kind){
-  const key='torre2-story-art-'+kind;
-  if(!this.textures.exists(key)){
-   const art=paintStoryPlace(kind);if(!art)return false;
-   const tex=this.textures.createCanvas(key,art.w,art.h),ctx=tex.getContext(),img=ctx.createImageData(art.w,art.h);
-   for(let i=0;i<art.data.length;i++){const v=art.data[i];img.data[i*4]=(v>>16)&255;img.data[i*4+1]=(v>>8)&255;img.data[i*4+2]=v&255;img.data[i*4+3]=255}
-   ctx.putImageData(img,0,0);tex.refresh();tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  }
-  this.add.image(0,0,key).setOrigin(0).setDisplaySize(STORY_ART.w*STORY_ART.scale,STORY_ART.h*STORY_ART.scale).setDepth(2);
-  const s2=this.add.graphics().setDepth(2.3);
-  for(let i=0;i<8;i++){s2.fillStyle(0x0a1424,.05).fillRect(0,0,640,56-i*6);s2.fillStyle(0x0a1424,.06).fillRect(0,200+i*14,640,160-i*14)}
-  return true;
- }
  // VS Seeker on every previously cleared Kanto map without changing progress.
  // The leader's own room: simple pixel-art gym hall in the gym type colour —
  // panelled wall with banners and the gym badge, tiled battle-court floor.

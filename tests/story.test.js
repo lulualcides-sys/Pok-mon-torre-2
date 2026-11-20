@@ -53,7 +53,7 @@ test('every line fits the FireRed box',()=>{
 test('every scene has a FireRed place behind it (16:9 slice of a real sheet)',()=>{
  const SHEETS=['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian','indigo',
   'route24','ssanne','pokemontower','silph','mtmoon','rockethideout'];
- for(const bg of [...LEADERS.map(L=>L.bg).filter(b=>!b.room)]){
+ for(const bg of [...Object.values(STORY).map(s=>s.bg),...LEADERS.map(L=>L.bg).filter(b=>!b.room)]){
   if(bg.art)assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+bg.art+'.png',import.meta.url)),bg.art);
   else assert.ok(SHEETS.includes(bg.loc),bg.loc);
   const c=storyCrop(bg).crop;
@@ -74,23 +74,13 @@ test('Giovanni speaks in his own office (owner art); Silph Rocket in the drawn o
  const g=storyFor({stage:7},{kind:'leader',leader:true,id:'rhyhorn'});
  assert.equal(g.speaker,'giovanni');assert.equal(g.bg.art,'silph-office');
  const [x,y,w,h]=g.bg.crop;assert.ok(x>=0&&y>=0&&x+w<=835&&y+h<=470,'inside the 835x470 office art');
- assert.deepEqual(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg,{place:'office'});
+ assert.equal(storyFor({stage:5},{kind:'rocket',id:'koffing'}).bg.art,'story-office');
 });
-test('Rival and Rocket scenes use the Torre 2 pixel-art places',()=>{
- const KINDS=['route22','bridge','ship','tower','silph','indigo','cave','hideout','office','town'];
- const used=Object.values(STORY).map(s=>s.bg.place);
- assert.deepEqual([...used].sort(),[...KINDS].sort());
- assert.deepEqual(storyFor({stage:2},{kind:'rival',id:'wartortle'}).bg,{place:'ship'});
-});
-test('every Rival/Rocket place is original pixel art painted in story-art.js',async()=>{
- const {paintStoryPlace,STORY_ART_PLACES,STORY_ART}=await import('../tools/pokearena/torre2-story-art.js');
+test('Rival and Rocket scenes use the owner pixel-art illustrations',()=>{
+ const used=Object.values(STORY).map(s=>s.bg.art).sort();
+ assert.deepEqual(used,['story-bridge','story-cave','story-hideout','story-indigo','story-office','story-route22','story-ship','story-silph','story-tower','story-town']);
  for(const s of Object.values(STORY)){
-  assert.ok(STORY_ART_PLACES.includes(s.bg.place),s.bg.place);
-  const a=paintStoryPlace(s.bg.place);
-  assert.equal(a.data.length,STORY_ART.w*STORY_ART.h);
-  // every pixel painted (no black holes) and a real picture (many colours)
-  assert.equal([...a.data].filter(v=>v===0).length,0,'unpainted pixels in '+s.bg.place);
-  assert.ok(new Set(a.data).size>=12,'too few colours in '+s.bg.place);
+  assert.ok(fs.existsSync(new URL('../tools/pokearena/campaign-art/'+s.bg.art+'.png',import.meta.url)),s.bg.art);
+  const c=storyCrop(s.bg).crop;assert.ok(Math.abs(c[2]/c[3]-16/9)<.02&&c[1]+c[3]<=468,'slice '+s.bg.art);
  }
- assert.equal(paintStoryPlace('nope'),null);
 });

@@ -15,34 +15,34 @@ export const SPEAKERS=Object.freeze({
  lorelei:'LORELEI',bruno:'BRUNO',agatha:'AGATHA',lance:'LANCE'
 });
 export const STORY=Object.freeze({
- 'rival-0':{place:'Rota 22',bg:{place:'route22'},lines:[
+ 'rival-0':{place:'Rota 22',bg:{art:'story-route22',rect:[0,108,330,186]},lines:[
   ['rival','Ei! Achei você! O Professor Carvalho deu um Pokémon pra cada um de nós.'],
   ['rival','Eu peguei o {rival} de propósito: ele tem vantagem contra o seu. Batalha!']]},
- 'rival-1':{place:'Ponte Pepita · Cerulean',bg:{place:'bridge'},lines:[
+ 'rival-1':{place:'Ponte Pepita · Cerulean',bg:{art:'story-bridge',rect:[0,128,331,186]},lines:[
   ['rival','Você também está indo pra Cerulean? Eu já peguei um monte de Pokémon!'],
   ['rival','O meu {rival} está cada vez mais forte. Quero ver o seu!']]},
- 'rival-2':{place:'S.S. Anne',bg:{place:'ship'},lines:[
+ 'rival-2':{place:'S.S. Anne',bg:{art:'story-ship',rect:[0,120,333,187]},lines:[
   ['rival','Também foi convidado pro S.S. Anne? Que coincidência...'],
   ['rival','Já que estamos aqui, vamos ver quem manda neste navio!']]},
- 'rival-4':{place:'Torre Pokémon · Lavender',bg:{place:'tower'},lines:[
+ 'rival-4':{place:'Torre Pokémon · Lavender',bg:{art:'story-tower',rect:[0,140,333,187]},lines:[
   ['rival','O que você está fazendo na Torre Pokémon? Seus Pokémon não morreram, né?'],
   ['rival','Hmm, eles parecem fortes. O {rival} vai testar isso!']]},
- 'rival-5':{place:'Silph Co. · Saffron',bg:{place:'silph'},lines:[
+ 'rival-5':{place:'Silph Co. · Saffron',bg:{art:'story-silph',rect:[0,110,329,185]},lines:[
   ['rival','Cheguei antes de você na Silph Co.! A Equipe Rocket está em todo lugar aqui.'],
   ['rival','Mas antes de resolver isso, vamos ver quem é mais forte!']]},
- 'rival-8':{place:'Rota 22 · Planalto Índigo',bg:{place:'indigo'},lines:[
+ 'rival-8':{place:'Rota 22 · Planalto Índigo',bg:{art:'story-indigo',rect:[0,150,330,186]},lines:[
   ['rival','Juntei as 8 insígnias também. Vou ser o próximo Campeão!'],
   ['rival','Você é o último obstáculo antes da Liga. Vem, {rival}!']]},
- 'rocket-1':{place:'Mt. Moon',bg:{place:'cave'},lines:[
+ 'rocket-1':{place:'Mt. Moon',bg:{art:'story-cave',rect:[0,120,331,186]},lines:[
   ['rocket','Somos da Equipe Rocket! Esses fósseis do Mt. Moon são nossos!'],
   ['rocket','Some daqui, criança, ou vai se arrepender!']]},
- 'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{place:'hideout'},lines:[
+ 'rocket-3':{place:'Esconderijo Rocket · Celadon',bg:{art:'story-hideout',rect:[0,95,333,187]},lines:[
   ['rocket','Ei! O Cassino é só fachada... você achou o esconderijo da Equipe Rocket!'],
   ['rocket','Ninguém que descobre o nosso segredo sai daqui!']]},
- 'rocket-5':{place:'Silph Co. · Saffron',bg:{place:'office'},lines:[
+ 'rocket-5':{place:'Silph Co. · Saffron',bg:{art:'story-office',rect:[0,170,333,187]},lines:[
   ['rocket','A Silph Co. agora pertence à Equipe Rocket!'],
   ['rocket','O chefe quer a Master Ball. Você não vai atrapalhar!']]},
- 'rocket-7':{place:'Viridian',bg:{place:'town'},lines:[
+ 'rocket-7':{place:'Viridian',bg:{art:'story-town',rect:[0,178,329,185]},lines:[
   ['rocket','O chefe está ocupado e ninguém passa por aqui.'],
   ['rocket','Você derrotou a gente tantas vezes... desta vez não!']]}
 });
@@ -203,8 +203,9 @@ export function matchup(leaderType,leadTypes){
 // Leaders, Elite Four and Champion use {room:true}: the Torre 2 pixel-art
 // leader's room in the gym type colour (campaign scene leaderRoom), the
 // same room as the gym challenge screen; Giovanni talks in his Silph office.
-// Rival and Team Rocket scenes use {place:<kind>}: a place drawn in the same
-// Torre 2 pixel-art style (campaign scene storyPlace).
+// Rival and Team Rocket scenes use the owner's pixel-art illustrations
+// (campaign-art/story-<place>.png): a 16:9 slice placed so both characters
+// stand on the floor in front of the main element of the place.
 export const STORY_FIGURES=Object.freeze({left:200,right:440,feet:238});
 export function storyCrop(bg){
  if(!bg?.loc&&!bg?.art)return null;
@@ -216,7 +217,7 @@ export function storyCrop(bg){
  if(!Array.isArray(bg.rect))return null;
  const [x,y,w,h]=bg.rect,cw=Math.round(Math.min(w,h*16/9)),ch=Math.round(cw*9/16);
  const pan=Number.isFinite(bg.panY)?bg.panY:.5;
- return {loc:bg.loc,crop:[x+Math.round((w-cw)/2),y+Math.round((h-ch)*pan),cw,ch]};
+ return {...src,crop:[x+Math.round((w-cw)/2),y+Math.round((h-ch)*pan),cw,ch]};
 }
 export function storyKey(stage,kind){return kind+'-'+stage}
 const pretty=id=>String(id||'').split('-').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
@@ -226,7 +227,7 @@ const fill=(text,opponent)=>text.replaceAll('{rival}',pretty(opponent?.id)||'meu
 export function storyFor(state,opponent,ctx={}){
  if(!opponent)return null;
  const stage=Number(state?.stage),seen=list(state?.storySeen);
- const done=(key,place,lines,bg=null)=>({key,place,bg:bg?.room?{room:true}:bg?.place?{place:bg.place}:storyCrop(bg),speaker:lines[0][0],
+ const done=(key,place,lines,bg=null)=>({key,place,bg:bg?.room?{room:true}:storyCrop(bg),speaker:lines[0][0],
   lines:lines.map(([who,text])=>[who,fill(text,opponent)])});
  if(opponent.kind==='leader'||opponent.leader){
   const L=LEADERS[stage];if(!L)return null;

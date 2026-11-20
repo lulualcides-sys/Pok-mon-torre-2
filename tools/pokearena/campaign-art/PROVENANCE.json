@@ -32,7 +32,17 @@
   "lair-seafoam.png": "c65ed5eb549ec05a6df220e913af6c9bd2cea20928140a1f7286752613f2c670",
   "lair-powerplant.png": "17341ad429a551b078aeefa84247d08405481d94299865a254b29f1ecf08abdc",
   "lair-faraway.png": "8f344fe0989b5cb285a7119ffbee3448c3897f14cb7ed96effc77726f280d2e3",
-  "silph-office.png": "d717a6a107be4bdc7b2f629e0ad58133d710514ac92c2b3e8a0e2326ee39b8e9"
+  "silph-office.png": "d717a6a107be4bdc7b2f629e0ad58133d710514ac92c2b3e8a0e2326ee39b8e9",
+  "story-route22.png": "f66cc8f30bd364b521cc92fa29006b7da9c8de964e1b1728cbc88ca070d78e8a",
+  "story-bridge.png": "d3b5b4814e5d5db33a450d77e13d97f1bbbe5a1913464953e252ced65996bf5e",
+  "story-ship.png": "600aafffe989958228def3fdf8c47787a4495a0b9015630c2d936c0699d86bf0",
+  "story-tower.png": "bb9ab1ba5390020d877bba84667d21ffa2d82a9f093efbce853ee49d69194171",
+  "story-silph.png": "5241268746841cb5c00c495ad37b27198577a8f4ab223f7cc1d81b91a09b67da",
+  "story-indigo.png": "5c08db75ea38fcf46908e3e23870a2c3d3295fc26a422770efece82715496935",
+  "story-cave.png": "2b6c5fcac3e9b2e1b5726777a981df94835673088d201843cc61072df28beab2",
+  "story-hideout.png": "192747f560a96809b10bce67dd06f4c4abe6119cb8b63fe6dc1254f5d93b3aca",
+  "story-office.png": "bdd54a138311f2c3501cff847d4ae4c37e59bf4de1fd0c34ffad1fbfc4455284",
+  "story-town.png": "59a98ccdca004b41e5a282fd04355d99ebf2303374de5c71970877c18f8ae854"
  },
  "derived": {
   "icon-center.png": {
@@ -114,6 +124,106 @@
     941
    ],
    "note": "Imagem inteira reduzida à metade (835×470) e a 256 cores; cenário da batalha contra o Giovanni que dá a Master Ball."
+  },
+  "story-route22.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1,
+    1,
+    330,
+    468
+   ],
+   "note": "Cena Rota 22 recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-bridge.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    335,
+    1,
+    331,
+    468
+   ],
+   "note": "Cena Ponte Pepita recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-ship.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    670,
+    1,
+    333,
+    468
+   ],
+   "note": "Cena convés do S.S. Anne recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-tower.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1006,
+    1,
+    333,
+    468
+   ],
+   "note": "Cena Torre Pokémon recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-silph.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1342,
+    1,
+    329,
+    468
+   ],
+   "note": "Cena saguão da Silph Co. recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-indigo.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1,
+    472,
+    330,
+    468
+   ],
+   "note": "Cena Planalto Índigo recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-cave.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    335,
+    472,
+    331,
+    468
+   ],
+   "note": "Cena Mt. Moon recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-hideout.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    670,
+    472,
+    333,
+    468
+   ],
+   "note": "Cena esconderijo da Equipe Rocket recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-office.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1006,
+    472,
+    333,
+    468
+   ],
+   "note": "Cena andar alto da Silph Co. recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
+  },
+  "story-town.png": {
+   "source": "Prancha das 10 cenas do Rival e da Equipe Rocket enviada pelo dono do projeto na conversa (2026-11-20)",
+   "rect": [
+    1342,
+    472,
+    329,
+    468
+   ],
+   "note": "Cena Viridian recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
   }
  }
 }
