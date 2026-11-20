@@ -594,11 +594,12 @@ function extrasPage(scene,state,handlers){
  actions.push(['RANKING',handlers.ranking,'badges']);
  actions.push(['LENDÁRIOS',handlers.legendaries,'capture']);
  actions.push(['SILPH CO.',handlers.silph,'bag']);
- // Three columns so all fifteen options fit above VOLTAR.
+ actions.push([handlers.lightLabel?.()||'MODO LEVE',handlers.lightMode,'fullscreen']);
+ // Four columns so all sixteen options fit above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
-  const x=110+(i%3)*142,y=82+Math.floor(i/3)*40;
+  const x=104+(i%4)*110,y=82+Math.floor(i/4)*40;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
-  control(scene,layer,x,y,136,34,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
+  control(scene,layer,x,y,104,34,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
    {id:'cards-extras-'+i,size:9,icon,center:true});
  });
  control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
