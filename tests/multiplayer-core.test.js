@@ -79,3 +79,9 @@ test('quick room screens: create/enter by 4 letters, long code kept as fallback'
  for(const part of ["'CRIAR SALA',()=>this.quickHost()","'ENTRAR NA SALA',()=>this.quickGuest()","'CÓDIGO LONGO (SEM SERVIDOR)',()=>this.manual()",
   "if(m.type==='OPEN')","this.raw({type:'HEARTBEAT'})","this.signal?.close();this.signal=null;"])assert.ok(src.includes(part),part);
 });
+test('quick room survives the phone pausing the page (WhatsApp)',async()=>{
+ const fs=await import('node:fs');
+ const src=fs.readFileSync(new URL('../tools/pokearena/torre2-multiplayer.js',import.meta.url),'utf8');
+ for(const part of ["if(this.keep&&!this.closed)this.reconnect(1500)","document.addEventListener('visibilitychange',this.wake)",
+  "{keep:true,","this.knock=setInterval(","},60000);"])assert.ok(src.includes(part),part);
+});
