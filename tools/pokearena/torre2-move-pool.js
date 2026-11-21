@@ -1163,13 +1163,15 @@ export function balanceCampaignLeechSeed(move){
 // retain their original cooldown; only the isolated campaign copy changes.
 export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
- supersonic:1.5,
+ sleep:2.5,
+ 'sleep-powder':2.5,
+ supersonic:5,
  'seismic-toss':4,
  'egg-bomb':4,
  hex:6.5,
  discharge:4,
  thunderbolt:2,
- // Owner request 2026-11-19, campaign only (Arena/VS keep native values).
+ // Owner request 2026-11-21, campaign only (Arena/VS keep native values).
  gust:1.2,
  hypnosis:3.5,
  'cross-poison':5
