@@ -42,6 +42,8 @@ on:
       - 'tools/pokearena/torre2-sala-teams-patch.mjs'
       - 'tools/pokearena/torre2-online-result-patch.mjs'
       - 'tools/pokearena/torre2-pwa.mjs'
+      - 'tools/pokearena/pwa/icono-512.png'
+      - 'tests/rewards-dex-pwa.test.js'
       - 'tools/pokearena/torre2-capture-arena.js'
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/torre2-combat-boundary.js'
@@ -104,6 +106,8 @@ on:
       - 'tools/pokearena/torre2-sala-teams-patch.mjs'
       - 'tools/pokearena/torre2-online-result-patch.mjs'
       - 'tools/pokearena/torre2-pwa.mjs'
+      - 'tools/pokearena/pwa/icono-512.png'
+      - 'tests/rewards-dex-pwa.test.js'
       - 'tools/pokearena/torre2-capture-arena.js'
       - 'tools/pokearena/torre2-ball-sprites.js'
       - 'tools/pokearena/torre2-combat-boundary.js'
@@ -216,6 +220,7 @@ jobs:
           VERIFY
       - name: Unit regressions, diagnostics and Pokédex virtualization
         run: |
+          node --test tests/rewards-dex-pwa.test.js
           node --test tests/arena-species-kit-policy.test.js tests/wobbuffet-gen45-native.test.js tests/forms-catalog-upstream.test.js tests/title-pokedex-fast-open.test.js tests/gen3-status.test.js tests/league-auto-battle.test.js tests/torre2-performance-monitor.test.js tests/torre2-pokedex-window.test.js tests/earth-power-aoe-contact.test.js tests/campaign-native-difficulty-progress.test.js tests/trainer-card-route-gym-pages.test.js tests/scyther-scizor-bridge.test.js tests/torre2-evolution-sprite-continuity.test.js tests/arena-native-idle-loading.test.js tests/torre2-pokedex-window.test.js tests/johto-native-kits-preserve.test.js
       - name: Real Batch24 runtime blocked, missed and landed projectile regression
         run: node --test tests/alpha0713-projectile-contact-release.test.js
