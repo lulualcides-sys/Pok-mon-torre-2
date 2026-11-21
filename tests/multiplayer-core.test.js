@@ -2,13 +2,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {encodeSignal,decodeSignal,createRoomServer,ROOM_CODE} from '../tools/pokearena/torre2-multiplayer-core.js';
 
-test('signal codes round-trip and stay short enough for a chat message',async()=>{
- const sdp='v=0\r\no=- 1 2 IN IP4 127.0.0.1\r\n'+'a=candidate:1 1 udp 2122260223 192.168.0.10 50000 typ host\r\n'.repeat(4);
- const code=await encodeSignal({type:'offer',sdp});
- assert.ok(code.startsWith('T2MP1:'));
- assert.ok(code.length<sdp.length,'compressed');
- assert.deepEqual(await decodeSignal(code+'\n '),{type:'offer',sdp});
+// Real Chromium data-channel offer/answer (mDNS host candidate).
+const OFFER='v=0\r\no=- 5871762795932698882 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\na=group:BUNDLE 0\r\na=extmap-allow-mixed\r\na=msid-semantic: WMS\r\nm=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\nc=IN IP4 0.0.0.0\r\n'+
+ 'a=candidate:3573799634 1 udp 2113937151 f1683800-3382-4009-ba86-9aec62638c58.local 39420 typ host generation 0 network-cost 999\r\n'+
+ 'a=candidate:9 1 udp 1677729535 177.10.20.30 51234 typ srflx raddr 0.0.0.0 rport 0\r\n'+
+ 'a=candidate:8 1 udp 1677729535 2804:14c:65:8b00::1 51235 typ srflx raddr :: rport 0\r\n'+
+ 'a=candidate:7 1 tcp 1518280447 192.168.0.10 9 typ host tcptype active\r\n'+
+ 'a=ice-ufrag:7tKY\r\na=ice-pwd:/ZYH9NgR5WmqR+lRrGhpb74A\r\na=ice-options:trickle\r\n'+
+ 'a=fingerprint:sha-256 A4:DF:AE:4E:C0:9F:CC:08:1B:4D:95:D9:56:1F:81:00:05:E5:17:B9:AB:68:C3:87:AE:7D:C6:77:DF:0E:62:83\r\n'+
+ 'a=setup:actpass\r\na=mid:0\r\na=sctp-port:5000\r\na=max-message-size:262144\r\n';
+test('short codes: letters and digits only, about 5× shorter, essential SDP kept',async()=>{
+ const code=await encodeSignal({type:'offer',sdp:OFFER});
+ assert.match(code,/^T2O[1-9A-HJ-NP-Za-km-z]+$/,'no _ * ~ or look-alike characters');
+ assert.ok(code.length<200,'short: '+code.length);
+ const d=await decodeSignal(code);
+ assert.equal(d.type,'offer');
+ for(const part of ['a=ice-ufrag:7tKY','a=ice-pwd:/ZYH9NgR5WmqR+lRrGhpb74A','a=setup:actpass','a=mid:0',
+  'a=fingerprint:sha-256 A4:DF:AE:4E:C0:9F:CC:08:1B:4D:95:D9:56:1F:81:00:05:E5:17:B9:AB:68:C3:87:AE:7D:C6:77:DF:0E:62:83',
+  ' f1683800-3382-4009-ba86-9aec62638c58.local 39420 typ host',' 177.10.20.30 51234 typ srflx',' 2804:14c:65:8b00:0:0:0:1 51235 typ srflx',
+  'm=application 9 UDP/DTLS/SCTP webrtc-datachannel'])assert.ok(d.sdp.includes(part),part);
+ assert.ok(!d.sdp.includes(' tcp '),'TCP candidates are dropped');
+});
+test('short codes: found inside a WhatsApp message, damaged codes refused',async()=>{
+ const code=await encodeSignal({type:'answer',sdp:OFFER.replace('a=setup:actpass','a=setup:active')});
+ assert.ok(code.startsWith('T2R'));
+ for(const pasted of [code,'[21:30, 20/11] João: '+code,'João: '+code+'21',code.slice(0,50)+'\n'+code.slice(50)+'\n '])
+  assert.equal((await decodeSignal(pasted)).type,'answer',pasted.slice(0,30));
+ await assert.rejects(()=>decodeSignal(code.slice(0,-4)),/incompleto/);
+ await assert.rejects(()=>decodeSignal(code.slice(0,40)+'x'+code.slice(41)),/incompleto|inválido/);
  await assert.rejects(()=>decodeSignal('qualquer coisa'),/inválido/);
+});
+test('old long codes (T2MP1:) are still read',async()=>{
+ const json=JSON.stringify({type:'offer',sdp:'v=0\r\n'});
+ const old='T2MP1:j'+Buffer.from(json).toString('base64url');
+ assert.deepEqual(await decodeSignal('oi '+old),{type:'offer',sdp:'v=0\r\n'});
 });
 
 test('emulated room server: create, join, relay, ping and leave like the base server',()=>{
