@@ -498,7 +498,7 @@ for(const size of [192,512]){
   'PWA manifest must declare '+size+'x'+size+' PNG');
 }
 await fs.writeFile(path.join(root,'iconos/icono-512.png'),icon512);
-await fs.writeFile(pwaManifestPath,JSON.stringify(appManifest,null,2)+'\\n');
+await fs.writeFile(pwaManifestPath,JSON.stringify(appManifest,null,2));
 await fs.writeFile(path.join(root,'sw.js'),serviceWorker(newModule));
 await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
