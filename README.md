@@ -2,6 +2,17 @@
 
 **🎮 [JOGAR POKÉMON TORRE 2 — GITHUB PAGES PERMANENTE](https://lulualcides-sys.github.io/Pok-mon-torre-2/)**
 
+## Próximas atualizações planejadas
+
+As ideias abaixo estão no planejamento do projeto e **ainda não significam funcionalidades implementadas ou disponíveis no jogo**.
+
+- **Equipamentos individuais dos Pokémon:** permitir equipar itens e acessórios com efeitos próprios durante as batalhas.
+- **Batalhas 3 contra 3 simultâneas:** colocar os três Pokémon de cada treinador em campo ao mesmo tempo, com posicionamento e estratégias de equipe.
+- **Personalização do treinador:** adicionar roupas, acessórios, poses e opções visuais para o avatar do jogador.
+- **Museu de conquistas:** criar uma galeria de troféus e registros de feitos especiais, como completar desafios, vencer batalhas e capturar Pokémon raros.
+
+---
+
 **PATCH 4 — PUBLICADO E TESTADO:** Swift com 5 estrelas pequenas, trajetórias fixas e **colisão individual** (5 acertos em alvo parado, 0 em alvo fora da linha, 1 após esquiva); Shadow Ball com núcleo sombrio e impacto apenas em acerto real, sem rastro persistente após erro; Lovely Kiss simplificado com três corações pequenos e sem coração inicial sobreposto. **Surf temporariamente retirado do catálogo e da campanha** por não ter sido aprovado. Tri Attack, Pay Day, Bonemerang e Bone Club seguem preservados. Mewtwo nível 50 mantém **160 movimentos selecionáveis**. [Testes completos no Phaser](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39530387882) · [Publicação GitHub Pages](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39530409870).
 
 **Jogo publicado na raiz do Pages:** o GitHub Pages está habilitado. O motor Phaser está em [`/arena2d/`](https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/), e o laboratório Pixi antigo fica em [`/lab.html`](https://lulualcides-sys.github.io/Pok-mon-torre-2/lab.html).
