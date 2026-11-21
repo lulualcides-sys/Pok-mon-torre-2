@@ -16,7 +16,7 @@ import {red,STUN} from '../red.js';
 
 import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer,checkTeam,TEAM_SIZE,cleanIceServers,hasRelay,
  HISTORY_KEY,recordMatch,historySummary,profileFromSave,encodeProfile,decodeProfile,PROFILE_ROWS,
- ROOM_LEN,SIGNAL_URL,newRoomCode,parseRoomCode,hostPeerId,signalUrl} from './multiplayer-core.js';
+ ROOM_LEN,SIGNAL_URL,newRoomCode,parseRoomCode,roomTopic,guestTopic,relayMessage} from './multiplayer-core.js';
 import {TURN,TURN_URL} from './turn.js';
 import {FUENTE_CSS,VERSION,ANCHO,texto} from '../config.js';
 import {ROSTER} from '../datos.js';
@@ -266,46 +266,36 @@ export const fimPartida={
 };
 globalThis.__torre2Fim=fimPartida;
 
-// --- Quick room: 4-letter code via a public PeerJS signaling server ---------
-// Only the connection setup (the same short codes as before) passes through
-// the server; the match is the direct link. Socket closed once linked.
-class QuickSignal{
- // keep:true (the room host) reconnects by itself with the same id and token:
- // phones pause the page while the player is in WhatsApp sending the code and
- // the server drops the socket; coming back must not lose the room.
- constructor(id,onMessage,{keep=false,onLink=()=>{}}={}){
-  this.id=id;this.onMessage=onMessage;this.keep=keep;this.onLink=onLink;this.ws=null;this.beat=null;
-  this.token=Math.random().toString(36).slice(2,12);this.closed=false;this.retry=null;
-  this.wake=()=>{if(document.visibilityState==='visible'&&this.keep&&!this.closed&&this.ws?.readyState!==1)this.reconnect(0)};
-  if(keep)document.addEventListener('visibilitychange',this.wake);
- }
- connect(){
-  const base=globalThis.__torre2SignalUrl||SIGNAL_URL;
+// --- Quick room: 4-letter code via a free public message relay (ntfy.sh) ---
+// Plain HTTPS: POST to publish, Server-Sent Events to listen. EventSource
+// reconnects by itself (phone pauses the page, mobile data switches) and
+// resumes from the last message it saw. Only the connection setup (the same
+// short codes as before) passes through it; the match is the direct link.
+class Relay{
+ constructor(topic,onMessage,onLink=()=>{}){this.topic=topic;this.onMessage=onMessage;this.onLink=onLink;this.es=null;this.seen=new Set()}
+ base(){return String(globalThis.__torre2SignalUrl||SIGNAL_URL).replace(/\/+$/,'')}
+ listen(){
   return new Promise((ok,fail)=>{
-   let done=false;const finish=(f,v)=>{if(!done){done=true;clearTimeout(t);f(v)}};
-   try{this.ws?.close()}catch{}
-   const ws=this.ws=new WebSocket(signalUrl(base,this.id,this.token));
-   const t=setTimeout(()=>{finish(fail,Error('timeout'));try{ws.close()}catch{}},9000);
-   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
-    if(m.type==='OPEN'){clearInterval(this.beat);this.beat=setInterval(()=>this.raw({type:'HEARTBEAT'}),5000);this.onLink(true);finish(ok)}
-    else if(m.type==='ID-TAKEN')finish(fail,Error('taken'));
-    else if(m.type==='ERROR')finish(fail,Error('server'));
-    else this.onMessage(m)};
-   ws.onerror=()=>finish(fail,Error('server'));
-   ws.onclose=()=>{if(this.ws!==ws)return;clearInterval(this.beat);this.onLink(false);finish(fail,Error('server'));
-    if(this.keep&&!this.closed)this.reconnect(1500)};
+   const es=this.es=new EventSource(this.base()+'/'+this.topic+'/sse');
+   let opened=false;const t=setTimeout(()=>{if(!opened){fail(Error('timeout'));this.close()}},10000);
+   es.onopen=()=>{this.onLink(true);if(!opened){opened=true;clearTimeout(t);ok()}};
+   es.onerror=()=>this.onLink(false);
+   es.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch{return}
+    if(d.event==='open'){this.onLink(true);if(!opened){opened=true;clearTimeout(t);ok()}return}
+    if(d.event!=='message'||this.seen.has(d.id))return;this.seen.add(d.id);
+    const m=relayMessage(d.message);if(m)this.onMessage(m)};
   });
  }
- open(){return this.connect()}
- reconnect(delay){
-  clearTimeout(this.retry);
-  this.retry=setTimeout(()=>{if(!this.closed&&this.ws?.readyState!==1)this.connect().catch(()=>{if(!this.closed)this.reconnect(3000)})},delay);
+ async publish(topic,obj){
+  for(let i=0;i<3;i++){
+   try{const r=await fetch(this.base()+'/'+topic,{method:'POST',body:JSON.stringify(obj)});if(r.ok)return true}catch{}
+   await new Promise(d=>setTimeout(d,800*(i+1)));
+  }
+  return false;
  }
- raw(o){if(this.ws?.readyState===1){this.ws.send(JSON.stringify(o));return true}return false}
- send(type,dst,payload){return this.raw({type,dst,payload})}
- close(){this.closed=true;clearTimeout(this.retry);clearInterval(this.beat);document.removeEventListener('visibilitychange',this.wake);
-  try{this.ws?.close()}catch{}this.ws=null}
+ close(){try{this.es?.close()}catch{}this.es=null}
 }
+const relayId=()=>Math.random().toString(36).slice(2,12).replace(/[^a-z0-9]/g,'a').padEnd(8,'x');
 const SERVER_DOWN='O servidor de salas não respondeu. Tente de novo ou use CÓDIGO LONGO.';
 
 // --- Screen (main menu → MULTIPLAYER) -----------------------------------------
@@ -334,7 +324,7 @@ export class Torre2Multi extends Phaser.Scene{
   if(!document.getElementById('t2mp-css')){const st=document.createElement('style');st.id='t2mp-css';st.textContent=CSS;document.head.appendChild(st)}
   const root=this.root=document.createElement('div');root.className='t2mp';root.dataset.torre2Multi='1';
   document.body.appendChild(root);
-  this.events.once('shutdown',()=>{root.remove();this.signal?.close();clearTimeout(this.waitTimer);clearInterval(this.knock)});
+  this.events.once('shutdown',()=>{root.remove();this.signal?.close();this.signal=null;clearTimeout(this.waitTimer);clearInterval(this.knock);clearInterval(this.answerTimer)});
   this.link=window.__torre2MultiLink=new MultiLink({
    onState:(s,e)=>this.status(s==='connecting'?'Conectando...':s==='linked'?'Conectado! Abrindo a sala...':
     s==='slow'?(relayConfigured()?'Ainda conectando... confira a internet dos dois aparelhos.':'Não conectou. Se os dois estão no 4G/5G, coloque um deles no Wi-Fi e tente de novo.'):
@@ -415,23 +405,19 @@ export class Torre2Multi extends Phaser.Scene{
   a.setAttribute('data-t2mp-retry','1');row.appendChild(a);
   const b=document.createElement('button');b.textContent='VOLTAR';b.onclick=()=>{this.link.close();this.scene.restart()};row.appendChild(b);
  }
- // Host: a free 4-letter code, then wait for the friend.
+ // Host: a 4-letter code, then wait for the friend.
  async quickHost(){
   this.panel('CRIAR SALA','<p>Criando a sala...</p>');
-  let code=null;
-  for(let i=0;i<5&&!code;i++){
-   const c=newRoomCode(),sig=new QuickSignal(hostPeerId(c),m=>this.onHostSignal(m),{keep:true,
-    onLink:up=>{const el=this.root?.querySelector('[data-t2mp-live]');if(el){el.textContent=up?'● Sala aberta':'● Reconectando a sala...';el.style.color=up?'#7dff8a':'#ffd47a'}}});
-   try{await sig.open();code=c;this.signal=sig}
-   catch(e){sig.close();if(e.message!=='taken'){const b=this.panel('CRIAR SALA','<div class="row" data-rr></div>');this.status(SERVER_DOWN);this.retryRow(b);return}}
-  }
-  if(!code){this.status(SERVER_DOWN);return}
+  const code=newRoomCode();
+  const live=up=>{const el=this.root?.querySelector('[data-t2mp-live]');if(el){el.textContent=up?'● Sala aberta':'● Reconectando a sala...';el.style.color=up?'#7dff8a':'#ffd47a'}};
+  const relay=this.signal=new Relay(roomTopic(code),m=>this.onHostSignal(m),live);
+  try{await relay.listen()}catch{const b=this.panel('CRIAR SALA','<div class="row" data-rr></div>');this.status(SERVER_DOWN);this.retryRow(b);return}
   this.roomCode=code;
   const box=this.panel('SUA SALA',`<p style="text-align:center">Mande este código para o seu amigo:</p>
    <div data-t2mp-room style="text-align:center;font-size:44px;letter-spacing:10px;color:#ffd23c;margin:8px 0">${code}</div>
    <p style="text-align:center">Esperando o amigo entrar...</p>
    <p data-t2mp-live style="text-align:center;font-size:11px;color:#7dff8a">● Sala aberta</p>
-   <p style="text-align:center;font-size:11px;color:#9fb6e6">Depois de mandar o código, volte para esta tela e deixe ela aberta.</p><div class="row" data-r1></div>`);
+   <p style="text-align:center;font-size:11px;color:#9fb6e6">Deixe esta tela aberta até o amigo entrar.</p><div class="row" data-r1></div>`);
   const r1=box.querySelector('[data-r1]');
   const msg='Entra na minha sala no Pokémon Torre 2: MULTIPLAYER → ENTRAR NA SALA → '+code;
   if(navigator.share){const sh=document.createElement('button');sh.className='gold';sh.textContent='MANDAR NO WHATSAPP';sh.onclick=()=>navigator.share({text:msg}).catch(()=>{});r1.appendChild(sh)}
@@ -440,12 +426,17 @@ export class Torre2Multi extends Phaser.Scene{
  }
  async onHostSignal(m){
   try{
-   if(m.type==='OFFER'&&m.payload?.hello&&!this.guestId){
-    this.guestId=m.src;this.status('Amigo encontrado! Conectando...');
-    const offer=await this.link.createOffer();
-    this.signal?.send('OFFER',m.src,{code:offer});
-   }else if(m.type==='ANSWER'&&m.src===this.guestId&&m.payload?.code){
-    await this.link.acceptAnswer(m.payload.code);
+   const me='host'+this.roomCode.toLowerCase();
+   if(m.t==='hello'&&!this.guestId){
+    this.guestId=m.from;this.status('Amigo encontrado! Conectando...');
+    this.lastOffer=await this.link.createOffer();
+    await this.signal?.publish(guestTopic(m.from),{t:'offer',from:me,code:this.lastOffer});
+   }else if(m.t==='hello'&&m.from===this.guestId&&this.lastOffer&&!this.answered){
+    // The friend missed our offer (connection blip): send it again.
+    await this.signal?.publish(guestTopic(m.from),{t:'offer',from:me,code:this.lastOffer});
+   }else if(m.t==='answer'&&m.from===this.guestId&&!this.answered){
+    this.answered=true;
+    await this.link.acceptAnswer(m.code);
    }
   }catch(e){this.status(String(e?.message||e))}
  }
@@ -460,16 +451,15 @@ export class Torre2Multi extends Phaser.Scene{
    const code=parseRoomCode(input.value);
    if(!code)return this.status('O código tem '+ROOM_LEN+' letras. Confira e tente de novo.');
    this.status('Procurando a sala '+code+'...');
-   this.signal?.close();clearInterval(this.knock);
-   const sig=this.signal=new QuickSignal('torre2g-'+Math.random().toString(36).slice(2,10),m=>this.onGuestSignal(m,code));
-   try{await sig.open()}catch{return this.status(SERVER_DOWN)}
-   // Knock every 3 s for up to 60 s: the friend may still be coming back
-   // from WhatsApp (his room reconnects by itself).
-   const hello=()=>sig.send('OFFER',hostPeerId(code),{hello:true,name:nameOf('Amigo')});
-   hello();clearInterval(this.knock);clearTimeout(this.waitTimer);
-   const started=Date.now();
-   this.knock=setInterval(()=>{if(this.hostFound||!this.signal){clearInterval(this.knock);return}
-    hello();if(Date.now()-started>8000)this.status('Esperando a sala '+code+'... peça para o seu amigo voltar para a tela da sala.')},3000);
+   this.signal?.close();clearInterval(this.knock);clearTimeout(this.waitTimer);this.hostFound=false;
+   const me=this.guestRelayId=relayId();
+   const relay=this.signal=new Relay(guestTopic(me),m=>this.onGuestSignal(m,code));
+   try{await relay.listen()}catch{return this.status(SERVER_DOWN)}
+   // Knock every 3 s for up to 60 s (the friend's room may be reconnecting).
+   const hello=()=>relay.publish(roomTopic(code),{t:'hello',from:me,name:nameOf('Amigo')});
+   hello();const started=Date.now();
+   this.knock=setInterval(()=>{if(this.hostFound||this.signal!==relay){clearInterval(this.knock);return}
+    hello();if(Date.now()-started>8000)this.status('Esperando a sala '+code+'... confira o código com o seu amigo.')},3000);
    this.waitTimer=setTimeout(()=>{clearInterval(this.knock);if(!this.hostFound)this.status('Sala '+code+' não encontrada. Confira o código e se o amigo está com a tela da sala aberta.')},60000);
   };
   const r1=box.querySelector('[data-r1]');
@@ -482,13 +472,18 @@ export class Torre2Multi extends Phaser.Scene{
  }
  async onGuestSignal(m,code){
   try{
-   if(m.type==='OFFER'&&m.payload?.code&&m.src===hostPeerId(code)&&!this.hostFound){
-    this.hostFound=true;this.status('Sala encontrada! Conectando...');
-    const answer=await this.link.acceptOffer(m.payload.code);
-    this.signal?.send('ANSWER',m.src,{code:answer});
+   if(m.t==='offer'&&m.from==='host'+code.toLowerCase()&&!this.hostFound){
+    this.hostFound=true;clearInterval(this.knock);this.status('Sala encontrada! Conectando...');
+    const answer=await this.link.acceptOffer(m.code);
+    const send=()=>this.signal?.publish(roomTopic(code),{t:'answer',from:this.guestRelayId,code:answer});
+    await send();
+    // Resend a few times in case the room missed it (stops once linked).
+    let n=0;clearInterval(this.answerTimer);
+    this.answerTimer=setInterval(()=>{if(!this.signal||++n>6){clearInterval(this.answerTimer);return}send()},4000);
    }
   }catch(e){this.status(String(e?.message||e))}
  }
+
  copyArea(code){
   return `<textarea readonly data-t2mp-code>${code}</textarea>`;
  }

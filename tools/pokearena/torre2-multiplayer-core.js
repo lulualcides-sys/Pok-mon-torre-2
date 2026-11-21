@@ -253,11 +253,12 @@ export const PROFILE_ROWS=[['b','Insígnias'],['c','Pokédex: capturados'],['v',
 
 // --- Quick room (owner request 2026-11-21: "muito complicado, deixa mais
 // fácil"): a 4-letter room code. The two games find each other through a
-// free public WebRTC signaling server (PeerJS protocol); the match itself
-// stays a direct link (or the TURN relay). Letters only, no I/O look-alikes.
+// free public message relay (ntfy.sh: plain HTTPS POST + Server-Sent Events,
+// works on mobile data and survives the page pausing); the match itself stays
+// a direct link (or the TURN relay). Letters only, no I/O/Z look-alikes.
 export const ROOM_LETTERS='ABCDEFGHJKLMNPQRSTUVWXY'; // no I, O (0/1) and no Z (looks like 2 in the game font)
 export const ROOM_LEN=4;
-export const SIGNAL_URL='wss://0.peerjs.com/peerjs';
+export const SIGNAL_URL='https://ntfy.sh';
 export function newRoomCode(random=Math.random){
  let c='';for(let i=0;i<ROOM_LEN;i++)c+=ROOM_LETTERS[Math.floor(Math.max(0,Math.min(.999999,random()))*ROOM_LETTERS.length)];
  return c;
@@ -268,7 +269,13 @@ export function parseRoomCode(text){
  if(c.length!==ROOM_LEN||[...c].some(ch=>!ROOM_LETTERS.includes(ch)))return null;
  return c;
 }
-export const hostPeerId=code=>'torre2-'+code.toLowerCase();
-export function signalUrl(base,id,token){
- return `${base}?key=peerjs&id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}&version=1.5.4`;
+// Relay topics: the room (host listens) and each guest's own inbox.
+export const roomTopic=code=>'torre2-sala-v1-'+code.toLowerCase();
+export const guestTopic=id=>'torre2-amigo-v1-'+id;
+// Relay message: {t:'hello'|'offer'|'answer', from, code?, name?}
+export function relayMessage(raw){
+ let m;try{m=typeof raw==='string'?JSON.parse(raw):raw}catch{return null}
+ if(!m||!['hello','offer','answer'].includes(m.t)||typeof m.from!=='string'||!/^[a-z0-9]{6,16}$/.test(m.from))return null;
+ if(m.t!=='hello'&&typeof m.code!=='string')return null;
+ return {t:m.t,from:m.from,code:m.code,name:typeof m.name==='string'?m.name.slice(0,16):undefined};
 }
