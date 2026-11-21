@@ -12,6 +12,8 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 - **Museu de conquistas:** criar uma galeria de troféus e registros de feitos especiais, como completar desafios, vencer batalhas e capturar Pokémon raros.
 - **Sistema de potencial individual dos Pokémon:** Pokémon da mesma espécie podem ter potenciais e características individuais diferentes, incentivando a busca por exemplares especiais.
 - **Combates com regras personalizadas:** permitir criar partidas com limites de nível, tipos permitidos, quantidade de Pokémon e outras regras configuráveis.
+- **Sistema de clima nas batalhas:** chuva, sol, areia e neve alteram os efeitos dos golpes e podem favorecer estratégias de determinados tipos.
+- **Golpes que modificam o cenário:** criar terrenos elétricos, gramados, aquáticos e outros efeitos que mudam as condições do campo durante a batalha.
 
 ---
 
