@@ -10,6 +10,8 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 - **Batalhas 3 contra 3 simultâneas:** colocar os três Pokémon de cada treinador em campo ao mesmo tempo, com posicionamento e estratégias de equipe.
 - **Personalização do treinador:** adicionar roupas, acessórios, poses e opções visuais para o avatar do jogador.
 - **Museu de conquistas:** criar uma galeria de troféus e registros de feitos especiais, como completar desafios, vencer batalhas e capturar Pokémon raros.
+- **Sistema de potencial individual dos Pokémon:** Pokémon da mesma espécie podem ter potenciais e características individuais diferentes, incentivando a busca por exemplares especiais.
+- **Combates com regras personalizadas:** permitir criar partidas com limites de nível, tipos permitidos, quantidade de Pokémon e outras regras configuráveis.
 
 ---
 
@@ -17,15 +19,11 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 
 **Jogo publicado na raiz do Pages:** o GitHub Pages está habilitado. O motor Phaser está em [`/arena2d/`](https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/), e o laboratório Pixi antigo fica em [`/lab.html`](https://lulualcides-sys.github.io/Pok-mon-torre-2/lab.html).
 
-
-
 **▶ [JOGAR — VERSÃO CORRIGIDA (CDN)](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)** — publicado e verificado em desktop e Android horizontal. [Link alternativo direto](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html).
 
 **Correção do Loading:** antes o cliente carregava os retratos de todas as 76 entradas do manifesto (e animações Idle/Walk) antes do menu. Agora carrega só as linhas iniciais necessárias; os demais sprites continuam disponíveis sob demanda durante a seleção e a batalha. Inclui mensagem recuperável após atraso de inicialização, sem excluir Pokémon nem golpes. Ambas as rotas públicas passaram pelo Chromium, inclusive Android simulado, no [teste 39517268452](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39517268452).
 
 **Hospedagem gratuita permanente:** GitHub Pages habilitado, implantado e testado na versão Phaser/Kanto. [Abrir jogo](https://lulualcides-sys.github.io/Pok-mon-torre-2/)
-
-
 
 ## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
 
@@ -33,9 +31,7 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 
 **PATCH 1 CONCLUÍDO E TESTADO:** Bonemerang -50% de escala; Bone Club menor e +10% de alcance; Pay Day com nove moedas; Tri Attack refeito para apresentar três feixes simultâneos de fogo, gelo e eletricidade com uma formação triangular (pesquisa Bulbapedia/Pokémon Database); **Sumário dos golpes redesenhado** no Phaser com 4 slots 2×2, atributos, banco de seis movimentos por página, filtros de tipo e busca por nome. [Relatório](docs/PATCH-1-GOLPES-MENU-2026-10-20.md) · [Testes incluindo batalha e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39505390551).
 
-
 **Atualização testada:** quatro efeitos exclusivos novos em Phaser: **Bonemerang, Bone Club, Tri Attack e Pay Day**, Mewtwo de testes **nível 50 na equipe**, banco com **160 golpes selecionáveis (incluindo quatro novos)** e **Sumário interativo** com retrato, HP, ATK, DEF, SPD, quatro botões equipáveis e salvamento persistente. O clique em um Pokémon abre o Sumário. [Relatório e próximos refinamentos](docs/LOTE-4-GOLPES-MEWTWO-LV50.md) e [testes da batalha real e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39495106150). Golpes existentes no cliente Poké Arena, como Egg Bomb, High Jump Kick e Volt Tackle, não foram redesenhados. Os quatro VFX exclusivos são **primeira versão para aprovação visual**, não promessa de cópia idêntica.
-
 
 [**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)
 
@@ -43,12 +39,11 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 
 O jogo permite acessar a seleção de Bulbasaur, Charmander ou Squirtle. Reusa os ataques, movimentação, sprites e cenas do motor Phaser de pokearena2d.com, com progressão própria do Torre 1: 13 treinadores antes de Brock e dificuldade crescente, oito líderes, Elite Four, insígnias, EXP, captura após vitória, equipe de 6 e PC, evolução exclusivamente por nível depois do combate e salvamento em localStorage. Sem conta, login, amigos, partidas online ou API de servidor. Testado em navegador Chromium e Android paisagem (landscape): [execução validada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39484160116).
 
-**IA corrigida:** na campanha, adversários que alcançarem o limiar de evolução continuam atacando, sem tentar o comando EVO bloqueado. A regressão automatizada forçou Onix elegível a evoluir e observou **26 ataques**, zero tentativas de evolução proibida e evolução preservada em outros modos. [Teste verificado](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39490102682). 
+**IA corrigida:** na campanha, adversários que alcançarem o limiar de evolução continuam atacando, sem tentar o comando EVO bloqueado. A regressão automatizada forçou Onix elegível a evoluir e observou **26 ataques**, zero tentativas de evolução proibida e evolução preservada em outros modos. [Teste verificado](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39490102682).
 
-**Biblioteca NOVA de golpes:** [regras, 14 ataques e 2 status por tipo, e sugestões de exclusivos](docs/EVOLUCOES-MODOS-E-BANCO-DE-GOLPES.md) · [269 efeitos Phaser inéditos planejados, 19 vagas em aberto](data/kanto-new-phaser-moves.json). **Nenhum efeito de golpe do Torre 1 será reutilizado neste projeto.** Todos os novos efeitos devem ser criados no padrão técnico e visual do pokearena2d.com. Os sprites dos Pokémon podem vir do material já disponível ou SpriteCollab com atribuição; nenhuma reenvio obrigatório. 
+**Biblioteca NOVA de golpes:** [regras, 14 ataques e 2 status por tipo, e sugestões de exclusivos](docs/EVOLUCOES-MODOS-E-BANCO-DE-GOLPES.md) · [269 efeitos Phaser inéditos planejados, 19 vagas em aberto](data/kanto-new-phaser-moves.json). **Nenhum efeito de golpe do Torre 1 será reutilizado neste projeto.** Todos os novos efeitos devem ser criados no padrão técnico e visual do pokearena2d.com. Os sprites dos Pokémon podem vir do material já disponível ou SpriteCollab com atribuição; nenhuma reenvio obrigatório.
 
 **Cobertura:** catálogo de 151 Pokémon de Kanto incluído na Pokédex; só as espécies com animações e kits disponíveis no cliente recuperado são liberadas como lutadoras neste estágio. A campanha já usa os lutadores existentes do Poké Arena, ainda não todos os 151. A progressão é independente da versão de laboratório PixiJS V0.8 mantida no ramo principal. No celular, use a tela horizontal. O jogo funciona como página estática, sem serviços multiplayer; para abri-lo por URL é necessário acesso à hospedagem de arquivos estáticos.
-
 
 ## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
 
@@ -62,7 +57,6 @@ até habilitar **Settings → Pages → Source: GitHub Actions** no repositório
 Depois disso, `.github/workflows/pages.yml` já está preparado para publicar.
 
 ---
-
 
 **[CONTRATO DA CAMPANHA E EVOLUÇÃO SOMENTE POR NÍVEL](docs/CONTRATO_CAMPANHA.md)**: mesma estrutura de campanha do Pokémon Torre 1, com 13 treinadores antes do primeiro líder e Kanto completo; Poké Arena 2D é o objetivo de reconstrução completa da experiência de batalha; sua progressão não substitui Kanto do Torre 1. Evoluções exclusivamente por nível (inclusive pedra/troca/amizade convertidas para níveis), somente após a batalha, jamais no meio. A V0.8 ainda é laboratório e não implementa essa campanha ou a evolução.
 
