@@ -6,7 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const __dirname=path.dirname(fileURLToPath(import.meta.url));
 
-const ROOM='class Sala{vistaSala(){this.pintarSala();this.saludar(true)}panelJugador(x){}'+
+const ROOM='class Sala{create(){const abierto=id=>porId(id)&&desbloqueado(id)?id:null;}vistaSala(){this.pintarSala();this.saludar(true)}panelJugador(x){}'+
  'pintarSala(){this.pintarConexion();const distintas=1}'+
  'saludar(pide){red.enviar({t:"hola",id:this.miId,pide:pide?1:0})}alRival(m){}'+
  'alHola(m){this.rival=m.id??null;this.pintarSala()}'+
@@ -21,6 +21,8 @@ test('room patch adds every hook once and keeps the native code',async()=>{
  // Native statements are still there, unchanged.
  for(const part of ['red.enviar(m);this.empezarCombate(m)','this.rival=m.id??null;','this.saludar(true)}panelJugador('])
   assert.ok(out.includes(part),part);
+ // A Pokémon picked on the selection screen is kept (no native league lock).
+ assert.ok(out.includes('const abierto=id=>porId(id)?id:null;'));
  // A changed base client is refused instead of patched blindly.
  assert.throws(()=>patchFriendlyRoomTeams(ROOM.replace('pide:pide?1:0})}alRival(','pide:pide})}alRival(')),/base client changed/);
  assert.throws(()=>patchFriendlyRoomTeams(out),/base client changed/);
