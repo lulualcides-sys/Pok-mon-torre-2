@@ -196,7 +196,7 @@ const eeveeBranches=[
  'if(__pt2Eevee.evoluciones.some(p=>!p?.kit?.lmb?.forma||!p.dex))',
  'throw Error("Missing Eevee real evolution moves or art");'
 ].join('');
-const rosterPatched=sourceRoster.replace(rosterAnchor,
+let rosterPatched=sourceRoster.replace(rosterAnchor,
  'upgradeKantoEvolutionBattleKits(TODOS);'+eeveeBranches+'const ROSTER=');
 
 const nativeSkills=await read(path.join(original,'habilidades.js'));
@@ -336,13 +336,36 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
    'Magmortar '+name+' art absent');
 }
 
+// Owner arenas 2026-11-20 (Giovanni, Lorelei, Bruno, Agatha, Lance, Champion):
+// six NEW gym arenas appended after the native list (native ones untouched),
+// art in assets/arenas/torre2/, SHA-256 and oval in torre2-arenas/PROVENANCE.json.
+{
+ const src='tools/pokearena/torre2-arenas',prov=JSON.parse(await read(path.join(src,'PROVENANCE.json')));
+ const ids=Object.keys(prov.arenas||{});
+ must(ids.length===6&&ids.every(id=>/^[a-z]+$/.test(id)),'six Torre 2 arenas required');
+ const extra=[];
+ for(const id of ids){
+  const file=id+'.jpg',bytes=await fs.readFile(path.join(src,file));
+  must(createHash('sha256').update(bytes).digest('hex')===prov.files[file],'Torre 2 arena hash mismatch '+file);
+  const o=prov.arenas[id].ovalo;must([o.cx,o.cy,o.rx,o.ry].every(Number.isFinite),'bad oval '+id);
+  const target=path.join(root,'assets/arenas/torre2',file);
+  await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);
+  extra.push({id:'t2-'+id,nombre:{viridian:'VIRIDIAN GYM',lorelei:'LORELEI',bruno:'BRUNO',agatha:'AGATHA',lance:'LANCE',champion:'CHAMPION'}[id]||id.toUpperCase(),
+   imagen:'assets/arenas/torre2/'+file,ovalo:{cx:o.cx,cy:o.cy,rx:o.rx,ry:o.ry}});
+ }
+ await fs.writeFile(path.join(root,'assets/arenas/torre2/PROVENANCE.json'),JSON.stringify(prov,null,1));
+ const anchor='imagen:`assets/arenas/gimnasios/${id}-amplia.jpg`,ovalo:{...ovaloGym}}));';
+ exactly(rosterPatched,anchor,'native gym arena list');
+ rosterPatched=rosterPatched.replace(anchor,'imagen:`assets/arenas/gimnasios/${id}-amplia.jpg`,ovalo:{...ovaloGym}})).concat('+JSON.stringify(extra)+');');
+}
 const inputHash=createHash('sha256');
+inputHash.update(rosterPatched);
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);
 for(const {target,content} of overlays)inputHash.update(target+'\0'+content);
 for(const {target,content} of newModules)inputHash.update(target+'\0'+content);
 inputHash.update(skillUpdate);inputHash.update(fighter);inputHash.update(title);inputHash.update(combatPatched);inputHash.update(marksPatched);
 inputHash.update(packsPatched);
-inputHash.update(rosterPatched);
+
 inputHash.update(virtualDex);inputHash.update(arenaPrepared);
 inputHash.update(perfScript);
 inputHash.update(redPatched);inputHash.update(accountPatched);inputHash.update(salaPatched);

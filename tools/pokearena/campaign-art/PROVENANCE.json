@@ -42,7 +42,9 @@
   "story-cave.png": "2b6c5fcac3e9b2e1b5726777a981df94835673088d201843cc61072df28beab2",
   "story-hideout.png": "192747f560a96809b10bce67dd06f4c4abe6119cb8b63fe6dc1254f5d93b3aca",
   "story-office.png": "bdd54a138311f2c3501cff847d4ae4c37e59bf4de1fd0c34ffad1fbfc4455284",
-  "story-town.png": "59a98ccdca004b41e5a282fd04355d99ebf2303374de5c71970877c18f8ae854"
+  "story-town.png": "59a98ccdca004b41e5a282fd04355d99ebf2303374de5c71970877c18f8ae854",
+  "lair-navel-base.png": "92e81c6c28e5ff31aecd301fd50c7c2b247045f4bfcf869b0e77eecd7e5f6e5d",
+  "lair-navel-peak.png": "cab25ad734f19b4e09807086f36ead7d8abae6ce1906b05ead9fdf27570f2558"
  },
  "derived": {
   "icon-center.png": {
@@ -225,5 +227,25 @@
    ],
    "note": "Cena Viridian recortada da prancha e reduzida a 256 cores; fundo da fala do Rival/Equipe Rocket."
   }
+ },
+ "lair-navel-base.png": {
+  "source": "Ilustração do covil enviada pelo dono do projeto na conversa (2026-11-20), gerada pelo dono a partir do prompt do Torre 2",
+  "rect": [
+   0,
+   243,
+   1672,
+   509
+  ],
+  "note": "Gruta da Rocha Navel (Lugia): faixa recortada com a plataforma a 82% da altura, reduzida à metade (vizinho mais próximo) e a 256 cores."
+ },
+ "lair-navel-peak.png": {
+  "source": "Ilustração do covil enviada pelo dono do projeto na conversa (2026-11-20), gerada pelo dono a partir do prompt do Torre 2",
+  "rect": [
+   0,
+   243,
+   1672,
+   509
+  ],
+  "note": "Cume da Rocha Navel (Ho-Oh): faixa recortada com a plataforma a 82% da altura, reduzida à metade (vizinho mais próximo) e a 256 cores."
  }
 }
