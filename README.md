@@ -14,6 +14,9 @@ As ideias abaixo estão no planejamento do projeto e **ainda não significam fun
 - **Combates com regras personalizadas:** permitir criar partidas com limites de nível, tipos permitidos, quantidade de Pokémon e outras regras configuráveis.
 - **Sistema de clima nas batalhas:** chuva, sol, areia e neve alteram os efeitos dos golpes e podem favorecer estratégias de determinados tipos.
 - **Golpes que modificam o cenário:** criar terrenos elétricos, gramados, aquáticos e outros efeitos que mudam as condições do campo durante a batalha.
+- **Habilidades ocultas:** encontrar Pokémon com habilidades raras, diferentes das habilidades comuns de sua espécie.
+- **Rivalidade entre Pokémon:** determinadas espécies podem desenvolver rivalidades, gerando interações, desafios e eventos especiais.
+- **Modo desafio personalizado:** criar campanhas próprias com regras, dificuldade, equipes e objetivos escolhidos pelo jogador.
 
 ---
 
