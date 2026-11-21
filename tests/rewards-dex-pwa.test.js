@@ -64,15 +64,57 @@ test('Pokédex filters: show, type and route, then paginate',()=>{
  assert.deepEqual(paginate([1,2,3,4,5],9,2),{page:2,pages:3,rows:[5]});
  assert.equal(cycle(DEX_SHOW,'missing'),'all');
 });
-test('install as an app: Torre 2 manifest, release-scoped worker, hook',()=>{
- const m=JSON.parse(pwaManifest(JSON.stringify({name:'Poké Arena 2D',icons:[{src:'iconos/icono-192.png'}]})));
- assert.equal(m.name,'Pokémon Torre 2');assert.equal(m.short_name,'Torre 2');assert.equal(m.icons.length,1);
+test('install as an app: manifest declares real 192px and 512px icons',()=>{
+ const m=JSON.parse(pwaManifest(JSON.stringify({name:'Poké Arena 2D',icons:[
+  {src:'iconos/icono-192.png',sizes:'192x192',type:'image/png'},
+  {src:'iconos/icono-512.png',sizes:'512x512',type:'image/png'}
+ ]})));
+ assert.equal(m.name,'Pokémon Torre 2');assert.equal(m.short_name,'Torre 2');
  assert.equal(m.display,'fullscreen');
+ assert.deepEqual(m.icons.map(i=>i.sizes),['192x192','512x512']);
+ const icon512=fs.readFileSync(new URL('../tools/pokearena/pwa/icono-512.png',import.meta.url));
+ assert.equal(icon512.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+ assert.equal(icon512.readUInt32BE(16),512);assert.equal(icon512.readUInt32BE(20),512);
  const sw=serviceWorker('src-0123456789');
- assert.match(sw,/RELEASE='src-0123456789'/);assert.match(sw,/caches\.delete/);assert.match(sw,/fetch\(req\)\.then/);
+ assert.ok(sw.includes("RELEASE='src-0123456789'"));
+ assert.ok(sw.includes('caches.delete'));assert.ok(sw.includes('fetch(req).then'));
  assert.throws(()=>serviceWorker('../x'),/bad release/);
- assert.match(PWA_HOOK,/beforeinstallprompt/);assert.match(PWA_HOOK,/register\("sw\.js"\)/);
+ assert.ok(PWA_HOOK.includes('beforeinstallprompt'));
+ assert.ok(PWA_HOOK.includes('register("sw.js")'));
  const pub=read('publish-alpha0762.mjs');
- assert.match(pub,/html=html\.replace\('<\/head>',PWA_HOOK\+'<\/head>'\)/);
- assert.match(read('torre2-trainer-cards.js'),/\['INSTALAR APP',handlers\.installApp,'fullscreen'\]/);
+ assert.ok(pub.includes("tools/pokearena/pwa/icono-512.png"));
+ assert.ok(pub.includes("await fs.writeFile(path.join(root,'iconos/icono-512.png'),icon512);"));
+ assert.ok(pub.includes("pngDimensions(icon512).width===512"));
+ assert.ok(pub.includes("html=html.replace('</head>',PWA_HOOK+'</head>')"));
+ assert.ok(read('torre2-trainer-cards.js').includes("['INSTALAR APP',handlers.installApp,'fullscreen']"));
+});
+test('the generated Pages PWA bundle includes valid files for every manifest icon',t=>{
+ const root=new URL('../_site/arena2d/',import.meta.url);
+ const manifestUrl=new URL('manifest.webmanifest',root);
+ if(!fs.existsSync(manifestUrl)){t.skip('Publisher output is not present outside the Pages build');return;}
+ const manifest=JSON.parse(fs.readFileSync(manifestUrl,'utf8'));
+ for(const size of [192,512]){
+  const item=manifest.icons.find(i=>i.sizes===size+'x'+size&&i.type==='image/png');
+  assert.ok(item,'missing '+size+'px manifest entry');
+  const file=new URL(item.src,root);
+  assert.ok(fs.existsSync(file),'missing published '+item.src);
+  const png=fs.readFileSync(file);
+  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16),size);assert.equal(png.readUInt32BE(20),size);
+ }
+});
+test('the generated Pages PWA bundle includes valid files for every manifest icon',t=>{
+ const root=new URL('../_site/arena2d/',import.meta.url);
+ const manifestUrl=new URL('manifest.webmanifest',root);
+ if(!fs.existsSync(manifestUrl)){t.skip('Publisher output is not present outside the Pages build');return;}
+ const manifest=JSON.parse(fs.readFileSync(manifestUrl,'utf8'));
+ for(const size of [192,512]){
+  const item=manifest.icons.find(i=>i.sizes===size+'x'+size&&i.type==='image/png');
+  assert.ok(item,'missing '+size+'px manifest entry');
+  const file=new URL(item.src,root);
+  assert.ok(fs.existsSync(file),'missing published '+item.src);
+  const png=fs.readFileSync(file);
+  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16),size);assert.equal(png.readUInt32BE(20),size);
+ }
 });

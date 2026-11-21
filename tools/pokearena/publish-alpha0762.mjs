@@ -475,7 +475,30 @@ html=html.replace('</body>',perfHook+'</body>');
 // for this release and the install-prompt hook.
 must(html.split('</head>').length===2,'native index head changed');
 html=html.replace('</head>',PWA_HOOK+'</head>');
-await fs.writeFile(path.join(root,'manifest.webmanifest'),pwaManifest(await read(path.join(root,'manifest.webmanifest'))));
+// Chromium installability requires both declared raster sizes. The audited
+// source pack contains icono-192.png but omits its declared 512px counterpart.
+// Bundle an exact nearest-neighbour enlargement of the same approved pixel art.
+const pwaManifestPath=path.join(root,'manifest.webmanifest');
+const appManifest=JSON.parse(pwaManifest(await read(pwaManifestPath)));
+const icon512Source=path.resolve('tools/pokearena/pwa/icono-512.png');
+const icon512=await fs.readFile(icon512Source);
+const icon192=await fs.readFile(path.join(root,'iconos/icono-192.png'));
+const pngDimensions=bytes=>{
+ must(bytes.length>=24&&bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),
+  'PWA icon is not a valid PNG');
+ return {width:bytes.readUInt32BE(16),height:bytes.readUInt32BE(20)};
+};
+must(pngDimensions(icon192).width===192&&pngDimensions(icon192).height===192,
+ 'PWA 192px icon missing or malformed');
+must(pngDimensions(icon512).width===512&&pngDimensions(icon512).height===512,
+ 'PWA 512px icon missing or malformed');
+for(const size of [192,512]){
+ const src='iconos/icono-'+size+'.png';
+ must(appManifest.icons?.some(i=>i.src===src&&i.sizes===size+'x'+size&&i.type==='image/png'),
+  'PWA manifest must declare '+size+'x'+size+' PNG');
+}
+await fs.writeFile(path.join(root,'iconos/icono-512.png'),icon512);
+await fs.writeFile(pwaManifestPath,JSON.stringify(appManifest,null,2));
 await fs.writeFile(path.join(root,'sw.js'),serviceWorker(newModule));
 await fs.writeFile(htmlFile,html);
 await fs.writeFile(versionFile,JSON.stringify({...version,modules:newModule,pixelFXVersion:newModule}));
