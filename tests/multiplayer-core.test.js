@@ -62,20 +62,26 @@ test('emulated room server: create, join, relay, ping and leave like the base se
 });
 
 test('quick room: 4 letters without look-alikes, typed in any case',async()=>{
- const {newRoomCode,parseRoomCode,hostPeerId,signalUrl,ROOM_LETTERS,SIGNAL_URL}=await import('../tools/pokearena/torre2-multiplayer-core.js');
+ const {newRoomCode,parseRoomCode,roomTopic,guestTopic,relayMessage,ROOM_LETTERS,SIGNAL_URL}=await import('../tools/pokearena/torre2-multiplayer-core.js');
  assert.ok(!/[IOZ01]/.test(ROOM_LETTERS));
  let r=0;const code=newRoomCode(()=>(r=(r+.37)%1));
  assert.match(code,/^[A-HJ-NP-Y]{4}$/);
  assert.equal(parseRoomCode(' '+code.toLowerCase()+' '),code);
  assert.equal(parseRoomCode('AB C-D'),'ABCD');
  assert.equal(parseRoomCode('ABC'),null);assert.equal(parseRoomCode('ABIO'),null);
- assert.equal(hostPeerId('ABCD'),'torre2-abcd');
- assert.equal(SIGNAL_URL,'wss://0.peerjs.com/peerjs');
- assert.equal(signalUrl(SIGNAL_URL,'torre2-abcd','t1'),'wss://0.peerjs.com/peerjs?key=peerjs&id=torre2-abcd&token=t1&version=1.5.4');
+ assert.equal(roomTopic('ABCD'),'torre2-sala-v1-abcd');assert.equal(guestTopic('k3j2h1g0'),'torre2-amigo-v1-k3j2h1g0');
+ assert.equal(SIGNAL_URL,'https://ntfy.sh');
+ assert.deepEqual(relayMessage('{"t":"hello","from":"k3j2h1g0","name":"Ana"}'),{t:'hello',from:'k3j2h1g0',code:undefined,name:'Ana'});
+ assert.equal(relayMessage('{"t":"offer","from":"k3j2h1g0"}'),null,'offer needs a code');
+ assert.equal(relayMessage('{"t":"x","from":"k3j2h1g0"}'),null);
+ assert.equal(relayMessage('{"t":"hello","from":"<script>"}'),null);
+ assert.equal(relayMessage('not json'),null);
 });
 test('quick room screens: create/enter by 4 letters, long code kept as fallback',async()=>{
  const fs=await import('node:fs');
  const src=fs.readFileSync(new URL('../tools/pokearena/torre2-multiplayer.js',import.meta.url),'utf8');
  for(const part of ["'CRIAR SALA',()=>this.quickHost()","'ENTRAR NA SALA',()=>this.quickGuest()","'CÓDIGO LONGO (SEM SERVIDOR)',()=>this.manual()",
-  "if(m.type==='OPEN')","this.raw({type:'HEARTBEAT'})","this.signal?.close();this.signal=null;"])assert.ok(src.includes(part),part);
+  "new EventSource(this.base()+'/'+this.topic+'/sse')","method:'POST'","this.signal?.close();this.signal=null;",
+  "this.knock=setInterval(","},60000);","// The friend missed our offer (connection blip): send it again."])assert.ok(src.includes(part),part);
+ assert.ok(!src.includes('peerjs'),'no PeerJS server any more');
 });
