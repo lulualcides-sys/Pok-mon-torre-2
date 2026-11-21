@@ -5,7 +5,7 @@
  * only picks one Pokémon. These hooks let the Torre 2 multiplayer module
  * (torre2-multiplayer.js, globalThis.__torre2Sala) add a 1x1/3x3 choice and
  * two extra team slots to that room. Without the hook object every call is a
- * no-op, so the native room is unchanged. Refuses to patch if the base client
+ * no-op. The room also accepts every Pokémon the selection screen allows. Refuses to patch if the base client
  * changed.
  */
 const once=(src,from,to,label)=>{
@@ -15,6 +15,12 @@ const once=(src,from,to,label)=>{
 const H='globalThis.__torre2Sala';
 export function patchFriendlyRoomTeams(source){
  let s=String(source);
+ // The Torre 2 selection screen lets every Pokémon be picked outside ranked
+ // (torre2-selection-pages.mjs). The room kept the native league lock and
+ // silently swapped a picked Pokémon back to the first unlocked one
+ // (owner 2026-11-21: "clicava e ficava no Bulbasaur"). Same rule here.
+ s=once(s,'const abierto=id=>porId(id)&&desbloqueado(id)?id:null;',
+  'const abierto=id=>porId(id)?id:null;','picked Pokémon lock');
  s=once(s,'this.pintarSala();this.saludar(true)}panelJugador(',
   `this.pintarSala();${H}?.vista?.(this);this.saludar(true)}panelJugador(`,'room view');
  s=once(s,'this.pintarConexion();const distintas=',
