@@ -16,17 +16,121 @@ async function pipe(bytes,stream){
  const out=new Response(new Blob([bytes]).stream().pipeThrough(stream));
  return new Uint8Array(await out.arrayBuffer());
 }
-export async function encodeSignal(desc){
- const json=JSON.stringify({type:desc.type,sdp:desc.sdp});
- const raw=new TextEncoder().encode(json);
- if(typeof CompressionStream==='function')
-  return PREFIX+'z'+b64url(await pipe(raw,new CompressionStream('deflate-raw')));
- return PREFIX+'j'+b64url(raw);
+// Short codes (owner request 2026-11-21: "código menor", errors when pasting).
+// Only what WebRTC needs travels: ICE user/password, the DTLS fingerprint,
+// the setup role and the UDP candidates (IPv4, IPv6 or mDNS name). The
+// other side rebuilds a standard data-channel SDP. Text uses Base58 (letters
+// and digits only): no "_" or "*" that WhatsApp turns into formatting, no
+// look-alike 0/O/I/l. About 5× shorter than the old deflate+JSON code.
+export const SHORT_PREFIX='T2';
+const B58='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+export function base58(bytes){
+ let n=0n;for(const b of bytes)n=n*256n+BigInt(b);
+ let out='';while(n>0n){out=B58[Number(n%58n)]+out;n/=58n}
+ for(const b of bytes){if(b!==0)break;out='1'+out}
+ return out;
 }
+export function unbase58(text){
+ let n=0n;for(const ch of text){const i=B58.indexOf(ch);if(i<0)throw Error('bad char');n=n*58n+BigInt(i)}
+ const bytes=[];while(n>0n){bytes.unshift(Number(n%256n));n/=256n}
+ for(const ch of text){if(ch!=='1')break;bytes.unshift(0)}
+ return Uint8Array.from(bytes);
+}
+const SETUP=['actpass','active','passive'],CTYPE=['host','srflx','relay'];
+const hex=b=>b.toString(16).padStart(2,'0');
+function addrBytes(addr){
+ if(/^\d{1,3}(\.\d{1,3}){3}$/.test(addr))return [0,addr.split('.').map(Number)];
+ const m=/^([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})\.local$/i.exec(addr);
+ if(m){const h=m.slice(1).join('');return [2,h.match(/../g).map(x=>parseInt(x,16))]}
+ if(addr.includes(':')){
+  const [a,b='']=addr.split('::'),pa=a?a.split(':'):[],pb=b?b.split(':'):[];
+  const parts=addr.includes('::')?[...pa,...Array(8-pa.length-pb.length).fill('0'),...pb]:pa;
+  if(parts.length!==8)return null;
+  return [1,parts.flatMap(x=>{const v=parseInt(x||'0',16);return [v>>8,v&255]})];
+ }
+ return null;
+}
+function addrText(kind,b){
+ if(kind===0)return b.join('.');
+ if(kind===2){const h=[...b].map(hex).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}.local`}
+ const w=[];for(let i=0;i<16;i+=2)w.push(((b[i]<<8)|b[i+1]).toString(16));return w.join(':');
+}
+const ALEN=[4,16,16];
+// One check byte: a code damaged while copying is refused, never half-used.
+const checksum=list=>list.reduce((a,b)=>(a*31+b)&255,7);
+export function packSdp(desc){
+ const sdp=String(desc?.sdp||''),line=k=>(sdp.match(new RegExp('^a='+k+':(.*)$','m'))||[])[1]?.trim();
+ const ufrag=line('ice-ufrag'),pwd=line('ice-pwd'),fp=(line('fingerprint')||'').split(' ');
+ const setup=SETUP.indexOf(line('setup')),mid=line('mid')||'0';
+ if(!ufrag||!pwd||fp[0]!=='sha-256'||!fp[1]||setup<0)throw Error('Descrição de conexão incompleta.');
+ const fpb=fp[1].split(':').map(x=>parseInt(x,16));
+ if(fpb.length!==32)throw Error('Impressão digital inesperada.');
+ const cands=[];
+ for(const m of sdp.matchAll(/^a=candidate:\S+ (\d+) (\S+) \d+ (\S+) (\d+) typ (\S+)/gm)){
+  if(m[1]!=='1'||m[2].toLowerCase()!=='udp')continue;
+  const t=CTYPE.indexOf(m[5]),a=addrBytes(m[3]);
+  if(t<0||!a||cands.some(c=>c.key===m[3]+':'+m[4]))continue;
+  cands.push({key:m[3]+':'+m[4],t,k:a[0],b:a[1],port:Number(m[4])});
+ }
+ const enc=t=>[...new TextEncoder().encode(t)];
+ const u=enc(ufrag),p=enc(pwd),md=enc(mid);
+ const keep=cands.slice(0,12);
+ const out=[(desc.type==='answer'?1:0)|(setup<<1),u.length,...u,p.length,...p,md.length,...md,...fpb,keep.length];
+ for(const c of keep)out.push((c.t<<2)|c.k,...c.b,c.port>>8,c.port&255);
+ out.push(checksum(out));
+ return Uint8Array.from(out);
+}
+export function unpackSdp(bytes){
+ if(bytes.length<40||checksum([...bytes.slice(0,-1)])!==bytes[bytes.length-1])throw Error('checksum');
+ bytes=bytes.slice(0,-1);
+ let i=0;const need=n=>{if(i+n>bytes.length)throw Error('short');const s=bytes.slice(i,i+n);i+=n;return s};
+ const dec=b=>new TextDecoder().decode(b);
+ const head=need(1)[0],type=head&1?'answer':'offer',setup=SETUP[(head>>1)&3];
+ if(!setup)throw Error('setup');
+ const ufrag=dec(need(need(1)[0])),pwd=dec(need(need(1)[0])),mid=dec(need(need(1)[0]));
+ const fp=[...need(32)].map(b=>hex(b).toUpperCase()).join(':');
+ const n=need(1)[0],cands=[];
+ for(let c=0;c<n;c++){
+  const h=need(1)[0],t=h>>2,k=h&3;if(!CTYPE[t]||!ALEN[k])throw Error('cand');
+  const addr=addrText(k,need(ALEN[k])),pp=need(2),port=(pp[0]<<8)|pp[1];
+  const pref=[126,100,0][t],prio=(pref*16777216)+((65535-c)*256)+255;
+  cands.push(`a=candidate:${c+1} 1 udp ${prio} ${addr} ${port} typ ${CTYPE[t]}${t?' raddr 0.0.0.0 rport 0':''}`);
+ }
+ if(i!==bytes.length)throw Error('trailing');
+ if(!/^[A-Za-z0-9+/]{4,256}$/.test(ufrag)||!/^[A-Za-z0-9+/]{22,256}$/.test(pwd)||!/^[\w-]{1,32}$/.test(mid))throw Error('ice');
+ const sdp=['v=0','o=- '+(Date.now()%1e9)+' 2 IN IP4 127.0.0.1','s=-','t=0 0','a=group:BUNDLE '+mid,'a=msid-semantic: WMS',
+  'm=application 9 UDP/DTLS/SCTP webrtc-datachannel','c=IN IP4 0.0.0.0',...cands,'a=end-of-candidates',
+  'a=ice-ufrag:'+ufrag,'a=ice-pwd:'+pwd,'a=ice-options:trickle','a=fingerprint:sha-256 '+fp,'a=setup:'+setup,
+  'a=mid:'+mid,'a=sctp-port:5000','a=max-message-size:262144',''].join('\r\n');
+ return {type,sdp};
+}
+export async function encodeSignal(desc){
+ return SHORT_PREFIX+(desc.type==='answer'?'R':'O')+base58(packSdp(desc));
+}
+// Accepts the code inside any pasted text (WhatsApp adds names, times,
+// line breaks). Old long codes (T2MP1:) still work.
 export async function decodeSignal(code){
- const text=String(code||'').replace(/\s+/g,'');
- if(!text.startsWith(PREFIX))throw Error('Código inválido: confira se copiou tudo.');
- const kind=text[PREFIX.length],body=unb64url(text.slice(PREFIX.length+1));
+ const raw=String(code||'');
+ // The code is one word: try it as typed first, then with line breaks removed
+ // (a code split over lines); the check byte rejects a wrong cut.
+ for(const text of [raw,raw.replace(/\s+/g,'')]){
+  const re=/T2([OR])([1-9A-HJ-NP-Za-km-z]{40,})/g;let m;
+  while((m=re.exec(text))){
+   for(let cut=0;cut<=6&&m[2].length-cut>=40;cut++){
+    let desc;try{desc=unpackSdp(unbase58(m[2].slice(0,m[2].length-cut)))}catch{continue}
+    if((m[1]==='R')!==(desc.type==='answer'))continue;
+    return desc;
+   }
+  }
+ }
+ if(/T2[OR]/.test(raw))throw Error('Código incompleto ou alterado: copie de novo, inteiro.');
+ const text=raw.replace(/\s+/g,'');
+ const at=text.indexOf(PREFIX);
+ if(at<0)throw Error('Código inválido: confira se copiou tudo.');
+ return decodeLongSignal(text.slice(at));
+}
+async function decodeLongSignal(text){
+ const kind=text[PREFIX.length],body=unb64url(text.slice(PREFIX.length+1).replace(/[^A-Za-z0-9_-]+$/,''));
  const raw=kind==='z'?await pipe(body,new DecompressionStream('deflate-raw')):body;
  const desc=JSON.parse(new TextDecoder().decode(raw));
  if(!desc||!['offer','answer'].includes(desc.type)||typeof desc.sdp!=='string')throw Error('Código inválido.');

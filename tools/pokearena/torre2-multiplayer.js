@@ -76,9 +76,12 @@ export class MultiLink{
  async acceptOffer(code){
   this.role='guest';const desc=await decodeSignal(code);
   if(desc.type!=='offer')throw Error('Esse é o código de resposta. Cole o código de quem criou a sala.');
+  // A second try (new code): drop the previous attempt without ending the link.
+  if(this.pc){this.pc.onconnectionstatechange=null;try{this.pc.close()}catch{}}
   const pc=this.newPeer(await iceServers());
   pc.ondatachannel=e=>this.wire(e.channel);
-  await pc.setRemoteDescription(desc);
+  try{await pc.setRemoteDescription(desc)}
+  catch{throw Error('Esse código não abriu a sala. Peça ao seu amigo para criar a sala de novo.')}
   await pc.setLocalDescription(await pc.createAnswer());
   await this.gathered(pc);
   return encodeSignal(pc.localDescription);
@@ -87,8 +90,15 @@ export class MultiLink{
  async acceptAnswer(code){
   const desc=await decodeSignal(code);
   if(desc.type!=='answer')throw Error('Esse é o seu próprio código. Cole a resposta do seu amigo.');
-  await this.pc.setRemoteDescription(desc);
+  // The game went to the background (WhatsApp) and the phone closed it.
+  if(!this.pc||this.pc.signalingState!=='have-local-offer')
+   throw Error('Essa sala não existe mais neste aparelho. Toque em VOLTAR, crie a sala de novo e mande o código novo.');
+  try{await this.pc.setRemoteDescription(desc)}
+  catch{throw Error('Essa resposta não é da sala atual. Peça ao seu amigo para colar o código novo e mandar outra resposta.')}
   this.state('connecting');
+  // No link after 25 s: almost always both phones on mobile data.
+  clearTimeout(this.slow);
+  this.slow=setTimeout(()=>{if(!this.dc||this.dc.readyState!=='open')this.state('slow')},25000);
  }
  wire(dc){
   this.dc=dc;
@@ -261,7 +271,7 @@ background:rgba(4,10,30,.82);font-family:${FUENTE_CSS};color:#fff}
 border-radius:10px;padding:14px 16px;box-shadow:0 0 0 3px #0a1838}
 .t2mp h2{margin:0 0 6px;color:#ffd23c;font-size:20px;text-align:center}
 .t2mp p{margin:6px 0;font-size:13px;line-height:1.4;color:#d7e4ff}
-.t2mp textarea{width:100%;height:84px;box-sizing:border-box;font-size:11px;border-radius:6px;border:2px solid #5f86bd;
+.t2mp textarea{width:100%;height:72px;box-sizing:border-box;font-size:14px;letter-spacing:.5px;border-radius:6px;border:2px solid #5f86bd;
 background:#f4f1e6;color:#202020;padding:6px;word-break:break-all}
 .t2mp .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .t2mp button{flex:1;min-width:130px;padding:10px 8px;font-size:14px;border-radius:6px;border:2px solid #0a1838;
@@ -282,6 +292,7 @@ export class Torre2Multi extends Phaser.Scene{
   this.events.once('shutdown',()=>root.remove());
   this.link=window.__torre2MultiLink=new MultiLink({
    onState:(s,e)=>this.status(s==='connecting'?'Conectando...':s==='linked'?'Conectado! Abrindo a sala...':
+    s==='slow'?(relayConfigured()?'Ainda conectando... confira a internet dos dois aparelhos.':'Não conectou. Se os dois estão no 4G/5G, coloque um deles no Wi-Fi e tente de novo.'):
     s==='lost'?'Conexão perdida.':s==='error'?String(e?.message||e):''),
    onReady:({role,codigo})=>{
     if(role==='guest')this.registry.set('salaPendiente',codigo);
@@ -347,23 +358,32 @@ export class Torre2Multi extends Phaser.Scene{
  copyArea(code){
   return `<textarea readonly data-t2mp-code>${code}</textarea>`;
  }
+ // COLAR: read the clipboard into a box (falls back to a long-press paste).
+ pasteButton(row,box,selector){
+  if(!navigator.clipboard?.readText)return;
+  const b=document.createElement('button');b.textContent='COLAR';
+  b.onclick=async()=>{try{box.querySelector(selector).value=await navigator.clipboard.readText();this.status('')}
+   catch{this.status('Toque e segure na caixa e escolha Colar.')}};
+  row.appendChild(b);
+ }
  async copy(text){try{await navigator.clipboard.writeText(text);this.status('Código copiado!')}catch{this.status('Selecione o código e copie.')}}
  async host(){
   this.panel('CRIAR SALA','<p>Gerando o seu código...</p>');
   const code=await this.link.createOffer();
   const box=this.panel('CRIAR SALA',`<p><b>1.</b> Mande este código para o seu amigo:</p>${this.copyArea(code)}
-   <div class="row" data-r1></div><p><b>2.</b> Cole aqui a resposta dele:</p><textarea data-t2mp-answer placeholder="T2MP1:..."></textarea><div class="row" data-r2></div>`);
+   <div class="row" data-r1></div><p><b>2.</b> Cole aqui a resposta dele:</p><textarea data-t2mp-answer placeholder="T2..."></textarea><div class="row" data-r2></div>`);
   const r1=box.querySelector('[data-r1]'),r2=box.querySelector('[data-r2]');
   const b1=document.createElement('button');b1.textContent='COPIAR CÓDIGO';b1.onclick=()=>this.copy(code);r1.appendChild(b1);
   if(navigator.share){const s=document.createElement('button');s.textContent='COMPARTILHAR';s.onclick=()=>navigator.share({text:code}).catch(()=>{});r1.appendChild(s)}
   const ok=document.createElement('button');ok.className='gold';ok.textContent='CONECTAR';ok.setAttribute('data-t2mp-connect','1');
   ok.onclick=async()=>{try{await this.link.acceptAnswer(box.querySelector('[data-t2mp-answer]').value)}catch(e){this.status(e.message)}};
+  this.pasteButton(r2,box,'[data-t2mp-answer]');
   r2.appendChild(ok);
   const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>{this.link.close();this.scene.restart()};r2.appendChild(back);
  }
  guest(){
   const box=this.panel('ENTRAR COM CÓDIGO',`<p><b>1.</b> Cole o código que seu amigo mandou:</p>
-   <textarea data-t2mp-offer placeholder="T2MP1:..."></textarea><div class="row" data-r1></div>`);
+   <textarea data-t2mp-offer placeholder="T2..."></textarea><div class="row" data-r1></div>`);
   const r1=box.querySelector('[data-r1]');
   const go=document.createElement('button');go.className='gold';go.textContent='GERAR RESPOSTA';go.setAttribute('data-t2mp-reply','1');
   go.onclick=async()=>{
@@ -376,6 +396,7 @@ export class Torre2Multi extends Phaser.Scene{
     const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>{this.link.close();this.scene.restart()};r2.appendChild(back);
     this.status('Esperando seu amigo conectar...');
    }catch(e){this.status(e.message)}};
+  this.pasteButton(r1,box,'[data-t2mp-offer]');
   r1.appendChild(go);
   const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>this.home();r1.appendChild(back);
  }
