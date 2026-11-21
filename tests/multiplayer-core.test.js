@@ -60,3 +60,22 @@ test('emulated room server: create, join, relay, ping and leave like the base se
  srv.handle('guest',{t:'$salir'});assert.deepEqual(out.host.pop(),{t:'$rival',dentro:false});
  srv.handle('host',{t:'hola'});assert.equal(out.guest.length,0,'no relay once the friend left');
 });
+
+test('quick room: 4 letters without look-alikes, typed in any case',async()=>{
+ const {newRoomCode,parseRoomCode,hostPeerId,signalUrl,ROOM_LETTERS,SIGNAL_URL}=await import('../tools/pokearena/torre2-multiplayer-core.js');
+ assert.ok(!/[IOZ01]/.test(ROOM_LETTERS));
+ let r=0;const code=newRoomCode(()=>(r=(r+.37)%1));
+ assert.match(code,/^[A-HJ-NP-Y]{4}$/);
+ assert.equal(parseRoomCode(' '+code.toLowerCase()+' '),code);
+ assert.equal(parseRoomCode('AB C-D'),'ABCD');
+ assert.equal(parseRoomCode('ABC'),null);assert.equal(parseRoomCode('ABIO'),null);
+ assert.equal(hostPeerId('ABCD'),'torre2-abcd');
+ assert.equal(SIGNAL_URL,'wss://0.peerjs.com/peerjs');
+ assert.equal(signalUrl(SIGNAL_URL,'torre2-abcd','t1'),'wss://0.peerjs.com/peerjs?key=peerjs&id=torre2-abcd&token=t1&version=1.5.4');
+});
+test('quick room screens: create/enter by 4 letters, long code kept as fallback',async()=>{
+ const fs=await import('node:fs');
+ const src=fs.readFileSync(new URL('../tools/pokearena/torre2-multiplayer.js',import.meta.url),'utf8');
+ for(const part of ["'CRIAR SALA',()=>this.quickHost()","'ENTRAR NA SALA',()=>this.quickGuest()","'CÓDIGO LONGO (SEM SERVIDOR)',()=>this.manual()",
+  "if(m.type==='OPEN')","this.raw({type:'HEARTBEAT'})","this.signal?.close();this.signal=null;"])assert.ok(src.includes(part),part);
+});
