@@ -250,3 +250,25 @@ export function decodeProfile(code){
 }
 export const PROFILE_ROWS=[['b','Insígnias'],['c','Pokédex: capturados'],['v','Pokédex: vistos'],['sh','Shiny capturados'],
  ['ch','Campeão da Liga'],['w','Vitórias na campanha'],['mw','Vitórias no multiplayer']];
+
+// --- Quick room (owner request 2026-11-21: "muito complicado, deixa mais
+// fácil"): a 4-letter room code. The two games find each other through a
+// free public WebRTC signaling server (PeerJS protocol); the match itself
+// stays a direct link (or the TURN relay). Letters only, no I/O look-alikes.
+export const ROOM_LETTERS='ABCDEFGHJKLMNPQRSTUVWXY'; // no I, O (0/1) and no Z (looks like 2 in the game font)
+export const ROOM_LEN=4;
+export const SIGNAL_URL='wss://0.peerjs.com/peerjs';
+export function newRoomCode(random=Math.random){
+ let c='';for(let i=0;i<ROOM_LEN;i++)c+=ROOM_LETTERS[Math.floor(Math.max(0,Math.min(.999999,random()))*ROOM_LETTERS.length)];
+ return c;
+}
+// What the friend typed → code, or null (spaces and lower case are fine).
+export function parseRoomCode(text){
+ const c=String(text||'').toUpperCase().replace(/[^A-Z]/g,'');
+ if(c.length!==ROOM_LEN||[...c].some(ch=>!ROOM_LETTERS.includes(ch)))return null;
+ return c;
+}
+export const hostPeerId=code=>'torre2-'+code.toLowerCase();
+export function signalUrl(base,id,token){
+ return `${base}?key=peerjs&id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}&version=1.5.4`;
+}

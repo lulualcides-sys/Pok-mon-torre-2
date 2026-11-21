@@ -15,7 +15,8 @@
 import {red,STUN} from '../red.js';
 
 import {ROOM_CODE,PREFIX,CONTROL,encodeSignal,decodeSignal,createRoomServer,checkTeam,TEAM_SIZE,cleanIceServers,hasRelay,
- HISTORY_KEY,recordMatch,historySummary,profileFromSave,encodeProfile,decodeProfile,PROFILE_ROWS} from './multiplayer-core.js';
+ HISTORY_KEY,recordMatch,historySummary,profileFromSave,encodeProfile,decodeProfile,PROFILE_ROWS,
+ ROOM_LEN,SIGNAL_URL,newRoomCode,parseRoomCode,hostPeerId,signalUrl} from './multiplayer-core.js';
 import {TURN,TURN_URL} from './turn.js';
 import {FUENTE_CSS,VERSION,ANCHO,texto} from '../config.js';
 import {ROSTER} from '../datos.js';
@@ -109,6 +110,7 @@ export class MultiLink{
  sendRaw(obj){if(this.dc?.readyState==='open')this.dc.send(typeof obj==='string'?obj:JSON.stringify(obj))}
  toRed(obj){setTimeout(()=>red.recibir(JSON.stringify(obj),'servidor'),0)}
  opened(){
+  this.everOpen=true;clearTimeout(this.slow);
   // Never touch the real online server while linked.
   red.mantener=false;red.salir?.();
   // Same message the base client's server sends: native P2P also gets the relay.
@@ -140,6 +142,7 @@ export class MultiLink{
  }
  lost(){
   if(this.closed)return;this.closed=true;
+  if(!this.everOpen){this.state('failed');return}
   if(red.ws?.readyState===1&&red.ws.send&&!(red.ws instanceof WebSocket)){red.ws.close();red.ws=null}
   red.codigo=null;red.rol=null;red.rivalDentro=false;red.cerrarP2P?.();
   red.emitir?.('caida',{});
@@ -263,6 +266,31 @@ export const fimPartida={
 };
 globalThis.__torre2Fim=fimPartida;
 
+// --- Quick room: 4-letter code via a public PeerJS signaling server ---------
+// Only the connection setup (the same short codes as before) passes through
+// the server; the match is the direct link. Socket closed once linked.
+class QuickSignal{
+ constructor(id,onMessage){this.id=id;this.onMessage=onMessage;this.ws=null;this.beat=null}
+ open(){
+  const base=globalThis.__torre2SignalUrl||SIGNAL_URL,token=Math.random().toString(36).slice(2,12);
+  return new Promise((ok,fail)=>{
+   const ws=this.ws=new WebSocket(signalUrl(base,this.id,token));
+   const t=setTimeout(()=>{fail(Error('timeout'));try{ws.close()}catch{}},9000);
+   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
+    if(m.type==='OPEN'){clearTimeout(t);this.beat=setInterval(()=>this.raw({type:'HEARTBEAT'}),5000);ok()}
+    else if(m.type==='ID-TAKEN'){clearTimeout(t);fail(Error('taken'))}
+    else if(m.type==='ERROR'){clearTimeout(t);fail(Error('server'))}
+    else this.onMessage(m)};
+   ws.onerror=()=>{clearTimeout(t);fail(Error('server'))};
+   ws.onclose=()=>clearInterval(this.beat);
+  });
+ }
+ raw(o){if(this.ws?.readyState===1)this.ws.send(JSON.stringify(o))}
+ send(type,dst,payload){this.raw({type,dst,payload})}
+ close(){clearInterval(this.beat);try{this.ws?.close()}catch{}this.ws=null}
+}
+const SERVER_DOWN='O servidor de salas não respondeu. Tente de novo ou use CÓDIGO LONGO.';
+
 // --- Screen (main menu → MULTIPLAYER) -----------------------------------------
 // DOM panel over the canvas (same approach as the base client's code box).
 const CSS=`.t2mp{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -289,12 +317,14 @@ export class Torre2Multi extends Phaser.Scene{
   if(!document.getElementById('t2mp-css')){const st=document.createElement('style');st.id='t2mp-css';st.textContent=CSS;document.head.appendChild(st)}
   const root=this.root=document.createElement('div');root.className='t2mp';root.dataset.torre2Multi='1';
   document.body.appendChild(root);
-  this.events.once('shutdown',()=>root.remove());
+  this.events.once('shutdown',()=>{root.remove();this.signal?.close();clearTimeout(this.waitTimer)});
   this.link=window.__torre2MultiLink=new MultiLink({
    onState:(s,e)=>this.status(s==='connecting'?'Conectando...':s==='linked'?'Conectado! Abrindo a sala...':
     s==='slow'?(relayConfigured()?'Ainda conectando... confira a internet dos dois aparelhos.':'Não conectou. Se os dois estão no 4G/5G, coloque um deles no Wi-Fi e tente de novo.'):
+    s==='failed'?'Não deu para conectar os dois aparelhos. Isso acontece quando os dois estão no 4G/5G: coloque um deles no Wi-Fi e tente de novo.':
     s==='lost'?'Conexão perdida.':s==='error'?String(e?.message||e):''),
    onReady:({role,codigo})=>{
+    this.signal?.close();this.signal=null;
     if(role==='guest')this.registry.set('salaPendiente',codigo);
     this.scene.start('sala',{});
    }});
@@ -344,16 +374,96 @@ export class Torre2Multi extends Phaser.Scene{
   const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>this.home();r2.appendChild(back);
  }
  home(){
-  const box=this.panel('MULTIPLAYER',`<p>Lute com um amigo, cada um no seu aparelho, sem servidor.</p>
-   <p><b>1.</b> Um cria a sala e manda o código (WhatsApp).<br><b>2.</b> O outro cola e manda a resposta.<br>
-   <b>3.</b> Quem criou cola a resposta. Depois cada um escolhe o Pokémon e toca em READY.</p>
-   <p style="color:#9fb6e6;font-size:11px">${relayConfigured()?'Funciona no Wi-Fi e no 4G/5G.':'Funciona melhor com os dois no Wi-Fi. Em algumas redes de celular a conexão direta é bloqueada.'}</p>
+  const box=this.panel('MULTIPLAYER',`<p>Lute com um amigo, cada um no seu aparelho.</p>
+   <p><b>Criar sala:</b> você recebe um código de ${ROOM_LEN} letras e manda para o amigo.<br>
+   <b>Entrar:</b> o amigo digita o código e pronto.</p>
+   <p style="color:#9fb6e6;font-size:11px">${relayConfigured()?'Funciona no Wi-Fi e no 4G/5G.':'Funciona melhor com pelo menos um dos dois no Wi-Fi.'}</p>
    <div class="row"></div>`);
-  this.button(box,'CRIAR SALA',()=>this.host(),true);
-  this.button(box,'ENTRAR COM CÓDIGO',()=>this.guest());
+  this.button(box,'CRIAR SALA',()=>this.quickHost(),true).setAttribute('data-t2mp-quick-host','1');
+  this.button(box,'ENTRAR NA SALA',()=>this.quickGuest()).setAttribute('data-t2mp-quick-guest','1');
   this.button(box,'HISTÓRICO',()=>this.history());
   this.button(box,'COMPARAR COM AMIGO',()=>this.compare());
+  this.button(box,'CÓDIGO LONGO (SEM SERVIDOR)',()=>this.manual()).setAttribute('data-t2mp-manual','1');
   this.button(box,'VOLTAR',()=>{this.link.close();this.scene.start('titulo',{})});
+ }
+ manual(){
+  const box=this.panel('CÓDIGO LONGO',`<p>Use se a sala rápida não funcionar: um manda o código, o outro devolve a resposta.</p><div class="row"></div>`);
+  this.button(box,'CRIAR SALA',()=>this.host(),true);
+  this.button(box,'ENTRAR COM CÓDIGO',()=>this.guest());
+  this.button(box,'VOLTAR',()=>this.home());
+ }
+ retryRow(box,again){
+  const row=box.querySelector('[data-rr]')||box;
+  const a=document.createElement('button');a.className='gold';a.textContent='TENTAR DE NOVO';a.onclick=()=>{this.signal?.close();this.link.close();this.scene.restart()};
+  a.setAttribute('data-t2mp-retry','1');row.appendChild(a);
+  const b=document.createElement('button');b.textContent='VOLTAR';b.onclick=()=>{this.link.close();this.scene.restart()};row.appendChild(b);
+ }
+ // Host: a free 4-letter code, then wait for the friend.
+ async quickHost(){
+  this.panel('CRIAR SALA','<p>Criando a sala...</p>');
+  let code=null;
+  for(let i=0;i<5&&!code;i++){
+   const c=newRoomCode(),sig=new QuickSignal(hostPeerId(c),m=>this.onHostSignal(m));
+   try{await sig.open();code=c;this.signal=sig}
+   catch(e){sig.close();if(e.message!=='taken'){const b=this.panel('CRIAR SALA','<div class="row" data-rr></div>');this.status(SERVER_DOWN);this.retryRow(b);return}}
+  }
+  if(!code){this.status(SERVER_DOWN);return}
+  this.roomCode=code;
+  const box=this.panel('SUA SALA',`<p style="text-align:center">Mande este código para o seu amigo:</p>
+   <div data-t2mp-room style="text-align:center;font-size:44px;letter-spacing:10px;color:#ffd23c;margin:8px 0">${code}</div>
+   <p style="text-align:center">Esperando o amigo entrar...</p><div class="row" data-r1></div>`);
+  const r1=box.querySelector('[data-r1]');
+  const msg='Entra na minha sala no Pokémon Torre 2: MULTIPLAYER → ENTRAR NA SALA → '+code;
+  if(navigator.share){const sh=document.createElement('button');sh.className='gold';sh.textContent='MANDAR NO WHATSAPP';sh.onclick=()=>navigator.share({text:msg}).catch(()=>{});r1.appendChild(sh)}
+  const cp=document.createElement('button');cp.textContent='COPIAR';cp.onclick=()=>this.copy(code);r1.appendChild(cp);
+  const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>{this.signal?.close();this.link.close();this.scene.restart()};r1.appendChild(back);
+ }
+ async onHostSignal(m){
+  try{
+   if(m.type==='OFFER'&&m.payload?.hello&&!this.guestId){
+    this.guestId=m.src;this.status('Amigo encontrado! Conectando...');
+    const offer=await this.link.createOffer();
+    this.signal?.send('OFFER',m.src,{code:offer});
+   }else if(m.type==='ANSWER'&&m.src===this.guestId&&m.payload?.code){
+    await this.link.acceptAnswer(m.payload.code);
+   }
+  }catch(e){this.status(String(e?.message||e))}
+ }
+ // Guest: type the 4 letters.
+ quickGuest(){
+  const box=this.panel('ENTRAR NA SALA',`<p style="text-align:center">Digite o código que o seu amigo mandou:</p>
+   <input data-t2mp-room-input maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
+    style="display:block;margin:8px auto;width:220px;text-align:center;font-size:40px;letter-spacing:10px;text-transform:uppercase;border-radius:8px;border:3px solid #5f86bd;background:#f4f1e6;color:#202020;font-family:inherit">
+   <div class="row" data-r1></div>`);
+  const input=box.querySelector('[data-t2mp-room-input]');
+  const go=async()=>{
+   const code=parseRoomCode(input.value);
+   if(!code)return this.status('O código tem '+ROOM_LEN+' letras. Confira e tente de novo.');
+   this.status('Procurando a sala '+code+'...');
+   const sig=this.signal=new QuickSignal('torre2g-'+Math.random().toString(36).slice(2,10),m=>this.onGuestSignal(m,code));
+   try{await sig.open()}catch{return this.status(SERVER_DOWN)}
+   sig.send('OFFER',hostPeerId(code),{hello:true,name:nameOf('Amigo')});
+   clearTimeout(this.waitTimer);
+   this.waitTimer=setTimeout(()=>{if(!this.hostFound)this.status('Sala '+code+' não encontrada. Confira o código e se o amigo está com a sala aberta.')},12000);
+  };
+  const r1=box.querySelector('[data-r1]');
+  const ok=document.createElement('button');ok.className='gold';ok.textContent='ENTRAR';ok.setAttribute('data-t2mp-room-go','1');
+  ok.onclick=async()=>{ok.disabled=true;try{await go()}finally{ok.disabled=false}};r1.appendChild(ok);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')ok.click()});
+  input.addEventListener('input',()=>this.status(''));
+  const back=document.createElement('button');back.textContent='VOLTAR';back.onclick=()=>{this.signal?.close();this.home()};r1.appendChild(back);
+  setTimeout(()=>input.focus(),50);
+ }
+ async onGuestSignal(m,code){
+  try{
+   if(m.type==='OFFER'&&m.payload?.code&&m.src===hostPeerId(code)&&!this.hostFound){
+    this.hostFound=true;this.status('Sala encontrada! Conectando...');
+    const answer=await this.link.acceptOffer(m.payload.code);
+    this.signal?.send('ANSWER',m.src,{code:answer});
+   }else if(m.type==='EXPIRE'&&!this.hostFound){
+    this.status('Sala '+code+' não encontrada. Confira o código e se o amigo está com a sala aberta.');
+   }
+  }catch(e){this.status(String(e?.message||e))}
  }
  copyArea(code){
   return `<textarea readonly data-t2mp-code>${code}</textarea>`;
