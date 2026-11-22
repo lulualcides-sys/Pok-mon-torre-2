@@ -17,6 +17,7 @@ import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
 import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
+import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult} from './battle-events.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -983,6 +984,41 @@ export function resolveTowerBattle(s,token,won){
   const message=r.message+(won?' +'+xp+' EXP.':'');
   next.lastMessage=message;
   return {won:!!won,message,reward:xp,tower:r.reward||null,
+   growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
+ });
+}
+// Eventos 3x3 (battle-events.js): separate battles, the ladder never moves.
+export function eventSpeciesOk(id){return supportedKanto.has(id)}
+export function startEventBattle(s,id){
+ const ev=EVENTS_3X3.find(e=>e.id===id);
+ const st=eventStatus(s,ev);if(st.state==='locked')return {ok:false,reason:st.reason};
+ const trio=playerTrio(s.team);
+ if(trio.length<3)return {ok:false,reason:'Você precisa de 3 Pokémon com HP na equipe. Cure-os no Centro Pokémon.'};
+ const team=eventTeam(ev,currentLevelCap(Math.min(s.stage,STAGES.length-1))).filter(m=>eventSpeciesOk(m.id));
+ if(team.length<3)return {ok:false,reason:'Evento indisponível nesta versão.'};
+ const token=eventToken(s,id);
+ const next={...s,eventPending:{token,id},dexSeen:[...(s.dexSeen||[])]};
+ team.forEach(m=>recordSeen(next,m.id));
+ saveCampaign(next);s.eventPending=next.eventPending;s.dexSeen=next.dexSeen;
+ return {ok:true,token,team,event:ev,trio:trio.map(x=>x.i)};
+}
+export function resolveEventBattle(s,token,won){
+ if(!s.eventPending||s.eventPending.token!==token)return {ok:false,reason:'Resultado antigo do evento ignorado.'};
+ const id=s.eventPending.id;
+ return commitBattleOutcome(s,next=>{
+  next.eventPending=null;
+  let share=null,xp=0;
+  if(won){
+   const st=Math.min(next.stage,STAGES.length-1);
+   xp=Math.round(xpRewardFor(st,TRAINERS_PER_GYM(st),'leader')*.8);
+   share=awardSharedTeamExperience(next,xp,{kind:'trainer'});
+   next.wins++;rechargeRematches(next);
+  }else next.losses++;
+  const r=resolveEventResult(next,id,!!won);
+  Object.assign(next,r.state);next.eventPending=null;
+  const message=r.message+(won?' +'+xp+' EXP.':'');
+  next.lastMessage=message;
+  return {won:!!won,message,reward:xp,event3x3:r.reward||null,
    growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
  });
 }

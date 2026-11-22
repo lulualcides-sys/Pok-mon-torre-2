@@ -99,6 +99,8 @@ const newModuleNames=[
  ['tools/pokearena/torre2-route-weather.js','torre2/route-weather.js'],
  // Torre de desafios rules (pure), imported by campaign-core and the scene.
  ['tools/pokearena/torre2-challenge-tower.js','torre2/challenge-tower.js'],
+ // Battle weather by chance + Eventos 3x3 (pure), imported by campaign-core and the scene.
+ ['tools/pokearena/torre2-battle-events.js','torre2/battle-events.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for

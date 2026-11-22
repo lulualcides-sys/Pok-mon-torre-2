@@ -33,7 +33,8 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
- startTowerBattle,resolveTowerBattle,currentTowerFloor} from './campaign-core.js';
+ startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
+import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
 import {routeWeather,ROUTE_WEATHERS,weatherWeight} from './route-weather.js';
 import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
@@ -263,6 +264,10 @@ create(){
       outcome=resolveRematch(next,marker.ticket,!!completed.won);
       kind='rematch';
      }
+    }else if(marker.kind==='event3'){
+     applyPartyBattleResult(next,marker.party);
+     outcome=resolveEventBattle(next,marker.token,!!completed.won);
+     kind='trainer';
     }else if(marker.kind==='tower'){
      applyPartyBattleResult(next,marker.party);
      outcome=resolveTowerBattle(next,marker.token,!!completed.won);
@@ -318,12 +323,13 @@ create(){
    panel.button.on('pointerdown',()=>{
     if(!this.scene.isActive())return;
     // Evolutions from this battle get their own cutscene, then Eevee's choice.
-    const towerNext=completed?.marker?.kind==='tower';
+    const towerNext=completed?.marker?.kind==='tower',eventNext=completed?.marker?.kind==='event3';
     this.evolutionScene(battleReport.evolutions,()=>{
      if(!this.scene.isActive())return;
      const cur=readCampaign();
      // Torre de desafios: straight back to the tower (next floor or result).
      if(towerNext&&cur&&!cur.pendingEeveeEvolution)return this.towerScreen(cur);
+     if(eventNext&&cur&&!cur.pendingEeveeEvolution)return this.eventsScreen(cur);
      this.promptPendingEeveeEvolution(cur);
     });
    });
@@ -888,7 +894,7 @@ create(){
    saveImport:()=>this.importSave(),
    ranking:()=>this.rankingScreen(state),
    legendaries:()=>this.legendaryHub(state),
-   tower:()=>this.towerScreen(state),
+   tower:()=>this.challengesScreen(state),
    installApp:()=>this.installApp(),
    missions:()=>this.missionsScreen(state),
    trade:()=>this.tradeScreen(state),
@@ -1445,6 +1451,67 @@ create(){
    },true).setData('torre2-lair-fight',id);
   this.__torre2Lair={id,state:st.state,scene:leg.scene};
  }
+ // Desafios (Mais opções): Torre de desafios + Eventos 3x3 (+ future modes).
+ challengesScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  this.screenBanner(20,300,'Desafios','badges');
+  this.uiSection(60,60,520,220);
+  const won=(state.events3x3?.won||[]).length;
+  this.uiLabel(320,84,'Escolha um desafio',11,MENU_UI.amarillo,[.5,.5],4);
+  this.button(320,130,360,34,'TORRE DE DESAFIOS',()=>this.towerScreen(readCampaign()||state),true).setData('torre2-challenges-tower',true);
+  this.uiLabel(320,154,'Andares seguidos sem curar · prêmio a cada 5',8,'#dcf4fb',[.5,.5],4);
+  this.button(320,196,360,34,'EVENTOS 3x3 · '+won+'/'+EVENTS_3X3.length,()=>this.eventsScreen(readCampaign()||state),true).setData('torre2-challenges-events',true);
+  this.uiLabel(320,220,'Seis treinadores especiais · seus 3 contra os 3 deles',8,'#dcf4fb',[.5,.5],4);
+  this.button(320,334,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||state)).setData('torre2-challenges-back',true);
+ }
+ // Eventos 3x3 (owner 2026-11-22, item 2): six special trainers.
+ eventsScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  this.screenBanner(20,300,'Eventos 3x3','badges');
+  this.uiLabel(320,46,'Seus 3 primeiros Pokémon com HP contra os 3 do desafiante · prêmio na 1ª vitória',8,MENU_UI.suave,[.5,.5]);
+  this.uiSection(8,56,624,252);
+  const g=this.add.graphics().setDepth(3);
+  EVENTS_3X3.forEach((ev,i)=>{
+   const x=16+(i%3)*206,y=64+Math.floor(i/3)*122,st=eventStatus(state,ev),locked=st.state==='locked';
+   nativeRect(g,x,y,202,118,st.state==='won'?0x50cc84:locked?MENU_UI.apagadoBorde:MENU_UI.oro,8);
+   nativeRect(g,x+2,y+2,198,114,locked?0x0a1638:0x1b2a5e,7);
+   if(!locked)this.npcSprite(spriteIdForTrainer(ev.sprite),x+28,y+70,2.2,5);
+   this.uiLabel(x+52,y+16,locked?'???':ev.name,9,locked?'#8ea2c8':MENU_UI.amarillo,[0,.5],5);
+   this.uiLabel(x+52,y+32,st.reason,7,st.state==='won'?'#9ff0bf':locked?'#ff9daa':'#dcf4fb',[0,.5],5);
+   if(!locked)ev.team.forEach((id,k)=>this.pokemonIdleSprite(id,x+76+k*42,y+84,30,5,null,'height'));
+   if(!locked)this.button(x+150,y+104,90,18,'LUTAR',()=>this.eventIntro(readCampaign()||state,ev.id),st.state!=='won',7).setData('torre2-event-fight',ev.id);
+  });
+  this.button(320,334,240,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-events-back',true);
+  this.__torre2Events=EVENTS_3X3.map(e=>({id:e.id,state:eventStatus(state,e).state}));
+ }
+ // The challenger's 3x3 line, then the fight.
+ eventIntro(state,id){
+  const ev=EVENTS_3X3.find(e=>e.id===id);if(!ev)return;
+  const st=eventStatus(state,ev);if(st.state==='locked')return this.campaignNotice(st.reason,'#ff9daa');
+  this.playStory(state,{key:'event3-'+id,place:'Evento especial 3x3',speaker:ev.sprite,speakerName:ev.name.toUpperCase(),bg:{room:true},entrance:false,
+   lines:[[ev.sprite,ev.line],[ev.sprite,'Regras: 3 contra 3. Quem derrubar os três do outro primeiro, vence!']]},
+   next=>this.enterEventBattle(next,id));
+ }
+ enterEventBattle(state,id){
+  const r=startEventBattle(state,id);
+  if(!r.ok){this.campaignNotice(r.reason,'#ff9daa');return this.eventsScreen(readCampaign()||state)}
+  const cur=readCampaign()||state;
+  const ace=r.team.at(-1),base={...cur,stage:Math.min(cur.stage,STAGES.length-1)};
+  const party=createPartyMatch(base,{id:ace.id,level:ace.level,leader:false,kind:'trainer'},false);
+  // The player's three: the first three healthy Pokémon of the team.
+  party.friend=r.trio.map(i=>party.friend[i]).filter(Boolean);party.playerIndex=0;
+  party.foes=r.team.map(({id,level})=>({id,level,hp:100,shiny:false,
+   loadout:resolveLoadout({id,progression:{species:id,level}})}));
+  party.enemyIndex=0;party.strategic=true;
+  const p=party.friend[0],e=party.foes[0];
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'dificil',arena:'estadio',mandos:[touch?'tactil':'kbm','cpu'],
+   torre2:{stage:cur.stage,trainer:cur.trainer,kind:'event3',token:r.token,party,
+    versus:{name:r.event.name.toUpperCase(),city:'EVENTO ESPECIAL 3x3',kind:r.event.sprite,
+     texture:'frlg-npc-'+spriteIdForTrainer(r.event.sprite),title:'DESAFIO 3 CONTRA 3'},
+    playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(cur.stage)},
+   torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+ }
  // Torre de desafios (owner list item 14): floors in a row, no healing
  // between them, a reward every 5 floors. Separate from the trainer ladder.
  towerScreen(state){
@@ -1467,9 +1534,9 @@ create(){
   label(236,116,'Melhor marca: andar '+best,10,MENU_UI.amarillo);
   this.__torre2Tower={state:st.state,active:!!run,floor:run?.floor||0,best};
   if(st.state==='locked'){label(236,150,st.reason,10,'#ff9daa');
-   this.button(130,334,220,28,'◀ VOLTAR',()=>this.renderCampaign(state)).setData('torre2-tower-back',true);return}
+   this.button(130,334,220,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-tower-back',true);return}
   if(!run){
-   this.button(130,334,220,28,'◀ VOLTAR',()=>this.renderCampaign(state)).setData('torre2-tower-back',true);
+   this.button(130,334,220,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-tower-back',true);
    this.button(470,334,260,28,'COMEÇAR NO ANDAR 1',()=>{
     const r=startTowerRun(readCampaign()||state);if(!r.ok)return this.campaignNotice(r.reason,'#ff9daa');
     try{saveCampaign(r.state)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9daa')}
@@ -1862,7 +1929,7 @@ create(){
   box.fillStyle(0xf8f8f8,1).fillRoundedRect(25,265,590,72,6);
   const tag=this.add.graphics().setDepth(D+2);
   tag.fillStyle(0x283c68,1).fillRoundedRect(28,240,150,24,6);tag.fillStyle(tone[1],1).fillRoundedRect(30,242,146,20,5);
-  this.uiLabel(103,252,SPEAKERS[who]||'RIVAL',9,'#ffffff',[.5,.5],D+3);
+  this.uiLabel(103,252,scene.speakerName||SPEAKERS[who]||'RIVAL',9,'#ffffff',[.5,.5],D+3);
   const txt=textoMenu(this,40,282,'',{tam:11,color:'#303030',borde:0,literal:true}).setOrigin(0,0).setDepth(D+3);
   txt.setWordWrapWidth?.(560);
   const arrow=this.uiLabel(598,326,'▼',9,'#d04848',[.5,.5],D+3);
@@ -1973,9 +2040,51 @@ create(){
    .setData('torre2-trainer-card-achievements',true);
   this.button(398,330,150,28,'TÍTULOS '+Object.keys(legacy.titles).length,()=>this.titlesScreen(state),true,9)
    .setData('torre2-trainer-card-titles',true);
-  this.button(554,330,150,28,'SALÃO DA FAMA',()=>this.hallHistoryScreen(state),true,9)
-   .setData('torre2-trainer-card-hall',true);
+  this.button(554,330,150,28,'MUSEU',()=>this.museumScreen(state),true,9)
+   .setData('torre2-trainer-card-hall',true).setData('torre2-trainer-card-museum',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
+ }
+ // Museu de conquistas (owner 2026-11-22, item 4): one gallery of everything
+ // earned. Read-only: badges, League honours, legendaries, records, titles;
+ // the Hall of Fame, Achievements and Titles screens open from here.
+ museumScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('town');
+  this.screenBanner(20,300,'Museu de conquistas','badges');
+  const legacy=this.legacySync(state),g=this.add.graphics().setDepth(2);
+  const hall=(x,y,w,h,title)=>{nativeRect(g,x,y,w,h,MENU_UI.contorno,8);nativeRect(g,x+2,y+2,w-4,h-4,0x14234f,7);
+   g.fillStyle(MENU_UI.oro,1).fillRect(x+8,y+20,w-16,1);this.uiLabel(x+10,y+12,title,9,MENU_UI.amarillo,[0,.5],4)};
+  // Badges and League honours on pedestals.
+  hall(10,42,300,92,'Insígnias e Liga');
+  for(let i=0;i<8;i++){const x=30+i*35,y=78;g.fillStyle(0x0a1430,1).fillRect(x-13,y+12,26,6);
+   drawBadgeIcon(this,i,x,y,state.badges?.includes(HALL_BADGE_ORDER[i]),1.2).setDepth(6)}
+  const honors=(state.leagueHonors||[]).length;
+  this.uiLabel(160,116,'Liga: '+honors+'/5 honras · '+(state.champion?'CAMPEÃO ★':'ainda não campeão'),8,state.champion?MENU_UI.amarillo:'#dcf4fb',[.5,.5],4);
+  // Legendaries: coloured if caught, silhouette if not.
+  hall(316,42,314,92,'Lendários');
+  LEGENDARIES.forEach((leg,i)=>{const x=342+i*43,caught=(state.dexCaught||[]).includes(leg.id);
+   const sp=this.pokemonIdleSprite(leg.id,x,120,30,5,sp2=>{if(!caught)sp2.setTint(0x101828)},'height');if(sp&&!caught)sp.setTint?.(0x101828);
+   if(caught)this.uiLabel(x,128,'★',7,MENU_UI.amarillo,[.5,.5],6)});
+  // Records.
+  hall(10,140,620,142,'Recordes');
+  let mp={w:0,l:0};try{const h=JSON.parse(localStorage.getItem('torre2-multiplayer-historico')||'[]');if(Array.isArray(h))mp={w:h.filter(m=>m.won).length,l:h.filter(m=>!m.won).length}}catch{}
+  const caught=new Set(state.dexCaught||[]).size;
+  const rows=[
+   ['Pokédex',caught+'/151 capturados'+(caught>=151?' · OURO':caught>=100?' · PRATA':caught>=50?' · BRONZE':'')],
+   ['Shiny capturados',String((state.dexShinyCaught||[]).length)],
+   ['Campanha zerada',legacy.championRuns.length+'×'],
+   ['Torre de desafios','melhor andar '+(Number(state.tower?.best)||0)],
+   ['Eventos 3x3',((state.events3x3?.won||[]).length)+'/'+EVENTS_3X3.length+' vencidos'],
+   ['Batalhas',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
+   ['Multiplayer',mp.w+' vitórias · '+mp.l+' derrotas'],
+   ['Títulos',Object.keys(legacy.titles||{}).length+' de '+TITLES.length]];
+  rows.forEach(([k,v],i)=>{const x=24+(i%2)*306,y=176+Math.floor(i/2)*26;
+   nativeRect(g,x-6,y-11,296,22,i%4<2?0x12285a:0x0c1d46,5,.9);
+   this.uiLabel(x,y,k,8,MENU_UI.suave,[0,.5],4);estrechar(this.uiLabel(x+282,y,v,9,'#ffffff',[1,.5],4),170)});
+  this.button(86,330,150,28,'◀ CARTÃO',()=>this.trainerCardScreen(state),false,9).setData('torre2-museum-back',true);
+  this.button(242,330,150,28,'SALÃO DA FAMA',()=>this.hallHistoryScreen(state),true,9).setData('torre2-museum-hall',true);
+  this.button(398,330,150,28,'CONQUISTAS',()=>this.achievementsScreen(state),true,9).setData('torre2-museum-achievements',true);
+  this.button(554,330,150,28,'TÍTULOS',()=>this.titlesScreen(state),true,9).setData('torre2-museum-titles',true);
+  this.__torre2Museum={caught,legendaries:LEGENDARIES.filter(l=>(state.dexCaught||[]).includes(l.id)).length,events:(state.events3x3?.won||[]).length};
  }
  // Achievements computed only from the existing save (read-only).
  achievementList(state){
@@ -2565,6 +2674,11 @@ create(){
    leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
+  // Battle weather by chance (owner 2026-11-22): low chance of the leader's
+  // type weather (Blaine sun, Misty rain...) or today's route weather.
+  match.torre2.weather=battleWeatherRoll({leader:!!foe.leader,wild,
+   stageType:STAGES[Math.min(state.stage,STAGES.length-1)]?.type,routeSky:routeWeather(Math.min(state.stage,8))});
+  if(match.torre2.weather!=='none')this.campaignNotice(WEATHER_INTRO[match.torre2.weather]||'',MENU_UI.amarillo);
   if(!wild){
    const opponent=currentOpponent(state);
    if(opponent)match.torre2.versus=versusOpponentProfile({

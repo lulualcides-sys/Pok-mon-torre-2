@@ -52,5 +52,5 @@ test('campaign wiring: separate battle, ladder untouched',()=>{
  const scene=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-scene.js',import.meta.url),'utf8');
  assert.match(scene,/marker\.kind==='tower'/);assert.match(scene,/kind:'tower',token:r\.token/);
  const cards=fs.readFileSync(new URL('../tools/pokearena/torre2-trainer-cards.js',import.meta.url),'utf8');
- assert.match(cards,/\['TORRE',handlers\.tower,'badges'\]/);
+ assert.match(cards,/\['DESAFIOS',handlers\.tower,'badges'\]/);
 });
