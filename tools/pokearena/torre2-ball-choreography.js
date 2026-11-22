@@ -122,7 +122,7 @@ export function restoreBody(body){
 }
 // One lifecycle for first entry, manual/KO replacement and recall. Run after
 // the native renderer has positioned its sprites, before WebGL draws them.
-export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
+export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,delay=0}){
  actor.actualizarGraficos?.(0);
  const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
@@ -144,9 +144,13 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   from.x=Math.max(view.x+16,Math.min(view.x+view.width-16,from.x));
   from.y=Math.max(view.y+30,Math.min(view.y+view.height-24,from.y));
  }
+ // Trainer standing in the arena (arena-trainers.js): the ball leaves the
+ // trainer's hand with a small throw motion.
+ const trainers=scene.__torre2ArenaTrainers,hand=trainers?.hand?.(side);
+ if(hand)from=hand;
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
- let elapsed=0,done=false;
+ let elapsed=-Math.max(0,Number(delay)||0),done=false,thrown=false;
  scene.__torre2BallTransitions=(scene.__torre2BallTransitions||0)+1;
  const phase=mode==='recall'?'ko':'torre2-sendout';
  const hold=()=>{scene.fase=phase};hold();
@@ -158,6 +162,8 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   if(done||!scene.scene.isActive())return clean();
   elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
   let state,center=body.center;
+  if(elapsed<0){poseBody(body,center,mode==='release'?.01:1,mode==='release'?0:1);return}
+  if(!thrown&&mode==='release'){thrown=true;trainers?.throwBall?.(side)}
   if(mode==='release'&&elapsed<360){
    state='THROW';poseBody(body,center,.01,0);
    const p=ballArc(from,landing,elapsed/360,48);

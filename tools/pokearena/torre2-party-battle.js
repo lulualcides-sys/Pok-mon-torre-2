@@ -21,6 +21,8 @@ import {drawCaptureBall} from './capture-arena.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
+import {installArenaTrainers} from './arena-trainers.js';
+import {playerSpriteId} from './frlg-npc.js';
 import {installShinyEntrance} from './shiny-fx.js';
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
 
@@ -241,8 +243,10 @@ export function installPartyBattle(scene){
   const entryPhase=scene.fase;
   const sides=payload.kind==='wild'?[0]:[0,1];
   let remaining=sides.length;
+  // Trainers walk into the arena first and throw from their hands.
+  const arenaTrainers=installArenaTrainers(scene,{playerTexture:'frlg-npc-'+playerSpriteId(),foeTexture:payload.versus?.texture});
   for(const side of sides)animateBallActor(scene,actors[side],{
-   side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,
+   side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,delay:arenaTrainers?.trainers?.[side]?760:0,
    onComplete:()=>{shine(side,side===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex]);
     if(--remaining===0)scene.fase=entryPhase==='intro'?'intro':'lucha'}
   });
