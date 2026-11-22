@@ -34,7 +34,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle,startCustomBattle,resolveCustomBattle} from './campaign-core.js';
-import {QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
+import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
@@ -941,6 +941,11 @@ create(){
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   // First visit only: point out the main buttons (never blocks input).
+  // Rare missions (3% per victory): rolled for the wins since the last check.
+  {try{const cur=readCampaign()||state,r=rollRareQuest(cur);
+   if(r.state!==cur){saveCampaign(r.state);state.npcQuests=r.state.npcQuests}
+   if(r.appeared){const q=ALL_QUESTS.find(x=>x.id===r.appeared);
+    this.time.delayedCall(1300,()=>{if(this.scene.isActive()&&hubAlive.active)this.campaignNotice('★ MISSÃO RARA apareceu: '+q.npc+'! Veja em Mais → Missões da cidade','#ffd23f')})}}catch(e){console.warn('Torre 2: rare quest',e)}}
   // First journey: the short tutorial opens once (never under automation).
   {let seen=true;try{seen=localStorage.getItem('torre2-tutorial-seen')==='1'}catch{}
    if(!seen&&!navigator.webdriver&&!(state.wins>0)&&state.stage===0){this.time.delayedCall(350,()=>{if(this.scene.isActive()&&hubAlive.active)this.tutorialScreen(state,0)})}}
@@ -1562,18 +1567,20 @@ create(){
   this.screenBanner(20,320,'Missões da cidade','badges');
   this.uiLabel(320,46,'Fale com os NPCs, aceite a missão e volte para entregar · '+sum.done+'/'+sum.total+' feitas'+(sum.ready?' · '+sum.ready+' prontas!':''),7,sum.ready?'#9ff0bf':MENU_UI.suave,[.5,.5]);
   const order={ready:0,active:1,available:2,done:3,locked:4};
-  const shown=QUESTS.map(q=>({q,st:questState(cur,q,ctx)})).filter(x=>x.st!=='locked').sort((a,b)=>order[a.st]-order[b.st]||a.q.stage-b.q.stage);
-  const locked=QUESTS.length-shown.length;
+  const shown=ALL_QUESTS.map(q=>({q,st:questState(cur,q,ctx)})).filter(x=>x.st!=='locked').sort((a,b)=>order[a.st]-order[b.st]||Number(!!b.q.rare)-Number(!!a.q.rare)||a.q.stage-b.q.stage);
+  const locked=QUESTS.filter(q=>questState(cur,q,ctx)==='locked').length;
   const per=6,pages=Math.max(1,Math.ceil(shown.length/per)),page=Math.min(pages-1,Math.max(0,this.__torre2QuestPage|0));
   const g=this.add.graphics().setDepth(3);
   const save=next=>{try{saveCampaign(next);return true}catch{this.campaignNotice('Não foi possível salvar.','#ff9d9d');return false}};
   shown.slice(page*per,page*per+per).forEach(({q,st},i)=>{
    const x=14+(i%2)*308,y=58+Math.floor(i/2)*86,w=302,h=82;
-   const col={ready:0x50cc84,active:0x4e92bc,available:MENU_UI.oro,done:0x5d6b80}[st];
-   nativeRect(g,x,y,w,h,col,7);nativeRect(g,x+2,y+2,w-4,h-4,st==='done'?0x111a33:0x1b2a5e,6);
+   const col=q.rare&&st!=='done'?0xffd23f:{ready:0x50cc84,active:0x4e92bc,available:MENU_UI.oro,done:0x5d6b80}[st];
+   nativeRect(g,x,y,w,h,col,7);nativeRect(g,x+2,y+2,w-4,h-4,st==='done'?0x111a33:q.rare?0x3a2a5e:0x1b2a5e,6);
+   if(q.rare)g.fillStyle(0xffd23f,.12).fillRect(x+3,y+3,w-6,h-6);
    this.npcSprite(spriteIdForTrainer(q.sprite),x+26,y+68,1.9,5);
    this.uiLabel(x+52,y+13,q.npc,9,MENU_UI.amarillo,[0,.5],5);
-   this.uiLabel(x+w-8,y+13,CITY_NAMES[q.stage],6,MENU_UI.suave,[1,.5],5);
+   const tag=this.uiLabel(x+w-8,y+13,q.rare?'★ MISSÃO RARA':CITY_NAMES[q.stage],q.rare?7:6,q.rare?'#ffd23f':MENU_UI.suave,[1,.5],5);
+   if(q.rare)tag.setData('torre2-quest-rare',q.id);
    estrechar(this.uiLabel(x+52,y+29,st==='available'?'“'+q.line+'”':objectiveText(q),7,st==='available'?'#dcf4fb':'#ffffff',[0,.5],5),w-60);
    const n=questProgress(cur,q,ctx);
    if(st==='active'||st==='ready'){nativeRect(g,x+52,y+41,140,7,0x0c1725,3);g.fillStyle(st==='ready'?0x50cc84:0x7ab3f5,1).fillRect(x+53,y+42,Math.max(2,Math.round(138*n/q.goal)),5);
@@ -1585,7 +1592,7 @@ create(){
    else if(st==='done')this.uiLabel(x+w-12,y+62,'✓ FEITA',8,'#9ff0bf',[1,.5],5);
    else this.uiLabel(x+w-12,y+62,'EM ANDAMENTO',7,'#7ab3f5',[1,.5],5);
   });
-  if(locked)this.uiLabel(320,320,locked+' missões novas aparecem nas próximas cidades',7,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,320,(locked?locked+' missões novas nas próximas cidades · ':'')+'Missões RARAS: '+Math.round(RARE_CHANCE*100)+'% de chance a cada vitória ('+sum.rareDone+'/'+(ALL_QUESTS.length-QUESTS.length)+' feitas)',7,MENU_UI.suave,[.5,.5]);
   const go=d=>{this.__torre2QuestPage=(page+d+pages)%pages;this.questsScreen(readCampaign()||cur)};
   this.button(150,340,110,24,'◀ PÁGINA',()=>go(-1),false,8).setData('torre2-quests-prev',true);
   this.button(320,340,200,24,'◀ VOLTAR',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-quests-back',true);

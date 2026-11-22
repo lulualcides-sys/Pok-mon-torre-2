@@ -29,7 +29,8 @@ export function objectiveText(q){
   o==='shiny'?'Capture '+g+' Pokémon shiny':
   o==='rivalry'?'Vença '+g+' lutas de rivalidade':
   o==='badges'?'Tenha '+g+' insígnias':
-  o==='money'?'Mostre que tem $'+g:'';
+  o==='money'?'Mostre que tem $'+g:
+  o==='starsCount'?'Tenha '+g+' Pokémon com 5 estrelas':'';
 }
 // [id, stage, sprite, npc, line, kind, goal, extra, reward]
 const Q=(id,stage,sprite,npc,line,kind,goal,extra,reward)=>Object.freeze({id,stage,sprite,npc,line,kind,goal,...extra,reward});
@@ -87,8 +88,43 @@ export const QUESTS=Object.freeze([
  Q('q51',9,'channeler','Médium Selene','Os espíritos querem companhia: mostre 3 Pokémon Fantasma.','haveType',3,{type:'GHOST'},{held:'metalpowder'}),
  Q('q52',9,'oak','Prof. Carvalho','O sonho de todo pesquisador: os 151 de Kanto!','dexCaught',151,{},{money:50000,items:{ultraball:20}})
 ]);
-// Stage 9 means "after the League".
-export function questUnlocked(s,q){return q.stage<=8?(Number(s?.stage)||0)>=q.stage||!!s?.champion:!!s?.champion}
+// --- Rare missions (owner 2026-11-22: "mais difíceis e recompensas bem
+// melhores, mas raras de aparecer 3%"): each campaign victory has a 3% chance
+// to make one of these appear. Much harder goals, much better prizes.
+export const RARE_CHANCE=.03;
+const R=(id,sprite,npc,line,kind,goal,extra,reward)=>Object.freeze({id,stage:1,rare:true,sprite,npc,line,kind,goal,...extra,reward});
+export const RARE_QUESTS=Object.freeze([
+ R('r01','oak','Prof. Carvalho (raro)','Uma pesquisa lendária: complete 120 espécies e eu te dou meu maior tesouro.','dexCaught',120,{},{items:{masterball:1},money:30000}),
+ R('r02','blackbelt','Grão-Mestre Kenshin','Só um treinador de elite chega ao Nv 60. Prove que é um!','level',60,{},{held:'leftovers',items:{masterball:1},money:15000}),
+ R('r03','acef','Caçadora de Talentos','Dois Pokémon com 5 estrelas? Isso é raríssimo... me mostre!','starsCount',2,{},{items:{masterball:1},held:'luckyegg'}),
+ R('r04','ace','Campeão Errante','Trinta vitórias seguidas de treino. Topa o desafio?','wins',30,{},{money:50000,items:{ultraball:15}}),
+ R('r05','man','Colecionador Rico','Capture 10 Pokémon depois de aceitar e a Master Ball é sua.','captures',10,{},{items:{masterball:1,ultraball:10}}),
+ R('r06','bill','Bill (raro)','Três shinies! Ninguém acredita que existe alguém assim...','shiny',3,{},{items:{masterball:2},money:20000}),
+ R('r07','gentleman','Lorde dos Eventos','Vença 15 eventos 3x3 e receba uma relíquia.','events',15,{},{held:'souldew',money:40000}),
+ R('r08','ace','Senhor da Torre','Chegue ao andar 25 da Torre de desafios.','tower',25,{},{held:'choiceband',items:{masterball:1},money:25000}),
+ R('r09','rocket','Agente Rocket Desertor','Complete 5 desafios personalizados e eu te passo segredos... e uma Master Ball.','series',5,{},{items:{masterball:1},held:'expshare'}),
+ R('r10','oldman','Ancião do Dragão','Os dragões escolhem poucos. Tenha 3 Pokémon Dragão.','haveType',3,{type:'DRAGON'},{held:'dragonscale',items:{masterball:1},money:20000}),
+ R('r11','fuji','Sr. Fuji (raro)','Dez vitórias de rivalidade mostram um coração forte.','rivalry',10,{},{held:'amuletcoin',items:{masterball:1}}),
+ R('r12','clerk','Dono da Loja de Departamentos','Junte 25 itens de batalha diferentes. Pago muito bem!','held',25,{},{money:60000,items:{masterball:1}})
+]);
+export const ALL_QUESTS=Object.freeze([...QUESTS,...RARE_QUESTS]);
+// Rolls 3% for every NEW victory since the last check. Returns the new state
+// and the id that appeared (one at a time while another rare is open).
+export function rollRareQuest(s,random=Math.random){
+ const nq=s?.npcQuests||{},wins=Number(s?.wins)||0,checked=Number.isFinite(nq.rareChecked)?nq.rareChecked:wins;
+ const rare=list(nq.rare),done=list(nq.done);
+ const open=rare.filter(id=>!done.includes(id));
+ let appeared=null;
+ if((Number(s?.stage)||0)>=1&&!open.length){
+  for(let w=checked;w<wins&&!appeared;w++){const r=Number(random());if(Number.isFinite(r)&&r>=0&&r<RARE_CHANCE){
+   const pool=RARE_QUESTS.filter(q=>!rare.includes(q.id)&&!done.includes(q.id));
+   if(pool.length)appeared=pool[Math.min(pool.length-1,Math.floor(Number(random())*pool.length)||0)].id}}
+ }
+ if(checked===wins&&!appeared&&Number.isFinite(nq.rareChecked))return {state:s,appeared:null};
+ return {state:{...s,npcQuests:{...nq,accepted:nq.accepted||{},done,rare:appeared?[...rare,appeared]:rare,rareChecked:wins}},appeared};
+}
+// Stage 9 means "after the League". Rare missions exist only once rolled.
+export function questUnlocked(s,q){if(q.rare)return list(s?.npcQuests?.rare).includes(q.id);return q.stage<=8?(Number(s?.stage)||0)>=q.stage||!!s?.champion:!!s?.champion}
 const party=s=>[...list(s?.team),...list(s?.box)].filter(Boolean);
 const uids=s=>party(s).map(m=>m.uid).filter(u=>typeof u==='string');
 export function questBaseline(s){return {wins:Number(s?.wins)||0,uids:uids(s)}}
@@ -112,7 +148,8 @@ export function questProgress(s,q,ctx={},base=null){
   q.kind==='shiny'?list(s?.dexShinyCaught).length:
   q.kind==='rivalry'?Number(s?.rivalryWins)||0:
   q.kind==='badges'?list(s?.badges).length:
-  q.kind==='money'?Number(s?.money)||0:0;
+  q.kind==='money'?Number(s?.money)||0:
+  q.kind==='starsCount'?all.filter(m=>(Number(ctx.starsOf?.(m))||0)>=5).length:0;
  return Math.max(0,Math.min(q.goal,n));
 }
 export function questState(s,q,ctx={}){
@@ -123,19 +160,19 @@ export function questState(s,q,ctx={}){
  return questProgress(s,q,ctx)>=q.goal?'ready':'active';
 }
 export function acceptQuest(s,id){
- const q=QUESTS.find(x=>x.id===id);if(!q||!questUnlocked(s,q))return null;
+ const q=ALL_QUESTS.find(x=>x.id===id);if(!q||!questUnlocked(s,q))return null;
  const nq=s?.npcQuests||{};if(nq.accepted?.[id]||list(nq.done).includes(id))return null;
- return {...s,npcQuests:{accepted:{...(nq.accepted||{}),[id]:questBaseline(s)},done:list(nq.done)}};
+ return {...s,npcQuests:{...nq,accepted:{...(nq.accepted||{}),[id]:questBaseline(s)},done:list(nq.done)}};
 }
 export function rewardText(r,heldName=k=>k){
  const parts=[];if(r?.money)parts.push('$'+r.money);
- const names={potion:'Poção',superpotion:'Super Poção',pokeball:'Poké Ball',greatball:'Great Ball',ultraball:'Ultra Ball'};
+ const names={potion:'Poção',superpotion:'Super Poção',pokeball:'Poké Ball',greatball:'Great Ball',ultraball:'Ultra Ball',masterball:'Master Ball'};
  for(const [k,n] of Object.entries(r?.items||{}))parts.push(n+'× '+(names[k]||k));
  if(r?.held)parts.push(heldName(r.held));
  return parts.join(' · ');
 }
 export function claimQuest(s,id,ctx={}){
- const q=QUESTS.find(x=>x.id===id);if(!q||questState(s,q,ctx)!=='ready')return null;
+ const q=ALL_QUESTS.find(x=>x.id===id);if(!q||questState(s,q,ctx)!=='ready')return null;
  const next=JSON.parse(JSON.stringify(s)),nq=next.npcQuests;
  delete nq.accepted[id];nq.done=[...new Set([...list(nq.done),id])];
  const r=q.reward||{};
@@ -147,6 +184,7 @@ export function claimQuest(s,id,ctx={}){
 }
 export function questSummary(s,ctx={}){
  const states=QUESTS.map(q=>questState(s,q,ctx));
- return {total:QUESTS.length,done:states.filter(x=>x==='done').length,ready:states.filter(x=>x==='ready').length,
+ const rare=RARE_QUESTS.map(q=>questState(s,q,ctx));
+ return {rareOpen:rare.filter(x=>x==='available'||x==='active'||x==='ready').length,rareDone:rare.filter(x=>x==='done').length,total:QUESTS.length,done:states.filter(x=>x==='done').length,ready:states.filter(x=>x==='ready').length,
   available:states.filter(x=>x==='available').length,active:states.filter(x=>x==='active').length};
 }

@@ -48,3 +48,25 @@ test('wiring: missions/tutorial in Mais, nickname in Summary and HUD, speed in b
  const pub=read('publish-alpha0762.mjs');
  for(const f of ['npc-quests','battle-speed'])assert.match(pub,new RegExp("torre2-"+f+"\\.js','torre2/"+f+"\\.js'"));
 });
+test('rare missions: 3% per victory, one at a time, much harder and much better',async()=>{
+ const {RARE_QUESTS,RARE_CHANCE,rollRareQuest,ALL_QUESTS,questState:qs,claimQuest:claim,acceptQuest:accept,objectiveText:ot}=await import('../tools/pokearena/torre2-npc-quests.js');
+ assert.equal(RARE_CHANCE,.03);assert.ok(RARE_QUESTS.length>=12);
+ for(const q of RARE_QUESTS){assert.ok(ot(q).length>8,q.id);assert.ok(q.reward.items?.masterball||q.reward.money>=40000,q.id+' much better prize')}
+ // first look only records the baseline
+ let r=rollRareQuest({stage:2,wins:10,npcQuests:{}},()=>0);assert.equal(r.appeared,null);assert.equal(r.state.npcQuests.rareChecked,10);
+ // 5 new wins, all rolls fail
+ r=rollRareQuest({...r.state,wins:15},()=>.5);assert.equal(r.appeared,null);assert.equal(r.state.npcQuests.rareChecked,15);
+ // next win rolls under 3% → one appears
+ r=rollRareQuest({...r.state,wins:16},()=>.01);assert.ok(r.appeared);
+ const q=ALL_QUESTS.find(x=>x.id===r.appeared);assert.equal(qs(r.state,q,{}),'available');
+ // while it is open no second one appears
+ const r2=rollRareQuest({...r.state,wins:40},()=>.0);assert.equal(r2.appeared,null);
+ // statistics: about 3%
+ let n=0,st={stage:3,wins:0,npcQuests:{rareChecked:0}};
+ for(let i=0;i<20000;i++){const x=rollRareQuest({...st,wins:i+1},Math.random);if(x.appeared){n++;st={...x.state,npcQuests:{...x.state.npcQuests,rare:[]}}}else st=x.state}
+ assert.ok(n>440&&n<760,String(n));
+ // deliver: Master Ball arrives
+ const shinyQ=RARE_QUESTS.find(x=>x.id==='r06');
+ let s={stage:3,wins:1,dexShinyCaught:['a','b','c'],team:[],box:[],inventory:{},npcQuests:{rare:['r06'],rareChecked:1}};
+ s=accept(s,'r06');s=claim(s,'r06',{});assert.equal(s.inventory.masterball,2);assert.equal(qs(s,shinyQ,{}),'done');
+});
