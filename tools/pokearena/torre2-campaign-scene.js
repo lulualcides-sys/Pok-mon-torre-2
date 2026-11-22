@@ -34,10 +34,11 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle,startCustomBattle,resolveCustomBattle} from './campaign-core.js';
+import {timeOfDay,TIME_NAMES,favoriteMember,toggleFavorite,RARE_FORMS,rareFormOf,applyRareForm} from './world.js';
 import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
-import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
+import {EVENTS_3X3,ROCKET_EVENTS,ALL_EVENTS,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
 import {setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
@@ -346,7 +347,7 @@ create(){
      const cur=readCampaign();
      // Torre de desafios: straight back to the tower (next floor or result).
      if(towerNext&&cur&&!cur.pendingEeveeEvolution)return this.towerScreen(cur);
-     if(eventNext&&cur&&!cur.pendingEeveeEvolution)return this.eventsScreen(cur);
+     if(eventNext&&cur&&!cur.pendingEeveeEvolution)return this.eventsScreen(cur,String(completed.marker.token||'').startsWith('event3-k')?'rocket':'3x3');
      if(customNext&&cur&&!cur.pendingEeveeEvolution)return this.customScreen(cur,completed.marker.mode||'single');
      this.promptPendingEeveeEvolution(cur);
     });
@@ -1511,15 +1512,15 @@ create(){
   this.uiSection(60,52,520,256);
   const won=(state.events3x3?.won||[]).length,cs=customState(state);
   this.uiLabel(320,68,'Escolha um desafio',11,MENU_UI.amarillo,[.5,.5],4);
-  this.button(320,100,360,30,'TORRE DE DESAFIOS',()=>this.towerScreen(readCampaign()||state),true).setData('torre2-challenges-tower',true);
-  this.uiLabel(320,122,'Andares seguidos sem curar · prêmio a cada 5',8,'#dcf4fb',[.5,.5],4);
-  this.button(320,156,360,30,'EVENTOS 3x3 · '+won+'/'+EVENTS_3X3.length,()=>this.eventsScreen(readCampaign()||state),true).setData('torre2-challenges-events',true);
-  this.uiLabel(320,178,'Treinadores especiais · seus 3 contra os 3 deles',8,'#dcf4fb',[.5,.5],4);
+  const rocketWon=ROCKET_EVENTS.filter(e=>(state.events3x3?.won||[]).includes(e.id)).length;
+  const row=(i,name,sub,fn,key)=>{const y=96+i*44;this.button(320,y,360,26,name,fn,true).setData(key,true);this.uiLabel(320,y+18,sub,7,'#dcf4fb',[.5,.5],4)};
+  row(0,'TORRE DE DESAFIOS','Andares seguidos sem curar · prêmio a cada 5',()=>this.towerScreen(readCampaign()||state),'torre2-challenges-tower');
+  row(1,'EVENTOS 3x3 · '+won+'/'+EVENTS_3X3.length,'Treinadores especiais · seus 3 contra os 3 deles',()=>this.eventsScreen(readCampaign()||state),'torre2-challenges-events');
+  // Owner 2026-11-22 (item 19): Team Rocket stories.
+  row(2,'EQUIPE ROCKET · '+rocketWon+'/'+ROCKET_EVENTS.length,'Histórias da Equipe Rocket com luta 3x3',()=>this.eventsScreen(readCampaign()||state,'rocket'),'torre2-challenges-rocket');
   // README 6 and 11: custom rules (friendly) and custom challenge series.
-  this.button(320,212,360,30,'LUTA PERSONALIZADA',()=>this.customScreen(readCampaign()||state,'single'),true).setData('torre2-challenges-custom',true);
-  this.uiLabel(320,234,'Você escolhe nível, tipo, quantidade e dificuldade',8,'#dcf4fb',[.5,.5],4);
-  this.button(320,268,360,30,'DESAFIO PERSONALIZADO'+(cs.run?' · LUTA '+cs.run.fight+'/'+cs.run.rules.series:''),()=>this.customScreen(readCampaign()||state,'series'),true).setData('torre2-challenges-series',true);
-  this.uiLabel(320,290,'Lutas seguidas com suas regras · prêmio no final',8,'#dcf4fb',[.5,.5],4);
+  row(3,'LUTA PERSONALIZADA','Você escolhe nível, tipo, quantidade e dificuldade',()=>this.customScreen(readCampaign()||state,'single'),'torre2-challenges-custom');
+  row(4,'DESAFIO PERSONALIZADO'+(cs.run?' · LUTA '+cs.run.fight+'/'+cs.run.rules.series:''),'Lutas seguidas com suas regras · prêmio no final',()=>this.customScreen(readCampaign()||state,'series'),'torre2-challenges-series');
   this.button(320,334,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||state)).setData('torre2-challenges-back',true);
  }
  // Tutorial curto (owner 2026-11-22, item 35): four illustrated pages.
@@ -1669,37 +1670,38 @@ create(){
    torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
  }
  // Eventos 3x3 (owner 2026-11-22, item 2): six special trainers.
- eventsScreen(state){
+ eventsScreen(state,kind='3x3'){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
-  this.screenBanner(20,300,'Eventos 3x3','badges');
+  const LIST=kind==='rocket'?ROCKET_EVENTS:EVENTS_3X3;
+  this.screenBanner(20,300,kind==='rocket'?'Equipe Rocket':'Eventos 3x3','badges');
   this.uiLabel(320,46,'Seus 3 primeiros Pokémon com HP contra os 3 do desafiante · prêmio na 1ª vitória · 5% de chance de um Pokémon dele',7,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,252);
   const g=this.add.graphics().setDepth(3);
-  const per=6,pages=Math.ceil(EVENTS_3X3.length/per),page=Math.min(pages-1,Math.max(0,this.__torre2EventPage|0));
-  EVENTS_3X3.slice(page*per,page*per+per).forEach((ev,i)=>{
+  const per=6,pages=Math.ceil(LIST.length/per),page=Math.min(pages-1,Math.max(0,kind==='rocket'?0:this.__torre2EventPage|0));
+  LIST.slice(page*per,page*per+per).forEach((ev,i)=>{
    const x=16+(i%3)*206,y=64+Math.floor(i/3)*122,st=eventStatus(state,ev),locked=st.state==='locked';
    nativeRect(g,x,y,202,118,st.state==='won'?0x50cc84:locked?MENU_UI.apagadoBorde:MENU_UI.oro,8);
    nativeRect(g,x+2,y+2,198,114,locked?0x0a1638:0x1b2a5e,7);
    if(!locked)this.npcSprite(spriteIdForTrainer(ev.sprite),x+28,y+70,2.2,5);
    this.uiLabel(x+52,y+16,locked?'???':ev.name,9,locked?'#8ea2c8':MENU_UI.amarillo,[0,.5],5);
-   this.uiLabel(x+52,y+32,st.reason,7,st.state==='won'?'#9ff0bf':locked?'#ff9daa':'#dcf4fb',[0,.5],5);
+   this.uiLabel(x+52,y+32,ev.place&&!locked?ev.place+' · '+st.reason:st.reason,7,st.state==='won'?'#9ff0bf':locked?'#ff9daa':'#dcf4fb',[0,.5],5);
    if(!locked)ev.team.forEach((id,k)=>this.pokemonIdleSprite(id,x+76+k*42,y+84,30,5,null,'height'));
    if(!locked)this.button(x+150,y+104,90,18,'LUTAR',()=>this.eventIntro(readCampaign()||state,ev.id),st.state!=='won',7).setData('torre2-event-fight',ev.id);
   });
-  const won=EVENTS_3X3.filter(e=>eventStatus(state,e).state==='won').length;
+  const won=LIST.filter(e=>eventStatus(state,e).state==='won').length;
   this.button(320,334,200,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-events-back',true);
-  const go=d=>{this.__torre2EventPage=(page+d+pages)%pages;this.eventsScreen(readCampaign()||state)};
+  const go=d=>{this.__torre2EventPage=(page+d+pages)%pages;this.eventsScreen(readCampaign()||state,kind)};
   this.button(150,334,110,28,'◀ PÁGINA',()=>go(-1),false,8).setData('torre2-events-prev',true);
   this.button(490,334,110,28,(page+1)+'/'+pages+' ▶',()=>go(1),false,8).setData('torre2-events-next',true);
-  this.uiLabel(616,46,won+'/'+EVENTS_3X3.length,8,'#9ff0bf',[1,.5]);
-  this.__torre2Events=EVENTS_3X3.map(e=>({id:e.id,state:eventStatus(state,e).state}));
+  this.uiLabel(616,46,won+'/'+LIST.length,8,'#9ff0bf',[1,.5]);
+  this.__torre2Events=LIST.map(e=>({id:e.id,state:eventStatus(state,e).state}));
  }
  // The challenger's 3x3 line, then the fight.
  eventIntro(state,id){
-  const ev=EVENTS_3X3.find(e=>e.id===id);if(!ev)return;
+  const ev=ALL_EVENTS.find(e=>e.id===id);if(!ev)return;
   const st=eventStatus(state,ev);if(st.state==='locked')return this.campaignNotice(st.reason,'#ff9daa');
-  this.playStory(state,{key:'event3-'+id,place:'Evento especial 3x3',speaker:ev.sprite,speakerName:ev.name.toUpperCase(),bg:{room:true},entrance:false,
-   lines:[[ev.sprite,ev.line],[ev.sprite,'Regras: 3 contra 3. Quem derrubar os três do outro primeiro, vence!']]},
+  this.playStory(state,{key:'event3-'+id,place:ev.place||'Evento especial 3x3',speaker:ev.sprite,speakerName:ev.name.toUpperCase(),bg:{room:true},entrance:false,
+   lines:[...(ev.story||[]).map(t=>[ev.sprite,t]),[ev.sprite,ev.line],[ev.sprite,'Regras: 3 contra 3. Quem derrubar os três do outro primeiro, vence!']]},
    next=>this.enterEventBattle(next,id));
  }
  enterEventBattle(state,id){
@@ -1717,7 +1719,7 @@ create(){
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'dificil',arena:'estadio',mandos:[touch?'tactil':'kbm','cpu'],
    torre2:{stage:cur.stage,trainer:cur.trainer,kind:'event3',token:r.token,party,
-    versus:{name:r.event.name.toUpperCase(),city:'EVENTO ESPECIAL 3x3',kind:r.event.sprite,
+    versus:{name:r.event.name.toUpperCase(),city:r.event.rocket?'EQUIPE ROCKET · '+String(r.event.place||'').toUpperCase():'EVENTO ESPECIAL 3x3',kind:r.event.sprite,
      texture:'frlg-npc-'+spriteIdForTrainer(r.event.sprite),title:'DESAFIO 3 CONTRA 3'},
     playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(cur.stage)},
    torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
@@ -2232,7 +2234,12 @@ create(){
   nativeRect(g,420,106,160,130,MENU_UI.contorno,8);nativeRect(g,422,108,156,126,0x1d3c7a,7);
   g.fillStyle(0xffffff,.06).fillCircle(500,160,48);
   g.fillStyle(0x000000,.3).fillEllipse(500,222,70,12);
-  this.npcSprite(this.playerNpc(),500,224,3.6,5);
+  // Favorite Pokémon beside the trainer, like a gym leader with his ace.
+  const fav=favoriteMember(state);
+  if(fav){this.npcSprite(this.playerNpc(),474,224,3.6,5);
+   this.pokemonIdleSprite(fav.id,540,224,52,6,sp=>{applyRareForm(sp,fav.form);sp.setData('torre2-card-favorite',fav.id)},'height');
+   this.uiLabel(540,232,(fav.nickname||fav.id).toUpperCase(),7,'#ffe08a',[.5,.5],7)}
+  else this.npcSprite(this.playerNpc(),500,224,3.6,5);
   this.button(462,120,72,18,'VISUAL',()=>this.lookScreen(state),false,7).setData('torre2-trainer-card-look',true);
   // Pokédex medal (owner list item 21): bronze 50, silver 100, gold 151.
   const caughtN=new Set(state.dexCaught||[]).size,medal=caughtN>=151?[MENU_UI.oro,'OURO']:caughtN>=100?[0xc0c8d8,'PRATA']:caughtN>=50?[0xcd8a4a,'BRONZE']:null;
@@ -3110,7 +3117,10 @@ create(){
     this.time.delayedCall(2300,()=>notice.active&&notice.destroy());
     return;
    }
-   if(found.ok){close();this.enterBattle(state,true);}
+   if(found.ok){close();
+    const w=readCampaign()?.pendingWild;
+    if(w?.form&&RARE_FORMS[w.form])this.campaignNotice('Incrível! Um '+w.id+' na '+RARE_FORMS[w.form].name+' apareceu! (0,01%)',RARE_FORMS[w.form].color);
+    this.enterBattle(state,true);}
    else{
     close();
     const toast=text(this,320,285,state.lastMessage||'Nenhum encontro disponível.',{
@@ -3614,7 +3624,7 @@ create(){
   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
   g.fillStyle(glow,.16).fillRoundedRect(18,50,188,130,6);
   g.fillStyle(0x000000,.3).fillEllipse(112,158,90,14);
-  this.pokemonIdleSprite(member.id,112,158,80,5,null,'height');
+  this.pokemonIdleSprite(member.id,112,158,80,5,sp=>applyRareForm(sp,member.form),'height');
   const nice=member.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   this.uiLabel(112,64,nice+' · Nv '+(member.progression?.level||5),11,MENU_UI.amarillo,[.5,.5],4);
   // Potential: five drawn pixel stars (filled gold / empty slate) popping in.
@@ -3822,7 +3832,7 @@ create(){
   };
   // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
   const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.35).fillEllipse(111,176,64,9);
-  if(!this.pokemonIdleSprite(member.id,111,177,62,18,null,true)){
+  if(!this.pokemonIdleSprite(member.id,111,177,62,18,sp=>applyRareForm(sp,member.form),true)){
    if(this.textures.exists(key))portrait();
    else{
     this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
@@ -3834,6 +3844,14 @@ create(){
   // recoloring the approved PMD portrait or inventing a Shiny sprite.
   if(member.shiny===true)
    label(30,104,'✦ SHINY',C.gold,10).setData('torre2-shiny-summary-label',true);
+  if(rareFormOf(member))label(30,member.shiny?118:104,RARE_FORMS[member.form].name.toUpperCase(),RARE_FORMS[member.form].color,9).setData('torre2-rare-form',member.form);
+  // Pokémon favorito (item 26): stands beside the trainer on the Trainer Card.
+  const fav=state.favoriteUid===member.uid;
+  button(150,104,50,16,fav?'★ FAV':'☆ FAV',()=>{
+   const now=readCampaign()||state,next=toggleFavorite(now,member.uid);
+   try{saveCampaign(next)}catch{return}
+   this.showSummary(next,index,slot,page);
+  },fav).setData('torre2-summary-favorite',fav);
   const statRows=[['HP',stats.hp,180,0x64cb9c],['ATK',stats.attack,160,0xf6a268],
                   ['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]];
   statRows.forEach(([name,value,max,color],i)=>{

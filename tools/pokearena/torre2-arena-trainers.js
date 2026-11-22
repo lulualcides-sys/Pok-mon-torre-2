@@ -118,6 +118,29 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
    return c;
   }
  };
+ // End of battle (owner 2026-11-22, item 24): the winner celebrates with
+ // hops, the loser turns around sad. Once per battle, cosmetic only.
+ let ended=false;
+ const ending=()=>{
+  if(ended||scene.fase!=='fin')return;ended=true;
+  const lost=side=>{const f=scene.luchadores?.[side];return !f||f.ko||!(f.hp>0)};
+  const winner=lost(1)&&!lost(0)?0:lost(0)&&!lost(1)?1:null;
+  for(const t of trainers.filter(Boolean)){
+   if(t.walking)continue;
+   if(t.side===winner){
+    t.spr.setFrame(frameKey(scene,t.texKey,FRAMES.front));
+    scene.tweens.add({targets:t.spr,y:t.stand.y-10,duration:170,yoyo:true,repeat:3,ease:'Quad.Out'});
+    api.say(t.side,t.side===0?'Isso aí!':'Hahaha! Ganhei!');
+   }else if(winner!==null){
+    t.spr.setFrame(frameKey(scene,t.texKey,FRAMES.back));
+    scene.tweens.add({targets:t.spr,y:t.stand.y+2,duration:500,ease:'Sine.InOut'});
+    api.say(t.side,t.side===0?'Ah, não...':'Não acredito...');
+   }
+  }
+  scene.__torre2TrainersEnding=winner;
+ };
+ scene.events.on('update',ending);
+ scene.events.once('shutdown',()=>scene.events.off('update',ending));
  // Keep bubbles over their trainer (or on the screen edge) every frame.
  const follow=()=>{for(const t of trainers.filter(Boolean)){const b=t.bubble;if(b?.active){b.__torre2Follow();b.__torre2Arrow?.setVisible(!!b.getData('offscreen'))}}};
  scene.events.on('postupdate',follow);
