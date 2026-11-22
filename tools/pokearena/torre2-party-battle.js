@@ -244,7 +244,7 @@ export function installPartyBattle(scene){
   const sides=payload.kind==='wild'?[0]:[0,1];
   let remaining=sides.length;
   // Trainers walk into the arena first and throw from their hands.
-  const arenaTrainers=installArenaTrainers(scene,{playerTexture:'frlg-npc-'+playerSpriteId(),foeTexture:payload.versus?.texture});
+  const arenaTrainers=installArenaTrainers(scene,{playerTexture:scene.textures.exists('frlg-npc-player-look')?'frlg-npc-player-look':'frlg-npc-'+playerSpriteId(),foeTexture:payload.versus?.texture});
   for(const side of sides)animateBallActor(scene,actors[side],{
    side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,delay:arenaTrainers?.trainers?.[side]?760:0,
    onComplete:()=>{shine(side,side===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex]);
