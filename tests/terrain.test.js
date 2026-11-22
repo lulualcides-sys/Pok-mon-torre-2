@@ -5,9 +5,9 @@ import fs from 'node:fs';
 const src=fs.readFileSync(new URL('../tools/pokearena/torre2-terrain.js',import.meta.url),'utf8');
 // The module imports ../config.js (native client); test the pure part in isolation.
 const pure=await import('data:text/javascript,'+encodeURIComponent(src.replace("import {LIENZO} from '../arena.js';","const LIENZO={x:-20,y:-40,w:700,h:460};")));
-test('only a real ULT of Electric/Grass/Water/Psychic, with a 25% chance',()=>{
- const yes=()=>.1,no=()=>.3;
- assert.equal(pure.TERRAIN_CHANCE,.25);
+test('only a real ULT of Electric/Grass/Water/Psychic, with a 10% chance',()=>{
+ const yes=()=>.05,no=()=>.15;
+ assert.equal(pure.TERRAIN_CHANCE,.10);
  assert.equal(pure.terrainFromCast('e',{tipo:'ELECTRIC'},yes),'eletrico');
  assert.equal(pure.terrainFromCast('e',{tipo:'GRASS'},yes),'gramado');
  assert.equal(pure.terrainFromCast('e',{tipo:'WATER'},yes),'aquatico');
@@ -15,7 +15,7 @@ test('only a real ULT of Electric/Grass/Water/Psychic, with a 25% chance',()=>{
  assert.equal(pure.terrainFromCast('e',{tipo:'ELECTRIC'},no),null,'not every ULT');
  assert.equal(pure.terrainFromCast('rmb',{tipo:'ELECTRIC'},yes),null,'HAB moves do not');
  assert.equal(pure.terrainFromCast('e',{tipo:'FIRE'},yes),null);
- let n=0;for(let i=0;i<4000;i++)if(pure.terrainFromCast('e',{tipo:'WATER'}))n++;assert.ok(n>800&&n<1200,String(n));
+ let n=0;for(let i=0;i<4000;i++)if(pure.terrainFromCast('e',{tipo:'WATER'}))n++;assert.ok(n>300&&n<500,String(n));
 });
 test('effects: same type +30%, water weakens fire, grass heals 1/16 per 4 s',()=>{
  assert.equal(pure.terrainDamage('eletrico','ELECTRIC'),1.3);assert.equal(pure.terrainDamage('eletrico','FIRE'),1);

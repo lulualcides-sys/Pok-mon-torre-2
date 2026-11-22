@@ -2,7 +2,7 @@
  * "golpes que modificam o cenário"). Campaign battles only.
  * No new moves are invented (FRLG has no terrain moves): a real ULT cast of
  * an Electric, Grass, Water or Psychic move turns the arena floor into that
- * terrain for a few seconds, with a 25% chance per ULT (not every ULT),
+ * terrain for a few seconds, with a 10% chance per ULT (not every ULT),
  * covering the whole arena.
  *  - Campo Elétrico: Electric moves +30%.
  *  - Campo Gramado: Grass moves +30% and both fighters recover 1/16 HP every
@@ -15,7 +15,7 @@
 import {LIENZO} from '../arena.js';
 export const TERRAIN_SECONDS=12;
 // Not every ULT: a chance per real ULT cast of the type (owner 2026-11-22).
-export const TERRAIN_CHANCE=.25;
+export const TERRAIN_CHANCE=.10;
 export const TERRAINS=Object.freeze({
  eletrico:{name:'CAMPO ELÉTRICO',type:'ELECTRIC',color:0xffe14a,accent:0xfff7b0},
  gramado:{name:'CAMPO GRAMADO',type:'GRASS',color:0x5cc84a,accent:0x2f8f3a},
