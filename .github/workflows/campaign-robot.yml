@@ -1,0 +1,77 @@
+name: Pokémon Torre 2 — robô que joga a campanha
+
+# Plays the real campaign in headless Chromium (AUTO + 2x speed) and writes a
+# short text report: badges, battles, captures, FPS and JS errors. Screenshots
+# only on problems. Costs GitHub Actions minutes, not chat tokens.
+# Run it from Actions → "robô que joga a campanha" → Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      badges:
+        description: 'Parar ao conseguir quantas insígnias (1 a 8)'
+        default: '3'
+        required: true
+      minutes:
+        description: 'Tempo máximo jogando (minutos, até 300)'
+        default: '60'
+        required: true
+      starter:
+        description: 'Inicial: random, bulbasaur, charmander ou squirtle'
+        default: 'random'
+        required: true
+  schedule:
+    # Once a week (Sunday), a short journey to catch regressions early.
+    - cron: '17 9 * * 0'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: pt2-campaign-robot
+  cancel-in-progress: false
+
+jobs:
+  robot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependências
+        run: npm install --no-audit --no-fund
+      - name: Montar o mesmo site do GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/pokearena/restore-audited-alpha0773.sh _site
+          node tools/pokearena/publish-alpha0762.mjs
+      - name: Robô joga a campanha
+        shell: bash
+        env:
+          BADGES: ${{ github.event.inputs.badges || '2' }}
+          MINUTES: ${{ github.event.inputs.minutes || '45' }}
+          STARTER: ${{ github.event.inputs.starter || 'random' }}
+        run: |
+          set -euo pipefail
+          case "$STARTER" in random|bulbasaur|charmander|squirtle) ;; *) echo "inicial inválido"; exit 1;; esac
+          [[ "$BADGES" =~ ^[1-8]$ ]] || { echo "insígnias inválidas"; exit 1; }
+          [[ "$MINUTES" =~ ^[0-9]+$ ]] && [ "$MINUTES" -ge 1 ] && [ "$MINUTES" -le 300 ] || { echo "minutos inválidos"; exit 1; }
+          status=0
+          CHROME_BIN="$(command -v google-chrome)" node tools/dev/campaign-robot.cjs \
+            --site _site --badges "$BADGES" --minutes "$MINUTES" --starter "$STARTER" \
+            --out test-evidence/campaign-robot || status=$?
+          cat test-evidence/campaign-robot/report.md >> "$GITHUB_STEP_SUMMARY" || true
+          exit $status
+      - name: Guardar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-torre-2-robo-campanha
+          path: test-evidence/campaign-robot/
+          if-no-files-found: warn
+          retention-days: 14
