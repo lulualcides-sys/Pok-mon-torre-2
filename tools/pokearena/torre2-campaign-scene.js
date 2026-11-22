@@ -35,6 +35,9 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
+import {installIndividuality,potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+// Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
+installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
 import {routeWeather,ROUTE_WEATHERS,weatherWeight} from './route-weather.js';
 import {LEGENDARIES,legendaryById,legendaryStatus,legendaryLevel,SILPH_GIOVANNI,silphStatus,silphTeam} from './legendaries.js';
@@ -258,6 +261,8 @@ create(){
     // Battle HP/status and rewards share ONE durable checkpoint. Do not
     // mutate the map's live state or save the result a second time.
     const next=JSON.parse(JSON.stringify(state));
+    // Rivalry wins (README item 10): counted with the same battle checkpoint.
+    if(completed.won&&partyHasRivalry(marker.party))next.rivalryWins=(Number(next.rivalryWins)||0)+1;
     if(marker.kind==='rematch'){
      if(validRematchResult(next,marker.ticket)){
       applyPartyBattleResult(next,marker.party);
@@ -912,6 +917,11 @@ create(){
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   // First visit only: point out the main buttons (never blocks input).
   if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive())this.campaignTips()});}
+  // A newly unlocked Evento 3x3 is announced once (owner 2026-11-22).
+  {const fresh=EVENTS_3X3.find(ev=>eventStatus(state,ev).state==='open'&&!(state.events3x3?.announced||[]).includes(ev.id));
+   if(fresh){const ann=[...(state.events3x3?.announced||[]),...EVENTS_3X3.filter(ev=>eventStatus(state,ev).state!=='locked').map(ev=>ev.id)];
+    try{const cur=readCampaign()||state;saveCampaign({...cur,events3x3:{...(cur.events3x3||{}),announced:[...new Set(ann)]}});state.events3x3={...(state.events3x3||{}),announced:[...new Set(ann)]}}catch{}
+    this.time.delayedCall(900,()=>{if(this.scene.isActive())this.campaignNotice('Nova luta 3x3 liberada: '+fresh.name+'! Mais opções → DESAFIOS → EVENTOS 3x3',MENU_UI.amarillo)})}}
   return cards;
  }
  // Only explicitly flagged QA sessions may exercise the old path engine.
@@ -1749,10 +1759,10 @@ create(){
    this.uiLabel(72,y+13,it.name+(it.oncePerJourney?' (1 por jornada)':''),10,'#ffffff',[0,.5],5);
    this.uiLabel(72,y+28,st.ok?it.cost+' pontos':st.reason,8,st.ok?'#ffd47a':'#8ea2c8',[0,.5],5);
    if(st.ok)this.button(540,y+19,130,24,'Trocar · '+it.cost,()=>{
-    const now=readCampaign()||cur,next=buyWithPoints(now,it.id);
+    const now=readCampaign()||cur,next=buyWithPoints(now,it.id,Math.random,Object.keys(HELD_ITEMS));
     if(!next)return this.pointShopScreen(now);
     try{saveCampaign(next)}catch{return this.campaignNotice('Compra não salva: tente de novo','#ff9d9d')}
-    this.pointShopScreen(next);this.campaignNotice('Você trocou: '+it.name,'#9ff0bf');
+    this.pointShopScreen(next);this.campaignNotice('Você trocou: '+(it.heldRandom&&next.lastHeldItem?HELD_ITEMS[next.lastHeldItem].name+' (equipe na Ficha do Pokémon)':it.name),'#9ff0bf');
    },true,8).setData('torre2-shop-buy',it.id);
   });
   this.button(320,334,240,28,'◀ MISSÕES',()=>this.missionsScreen(readCampaign()||cur)).setData('torre2-shop-back',true);
@@ -2076,9 +2086,11 @@ create(){
    ['Eventos 3x3',((state.events3x3?.won||[]).length)+'/'+EVENTS_3X3.length+' vencidos'],
    ['Batalhas',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
    ['Multiplayer',mp.w+' vitórias · '+mp.l+' derrotas'],
-   ['Títulos',Object.keys(legacy.titles||{}).length+' de '+TITLES.length]];
-  rows.forEach(([k,v],i)=>{const x=24+(i%2)*306,y=176+Math.floor(i/2)*26;
-   nativeRect(g,x-6,y-11,296,22,i%4<2?0x12285a:0x0c1d46,5,.9);
+   ['Títulos',Object.keys(legacy.titles||{}).length+' de '+TITLES.length],
+   ['Rivalidades vencidas',String(Number(state.rivalryWins)||0)],
+   ['Itens de batalha',String(Object.values(state.inventory?.held||{}).reduce((a,b)=>a+(Number(b)||0),0)+[...(state.team||[]),...(state.box||[])].filter(m=>m?.heldItem).length)]];
+  rows.forEach(([k,v],i)=>{const x=24+(i%2)*306,y=172+Math.floor(i/2)*21;
+   nativeRect(g,x-6,y-10,296,19,i%4<2?0x12285a:0x0c1d46,5,.9);
    this.uiLabel(x,y,k,8,MENU_UI.suave,[0,.5],4);estrechar(this.uiLabel(x+282,y,v,9,'#ffffff',[1,.5],4),170)});
   this.button(86,330,150,28,'◀ CARTÃO',()=>this.trainerCardScreen(state),false,9).setData('torre2-museum-back',true);
   this.button(242,330,150,28,'SALÃO DA FAMA',()=>this.hallHistoryScreen(state),true,9).setData('torre2-museum-hall',true);
@@ -2679,6 +2691,7 @@ create(){
   match.torre2.weather=battleWeatherRoll({leader:!!foe.leader,wild,
    stageType:STAGES[Math.min(state.stage,STAGES.length-1)]?.type,routeSky:routeWeather(Math.min(state.stage,8))});
   if(match.torre2.weather!=='none')this.campaignNotice(WEATHER_INTRO[match.torre2.weather]||'',MENU_UI.amarillo);
+  else if(!wild&&partyHasRivalry(party))this.campaignNotice('Rivalidade! Pokémon rivais nesta luta lutam com mais garra (+10%).','#ffb37a');
   if(!wild){
    const opponent=currentOpponent(state);
    if(opponent)match.torre2.versus=versusOpponentProfile({
@@ -3359,6 +3372,52 @@ create(){
   this.button(175,334,260,28,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
   this.button(465,334,260,28,'POKÉ MART',()=>this.martScreen(state));
  }
+ // Ficha individual (README 5/9/1/10): potential, hidden ability, held item
+ // and rival species of one Pokémon. Items equip from inventory.held.
+ individualScreen(state,index){
+  this.children.removeAll(true);this.backdrop();
+  const cur=readCampaign()||state,member=cur.team[index];if(!member)return this.showSummary(cur,0);
+  this.screenBanner(20,300,'Ficha do Pokémon','badges');
+  const g=this.add.graphics().setDepth(2);
+  nativeRect(g,12,44,200,250,MENU_UI.contorno,8);nativeRect(g,14,46,196,246,0x13233b,7);
+  g.fillStyle(0x000000,.3).fillEllipse(112,190,90,14);
+  this.pokemonIdleSprite(member.id,112,190,90,5,null,'height');
+  const nice=member.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  this.uiLabel(112,64,nice+' · Nv '+(member.progression?.level||5),11,MENU_UI.amarillo,[.5,.5],4);
+  const p=potentialOf(member),stars=potentialStars(p);
+  this.uiLabel(112,220,'Potencial '+'★'.repeat(stars)+'☆'.repeat(5-stars),11,'#ffe08a',[.5,.5],4).setData('torre2-ficha-stars',stars);
+  [['HP',p.hp,0x64cb9c],['ATK',p.atk,0xf6a268],['DEF',p.def,0x7ab3f5]].forEach(([k,v,c],i)=>{const y=240+i*16;
+   this.uiLabel(30,y,k,8,MENU_UI.suave,[0,.5],4);nativeRect(g,62,y-4,110,8,0x0c1725,3);
+   g.fillStyle(c,1).fillRect(63,y-3,Math.max(2,Math.round(108*v/31)),6);this.uiLabel(196,y,v+'/31',7,'#ffffff',[1,.5],4)});
+  // Right column: ability, item, rivals.
+  nativeRect(g,222,44,406,250,MENU_UI.contorno,8);nativeRect(g,224,46,402,246,0x13233b,7);
+  const ha=hiddenAbilityOf(member);
+  this.uiLabel(238,64,'Habilidade oculta',10,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(238,84,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',10,ha?'#e8c8ff':'#8ea2c8',[0,.5],4).setData('torre2-ficha-ability',ha||'none');
+  estrechar(this.uiLabel(238,100,ha?HIDDEN_ABILITIES[ha].desc:'Só cerca de 5% dos Pokémon nascem com uma habilidade rara.',8,'#dcf4fb',[0,.5],4),370);
+  const item=heldItemOf(member);
+  this.uiLabel(238,128,'Item equipado',10,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(238,148,item?HELD_ITEMS[item].name:'Nenhum',10,item?'#9ff0bf':'#8ea2c8',[0,.5],4).setData('torre2-ficha-item',item||'none');
+  estrechar(this.uiLabel(238,164,item?itemDesc(item):'Ganhe itens na Loja de pontos (Missões).',8,'#dcf4fb',[0,.5],4),370);
+  const owned=Object.entries(cur.inventory?.held||{}).filter(([k,n])=>n>0&&HELD_ITEMS[k]);
+  const cycle=[null,...owned.map(([k])=>k)];
+  if(cycle.length>1||item){
+   const nextKey=cycle[(cycle.indexOf(item)+1)%cycle.length]??null;
+   this.button(510,148,190,22,nextKey?'TROCAR → '+HELD_ITEMS[nextKey].name:'TIRAR ITEM',()=>{
+    const now=readCampaign()||cur,next=equipItem(now,member.uid,nextKey);
+    if(!next)return this.individualScreen(now,index);
+    try{saveCampaign(next)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9d9d')}
+    this.individualScreen(next,index);
+   },true,8).setData('torre2-ficha-equip',nextKey||'none');
+  }
+  this.uiLabel(238,192,'Itens na bolsa: '+(owned.length?owned.map(([k,n])=>HELD_ITEMS[k].name+' ×'+n).join(', '):'nenhum'),8,'#dcf4fb',[0,.5],4);
+  const rivals=rivalsOf(member.id);
+  this.uiLabel(238,220,'Rivais',10,MENU_UI.amarillo,[0,.5],4);
+  estrechar(this.uiLabel(238,240,rivals.length?rivals.map(r=>r.charAt(0).toUpperCase()+r.slice(1)).join(', ')+' e evoluções · +10% de dano entre rivais':'Sem rival conhecido',8,rivals.length?'#ffb37a':'#8ea2c8',[0,.5],4),370);
+  this.uiLabel(238,266,'Vitórias em rivalidade: '+(Number(cur.rivalryWins)||0),8,'#dcf4fb',[0,.5],4);
+  this.button(320,330,240,28,'◀ SUMÁRIO',()=>this.showSummary(readCampaign()||cur,index)).setData('torre2-ficha-back',true);
+  this.__torre2Ficha={id:member.id,stars,ability:ha,item,rivals};
+ }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
@@ -3490,8 +3549,10 @@ create(){
    const width=Math.max(3,96*Math.min(1,Math.max(0,value/max)));
    this.add.rectangle(62+width/2,y+6.5,width,4,color,1);
   });
-  label(25,289,member.id==='mewtwo'?'TESTE · GOLPES LIBERADOS':'ESCOLHA SEU POKÉMON',
-    member.id==='mewtwo'?'#ffcd7b':C.blue,10);
+  if(member.id==='mewtwo')label(25,289,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
+  // Individual Pokémon (README 5/9/1/10): potential, hidden ability, item.
+  else button(24,280,174,24,'FICHA '+'★'.repeat(potentialStars(potentialOf(member)))+(hiddenAbilityOf(member)?' ✦':''),
+   ()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
    try{
     if(!selectTeamMember(state,index))return;

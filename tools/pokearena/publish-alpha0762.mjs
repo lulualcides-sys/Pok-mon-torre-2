@@ -101,6 +101,8 @@ const newModuleNames=[
  ['tools/pokearena/torre2-challenge-tower.js','torre2/challenge-tower.js'],
  // Battle weather by chance + Eventos 3x3 (pure), imported by campaign-core and the scene.
  ['tools/pokearena/torre2-battle-events.js','torre2/battle-events.js'],
+ // Individual Pokémon traits + combat hook (pure + tiny installer).
+ ['tools/pokearena/torre2-individuality.js','torre2/individuality.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
@@ -214,6 +216,17 @@ const skillUpdate=nativeSkills.replace(fxImport,fxImport+wobbuffetImport)
 must(skillUpdate.includes('...TORRE2_WOBBUFFET_FORMS'),'Wobbuffet cast registration failed');
 
 let fighter=await read(path.join(original,'luchador.js'));
+// Individual Pokémon (owner 2026-11-22, README 5/9/1/10): campaign HP and
+// damage also follow the Pokémon's potential, hidden ability, held item and
+// rivalries (globalThis.__torre2Indiv, torre2/individuality.js). Only inside
+// the existing Torre 2 campaign branches; other modes and kits untouched.
+{
+ const hpOld='return this.escena.datos?.torre2?torre2ScaledHp(base,torre2FighterLevel(this)):base}';
+ const dmgOld='if(fuente.lado===0)d*=torre2PlayerDamageBoost;}';
+ exactly(fighter,hpOld,'campaign HP scaling');exactly(fighter,dmgOld,'campaign damage scaling');
+ fighter=fighter.replace(hpOld,'return this.escena.datos?.torre2?Math.max(1,Math.round(torre2ScaledHp(base,torre2FighterLevel(this))*(globalThis.__torre2Indiv?.hp?.(this)??1))):base}')
+  .replace(dmgOld,'if(fuente.lado===0)d*=torre2PlayerDamageBoost;d*=globalThis.__torre2Indiv?.damage?.(fuente,this,g)??1;}');
+}
 const poisonHit='this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
 exactly(fighter,poisonHit,'poison HP hit pathway');
 const previousPoisonGuard='if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;';
