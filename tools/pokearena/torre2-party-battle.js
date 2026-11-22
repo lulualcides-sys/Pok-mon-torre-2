@@ -24,7 +24,7 @@ import {animateBallActor} from './ball-choreography.js';
 import {installArenaTrainers} from './arena-trainers.js';
 import {installTerrain} from './terrain.js';
 import {installBattleSpeed} from './battle-speed.js';
-import {timeOfDay,ARENA_SHADE,applyRareForm} from './world.js';
+import {timeOfDay,ARENA_SHADE} from './world.js';
 import {LIENZO} from '../arena.js';
 import {playerSpriteId} from './frlg-npc.js';
 import {installShinyEntrance} from './shiny-fx.js';
@@ -42,7 +42,7 @@ export function createPartyMatch(state,opponent,wild=false){
   hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m),
   // Individual traits (individuality.js): potential, hidden ability, item.
   heldItem:m.heldItem??null,...(m.potential?{potential:m.potential}:{}),
-  ...(m.nickname?{nickname:m.nickname}:{}),...(m.form?{form:m.form}:{}),
+  ...(m.nickname?{nickname:m.nickname}:{}),
   ...(m.hiddenAbility!==undefined?{hiddenAbility:m.hiddenAbility}:{})
  }));
  const gym=STAGES[state.stage];
@@ -83,7 +83,7 @@ export function createPartyMatch(state,opponent,wild=false){
     types:etapaDe(buscar(id).def,buscar(id).etapa).tipos||[],
     available:availableMoves({id,progression:{species:id,level}}),
     slotReason:campaignMoveSlotReason}):loadout;
-  return {id,level,hp:100,shiny:wild&&state.pendingWild?.shiny===true,...(wild&&state.pendingWild?.form?{form:state.pendingWild.form}:{}),loadout:finalLoadout};
+  return {id,level,hp:100,shiny:wild&&state.pendingWild?.shiny===true,loadout:finalLoadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
@@ -183,10 +183,6 @@ export function installPartyBattle(scene){
  {const shade=ARENA_SHADE[timeOfDay()];
   if(shade){const layer=scene.add.rectangle(LIENZO.x+LIENZO.w/2,LIENZO.y+LIENZO.h/2,LIENZO.w,LIENZO.h,shade.color,shade.alpha).setDepth(2.05).setData('torre2-time-shade',timeOfDay());
    scene.events.once('shutdown',()=>layer.destroy())}}
- // Rare colour forms (world.js): applied to whichever member is on the field.
- {const formTick=()=>{for(const [side,list,idx] of [[0,party.friend,party.playerIndex],[1,party.foes,party.enemyIndex]]){
-   const f=actors[side],m=list?.[idx];if(f?.spr&&m?.form)applyRareForm(f.spr,m.form)}};
-  scene.events.on('update',formTick);scene.events.once('shutdown',()=>scene.events.off('update',formTick))}
  // Battle speed 1x/1.5x/2x (whole combat clock, campaign only).
  installBattleSpeed(scene);
  // Nicknames (owner 2026-11-22): the player's HP panel shows the nickname.

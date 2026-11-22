@@ -1,9 +1,9 @@
 // Owner 2026-11-22: day/night (18), Rocket events (19), trainer reactions (24),
-// favorite Pokémon (26), rare colour forms 0,01% (28).
+// favorite Pokémon (26). Rare forms (28) were dropped by the owner.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {timeOfDay,timeWeight,filterByTime,NIGHT_ONLY,favoriteMember,toggleFavorite,RARE_FORM_CHANCE,RARE_FORMS,rollRareForm,rareFormOf,applyRareForm,ARENA_SHADE} from '../tools/pokearena/torre2-world.js';
+import {timeOfDay,timeWeight,filterByTime,NIGHT_ONLY,favoriteMember,toggleFavorite,ARENA_SHADE} from '../tools/pokearena/torre2-world.js';
 import {ROCKET_EVENTS,ALL_EVENTS,EVENTS_3X3,eventStatus,resolveEventResult} from '../tools/pokearena/torre2-battle-events.js';
 import {EVENT_ITEMS,HELD_ITEMS} from '../tools/pokearena/torre2-individuality.js';
 const read=f=>fs.readFileSync(new URL('../tools/pokearena/'+f,import.meta.url),'utf8');
@@ -15,15 +15,9 @@ test('day/night: phases from the clock, night-only species, never an empty area'
  assert.equal(ARENA_SHADE.dia,null);assert.ok(ARENA_SHADE.noite.alpha>ARENA_SHADE.entardecer.alpha);
  assert.ok(NIGHT_ONLY.includes('gastly'));
 });
-test('rare forms: 0,01%, three forms, cosmetic filter only',()=>{
- assert.equal(RARE_FORM_CHANCE,.0001);assert.deepEqual(Object.keys(RARE_FORMS),['dourada','cristal','sombra']);
- assert.equal(rollRareForm(()=>.0002),null);assert.ok(RARE_FORMS[rollRareForm((()=>{let i=0;return()=>[.00005,.5][i++]})())]);
- let n=0;for(let i=0;i<200000;i++)if(rollRareForm())n++;assert.ok(n>=5&&n<=45,String(n));
- assert.equal(rareFormOf({form:'cristal'}),'cristal');assert.equal(rareFormOf({form:'x'}),null);
- const calls=[];const cm={set(m){calls.push(m.length)},saturate(){},brightness(){},hue(){},night(){},contrast(){}};
- const sprite={preFX:{addColorMatrix:()=>cm,remove(){}}};
- assert.ok(applyRareForm(sprite,'dourada'));assert.equal(applyRareForm(sprite,'dourada'),false,'applied once');assert.deepEqual(calls,[20],'gold colour matrix');
- const core=read('torre2-campaign-core.js');assert.match(core,/const form=rollRareForm\(random\)/);assert.match(core,/if\(candidate\.form\)member\.form=candidate\.form/);
+test('rare forms were dropped by the owner (nothing left in the game)',()=>{
+ for(const f of ['torre2-world.js','torre2-campaign-core.js','torre2-party-battle.js','torre2-campaign-scene.js'])
+  assert.ok(!/RareForm|RARE_FORM|applyRareForm/.test(read(f)),f);
 });
 test('favorite Pokémon: toggle and shown beside the trainer on the card',()=>{
  let s={team:[{uid:'a',id:'pikachu'}],box:[]};
@@ -40,5 +34,5 @@ test('Team Rocket events: stories, 3x3, unlocks, rewards and held items',()=>{
 });
 test('trainer reactions at the end of a battle; night shade and forms in battle',()=>{
  const at=read('torre2-arena-trainers.js');assert.match(at,/scene\.fase!=='fin'/);assert.match(at,/'Isso aí!'/);assert.match(at,/FRAMES\.back/);
- const pb=read('torre2-party-battle.js');assert.match(pb,/ARENA_SHADE\[timeOfDay\(\)\]/);assert.match(pb,/applyRareForm\(f\.spr,m\.form\)/);
+ const pb=read('torre2-party-battle.js');assert.match(pb,/ARENA_SHADE\[timeOfDay\(\)\]/);
 });

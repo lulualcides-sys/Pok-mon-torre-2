@@ -34,7 +34,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle,startCustomBattle,resolveCustomBattle} from './campaign-core.js';
-import {timeOfDay,TIME_NAMES,favoriteMember,toggleFavorite,RARE_FORMS,rareFormOf,applyRareForm} from './world.js';
+import {favoriteMember,toggleFavorite} from './world.js';
 import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
@@ -2237,7 +2237,7 @@ create(){
   // Favorite Pokémon beside the trainer, like a gym leader with his ace.
   const fav=favoriteMember(state);
   if(fav){this.npcSprite(this.playerNpc(),474,224,3.6,5);
-   this.pokemonIdleSprite(fav.id,540,224,52,6,sp=>{applyRareForm(sp,fav.form);sp.setData('torre2-card-favorite',fav.id)},'height');
+   this.pokemonIdleSprite(fav.id,540,224,52,6,sp=>sp.setData('torre2-card-favorite',fav.id),'height');
    this.uiLabel(540,232,(fav.nickname||fav.id).toUpperCase(),7,'#ffe08a',[.5,.5],7)}
   else this.npcSprite(this.playerNpc(),500,224,3.6,5);
   this.button(462,120,72,18,'VISUAL',()=>this.lookScreen(state),false,7).setData('torre2-trainer-card-look',true);
@@ -3118,8 +3118,6 @@ create(){
     return;
    }
    if(found.ok){close();
-    const w=readCampaign()?.pendingWild;
-    if(w?.form&&RARE_FORMS[w.form])this.campaignNotice('Incrível! Um '+w.id+' na '+RARE_FORMS[w.form].name+' apareceu! (0,01%)',RARE_FORMS[w.form].color);
     this.enterBattle(state,true);}
    else{
     close();
@@ -3624,7 +3622,7 @@ create(){
   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
   g.fillStyle(glow,.16).fillRoundedRect(18,50,188,130,6);
   g.fillStyle(0x000000,.3).fillEllipse(112,158,90,14);
-  this.pokemonIdleSprite(member.id,112,158,80,5,sp=>applyRareForm(sp,member.form),'height');
+  this.pokemonIdleSprite(member.id,112,158,80,5,null,'height');
   const nice=member.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   this.uiLabel(112,64,nice+' · Nv '+(member.progression?.level||5),11,MENU_UI.amarillo,[.5,.5],4);
   // Potential: five drawn pixel stars (filled gold / empty slate) popping in.
@@ -3832,7 +3830,7 @@ create(){
   };
   // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
   const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.35).fillEllipse(111,176,64,9);
-  if(!this.pokemonIdleSprite(member.id,111,177,62,18,sp=>applyRareForm(sp,member.form),true)){
+  if(!this.pokemonIdleSprite(member.id,111,177,62,18,null,true)){
    if(this.textures.exists(key))portrait();
    else{
     this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
@@ -3844,7 +3842,6 @@ create(){
   // recoloring the approved PMD portrait or inventing a Shiny sprite.
   if(member.shiny===true)
    label(30,104,'✦ SHINY',C.gold,10).setData('torre2-shiny-summary-label',true);
-  if(rareFormOf(member))label(30,member.shiny?118:104,RARE_FORMS[member.form].name.toUpperCase(),RARE_FORMS[member.form].color,9).setData('torre2-rare-form',member.form);
   // Pokémon favorito (item 26): stands beside the trainer on the Trainer Card.
   const fav=state.favoriteUid===member.uid;
   button(150,104,50,16,fav?'★ FAV':'☆ FAV',()=>{

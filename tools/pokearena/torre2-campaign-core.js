@@ -18,7 +18,7 @@ import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
 import {EVENTS_3X3,ALL_EVENTS,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
-import {timeOfDay,filterByTime,rollRareForm} from './world.js';
+import {timeOfDay,filterByTime} from './world.js';
 import {cleanRules,eligibleIndices,playerLevelFor,buildOpponents,customState,customToken,resolveCustomResult} from './custom-battles.js';
 import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
@@ -745,7 +745,6 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  }else{
   member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
   member.shiny=candidate.shiny===true;
-  if(candidate.form)member.form=candidate.form;
   member.hp=target.hpPercent;
   member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
   next.pendingWild=null;
@@ -864,9 +863,7 @@ export function startWildEncounter(s,random=Math.random,areaStage=null,weather=n
  // Poké Ball, evolution, scene restart or a loaded checkpoint.
  const shinyRoll=Number(random());
  const shiny=Number.isFinite(shinyRoll)&&shinyRoll>=0&&shinyRoll<.01;
- // Rare colour form (world.js): 0,01%, cosmetic, independent of Shiny.
- const form=rollRareForm(random);
- const wild={id,stage:s.stage,trainer:s.trainer,shiny,...(form?{form}:{}),
+ const wild={id,stage:s.stage,trainer:s.trainer,shiny,
   level:Math.max(2,(revisit?wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt)):
    wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)))-wildLevelShift(s.team?.[s.active])),area:area.area,hpPercent:100,
   ...(revisit?{areaStage:areaAt}:{}),...(sky?{weather:sky}:{})};
