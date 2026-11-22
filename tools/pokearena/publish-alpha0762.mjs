@@ -103,6 +103,8 @@ const newModuleNames=[
  ['tools/pokearena/torre2-battle-events.js','torre2/battle-events.js'],
  // Individual Pokémon traits + combat hook (pure + tiny installer).
  ['tools/pokearena/torre2-individuality.js','torre2/individuality.js'],
+ // Trainers standing in the arena, Poké Ball from the hand, move-name speech.
+ ['tools/pokearena/torre2-arena-trainers.js','torre2/arena-trainers.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
@@ -211,8 +213,14 @@ exactly(nativeSkills,fxSpread,'Wobbuffet renderer registration');
 must(!nativeSkills.includes('TORRE2_WOBBUFFET_FORMS'),
  'renderer already contains Wobbuffet forms; review source before overwrite');
 const wobbuffetImport='import{TORRE2_WOBBUFFET_FORMS}from"./torre2/wobbuffet-native.js";';
+// Trainers in the arena (owner 2026-11-22): the trainer says the move name
+// when a fighter really casts it. No-op unless a campaign battle installed
+// globalThis.__torre2Cast (torre2/arena-trainers.js); native flow unchanged.
+const presentAnchor='presentar(l,slot,h,surge){';
+exactly(nativeSkills,presentAnchor,'native move presentation');
 const skillUpdate=nativeSkills.replace(fxImport,fxImport+wobbuffetImport)
- .replace(fxSpread,'const FORMAS={...TORRE2_FORMS,...TORRE2_WOBBUFFET_FORMS,');
+ .replace(fxSpread,'const FORMAS={...TORRE2_FORMS,...TORRE2_WOBBUFFET_FORMS,')
+ .replace(presentAnchor,presentAnchor+'try{globalThis.__torre2Cast?.(l,slot,h)}catch{}');
 must(skillUpdate.includes('...TORRE2_WOBBUFFET_FORMS'),'Wobbuffet cast registration failed');
 
 let fighter=await read(path.join(original,'luchador.js'));
