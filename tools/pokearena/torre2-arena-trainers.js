@@ -11,19 +11,32 @@
  *    its trainer shows a speech bubble with the move name.
  * Never touches hitboxes, damage, move data, VFX or other modes.
  */
-import {FUENTE} from '../config.js';
+import {CAMPO,FUENTE} from '../config.js';
 // FRLG overworld sheet (144x32): 0 front, 1 back, 2 side (facing left),
 // 3-4 walk front, 5-6 walk back, 7-8 walk side.
 export const FRAMES=Object.freeze({front:0,back:1,side:2,walkSide:[7,8]});
 export const BUBBLE_MS=1300;
 export const SPOKEN_SLOTS=Object.freeze(['rmb','q','e']);
-// Where each trainer stands: the visible left/right edge of the arena view
-// (screen coordinates, UI camera). The oval camera zooms on the fighters,
-// so world-space tips of the oval are usually off screen.
-export const SCREEN_W=640;
-export const UI_DEPTH=2450;
-export function standPoint(side){
- return side===0?{x:112,y:322}:{x:SCREEN_W-46,y:322};
+export const SCREEN_W=640,SCREEN_H=360;
+export const UI_DEPTH=2450,WORLD_DEPTH=6;
+// On the floor, a little behind and below the trainer's own Pokémon at the
+// start of the fight (the oval tips are outside the zoomed camera), clamped
+// inside the oval. They move WITH the floor when the camera pans/zooms.
+export function standPoint(side,field=CAMPO,fighter=null){
+ const base=fighter&&Number.isFinite(fighter.x)?fighter:{x:side===0?field.x+field.w*.3:field.x+field.w*.7,y:field.y+field.h*.5};
+ const x=base.x+(side===0?-70:92),y=base.y+78;
+ return {x:Math.max(field.x+12,Math.min(field.x+field.w-12,x)),y:Math.max(field.y+20,Math.min(field.y+field.h-4,y))};
+}
+// World point → UI-camera point (the HUD camera has its own zoom), clamped
+// inside the visible UI area; offscreen tells the bubble to show its arrow.
+export function bubbleScreen(world,cam,ui,halfW=40){
+ const v=cam?.worldView,z=Number(cam?.zoom)||1;
+ const sx=v?(world.x-v.x)*z+(cam.x||0):world.x,sy=v?(world.y-v.y)*z+(cam.y||0):world.y;
+ const offscreen=!!cam&&(sx<0||sx>cam.width||sy<0||sy>cam.height);
+ const p=ui?.getWorldPoint?ui.getWorldPoint(sx,sy):{x:sx,y:sy};
+ const uv=ui?.worldView||{x:0,y:0,width:SCREEN_W,height:SCREEN_H};
+ const left=uv.x+uv.width*.11+halfW+14,right=uv.x+uv.width-halfW-24;
+ return {x:Math.max(left,Math.min(right,p.x)),y:Math.max(uv.y+uv.height*.17,Math.min(uv.y+uv.height*.84,p.y)),offscreen};
 }
 export function speechFor(slot,move){
  const name=String(move?.nombre||'').replace(/^ULT\s*[·:-]\s*/i,'').trim();
@@ -48,11 +61,11 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
  const trainers=[];
  const make=(side,texKey)=>{
   if(!texKey||!scene.textures.exists(texKey))return null;
-  const stand=standPoint(side),from={x:side===0?-20:SCREEN_W+20,y:stand.y};
+  const stand=standPoint(side,CAMPO,scene.luchadores?.[side]),from={x:stand.x+(side===0?-60:60),y:stand.y};
   const f0=frameKey(scene,texKey,FRAMES.walkSide[0]);if(!f0)return null;
-  const spr=scene.add.image(from.x,from.y,texKey,f0).setOrigin(.5,1).setScale(1.5).setDepth(UI_DEPTH+1)
+  const spr=scene.add.image(from.x,from.y,texKey,f0).setOrigin(.5,1).setScale(1.5).setDepth(WORLD_DEPTH+1)
    .setFlipX(side===0).setData('torre2-arena-trainer',side);
-  const shadow=scene.add.ellipse(from.x,from.y,18,5,0x000000,.4).setDepth(UI_DEPTH);
+  const shadow=scene.add.ellipse(from.x,from.y,18,5,0x000000,.4).setDepth(WORLD_DEPTH);
   const t={side,texKey,spr,shadow,stand,walking:true,bubble:null,walkT:0};
   trainers[side]=t;return t;
  };
@@ -67,11 +80,7 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
  const api={
   trainers,
   // Hand position for the Poké Ball (world coordinates).
-  hand(side){
-   const t=trainers[side];if(!t)return null;
-   const sx=t.stand.x+(side===0?8:-8),sy=t.stand.y-24,cam=scene.cameras?.main;
-   return cam?.getWorldPoint?cam.getWorldPoint(sx,sy):{x:sx,y:sy};
-  },
+  hand(side){const t=trainers[side];return t?{x:t.stand.x+(side===0?8:-8),y:t.stand.y-24}:null},
   // Small throw motion: lean forward, step, back.
   throwBall(side){
    const t=trainers[side];if(!t)return;
@@ -82,7 +91,10 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
   say(side,text){
    const t=trainers[side];if(!t||!text)return null;
    t.bubble?.destroy();
-   const c=scene.add.container(Math.max(70,Math.min(SCREEN_W-70,t.stand.x+(t.side===0?26:-26))),t.stand.y-60).setDepth(UI_DEPTH+3).setData('torre2-trainer-speech',text);
+   // Bubble on the UI camera, following the trainer's screen position.
+   const c=scene.add.container(0,0).setDepth(UI_DEPTH+3).setData('torre2-trainer-speech',text);
+   c.__torre2Follow=()=>{const p=bubbleScreen({x:t.spr.x,y:t.spr.y-50},scene.cameras.main,scene.camUI,c.__torre2HalfW||40);c.setPosition(p.x+(p.offscreen?0:(t.side===0?20:-20)),p.y);c.setData('offscreen',p.offscreen)};
+   c.__torre2Follow();
    const label=scene.add.text(0,0,text,{fontFamily:FUENTE,fontSize:'12px',color:'#1b2333',resolution:2}).setOrigin(.5);
    const w=Math.max(40,label.width+12),h=label.height+8,g=scene.add.graphics();
    g.fillStyle(0x1b2333,1).fillRoundedRect(-w/2-1,-h/2-1,w+2,h+2,5);
@@ -90,13 +102,20 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
    const tip=t.side===0?-14:14;
    g.fillStyle(0x1b2333,1).fillTriangle(tip-4,h/2,tip+4,h/2,tip+(t.side===0?-8:8),h/2+8);
    g.fillStyle(0xffffff,1).fillTriangle(tip-3,h/2-1,tip+3,h/2-1,tip+(t.side===0?-7:7),h/2+6);
-   c.add([g,label]);c.setScale(.2);
+   // Edge arrow (drawn, the pixel font has no arrow glyph): where the trainer is.
+   const arrow=scene.add.graphics().setVisible(false),ax=t.side===0?-w/2-4:w/2+4,dir=t.side===0?-1:1;
+   arrow.fillStyle(0x1b2333,1).fillTriangle(ax,-7,ax,7,ax+dir*10,0);
+   arrow.fillStyle(0xffd23f,1).fillTriangle(ax+dir*1,-5,ax+dir*1,5,ax+dir*8,0);
+   c.add([g,label,arrow]);c.setScale(.2);c.__torre2Arrow=arrow;c.__torre2HalfW=w/2;c.__torre2Follow();
    scene.tweens.add({targets:c,scale:1,duration:140,ease:'Back.Out'});
    t.bubble=c;
    scene.time.delayedCall(BUBBLE_MS,()=>{if(t.bubble===c){scene.tweens.add({targets:c,alpha:0,duration:180,onComplete:()=>c.destroy()});t.bubble=null}});
    return c;
   }
  };
+ // Keep bubbles over their trainer (or on the screen edge) every frame.
+ const follow=()=>{for(const t of trainers.filter(Boolean)){const b=t.bubble;if(b?.active){b.__torre2Follow();b.__torre2Arrow?.setVisible(!!b.getData('offscreen'))}}};
+ scene.events.on('postupdate',follow);
  scene.__torre2ArenaTrainers=api;
  // Native cast hook (habilidades.js presentar, patched in the published copy).
  const cast=(l,slot,h)=>{
@@ -106,6 +125,7 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
  globalThis.__torre2Cast=cast;
  scene.events.once('shutdown',()=>{
   if(globalThis.__torre2Cast===cast)globalThis.__torre2Cast=null;
+  scene.events.off('postupdate',follow);
   scene.__torre2ArenaTrainers=null;
   for(const t of trainers.filter(Boolean)){t.bubble?.destroy();t.spr.destroy();t.shadow.destroy()}
  });
