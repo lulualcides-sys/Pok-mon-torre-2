@@ -3626,11 +3626,11 @@ create(){
    // Tiny potential percent under the bar (HP/ATK/DEF; not for Mewtwo tester).
    const pk={HP:'hp',ATK:'atk',DEF:'def'}[name];
    if(pk&&member.id!=='mewtwo'){const pc=potentialPercent(potentialOf(member)[pk],pk);
-    textoMenu(this,168,y+13,pc,{tam:5,color:pc.startsWith('+')?'#8ff0b5':pc.startsWith('−')?'#ff9d9d':'#b9c8e0',borde:2,colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(1,.5).setDepth(16).setData('torre2-summary-pct',pk+':'+pc)}
+    textoMenu(this,158,y+7,pc,{tam:5,color:pc.startsWith('+')?'#8ff0b5':pc.startsWith('−')?'#ff9d9d':'#b9c8e0',borde:2,colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(.5,.5).setDepth(16).setData('torre2-summary-pct',pk+':'+pc)}
    const bar=this.add.graphics().setDepth(14),ratio=Math.min(1,Math.max(0,value/max));
-   bar.fillStyle(0x0a1422,1).fillRoundedRect(56,y+2,112,9,4);bar.fillStyle(0x1d3046,1).fillRoundedRect(57,y+3,110,7,3);
-   bar.fillStyle(color,1).fillRoundedRect(57,y+3,Math.max(6,110*ratio),7,3);
-   bar.fillStyle(0xffffff,.30).fillRect(59,y+4,Math.max(2,110*ratio-4),1);
+   bar.fillStyle(0x0a1422,1).fillRoundedRect(56,y+2,90,9,4);bar.fillStyle(0x1d3046,1).fillRoundedRect(57,y+3,88,7,3);
+   bar.fillStyle(color,1).fillRoundedRect(57,y+3,Math.max(6,88*ratio),7,3);
+   bar.fillStyle(0xffffff,.30).fillRect(59,y+4,Math.max(2,88*ratio-4),1);
   });
   if(member.id==='mewtwo')label(25,282,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
   // Individual Pokémon (README 5/9/1/10): potential, hidden ability, item.
@@ -3642,16 +3642,19 @@ create(){
    const card=button(24,268,174,38,'',()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
    const fx=this.add.graphics().setDepth(14);
    fx.fillStyle(glow,.18).fillRoundedRect(27,271,168,32,4);
-   label(34,273,'FICHA DO POKÉMON ▸',C.gold,9);
+   label(32,273,'FICHA DO POKÉMON ▸',C.gold,9);
+   // Item in its own slot on the right (never over the text).
+   fx.fillStyle(0x0a1422,1).fillRoundedRect(168,272,26,26,4);fx.lineStyle(1,it?0x9ff0bf:0x34465f,1).strokeRoundedRect(168,272,26,26,4);
    const pts=r=>Array.from({length:10},(_,i)=>{const q=i%2?r*.45:r,an=-Math.PI/2+i*Math.PI/5;return new Phaser.Geom.Point(Math.cos(an)*q,Math.sin(an)*q)});
-   for(let i=0;i<5;i++){const sg=this.add.graphics({x:41+i*18,y:294}).setDepth(15),on=i<st;
-    if(on){sg.fillStyle(0x7a4a00,1).fillPoints(pts(8),true);sg.fillStyle(0xffd23f,1).fillPoints(pts(6.7),true);sg.fillStyle(0xfff3b0,1).fillPoints(pts(2.6).map(q=>new Phaser.Geom.Point(q.x-1.2,q.y-1.5)),true)}
-    else{sg.fillStyle(0x0c1725,1).fillPoints(pts(8),true);sg.fillStyle(0x4a5f7d,1).fillPoints(pts(6.4),true)}}
-   label(132,289,potentialTotalWord(pot),'#'+glow.toString(16).padStart(6,'0'),8);
+   for(let i=0;i<5;i++){const sg=this.add.graphics({x:39+i*15,y:294}).setDepth(15),on=i<st;
+    if(on){sg.fillStyle(0x7a4a00,1).fillPoints(pts(7),true);sg.fillStyle(0xffd23f,1).fillPoints(pts(5.8),true);sg.fillStyle(0xfff3b0,1).fillPoints(pts(2.3).map(q=>new Phaser.Geom.Point(q.x-1,q.y-1.3)),true)}
+    else{sg.fillStyle(0x0c1725,1).fillPoints(pts(7),true);sg.fillStyle(0x4a5f7d,1).fillPoints(pts(5.6),true)}}
+   const word=label(112,294,potentialTotalWord(pot),'#'+glow.toString(16).padStart(6,'0'),8).setOrigin(0,.5);
+   if(word.displayWidth>52)word.setScale(52/word.displayWidth);
    // Hidden-ability seal: a drawn purple diamond (the font has no ✦ glyph).
-   if(ha){fx.fillStyle(0x3a1d5c,1).fillPoints([[170,270],[177,277],[170,284],[163,277]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true);
-    fx.fillStyle(0xd7b4ff,1).fillPoints([[170,272],[175,277],[170,282],[165,277]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true)}
-   if(it&&this.textures.exists(heldIconKey(it)))this.add.image(182,290,heldIconKey(it)).setDepth(15);
+   if(ha){fx.fillStyle(0x3a1d5c,1).fillPoints([[156,272],[162,278],[156,284],[150,278]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true);
+    fx.fillStyle(0xd7b4ff,1).fillPoints([[156,274],[160,278],[156,282],[152,278]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true)}
+   if(it&&this.textures.exists(heldIconKey(it)))this.add.image(181,285,heldIconKey(it)).setDepth(15);
   }
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
    try{
