@@ -17,7 +17,8 @@ import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
 import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
-import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
+import {EVENTS_3X3,ALL_EVENTS,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
+import {timeOfDay,filterByTime} from './world.js';
 import {cleanRules,eligibleIndices,playerLevelFor,buildOpponents,customState,customToken,resolveCustomResult} from './custom-battles.js';
 import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
@@ -834,7 +835,7 @@ export function kantoTypes(id){
 }
 // weather: optional route weather key (route-weather.js). It only changes how
 // often each species of THIS route's table appears; null/clear = uniform.
-export function startWildEncounter(s,random=Math.random,areaStage=null,weather=null){
+export function startWildEncounter(s,random=Math.random,areaStage=null,weather=null,phase=timeOfDay()){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
  const revisit=Number.isInteger(areaStage)&&areaStage!==s.stage;
  if(revisit&&!(areaStage>=0&&areaStage<GYMS.length&&(areaStage<s.stage||s.champion)))
@@ -855,8 +856,9 @@ export function startWildEncounter(s,random=Math.random,areaStage=null,weather=n
  const area=wildAvailability(areaAt);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const sky=weather&&weather!=='clear'&&ROUTE_WEATHERS[weather]?weather:null;
- const id=sky?pickWeighted(area.available,area.available.map(x=>weatherWeight(sky,kantoTypes(x))),random()):
-  area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
+ // Day/night (world.js): night-only species and night boosts, with weather.
+ const tw=filterByTime(area.available,phase);
+ const id=pickWeighted(area.available,area.available.map((x,i)=>tw[i]*(sky?weatherWeight(sky,kantoTypes(x)):1)),random());
  // An independent single 1% roll belongs to this encounter, never to a
  // Poké Ball, evolution, scene restart or a loaded checkpoint.
  const shinyRoll=Number(random());
@@ -1000,7 +1002,7 @@ export function resolveTowerBattle(s,token,won){
 // Eventos 3x3 (battle-events.js): separate battles, the ladder never moves.
 export function eventSpeciesOk(id){return supportedKanto.has(id)}
 export function startEventBattle(s,id){
- const ev=EVENTS_3X3.find(e=>e.id===id);
+ const ev=ALL_EVENTS.find(e=>e.id===id);
  const st=eventStatus(s,ev);if(st.state==='locked')return {ok:false,reason:st.reason};
  const trio=playerTrio(s.team);
  if(trio.length<3)return {ok:false,reason:'Você precisa de 3 Pokémon com HP na equipe. Cure-os no Centro Pokémon.'};
@@ -1029,9 +1031,9 @@ export function resolveEventBattle(s,token,won,random=Math.random){
   if(r.first&&EVENT_ITEMS[id]){next.inventory=giveItem(next,EVENT_ITEMS[id]).inventory;next.lastHeldReward=EVENT_ITEMS[id]}
   // 5% per win: one of the challenger's Pokémon joins (team, or PC if full).
   let gift=null;next.lastEventPokemon=null;
-  const species=won?eventPokemonRoll(EVENTS_3X3.find(e=>e.id===id),random):null;
+  const species=won?eventPokemonRoll(ALL_EVENTS.find(e=>e.id===id),random):null;
   if(species&&eventSpeciesOk(species)){
-   const st=Math.min(next.stage,STAGES.length-1),lvl=Math.max(5,Math.min(currentLevelCap(st),eventTeam(EVENTS_3X3.find(e=>e.id===id),currentLevelCap(st)).find(t=>t.id===species)?.level||5));
+   const st=Math.min(next.stage,STAGES.length-1),lvl=Math.max(5,Math.min(currentLevelCap(st),eventTeam(ALL_EVENTS.find(e=>e.id===id),currentLevelCap(st)).find(t=>t.id===species)?.level||5));
    const m=newMember(species,lvl);next.team=[...next.team];next.box=[...(next.box||[])];
    next.dexSeen=[...(next.dexSeen||[])];next.dexCaught=[...(next.dexCaught||[])];
    recordCaught(next,species);

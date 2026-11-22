@@ -97,6 +97,32 @@ export const EVENTS_3X3=Object.freeze([
   line:'Lendas de Kanto, meu jovem. Três gigantes contra o seu melhor trio!',
   reward:{money:12000,items:{ultraball:10}}}
 ]);
+// Eventos da Equipe Rocket (owner 2026-11-22, item 19): small stories from
+// FireRed's Rocket plot, each ending in a 3x3 against a Rocket trio. Same
+// rules as the 3x3 events (separate battles, reward on the first win).
+export const ROCKET_EVENTS=Object.freeze([
+ {id:'k1',rocket:true,name:'Recrutas do Mt. Moon',place:'Mt. Moon',sprite:'rocket',minBadges:1,
+  team:['zubat','rattata','ekans'],
+  story:['Ei, pirralho! Os fósseis do Mt. Moon agora são da Equipe Rocket!','O chefe quer os fósseis para vender caro... e ninguém vai atrapalhar!'],
+  line:'Quer os fósseis? Então derrote nosso trio!',reward:{money:2500,items:{greatball:5}}},
+ {id:'k2',rocket:true,name:'Esconderijo do Cassino',place:'Cassino de Celadon',sprite:'rocketf',minBadges:3,
+  team:['koffing','grimer','raticate'],
+  story:['Shh! O Cassino de Celadon é só fachada...','O esconderijo da Equipe Rocket fica atrás do pôster. Você viu demais!'],
+  line:'Agora vai ter que lutar contra nós três!',reward:{money:5000,items:{ultraball:3}}},
+ {id:'k3',rocket:true,name:'Invasão da Torre Pokémon',place:'Torre Pokémon',sprite:'rocket',minBadges:4,
+  team:['golbat','arbok','gastly'],
+  story:['A Torre Pokémon de Lavender é nossa base agora!','O Sr. Fuji está preso lá em cima e os espíritos estão agitados...'],
+  line:'Ninguém sobe enquanto a Equipe Rocket estiver aqui!',reward:{money:6500,items:{superpotion:5}}},
+ {id:'k4',rocket:true,name:'Segredos da Mansão',place:'Mansão Pokémon',sprite:'scientist',minBadges:6,
+  team:['muk','weezing','hypno'],
+  story:['Os diários da Mansão Pokémon falam de um Pokémon criado em laboratório...','A Equipe Rocket me pagou para apagar tudo. Você não vai ler nada!'],
+  line:'Meus Pokémon vão proteger os segredos!',reward:{money:8000,items:{ultraball:5}}},
+ {id:'k5',rocket:true,name:'O retorno de Giovanni',place:'Esconderijo secreto',sprite:'giovanni',champion:true,
+  team:['nidoking','nidoqueen','rhydon'],
+  story:['Então você é o treinador que derrotou a Equipe Rocket tantas vezes...','Mesmo Campeão, você não conhece o verdadeiro poder de Giovanni.'],
+  line:'Três contra três. Vamos ver quem é o mais forte de Kanto!',reward:{money:20000,items:{ultraball:10}}}
+]);
+export const ALL_EVENTS=Object.freeze([...EVENTS_3X3,...ROCKET_EVENTS]);
 // Each win has a small chance to earn one of the challenger's Pokémon.
 export const EVENT_POKEMON_CHANCE=.05;
 export function eventPokemonRoll(ev,random=Math.random){
@@ -126,7 +152,7 @@ export function playerTrio(team){
 export function eventToken(s,id){return 'event3-'+id+'-'+(s?.wins||0)+'-'+(s?.losses||0)}
 // Result: first win gives the reward; later wins only XP (caller adds XP).
 export function resolveEventResult(s,id,won){
- const ev=EVENTS_3X3.find(e=>e.id===id);
+ const ev=ALL_EVENTS.find(e=>e.id===id);
  if(!ev)return {ok:false,reason:'Evento desconhecido.'};
  const prev=s?.events3x3||{};
  const first=won&&!list(prev.won).includes(id);
@@ -140,5 +166,5 @@ export function resolveEventResult(s,id,won){
   next.money=(Number(s.money)||0)+(reward.money||0);
  }
  return {ok:true,won:!!won,first,reward,state:next,
-  message:won?(first?'Evento 3x3 vencido! '+ev.name+' te deu $'+reward.money+' e itens.':'Evento 3x3 vencido de novo!'):'Derrota no evento 3x3 contra '+ev.name+'.'};
+  message:won?(first?(ev.rocket?'A Equipe Rocket fugiu! ':'Evento 3x3 vencido! ')+ev.name+': $'+reward.money+' e itens.':(ev.rocket?'Equipe Rocket derrotada de novo!':'Evento 3x3 vencido de novo!')):(ev.rocket?'A Equipe Rocket venceu desta vez...':'Derrota no evento 3x3 contra '+ev.name+'.')};
 }

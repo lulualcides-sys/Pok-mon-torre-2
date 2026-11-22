@@ -24,6 +24,8 @@ import {animateBallActor} from './ball-choreography.js';
 import {installArenaTrainers} from './arena-trainers.js';
 import {installTerrain} from './terrain.js';
 import {installBattleSpeed} from './battle-speed.js';
+import {timeOfDay,ARENA_SHADE} from './world.js';
+import {LIENZO} from '../arena.js';
 import {playerSpriteId} from './frlg-npc.js';
 import {installShinyEntrance} from './shiny-fx.js';
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
@@ -177,6 +179,10 @@ export function installPartyBattle(scene){
  const terrainHud=label(scene,320,117,'',8,'#ffe9a8',2802);
  installTerrain(scene,{hud:{label:t=>terrainHud.active&&terrainHud.text!==t&&terrainHud.setText(t),announce:t=>announce(t)}});
  scene.events.once('shutdown',()=>terrainHud.destroy());
+ // Day/night (world.js): evening is warmer, night darker, under the fighters.
+ {const shade=ARENA_SHADE[timeOfDay()];
+  if(shade){const layer=scene.add.rectangle(LIENZO.x+LIENZO.w/2,LIENZO.y+LIENZO.h/2,LIENZO.w,LIENZO.h,shade.color,shade.alpha).setDepth(2.05).setData('torre2-time-shade',timeOfDay());
+   scene.events.once('shutdown',()=>layer.destroy())}}
  // Battle speed 1x/1.5x/2x (whole combat clock, campaign only).
  installBattleSpeed(scene);
  // Nicknames (owner 2026-11-22): the player's HP panel shows the nickname.

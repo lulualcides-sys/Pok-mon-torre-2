@@ -130,7 +130,8 @@ export function itemForType(type){
 // Leaders: the item of the gym's type on the FIRST win (stage index).
 export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','miracleseed','poisonbarb',
  'twistedspoon','charcoal','softsand','nevermeltice','blackbelt','spelltag','dragonfang','silkscarf']);
-export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e2:'mysticwater',e3:'metalcoat',e4:'blackbelt',e5:'blackglasses',e6:'dragonfang'});
+export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e2:'mysticwater',e3:'metalcoat',e4:'blackbelt',e5:'blackglasses',e6:'dragonfang',
+ k1:'smokeball',k2:'amuletcoin',k3:'cleansetag',k4:'kingsrock',k5:'choiceband'});
 export const WILD_ITEM_CHANCE=.05;
 // Wild win: small chance of the item of the wild Pokémon's first type.
 export function wildItemRoll(types,random=Math.random){

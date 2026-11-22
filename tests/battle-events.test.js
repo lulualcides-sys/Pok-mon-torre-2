@@ -65,5 +65,5 @@ test('3x3 events: 5% chance to earn one of the challenger\'s Pokémon',async()=>
  let n=0;for(let i=0;i<2000;i++)if(eventPokemonRoll(ev,Math.random))n++;
  assert.ok(n>40&&n<170,String(n));
  const core=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
- assert.match(core,/eventPokemonRoll\(EVENTS_3X3\.find/);assert.match(core,/eventSpeciesOk\(species\)/);
+ assert.match(core,/eventPokemonRoll\(ALL_EVENTS\.find/);assert.match(core,/eventSpeciesOk\(species\)/);
 });

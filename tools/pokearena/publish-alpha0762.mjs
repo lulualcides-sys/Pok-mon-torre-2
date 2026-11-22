@@ -114,6 +114,8 @@ const newModuleNames=[
  // City missions (item 16) and battle speed (item 21).
  ['tools/pokearena/torre2-npc-quests.js','torre2/npc-quests.js'],
  ['tools/pokearena/torre2-battle-speed.js','torre2/battle-speed.js'],
+ // Day/night, favorite Pokémon and rare colour forms (items 18, 26, 28).
+ ['tools/pokearena/torre2-world.js','torre2/world.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for

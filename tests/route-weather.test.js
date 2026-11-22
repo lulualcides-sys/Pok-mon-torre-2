@@ -43,7 +43,7 @@ test('weighted pick only returns species of the list, more often the favoured on
 });
 test('campaign: weather passed to the encounter, never to battles',()=>{
  const core=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
- assert.match(core,/export function startWildEncounter\(s,random=Math\.random,areaStage=null,weather=null\)/);
+ assert.match(core,/export function startWildEncounter\(s,random=Math\.random,areaStage=null,weather=null(,phase=timeOfDay\(\))?\)/);
  assert.match(core,/pickWeighted\(area\.available,/);
  const scene=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-scene.js',import.meta.url),'utf8');
  assert.match(scene,/startWildEncounter\(state,Math\.random,revisit\?areaStage:null,sky\)/);

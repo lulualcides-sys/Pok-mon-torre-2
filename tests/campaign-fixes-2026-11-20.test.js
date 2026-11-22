@@ -11,7 +11,7 @@ test('published copy never starts the base client NEWS side tab or patch-notes p
 test('Kanto map: a completed city reopens its own tall grass',()=>{
  const cards=read('torre2-trainer-cards.js'),core=read('torre2-campaign-core.js'),scene=read('torre2-campaign-scene.js');
  assert.ok(cards.includes('else if(done&&i<8&&handlers.capture){layer.destroy(true);handlers.capture(i)}'));
- assert.ok(core.includes('export function startWildEncounter(s,random=Math.random,areaStage=null,weather=null){'));
+ assert.ok(core.includes('export function startWildEncounter(s,random=Math.random,areaStage=null,weather=null,phase=timeOfDay()){'),'day/night phase added 2026-11-22');
  assert.ok(core.includes("if(revisit&&!(areaStage>=0&&areaStage<GYMS.length&&(areaStage<s.stage||s.champion)))"),'only completed cities');
  assert.ok(core.includes('wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt))'),'levels of that area');
  assert.equal((scene.match(/capture:at=>this\.grassScreen\(state,Number\.isInteger\(at\)\?at:null\)/g)||[]).length,4);
