@@ -599,7 +599,7 @@ function extrasPage(scene,state,handlers){
  actions.push(['RESTAURAR CÓPIA',handlers.saveImport,'bag']);
  actions.push(['RANKING',handlers.ranking,'badges']);
  actions.push(['LENDÁRIOS',handlers.legendaries,'capture']);
- actions.push(['TORRE',handlers.tower,'badges']);
+ actions.push(['DESAFIOS',handlers.tower,'badges']);
  actions.push(['SILPH CO.',handlers.silph,'bag']);
  actions.push([handlers.lightLabel?.()||'MODO LEVE',handlers.lightMode,'fullscreen']);
  actions.push(['MISSÕES',handlers.missions,'badges']);

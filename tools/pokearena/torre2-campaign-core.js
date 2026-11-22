@@ -17,6 +17,8 @@ import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
 import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
+import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
+import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -524,12 +526,15 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
  for(let index=0;index<state.team.length;index++){
   const member=state.team[index],progress=member?.progression;
   if(!progress)continue;
-  const growth=awardCampaignExperience(progress,reward,state.stage,{
+  // Held items (individuality.js): Lucky Egg / Exp. Share / Soothe Bell.
+  const growth=awardCampaignExperience(progress,Math.round(reward*expFactor(member)),state.stage,{
    tester:member.id==='mewtwo'});
+  machoBraceGrowth(member);
   // FireRed route families with branching later-generation evolutions:
   // complete the Kanto lineage during the campaign without stalling on a
   // choice dialog which this one-click map does not implement.
-  const evolved=resolveEvolutionAfterBattle(progress,'victory',({species,choices})=>{
+  // Everstone: no evolution while it is held (it evolves later without it).
+  const evolved=blocksEvolution(member)?{evolutions:[]}:resolveEvolutionAfterBattle(progress,'victory',({species,choices})=>{
    const kanto={gloom:'vileplume',poliwhirl:'poliwrath',slowpoke:'slowbro'};
    return choices.includes(kanto[species])?kanto[species]:null;
   });
@@ -675,26 +680,31 @@ export function resolveBattle(s,won,random=Math.random){
   }
   recordSeen(next,opponent.id);
   const member=next.team[next.active];
-  next.lastRewardTM=null;
+  next.lastRewardTM=null;next.lastHeldReward=null;
   const reward=xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),opponent.leader?'leader':'trainer');
   const shared=awardSharedTeamExperience(next,reward,{kind:'trainer'});
   const growth=shared.gains.find(g=>g.index===next.active);
   member.hp=100;
   next.wins++;rechargeRematches(next);
-  next.money=(next.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+next.stage*60);
+  // Amulet Coin anywhere in the team doubles the prize money.
+  next.money=(next.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+next.stage*60)*moneyFactor(next.team);
   next.pendingCapture=null;
   if(opponent.leader){
    // Secret title "Especialista": the whole team shares one type.
    if(monoTypeTeam(next.team))next.secretFlags={...(next.secretFlags||{}),monoLeader:true};
    const awards=next.stage<GYMS.length?next.badges:(next.leagueHonors??=[]);
-   if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
+   const freshBadge=!awards.includes(STAGES[next.stage].badge);
+   if(freshBadge)awards.push(STAGES[next.stage].badge);
+   // Held item of the gym's type, first win only (individuality.js).
+   if(freshBadge&&LEADER_ITEMS[next.stage]){
+    next.inventory=giveItem(next,LEADER_ITEMS[next.stage]).inventory;next.lastHeldReward=LEADER_ITEMS[next.stage]}
    const tm=grantGymTM(next,next.stage);
    next.lastRewardTM=tm.added?tm.item.name:null;
    next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
    if(next.stage>=STAGES.length)next.champion=true;
   }else next.trainer++;
   next.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
-   shared.totalRecipients+' Pokémon). '+(next.lastRewardTM?'Recebeu '+next.lastRewardTM+'. ':'')+(shared.evolutions.length?
+   shared.totalRecipients+' Pokémon). '+(next.lastRewardTM?'Recebeu '+next.lastRewardTM+'. ':'')+(next.lastHeldReward?'Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'. ':'')+(shared.evolutions.length?
    shared.evolutions.length+' evolução(ões) após a batalha!':'');
   return {won:true,message:next.lastMessage,reward,growth,sharedExp:shared.gains,
    evolutions:shared.evolutions,opponent};
@@ -851,8 +861,8 @@ export function startWildEncounter(s,random=Math.random,areaStage=null,weather=n
  const shinyRoll=Number(random());
  const shiny=Number.isFinite(shinyRoll)&&shinyRoll>=0&&shinyRoll<.01;
  const wild={id,stage:s.stage,trainer:s.trainer,shiny,
-  level:revisit?wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt)):
-   wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100,
+  level:Math.max(2,(revisit?wildLevelFor(areaAt,TRAINERS_PER_GYM(areaAt),TRAINERS_PER_GYM(areaAt)):
+   wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)))-wildLevelShift(s.team?.[s.active])),area:area.area,hpPercent:100,
   ...(revisit?{areaStage:areaAt}:{}),...(sky?{weather:sky}:{})};
  // Stage the encounter, counter and Pokédex together. Storage denial
  // must leave the original route and RNG retry available without a phantom
@@ -986,6 +996,55 @@ export function resolveTowerBattle(s,token,won){
    growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
  });
 }
+// Eventos 3x3 (battle-events.js): separate battles, the ladder never moves.
+export function eventSpeciesOk(id){return supportedKanto.has(id)}
+export function startEventBattle(s,id){
+ const ev=EVENTS_3X3.find(e=>e.id===id);
+ const st=eventStatus(s,ev);if(st.state==='locked')return {ok:false,reason:st.reason};
+ const trio=playerTrio(s.team);
+ if(trio.length<3)return {ok:false,reason:'Você precisa de 3 Pokémon com HP na equipe. Cure-os no Centro Pokémon.'};
+ const team=eventTeam(ev,currentLevelCap(Math.min(s.stage,STAGES.length-1))).filter(m=>eventSpeciesOk(m.id));
+ if(team.length<3)return {ok:false,reason:'Evento indisponível nesta versão.'};
+ const token=eventToken(s,id);
+ const next={...s,eventPending:{token,id},dexSeen:[...(s.dexSeen||[])]};
+ team.forEach(m=>recordSeen(next,m.id));
+ saveCampaign(next);s.eventPending=next.eventPending;s.dexSeen=next.dexSeen;
+ return {ok:true,token,team,event:ev,trio:trio.map(x=>x.i)};
+}
+export function resolveEventBattle(s,token,won,random=Math.random){
+ if(!s.eventPending||s.eventPending.token!==token)return {ok:false,reason:'Resultado antigo do evento ignorado.'};
+ const id=s.eventPending.id;
+ return commitBattleOutcome(s,next=>{
+  next.eventPending=null;
+  let share=null,xp=0;
+  if(won){
+   const st=Math.min(next.stage,STAGES.length-1);
+   xp=Math.round(xpRewardFor(st,TRAINERS_PER_GYM(st),'leader')*.8);
+   share=awardSharedTeamExperience(next,xp,{kind:'trainer'});
+   next.wins++;rechargeRematches(next);
+  }else next.losses++;
+  const r=resolveEventResult(next,id,!!won);
+  Object.assign(next,r.state);next.eventPending=null;next.lastHeldReward=null;
+  if(r.first&&EVENT_ITEMS[id]){next.inventory=giveItem(next,EVENT_ITEMS[id]).inventory;next.lastHeldReward=EVENT_ITEMS[id]}
+  // 5% per win: one of the challenger's Pokémon joins (team, or PC if full).
+  let gift=null;next.lastEventPokemon=null;
+  const species=won?eventPokemonRoll(EVENTS_3X3.find(e=>e.id===id),random):null;
+  if(species&&eventSpeciesOk(species)){
+   const st=Math.min(next.stage,STAGES.length-1),lvl=Math.max(5,Math.min(currentLevelCap(st),eventTeam(EVENTS_3X3.find(e=>e.id===id),currentLevelCap(st)).find(t=>t.id===species)?.level||5));
+   const m=newMember(species,lvl);next.team=[...next.team];next.box=[...(next.box||[])];
+   next.dexSeen=[...(next.dexSeen||[])];next.dexCaught=[...(next.dexCaught||[])];
+   recordCaught(next,species);
+   gift={id:species,level:lvl,to:next.team.length<6?'Equipe':'PC'};
+   if(gift.to==='Equipe')next.team.push(m);else next.box.push(m);
+   next.lastEventPokemon=gift;
+  }
+  const message=r.message+(won?' +'+xp+' EXP.':'')+(next.lastHeldReward?' Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'.':'')+
+   (gift?' Que sorte! '+gift.id.charAt(0).toUpperCase()+gift.id.slice(1)+' quis ir com você ('+gift.to+')!':'');
+  next.lastMessage=message;
+  return {won:!!won,message,reward:xp,event3x3:r.reward||null,eventPokemon:gift,
+   growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
+ });
+}
 export function startWildBattle(s){
  const wild=s.pendingWild;
  if(!wild||wild.stage!==s.stage)throw new Error('Wild encounter no longer active');
@@ -998,16 +1057,18 @@ export function startWildBattle(s){
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }
-export function resolveWildBattle(s,won){
+export function resolveWildBattle(s,won,random=Math.random){
  if(!s.pendingWild)return {won:false,message:'Encontro selvagem expirado.'};
  return commitBattleOutcome(s,next=>{
   const wild=next.pendingWild;
   next.pendingWild=null;
   if(!won){
    next.losses++;
-   next.team[next.active].hp=Math.min(next.team[next.active].hp??100,50);
+   // Smoke Ball: the player runs away unhurt.
+   const smoke=escapesWildLoss(next.team[next.active]);
+   if(!smoke)next.team[next.active].hp=Math.min(next.team[next.active].hp??100,50);
    next.pendingCapture=null;
-   next.lastMessage='O '+wild.id+' selvagem escapou após a batalha.';
+   next.lastMessage=smoke?'Bola de Fumaça! Você fugiu do '+wild.id+' selvagem sem se machucar.':'O '+wild.id+' selvagem escapou após a batalha.';
    return {won:false,message:next.lastMessage};
   }
   const shared=awardSharedTeamExperience(next,
@@ -1020,6 +1081,10 @@ export function resolveWildBattle(s,won){
    next.lastMessage=wild.id+' desmaiou e foi embora. '+(next.champion?'Ele volta depois de mais algumas vitórias.':'Ele volta depois que você zerar a Liga.');
   }else
   next.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
+  // Small chance (5%) of the held item of the wild Pokémon's type.
+  next.lastHeldReward=wildItemRoll(kantoTypes(wild.id),random);
+  if(next.lastHeldReward){next.inventory=giveItem(next,next.lastHeldReward).inventory;
+   next.lastMessage+=' Ele deixou cair: '+HELD_ITEMS[next.lastHeldReward].name+'!'}
   return {won:true,message:next.lastMessage,growth,
    sharedExp:shared.gains,evolutions:shared.evolutions};
  });

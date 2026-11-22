@@ -73,7 +73,9 @@ export const POINT_SHOP=Object.freeze([
  {id:'ultra5',name:'5× Ultra Ball',cost:60,items:{ultraball:5}},
  {id:'great10',name:'10× Great Ball',cost:40,items:{greatball:10}},
  {id:'super5',name:'5× Super Poção',cost:50,items:{superpotion:5}},
- {id:'fullheal3',name:'3× Cura Total',cost:40,items:{fullheal:3}}
+ {id:'fullheal3',name:'3× Cura Total',cost:40,items:{fullheal:3}},
+ // README item 1: a random held item (individuality.js HELD_ITEMS).
+ {id:'heldbox',name:'Item de batalha surpresa',cost:45,heldRandom:true}
 ]);
 export function missionPoints(s){return Math.max(0,Math.floor(Number(s?.missionPoints)||0))}
 export function claimDailyWithPoints(s,id,typesOf=()=>[]){
@@ -86,12 +88,17 @@ export function shopItemState(s,item){
  if(missionPoints(s)<item.cost)return {ok:false,reason:'Faltam '+(item.cost-missionPoints(s))+' pontos'};
  return {ok:true,reason:''};
 }
-export function buyWithPoints(s,id){
+export function buyWithPoints(s,id,random=Math.random,heldKeys=[]){
  const item=POINT_SHOP.find(x=>x.id===id);if(!item)return null;
  if(!shopItemState(s,item).ok)return null;
+ if(item.heldRandom&&!heldKeys.length)return null;
  const next=JSON.parse(JSON.stringify(s));
  next.missionPoints=missionPoints(s)-item.cost;
- applyReward(next,{items:item.items});
+ if(item.heldRandom){
+  const key=heldKeys[Math.min(heldKeys.length-1,Math.floor(Math.max(0,Number(random())||0)*heldKeys.length))];
+  next.inventory.held={...(next.inventory.held||{}),[key]:((next.inventory.held||{})[key]||0)+1};
+  next.lastHeldItem=key;
+ }else applyReward(next,{items:item.items});
  if(item.oncePerJourney)next.pointShopBought=[...list(s?.pointShopBought),item.id];
  return next;
 }

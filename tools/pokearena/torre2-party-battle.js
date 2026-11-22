@@ -33,7 +33,10 @@ const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
 export function createPartyMatch(state,opponent,wild=false){
  const friend=state.team.slice(0,6).map(m=>({
   id:m.id,uid:m.uid,shiny:m.shiny===true,level:m.progression?.level||5,
-  hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m)
+  hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m),
+  // Individual traits (individuality.js): potential, hidden ability, item.
+  heldItem:m.heldItem??null,...(m.potential?{potential:m.potential}:{}),
+  ...(m.hiddenAbility!==undefined?{hiddenAbility:m.hiddenAbility}:{})
  }));
  const gym=STAGES[state.stage];
  const pool=gym?.enemy||[opponent.id];
