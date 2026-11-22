@@ -33,7 +33,9 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
- startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
+ startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle,startCustomBattle,resolveCustomBattle} from './campaign-core.js';
+import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
+import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
 import {installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
@@ -272,6 +274,12 @@ create(){
       outcome=resolveRematch(next,marker.ticket,!!completed.won);
       kind='rematch';
      }
+    }else if(marker.kind==='custom'){
+     // Friendly custom battle: the campaign team's HP/status stay as they
+     // were; only the series run remembers HP between its fights.
+     const hpAfter=Object.fromEntries((marker.party?.friend||[]).filter(m=>m?.uid).map(m=>[m.uid,Math.max(0,Math.round(Number(m.hp)||0))]));
+     outcome=resolveCustomBattle(next,marker.token,!!completed.won,hpAfter);
+     kind='trainer';
     }else if(marker.kind==='event3'){
      applyPartyBattleResult(next,marker.party);
      outcome=resolveEventBattle(next,marker.token,!!completed.won);
@@ -331,13 +339,14 @@ create(){
    panel.button.on('pointerdown',()=>{
     if(!this.scene.isActive())return;
     // Evolutions from this battle get their own cutscene, then Eevee's choice.
-    const towerNext=completed?.marker?.kind==='tower',eventNext=completed?.marker?.kind==='event3';
+    const towerNext=completed?.marker?.kind==='tower',eventNext=completed?.marker?.kind==='event3',customNext=completed?.marker?.kind==='custom';
     this.evolutionScene(battleReport.evolutions,()=>{
      if(!this.scene.isActive())return;
      const cur=readCampaign();
      // Torre de desafios: straight back to the tower (next floor or result).
      if(towerNext&&cur&&!cur.pendingEeveeEvolution)return this.towerScreen(cur);
      if(eventNext&&cur&&!cur.pendingEeveeEvolution)return this.eventsScreen(cur);
+     if(customNext&&cur&&!cur.pendingEeveeEvolution)return this.customScreen(cur,completed.marker.mode||'single');
      this.promptPendingEeveeEvolution(cur);
     });
    });
@@ -821,7 +830,7 @@ create(){
   pod.fillStyle(MENU_UI.oro,1).fillEllipse(92,169,84,15);
   pod.fillStyle(MENU_UI.oroLuz,.7).fillEllipse(92,167,60,8);
   pod.fillStyle(0xffffff,.08).fillCircle(92,124,48);
-  this.npcSprite(playerSpriteId(),92,171,3.6,6);
+  this.npcSprite(this.playerNpc(),92,171,3.6,6);
   center(92,194,champion||'Campeão',13,MENU_UI.amarillo).setData('torre2-hall-champion',champion||'');
   const hallTitle=titleById(legacy.activeTitle);
   center(92,210,(hallTitle?hallTitle.name:'Campeão de Kanto')+' · zerou '+legacy.championRuns.length+'×',8,'#dcf4fb');
@@ -865,7 +874,14 @@ create(){
    .setData('torre2-hall-share',true);
   this.__torre2HallOfFame={...hall};
  }
+ // Trainer customization (README 3): build the player's look texture once.
+ ensurePlayerLook(force=false){
+  if(this.__torre2LookBuilt&&!force)return;
+  try{if(this.textures.exists('frlg-npc-'+playerSpriteId())){buildLookTexture(this,playerSpriteId());this.__torre2LookBuilt=true}}catch(e){console.warn('Torre 2: trainer look',e)}
+ }
+ playerNpc(){this.ensurePlayerLook();return playerLookId(this,playerSpriteId())}
  renderCampaign(state,{deferEeveeChoice=false}={}){
+  this.ensurePlayerLook();
   if(new URLSearchParams(location.search).get('qa-legacy-map')==='1')
    return this.renderLegacyCampaign(state,{deferEeveeChoice});
   this.__torre2EeveeChoice=null;
@@ -1481,14 +1497,88 @@ create(){
  challengesScreen(state){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
   this.screenBanner(20,300,'Desafios','badges');
-  this.uiSection(60,60,520,220);
-  const won=(state.events3x3?.won||[]).length;
-  this.uiLabel(320,84,'Escolha um desafio',11,MENU_UI.amarillo,[.5,.5],4);
-  this.button(320,130,360,34,'TORRE DE DESAFIOS',()=>this.towerScreen(readCampaign()||state),true).setData('torre2-challenges-tower',true);
-  this.uiLabel(320,154,'Andares seguidos sem curar · prêmio a cada 5',8,'#dcf4fb',[.5,.5],4);
-  this.button(320,196,360,34,'EVENTOS 3x3 · '+won+'/'+EVENTS_3X3.length,()=>this.eventsScreen(readCampaign()||state),true).setData('torre2-challenges-events',true);
-  this.uiLabel(320,220,'Seis treinadores especiais · seus 3 contra os 3 deles',8,'#dcf4fb',[.5,.5],4);
+  this.uiSection(60,52,520,256);
+  const won=(state.events3x3?.won||[]).length,cs=customState(state);
+  this.uiLabel(320,68,'Escolha um desafio',11,MENU_UI.amarillo,[.5,.5],4);
+  this.button(320,100,360,30,'TORRE DE DESAFIOS',()=>this.towerScreen(readCampaign()||state),true).setData('torre2-challenges-tower',true);
+  this.uiLabel(320,122,'Andares seguidos sem curar · prêmio a cada 5',8,'#dcf4fb',[.5,.5],4);
+  this.button(320,156,360,30,'EVENTOS 3x3 · '+won+'/'+EVENTS_3X3.length,()=>this.eventsScreen(readCampaign()||state),true).setData('torre2-challenges-events',true);
+  this.uiLabel(320,178,'Treinadores especiais · seus 3 contra os 3 deles',8,'#dcf4fb',[.5,.5],4);
+  // README 6 and 11: custom rules (friendly) and custom challenge series.
+  this.button(320,212,360,30,'LUTA PERSONALIZADA',()=>this.customScreen(readCampaign()||state,'single'),true).setData('torre2-challenges-custom',true);
+  this.uiLabel(320,234,'Você escolhe nível, tipo, quantidade e dificuldade',8,'#dcf4fb',[.5,.5],4);
+  this.button(320,268,360,30,'DESAFIO PERSONALIZADO'+(cs.run?' · LUTA '+cs.run.fight+'/'+cs.run.rules.series:''),()=>this.customScreen(readCampaign()||state,'series'),true).setData('torre2-challenges-series',true);
+  this.uiLabel(320,290,'Lutas seguidas com suas regras · prêmio no final',8,'#dcf4fb',[.5,.5],4);
   this.button(320,334,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||state)).setData('torre2-challenges-back',true);
+ }
+ // Luta / Desafio personalizado (README 6 and 11, custom-battles.js).
+ customScreen(state,mode='single'){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
+  const cur=readCampaign()||state,cs=customState(cur),series=mode==='series',run=series?cs.run:null;
+  const rules=run?run.rules:cs.rules;
+  this.screenBanner(20,320,series?'Desafio personalizado':'Luta personalizada','badges');
+  this.uiLabel(320,46,series?'Lutas seguidas com as mesmas regras · o HP continua entre elas · prêmio no final':
+   'Luta amistosa: sua equipe entra com HP cheio e nada muda na campanha',7,MENU_UI.suave,[.5,.5]);
+  this.uiSection(16,56,608,248);
+  const g=this.add.graphics().setDepth(3);
+  const rows=[['level','Nível máximo'],['type','Tipo permitido'],['size','Pokémon por lado'],['difficulty','Dificuldade'],...(series?[['series','Lutas seguidas']]:[])];
+  const save=next=>{try{saveCampaign(next)}catch{this.campaignNotice('Não foi possível salvar.','#ff9d9d');return false}return true};
+  rows.forEach(([key,name],i)=>{const y=78+i*32;
+   nativeRect(g,28,y-13,360,26,0x1b2a5e,6);
+   this.uiLabel(40,y,name,9,MENU_UI.amarillo,[0,.5],4);
+   this.uiLabel(286,y,ruleLabel(rules,key),9,'#ffffff',[.5,.5],4).setData('torre2-custom-rule',key+':'+ruleLabel(rules,key));
+   if(!run){
+    const change=dir=>{const now=readCampaign()||cur,c=customState(now);
+     if(save({...now,custom:{...c,rules:cycleRule(c.rules,key,dir)}}))this.customScreen(readCampaign(),mode)};
+    this.button(218,y,26,22,'<',()=>change(-1),false,9).setData('torre2-custom-prev',key);
+    this.button(354,y,26,22,'>',()=>change(1),false,9).setData('torre2-custom-next',key);
+   }
+  });
+  // Right column: who fights, reward and record.
+  nativeRect(g,400,64,214,172,0x1b2a5e,6);
+  const eligible=eligibleIndices(cur.team,rules,kantoTypes).filter(i=>cur.team[i]?.id!=='mewtwo'&&!(run&&Number(run.hp?.[cur.team[i].uid])===0));
+  this.uiLabel(507,78,'Seus lutadores',9,MENU_UI.amarillo,[.5,.5],4);
+  const picks=eligible.slice(0,rules.size);
+  picks.forEach((idx,k)=>{const m=cur.team[idx],x=507+(k-(picks.length-1)/2)*62;
+   this.pokemonIdleSprite(m.id,x,134,44,5,null,'height');
+   const lvl=m.progression?.level||5,cap=rules.level&&lvl>rules.level?rules.level:lvl;
+   this.uiLabel(x,146,'Nv '+cap+(cap<lvl?'↓':''),7,'#dcf4fb',[.5,.5],5);
+   if(run)this.uiLabel(x,158,'HP '+Math.round(Number(run.hp?.[m.uid]??100))+'%',7,'#9ff0bf',[.5,.5],5);
+  });
+  if(picks.length<rules.size)this.uiLabel(507,124,'Faltam Pokémon que\nsigam as regras',8,'#ff9daa',[.5,.5],5);
+  if(series){const rw=seriesReward(rules);
+   this.uiLabel(507,182,'Prêmio: $'+rw.money,9,'#9ff0bf',[.5,.5],4).setData('torre2-custom-reward',rw.money);
+   const itemName={potion:'Poção',superpotion:'Super Poção',greatball:'Great Ball',ultraball:'Ultra Ball',fullheal:'Cura Total'};
+   this.uiLabel(507,198,Object.entries(rw.items).map(([k,n])=>n+'× '+(itemName[k]||k)).join(' · '),7,'#dcf4fb',[.5,.5],4);
+   this.uiLabel(507,220,'Desafios completos: '+cs.seriesWon+' · melhor: '+(cs.bestSeries||'—'),7,MENU_UI.suave,[.5,.5],4);
+  }else this.uiLabel(507,200,'Lutas: '+cs.fights+' · vitórias: '+cs.wins,8,MENU_UI.suave,[.5,.5],4);
+  if(run)this.uiLabel(214,250,'Desafio em andamento: luta '+run.fight+' de '+run.rules.series+' ('+run.won+(run.won===1?' vitória)':' vitórias)'),9,'#ffe08a',[.5,.5],4).setData('torre2-custom-run',run.fight);
+  const go=()=>{const now=readCampaign()||cur;
+   if(series&&!customState(now).run){const started=startSeries(now,customState(now).rules);if(!save(started))return;}
+   this.enterCustomBattle(readCampaign(),mode)};
+  this.button(507,270,200,30,series?(run?'CONTINUAR':'COMEÇAR DESAFIO'):'LUTAR',go,true).setData('torre2-custom-fight',mode);
+  if(run)this.button(214,282,150,22,'DESISTIR',()=>{if(save(abandonSeries(readCampaign()||cur)))this.customScreen(readCampaign(),mode)},false,8).setData('torre2-custom-quit',true);
+  this.button(320,334,220,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||cur)).setData('torre2-custom-back',true);
+  this.__torre2Custom={mode,rules,eligible:eligible.length,run:run?{fight:run.fight,won:run.won}:null};
+ }
+ enterCustomBattle(state,mode){
+  const r=startCustomBattle(state,mode);
+  if(!r.ok){this.campaignNotice(r.reason,'#ff9daa');return this.customScreen(readCampaign()||state,mode)}
+  const cur=readCampaign()||state,base={...cur,stage:Math.min(cur.stage,STAGES.length-1)};
+  const ace=r.foes.at(-1);
+  const party=createPartyMatch(base,{id:ace.id,level:ace.level,leader:false,kind:'trainer'},false);
+  // Friendly copies: capped level, HP of the series run (or full), no status.
+  party.friend=r.picks.map((i,k)=>party.friend[i]&&{...party.friend[i],level:r.levels[k],hp:r.hp[k],status:null}).filter(Boolean);party.playerIndex=0;
+  party.foes=r.foes.map(({id,level})=>({id,level,hp:100,shiny:false,loadout:resolveLoadout({id,progression:{species:id,level}})}));
+  party.enemyIndex=0;party.strategic=r.rules.difficulty==='dificil';party.trainerItems={};
+  const p=party.friend[0],e=party.foes[0],run=customState(cur).run;
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:CUSTOM_DIFFICULTY[r.rules.difficulty].ai,arena:'estadio',mandos:[touch?'tactil':'kbm','cpu'],
+   torre2:{stage:cur.stage,trainer:cur.trainer,kind:'custom',mode,token:r.token,party,
+    versus:{name:'DESAFIANTE',city:mode==='series'?'DESAFIO '+(run?.fight||1)+'/'+r.rules.series:'LUTA PERSONALIZADA',kind:'ace',
+     texture:'frlg-npc-'+spriteIdForTrainer('ace'),title:ruleLabel(r.rules,'size').toUpperCase()+' · '+ruleLabel(r.rules,'level').toUpperCase()},
+    playerLevel:p.level,enemyLevel:e.level,hardCap:r.rules.level||currentLevelCap(cur.stage)},
+   torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
  }
  // Eventos 3x3 (owner 2026-11-22, item 2): six special trainers.
  eventsScreen(state){
@@ -1953,7 +2043,7 @@ create(){
    g.fillStyle(0x2a4a8c,.9).fillEllipse(440,232,104,16);
   }
   this.npcSprite(spriteIdForTrainer(who),200,234,4,D+1);
-  this.npcSprite(playerSpriteId(),440,234,4,D+1);
+  this.npcSprite(this.playerNpc(),440,234,4,D+1);
   // FireRed dialogue box.
   const box=this.add.graphics().setDepth(D+2);
   box.fillStyle(0x283c68,1).fillRoundedRect(16,256,608,90,10);
@@ -2054,7 +2144,8 @@ create(){
   nativeRect(g,420,106,160,130,MENU_UI.contorno,8);nativeRect(g,422,108,156,126,0x1d3c7a,7);
   g.fillStyle(0xffffff,.06).fillCircle(500,160,48);
   g.fillStyle(0x000000,.3).fillEllipse(500,222,70,12);
-  this.npcSprite(playerSpriteId(),500,224,3.6,5);
+  this.npcSprite(this.playerNpc(),500,224,3.6,5);
+  this.button(462,120,72,18,'VISUAL',()=>this.lookScreen(state),false,7).setData('torre2-trainer-card-look',true);
   // Pokédex medal (owner list item 21): bronze 50, silver 100, gold 151.
   const caughtN=new Set(state.dexCaught||[]).size,medal=caughtN>=151?[MENU_UI.oro,'OURO']:caughtN>=100?[0xc0c8d8,'PRATA']:caughtN>=50?[0xcd8a4a,'BRONZE']:null;
   if(medal){g.fillStyle(MENU_UI.contorno,1).fillCircle(556,130,15);g.fillStyle(medal[0],1).fillCircle(556,130,13);
@@ -2075,6 +2166,34 @@ create(){
   this.button(554,330,150,28,'MUSEU',()=>this.museumScreen(state),true,9)
    .setData('torre2-trainer-card-hall',true).setData('torre2-trainer-card-museum',true);
   this.__torre2TrainerCard={name,id:h,badges:got};
+ }
+ // Personalização do treinador (README item 3, trainer-look.js).
+ lookScreen(state,draft=null){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('town');
+  const look=draft||readLook();
+  this.screenBanner(20,300,'Visual do treinador','badges');
+  this.uiLabel(320,46,'Cores, poses e acessórios feitos com o sprite original do FireRed',7,MENU_UI.suave,[.5,.5]);
+  this.uiSection(16,56,608,248);
+  const g=this.add.graphics().setDepth(3);
+  // Live preview: rebuild the runtime texture from the draft.
+  try{buildLookTexture(this,playerSpriteId(),look)}catch(e){console.warn(e)}
+  nativeRect(g,32,70,200,220,MENU_UI.contorno,8);nativeRect(g,34,72,196,216,0x1d3c7a,7);
+  g.fillStyle(0xffffff,.06).fillCircle(132,170,70);g.fillStyle(0x000000,.3).fillEllipse(132,268,90,14);
+  this.npcSprite(playerLookId(this,playerSpriteId()),132,270,6,5);
+  const rows=[['outfit','Cor da roupa'],['pose','Pose'],['accessory','Acessório']];
+  rows.forEach(([key,name],i)=>{const y=96+i*48;
+   nativeRect(g,252,y-16,356,32,0x1b2a5e,6);
+   this.uiLabel(266,y,name,9,MENU_UI.amarillo,[0,.5],4);
+   this.uiLabel(486,y,lookLabel(look,key),9,'#ffffff',[.5,.5],4).setData('torre2-look-value',key+':'+look[key]);
+   this.button(416,y,26,24,'<',()=>this.lookScreen(state,cycleLook(look,key,-1)),false,9).setData('torre2-look-prev',key);
+   this.button(574,y,26,24,'>',()=>this.lookScreen(state,cycleLook(look,key,1)),false,9).setData('torre2-look-next',key);
+  });
+  this.uiLabel(430,236,'Os acessórios aparecem nas poses de frente e andando.',7,MENU_UI.suave,[.5,.5],4);
+  const leave=()=>{this.ensurePlayerLook(true);this.trainerCardScreen(readCampaign()||state)};
+  this.button(340,270,140,26,'PADRÃO',()=>this.lookScreen(state,defaultLook()),false,8).setData('torre2-look-reset',true);
+  this.button(500,270,160,26,'SALVAR',()=>{if(!saveLook(look))this.campaignNotice('Não foi possível salvar.','#ff9d9d');else{this.campaignNotice('Visual salvo!','#9ff0bf');leave()}},true,8).setData('torre2-look-save',true);
+  this.button(320,334,220,28,'◀ VOLTAR',leave).setData('torre2-look-back',true);
+  this.__torre2Look=look;
  }
  // Museu de conquistas (owner 2026-11-22, item 4): one gallery of everything
  // earned. Read-only: badges, League honours, legendaries, records, titles;

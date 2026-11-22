@@ -105,6 +105,10 @@ const newModuleNames=[
  ['tools/pokearena/torre2-individuality.js','torre2/individuality.js'],
  // Trainers standing in the arena, Poké Ball from the hand, move-name speech.
  ['tools/pokearena/torre2-arena-trainers.js','torre2/arena-trainers.js'],
+ // Custom battles and custom challenge series (README 6 and 11).
+ ['tools/pokearena/torre2-custom-battles.js','torre2/custom-battles.js'],
+ // Trainer customization: outfit colour, pose and accessories (README 3).
+ ['tools/pokearena/torre2-trainer-look.js','torre2/trainer-look.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for

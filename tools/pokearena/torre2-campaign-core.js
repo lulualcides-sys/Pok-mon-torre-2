@@ -18,6 +18,7 @@ import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
 import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
+import {cleanRules,eligibleIndices,playerLevelFor,buildOpponents,customState,customToken,resolveCustomResult} from './custom-battles.js';
 import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
@@ -1043,6 +1044,37 @@ export function resolveEventBattle(s,token,won,random=Math.random){
   next.lastMessage=message;
   return {won:!!won,message,reward:xp,event3x3:r.reward||null,eventPokemon:gift,
    growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
+ });
+}
+// Lutas personalizadas (custom-battles.js, README 6 and 11): separate,
+// friendly battles; the campaign team's HP/status is never changed.
+export function customSpeciesPool(){return [...supportedKanto].map(id=>({id,types:kantoTypes(id)}))}
+export function startCustomBattle(s,mode='single',random=Math.random){
+ const c=customState(s),run=mode==='series'?c.run:null;
+ if(mode==='series'&&!run)return {ok:false,reason:'Nenhum desafio em andamento.'};
+ const rules=cleanRules(run?.rules||c.rules);
+ const eligible=eligibleIndices(s.team,rules,kantoTypes).filter(i=>s.team[i]?.id!=='mewtwo'&&eventSpeciesOk(s.team[i].id)&&
+  !(run&&Number(run.hp?.[s.team[i].uid])===0));
+ if(eligible.length<rules.size)return {ok:false,reason:'Você precisa de '+rules.size+' Pokémon que sigam as regras'+
+  (rules.type?' (tipo escolhido)':'')+(run?' e ainda tenham HP no desafio':'')+'.'};
+ const picks=eligible.slice(0,rules.size);
+ const levels=picks.map(i=>playerLevelFor(s.team[i].progression?.level||5,rules));
+ const foes=buildOpponents(rules,customSpeciesPool().filter(p=>eventSpeciesOk(p.id)),levels,random);
+ if(foes.length<rules.size)return {ok:false,reason:'Não há Pokémon suficientes desse tipo para o adversário.'};
+ const token=customToken(s,mode);
+ const next={...s,customPending:{token,mode},dexSeen:[...(s.dexSeen||[])]};
+ foes.forEach(m=>recordSeen(next,m.id));
+ saveCampaign(next);s.customPending=next.customPending;s.dexSeen=next.dexSeen;
+ return {ok:true,token,mode,rules,picks,levels,foes,hp:picks.map(i=>run?Number(run.hp?.[s.team[i].uid]??100):100)};
+}
+export function resolveCustomBattle(s,token,won,hpAfter={}){
+ if(!s.customPending||s.customPending.token!==token)return {ok:false,reason:'Resultado antigo da luta personalizada ignorado.'};
+ const mode=s.customPending.mode;
+ return commitBattleOutcome(s,next=>{
+  next.customPending=null;
+  const r=resolveCustomResult(next,mode,!!won,hpAfter);
+  Object.assign(next,r.state);next.customPending=null;next.lastMessage=r.message;
+  return {won:!!won,message:r.message,reward:0,custom:{mode,done:r.done,reward:r.reward},sharedExp:[],evolutions:[]};
  });
 }
 export function startWildBattle(s){

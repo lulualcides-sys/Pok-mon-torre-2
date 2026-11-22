@@ -51,7 +51,8 @@ export function playerSpriteId(storage=globalThis.localStorage){
  try{return storage?.getItem('torre2-trainer-gender')==='leaf'?'green_normal':'red_normal'}catch{return 'red_normal'}
 }
 export function addRedPlayer(scene,x,y,{scale=1,depth=9}={}){
- let key=NPC_TEXTURE_PREFIX+playerSpriteId();
+ // Customized look (trainer-look.js) when the player built one.
+ let key=scene.textures.exists(NPC_TEXTURE_PREFIX+'player-look')?NPC_TEXTURE_PREFIX+'player-look':NPC_TEXTURE_PREFIX+playerSpriteId();
  if(!scene.textures.exists(key))key=NPC_TEXTURE_PREFIX+'red_normal';
  if(!scene.textures.exists(key))return null;
  const tex=scene.textures.get(key),frame=frontFrame(tex,key);
