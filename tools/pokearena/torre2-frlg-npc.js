@@ -15,7 +15,7 @@ const ALIAS=Object.freeze({
  koga:'koga',sabrina:'sabrina',blaine:'blaine',giovanni:'giovanni',
  lorelei:'lorelei',bruno:'bruno',agatha:'agatha',lance:'lance',
  oak:'prof_oak',professor:'prof_oak',prof_oak:'prof_oak',
- trainer:'youngster',rocker:'rocker'
+ trainer:'youngster',rocker:'rocker',acef:'cooltrainer_f',woman:'woman_1'
 });
 export function spriteIdForTrainer(kind){
  return ALIAS[String(kind||'').toLowerCase()]||'youngster';

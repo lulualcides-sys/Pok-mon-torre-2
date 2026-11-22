@@ -17,7 +17,7 @@ import {encodeTradeCode,decodeTradeCode,canSend} from './trade-code.js';
 import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
-import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult} from './battle-events.js';
+import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
 import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
@@ -1011,7 +1011,7 @@ export function startEventBattle(s,id){
  saveCampaign(next);s.eventPending=next.eventPending;s.dexSeen=next.dexSeen;
  return {ok:true,token,team,event:ev,trio:trio.map(x=>x.i)};
 }
-export function resolveEventBattle(s,token,won){
+export function resolveEventBattle(s,token,won,random=Math.random){
  if(!s.eventPending||s.eventPending.token!==token)return {ok:false,reason:'Resultado antigo do evento ignorado.'};
  const id=s.eventPending.id;
  return commitBattleOutcome(s,next=>{
@@ -1026,9 +1026,22 @@ export function resolveEventBattle(s,token,won){
   const r=resolveEventResult(next,id,!!won);
   Object.assign(next,r.state);next.eventPending=null;next.lastHeldReward=null;
   if(r.first&&EVENT_ITEMS[id]){next.inventory=giveItem(next,EVENT_ITEMS[id]).inventory;next.lastHeldReward=EVENT_ITEMS[id]}
-  const message=r.message+(won?' +'+xp+' EXP.':'')+(next.lastHeldReward?' Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'.':'');
+  // 5% per win: one of the challenger's Pokémon joins (team, or PC if full).
+  let gift=null;next.lastEventPokemon=null;
+  const species=won?eventPokemonRoll(EVENTS_3X3.find(e=>e.id===id),random):null;
+  if(species&&eventSpeciesOk(species)){
+   const st=Math.min(next.stage,STAGES.length-1),lvl=Math.max(5,Math.min(currentLevelCap(st),eventTeam(EVENTS_3X3.find(e=>e.id===id),currentLevelCap(st)).find(t=>t.id===species)?.level||5));
+   const m=newMember(species,lvl);next.team=[...next.team];next.box=[...(next.box||[])];
+   next.dexSeen=[...(next.dexSeen||[])];next.dexCaught=[...(next.dexCaught||[])];
+   recordCaught(next,species);
+   gift={id:species,level:lvl,to:next.team.length<6?'Equipe':'PC'};
+   if(gift.to==='Equipe')next.team.push(m);else next.box.push(m);
+   next.lastEventPokemon=gift;
+  }
+  const message=r.message+(won?' +'+xp+' EXP.':'')+(next.lastHeldReward?' Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'.':'')+
+   (gift?' Que sorte! '+gift.id.charAt(0).toUpperCase()+gift.id.slice(1)+' quis ir com você ('+gift.to+')!':'');
   next.lastMessage=message;
-  return {won:!!won,message,reward:xp,event3x3:r.reward||null,
+  return {won:!!won,message,reward:xp,event3x3:r.reward||null,eventPokemon:gift,
    growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
  });
 }

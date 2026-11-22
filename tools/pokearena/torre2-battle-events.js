@@ -4,7 +4,7 @@
  *    with the weather of the leader's type (Blaine: sun, Misty: rain...) or
  *    of the city's route weather. Uses the existing Torre 2 battle weather
  *    (weather.js), never a new move and never a native kit change.
- *  - Eventos 3x3 (item 2): six special battles across the journey, each a
+ *  - Eventos 3x3 (item 2): fifteen special battles across the journey, each a
  *    named trainer with exactly three Pokémon who challenges the player's
  *    first three healthy Pokémon, with a 3x3 line before the fight. A
  *    separate battle: it never moves the trainer ladder.
@@ -58,8 +58,53 @@ export const EVENTS_3X3=Object.freeze([
  {id:'e6',name:'Ás Lendário Rafa',sprite:'ace',champion:true,
   team:['dragonite','gyarados','arcanine'],
   line:'Campeão, hein? Campeões de verdade vencem em trio. 3x3, sem desculpas!',
-  reward:{money:10000,items:{ultraball:10}}}
+  reward:{money:10000,items:{ultraball:10}}},
+ // Nine more (owner 2026-11-22: "umas 15 batalhas 3x3"), spread across the journey.
+ {id:'e7',name:'Caçador Beto',sprite:'bugcatcher',minBadges:1,
+  team:['beedrill','butterfree','parasect'],
+  line:'Meus insetos atacam em enxame! Três de uma vez. Você aguenta o zumbido?',
+  reward:{money:1800,items:{potion:5}}},
+ {id:'e8',name:'Pescador Tonho',sprite:'fisherman',minBadges:2,
+  team:['poliwhirl','seaking','starmie'],
+  line:'Pesquei os três maiores do lago hoje. Vamos ver se você fisga uma vitória!',
+  reward:{money:2800,items:{greatball:5}}},
+ {id:'e9',name:'Motoqueiro Rex',sprite:'biker',minBadges:3,
+  team:['weezing','muk','raticate'],
+  line:'Na estrada a gangue anda em trio! Acelera aí, 3x3 sem freio!',
+  reward:{money:3600,items:{superpotion:4}}},
+ {id:'e10',name:'Montanhista Duda',sprite:'hiker',minBadges:4,
+  team:['graveler','onix','rhyhorn'],
+  line:'Três rochas são uma montanha! Tenta escalar essa, se for capaz!',
+  reward:{money:4000,items:{fullheal:3}}},
+ {id:'e11',name:'Domadora Lume',sprite:'picnicker',minBadges:4,
+  team:['rapidash','growlithe','ninetales'],
+  line:'Minha trinca de fogo nunca se apaga. Prepare-se para o calor do 3x3!',
+  reward:{money:4200,items:{ultraball:2}}},
+ {id:'e12',name:'Ninja Sombra',sprite:'rocker',minBadges:6,
+  team:['venomoth','golbat','arbok'],
+  line:'Você nem vai ver de onde vêm os três golpes... Silêncio. Começou.',
+  reward:{money:5200,items:{ultraball:3}}},
+ {id:'e13',name:'Patinadora Neve',sprite:'acef',minBadges:6,
+  team:['dewgong','cloyster','jynx'],
+  line:'Três passos no gelo e você escorrega! Vamos dançar um 3x3 congelante!',
+  reward:{money:5400,items:{superpotion:5}}},
+ {id:'e14',name:'Professora Íris',sprite:'woman',minBadges:8,
+  team:['alakazam','slowbro','exeggutor'],
+  line:'Já previ esta luta: três mentes contra três corações. Mostre que eu errei!',
+  reward:{money:7500,items:{ultraball:5}}},
+ {id:'e15',name:'Veterano Heitor',sprite:'gentleman',champion:true,
+  team:['aerodactyl','lapras','snorlax'],
+  line:'Lendas de Kanto, meu jovem. Três gigantes contra o seu melhor trio!',
+  reward:{money:12000,items:{ultraball:10}}}
 ]);
+// Each win has a small chance to earn one of the challenger's Pokémon.
+export const EVENT_POKEMON_CHANCE=.05;
+export function eventPokemonRoll(ev,random=Math.random){
+ const r=Number(random());
+ if(!(Number.isFinite(r)&&r>=0&&r<EVENT_POKEMON_CHANCE))return null;
+ const team=list(ev?.team);if(!team.length)return null;
+ return team[Math.min(team.length-1,Math.floor(Math.max(0,Math.min(.999999,Number(random())||0))*team.length))];
+}
 export const EVENT_SIZE=3;
 const badgeCount=s=>list(s?.badges).length;
 export function eventStatus(s,ev){

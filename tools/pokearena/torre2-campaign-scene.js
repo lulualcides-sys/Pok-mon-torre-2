@@ -1175,7 +1175,13 @@ create(){
  // Short on-screen notice (save export/import feedback).
  campaignNotice(message,color=MENU_UI.amarillo){
   const t=this.uiLabel(320,346,message,9,color,[.5,.5],9600).setData('torre2-campaign-notice',true);
-  this.time.delayedCall(2600,()=>t.active&&t.destroy());
+  // Readable toast: dark rounded backdrop so it never mixes with the buttons
+  // underneath (owner print 2026-11-22).
+  const w=Math.min(628,t.displayWidth+20),bg=this.add.graphics().setDepth(9599);
+  bg.fillStyle(0x0a1422,.94).fillRoundedRect(320-w/2,336,w,20,6);
+  bg.lineStyle(1,0xf0cb6d,.8).strokeRoundedRect(320-w/2,336,w,20,6);
+  if(t.displayWidth>612)t.setScale(612/t.displayWidth);
+  this.time.delayedCall(2600,()=>{t.active&&t.destroy();bg.active&&bg.destroy()});
   return t;
  }
  // Backup: download the whole campaign (plus trainer name / character) as a
@@ -1481,10 +1487,11 @@ create(){
  eventsScreen(state){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
   this.screenBanner(20,300,'Eventos 3x3','badges');
-  this.uiLabel(320,46,'Seus 3 primeiros Pokémon com HP contra os 3 do desafiante · prêmio na 1ª vitória',8,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,46,'Seus 3 primeiros Pokémon com HP contra os 3 do desafiante · prêmio na 1ª vitória · 5% de chance de um Pokémon dele',7,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,252);
   const g=this.add.graphics().setDepth(3);
-  EVENTS_3X3.forEach((ev,i)=>{
+  const per=6,pages=Math.ceil(EVENTS_3X3.length/per),page=Math.min(pages-1,Math.max(0,this.__torre2EventPage|0));
+  EVENTS_3X3.slice(page*per,page*per+per).forEach((ev,i)=>{
    const x=16+(i%3)*206,y=64+Math.floor(i/3)*122,st=eventStatus(state,ev),locked=st.state==='locked';
    nativeRect(g,x,y,202,118,st.state==='won'?0x50cc84:locked?MENU_UI.apagadoBorde:MENU_UI.oro,8);
    nativeRect(g,x+2,y+2,198,114,locked?0x0a1638:0x1b2a5e,7);
@@ -1494,7 +1501,12 @@ create(){
    if(!locked)ev.team.forEach((id,k)=>this.pokemonIdleSprite(id,x+76+k*42,y+84,30,5,null,'height'));
    if(!locked)this.button(x+150,y+104,90,18,'LUTAR',()=>this.eventIntro(readCampaign()||state,ev.id),st.state!=='won',7).setData('torre2-event-fight',ev.id);
   });
-  this.button(320,334,240,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-events-back',true);
+  const won=EVENTS_3X3.filter(e=>eventStatus(state,e).state==='won').length;
+  this.button(320,334,200,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-events-back',true);
+  const go=d=>{this.__torre2EventPage=(page+d+pages)%pages;this.eventsScreen(readCampaign()||state)};
+  this.button(150,334,110,28,'◀ PÁGINA',()=>go(-1),false,8).setData('torre2-events-prev',true);
+  this.button(490,334,110,28,(page+1)+'/'+pages+' ▶',()=>go(1),false,8).setData('torre2-events-next',true);
+  this.uiLabel(616,46,won+'/'+EVENTS_3X3.length,8,'#9ff0bf',[1,.5]);
   this.__torre2Events=EVENTS_3X3.map(e=>({id:e.id,state:eventStatus(state,e).state}));
  }
  // The challenger's 3x3 line, then the fight.
@@ -3539,6 +3551,17 @@ create(){
    name.setOrigin(.5);
    return bg;
   };
+  // Visual helpers (owner 2026-11-22: "deixar mais bonito"): type-coloured
+  // pills and strips drawn under the labels; captions and inputs unchanged.
+  const deco=this.add.graphics().setDepth(13);
+  const pill=(x,y,type,align=1)=>{
+   if(!type)return;const w=Math.max(30,String(type).length*5+10),left=align?x-w:x;
+   deco.fillStyle(0x0a1422,1).fillRoundedRect(left-1,y-1,w+2,13,4);
+   deco.fillStyle(ncol(type),1).fillRoundedRect(left,y,w,11,4);
+   deco.fillStyle(0xffffff,.28).fillRect(left+3,y+1,w-6,1);
+   textoMenu(this,left+w/2,y+5.5,String(type),{tam:7,color:'#10202f',borde:0,literal:true}).setOrigin(.5).setDepth(17);
+  };
+  const strip=(x,y,h,type)=>{deco.fillStyle(ncol(type),1).fillRoundedRect(x,y,4,h,2)};
   // Distinct header and unified back navigation.
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
@@ -3555,18 +3578,23 @@ create(){
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
   const typesCaption=stats.types.join('  /  ');
-  label(25,82,'NV. '+stats.level+'    '+typesCaption,hex(stats.types[0]),11);
+  label(25,80,'NV. '+stats.level,C.white,11).setData('torre2-summary-level',typesCaption);
+  stats.types.slice(0,2).reverse().forEach((t,i)=>pill(200-i*48,80,t));
   const {def,etapa}=buscar(member.id);
   const dex=(etapa>0?def.evoluciones[etapa-1]?.dex:def.dex)||'0150';
   const key='torre2-portrait-'+dex;
-  box(25,103,82,81,0x091726,0x365b78);
+  // Sprite stage tinted by the main type, with a floor shadow.
+  box(20,98,183,88,0x091726,0x365b78);
+  const stage=this.add.graphics().setDepth(13);
+  stage.fillStyle(ncol(stats.types[0]),.16).fillRoundedRect(23,101,177,82,5);
+  stage.fillStyle(ncol(stats.types[0]),.10).fillRoundedRect(23,140,177,43,{tl:0,tr:0,bl:5,br:5});
   const portrait=()=>{
    if(!this.scene.isActive()||!this.textures.exists(key))return;
-   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(3);
+   this.add.image(111,141,key).setDisplaySize(74,74).setDepth(14);
   };
   // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
-  const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.3).fillEllipse(66,175,50,8);
-  if(!this.pokemonIdleSprite(member.id,66,176,64,18,null,true)){
+  const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.35).fillEllipse(111,176,64,9);
+  if(!this.pokemonIdleSprite(member.id,111,177,62,18,null,true)){
    if(this.textures.exists(key))portrait();
    else{
     this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
@@ -3574,25 +3602,23 @@ create(){
     if(!this.load.isLoading())this.load.start();
    }
   }
-  label(119,114,'TIPO',C.muted,10);
-  label(119,131,stats.types[0],hex(stats.types[0]),12);
-  label(119,151,'NV. '+stats.level,C.white,11);
   // Distinguish a real Shiny individual in the native summary without
   // recoloring the approved PMD portrait or inventing a Shiny sprite.
   if(member.shiny===true)
-   label(119,168,'✦ SHINY',C.gold,11).setData('torre2-shiny-summary-label',true);
+   label(30,104,'✦ SHINY',C.gold,10).setData('torre2-shiny-summary-label',true);
   const statRows=[['HP',stats.hp,180,0x64cb9c],['ATK',stats.attack,160,0xf6a268],
                   ['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]];
   statRows.forEach(([name,value,max,color],i)=>{
-   const y=194+i*23;
-   label(25,y,name,C.muted,10);label(179,y,String(value),C.white,10).setOrigin(1,0);
-   box(60,y+3,100,7,0x0c1725,0x1d3046);
-   const width=Math.max(3,96*Math.min(1,Math.max(0,value/max)));
-   this.add.rectangle(62+width/2,y+6.5,width,4,color,1);
+   const y=194+i*20;
+   label(25,y,name,C.muted,10);label(198,y,String(value),C.white,10).setOrigin(1,0);
+   const bar=this.add.graphics().setDepth(14),ratio=Math.min(1,Math.max(0,value/max));
+   bar.fillStyle(0x0a1422,1).fillRoundedRect(56,y+2,112,9,4);bar.fillStyle(0x1d3046,1).fillRoundedRect(57,y+3,110,7,3);
+   bar.fillStyle(color,1).fillRoundedRect(57,y+3,Math.max(6,110*ratio),7,3);
+   bar.fillStyle(0xffffff,.30).fillRect(59,y+4,Math.max(2,110*ratio-4),1);
   });
-  if(member.id==='mewtwo')label(25,289,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
+  if(member.id==='mewtwo')label(25,282,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
   // Individual Pokémon (README 5/9/1/10): potential, hidden ability, item.
-  else button(24,280,174,24,'FICHA '+'★'.repeat(potentialStars(potentialOf(member)))+(hiddenAbilityOf(member)?' ✦':''),
+  else button(24,276,174,26,'FICHA '+'★'.repeat(potentialStars(potentialOf(member)))+(hiddenAbilityOf(member)?' ✦':''),
    ()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
    try{
@@ -3625,16 +3651,18 @@ create(){
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x335977));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
-   label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
+   strip(x+3,y+4,31,move?.tipo);
+   if(i===3)deco.lineStyle(1,0xf0cb6d,current?1:.55).strokeRoundedRect(x+1,y+1,187,37,5);
+   label(x+11,y+4,slotCodes[i]+' · '+slotNames[i],
      current?'#ffe6a7':'#96b2ce',9);
    const upcoming=earlyPlan?.[i],need=upcoming?EARLY_KANTO_LEARNSETS[member.id]?.[
     upcoming.toLowerCase().replace(/[^a-z0-9]+/g,'-')]:null;
-   label(x+8,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
+   label(x+11,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
     'ULT · DESBLOQUEIA NV. 8':upcoming?
     upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
-   if(move?.torre2IntroPractice)label(x+8,y+31,'INICIAL · POTÊNCIA EQUILIBRADA','#b1cfde',7);
-   label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
-   label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
+   if(move?.torre2IntroPractice)label(x+11,y+31,'INICIAL · POTÊNCIA EQUILIBRADA','#b1cfde',7);
+   pill(x+182,y+4,move?.tipo);
+   label(x+180,y+22,'CD '+(move?.cd??0)+'s',move?'#cfe3f5':C.muted,9).setOrigin(1,0);
   });
   // Fifth dedicated action is ALWAYS defensive and never consumes an
   // attack slot: native Phaser Space Dodge, untouched original ATK visuals.
@@ -3765,11 +3793,12 @@ create(){
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
-   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':reason?'× ':'+ ')+
+   strip(x+3,y+4,19,reason?null:move.tipo);
+   label(x+10,y+3,(current?'✓ ':equipped?'◆ ':reason?'× ':'+ ')+
     (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
     (move.approved?' ✓':''),
     current?'#bcffe3':reason?'#9caec1':'#ebf5ff',10);
-   label(x+6,y+16,reason||move.tipo,reason?'#f4b69a':C.muted,8);
+   if(reason)label(x+10,y+16,reason,'#f4b69a',8);else pill(x+10,y+15,move.tipo,0);
    if(pending)label(x+110,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });

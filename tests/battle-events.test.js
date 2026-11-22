@@ -23,8 +23,9 @@ test('weather by chance: leader type, route weather, low rates',()=>{
  assert.ok(n>=150&&n<=200,String(n));
  assert.deepEqual(Object.keys(TYPE_WEATHER).sort(),['ELECTRIC','FIRE','GRASS','GROUND','ICE','ROCK','WATER']);
 });
-test('six 3x3 events: unlocks, teams of three, first-win reward only once',()=>{
- assert.equal(EVENTS_3X3.length,6);
+test('fifteen 3x3 events: unlocks, teams of three, first-win reward only once',()=>{
+ assert.equal(EVENTS_3X3.length,15);
+ assert.equal(new Set(EVENTS_3X3.map(e=>e.id)).size,15);
  for(const ev of EVENTS_3X3){assert.equal(ev.team.length,3);assert.ok(ev.line.length>20);assert.ok(ev.reward.money>0)}
  const s0={badges:[],team:[]};
  assert.equal(eventStatus(s0,EVENTS_3X3[0]).state,'locked');
@@ -51,4 +52,18 @@ test('campaign wiring: weather in the battle payload, events and museum screens'
  assert.match(cards,/\['DESAFIOS',handlers\.tower,'badges'\]/);
  const fn=core.slice(core.indexOf('export function resolveEventBattle'),core.indexOf('export function startWildBattle'));
  assert.ok(!/next\.trainer\s*[+=]/.test(fn)&&!/next\.stage\s*[+=]/.test(fn),'events never move the ladder');
+});
+
+test('3x3 events: 5% chance to earn one of the challenger\'s Pokémon',async()=>{
+ const {eventPokemonRoll,EVENT_POKEMON_CHANCE}=await import('../tools/pokearena/torre2-battle-events.js');
+ assert.equal(EVENT_POKEMON_CHANCE,.05);
+ const ev=EVENTS_3X3.find(e=>e.id==='e8');
+ const seq=v=>{let i=0;return()=>v[i++]};
+ assert.equal(eventPokemonRoll(ev,seq([.04,.99])),'starmie');
+ assert.equal(eventPokemonRoll(ev,seq([.04,0])),'poliwhirl');
+ assert.equal(eventPokemonRoll(ev,seq([.05,0])),null);
+ let n=0;for(let i=0;i<2000;i++)if(eventPokemonRoll(ev,Math.random))n++;
+ assert.ok(n>40&&n<170,String(n));
+ const core=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
+ assert.match(core,/eventPokemonRoll\(EVENTS_3X3\.find/);assert.match(core,/eventSpeciesOk\(species\)/);
 });
