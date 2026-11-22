@@ -24,7 +24,8 @@ export const UI_DEPTH=2450,WORLD_DEPTH=6;
 // inside the oval. They move WITH the floor when the camera pans/zooms.
 export function standPoint(side,field=CAMPO,fighter=null){
  const base=fighter&&Number.isFinite(fighter.x)?fighter:{x:side===0?field.x+field.w*.3:field.x+field.w*.7,y:field.y+field.h*.5};
- const x=base.x+(side===0?-70:92),y=base.y+78;
+ // Beside the arena's middle height, a bit above the fighters' line.
+ const x=base.x+(side===0?-58:92),y=base.y+28;
  return {x:Math.max(field.x+12,Math.min(field.x+field.w-12,x)),y:Math.max(field.y+20,Math.min(field.y+field.h-4,y))};
 }
 // World point → UI-camera point (the HUD camera has its own zoom), clamped
@@ -80,7 +81,7 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
  const api={
   trainers,
   // Hand position for the Poké Ball (world coordinates).
-  hand(side){const t=trainers[side];return t?{x:t.stand.x+(side===0?8:-8),y:t.stand.y-24}:null},
+  hand(side){const t=trainers[side];return t?{x:t.stand.x+(side===0?9:-9),y:t.stand.y-27}:null},
   // Small throw motion: lean forward, step, back.
   throwBall(side){
    const t=trainers[side];if(!t)return;

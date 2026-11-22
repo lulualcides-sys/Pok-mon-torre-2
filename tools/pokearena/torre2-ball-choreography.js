@@ -149,6 +149,9 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const trainers=scene.__torre2ArenaTrainers,hand=trainers?.hand?.(side);
  if(hand)from=hand;
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
+ // With a trainer in the arena the throw is slower so the ball is seen
+ // leaving the hand (owner 2026-11-22).
+ const throwMs=hand?620:360;
  const origin=mode==='recall'?from:landing;
  let elapsed=-Math.max(0,Number(delay)||0),done=false,thrown=false;
  scene.__torre2BallTransitions=(scene.__torre2BallTransitions||0)+1;
@@ -162,14 +165,17 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   if(done||!scene.scene.isActive())return clean();
   elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
   let state,center=body.center;
+  // Wait until the trainer has really arrived (tweens and this step use
+  // different clocks on slow devices).
+  if(mode==='release'&&trainers?.trainers?.[side]?.walking)elapsed=Math.min(elapsed,-1);
   if(elapsed<0){poseBody(body,center,mode==='release'?.01:1,mode==='release'?0:1);return}
   if(!thrown&&mode==='release'){thrown=true;trainers?.throwBall?.(side)}
-  if(mode==='release'&&elapsed<360){
+  if(mode==='release'&&elapsed<throwMs){
    state='THROW';poseBody(body,center,.01,0);
-   const p=ballArc(from,landing,elapsed/360,48);
+   const p=ballArc(from,landing,elapsed/throwMs,hand?34:48);
    showBall(p.x,p.y,elapsed/60);
   }else{
-   const t=clamp01((elapsed-(mode==='release'?360:80))/420);
+   const t=clamp01((elapsed-(mode==='release'?throwMs:80))/420);
    state=t===0?'OPEN':mode==='recall'?'ABSORB':'RELEASE';
    if(mode==='recall'){
     const u=t*t;center={x:body.center.x+(origin.x-body.center.x)*u,y:body.center.y+(origin.y-body.center.y)*u};
