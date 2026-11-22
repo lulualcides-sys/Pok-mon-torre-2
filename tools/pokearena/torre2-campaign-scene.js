@@ -34,10 +34,11 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove,startLegendaryEncounter,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle,startCustomBattle,resolveCustomBattle} from './campaign-core.js';
+import {QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -921,6 +922,8 @@ create(){
    tower:()=>this.challengesScreen(state),
    installApp:()=>this.installApp(),
    missions:()=>this.missionsScreen(state),
+   quests:()=>this.questsScreen(readCampaign()||state),
+   tutorial:()=>this.tutorialScreen(readCampaign()||state,0),
    trade:()=>this.tradeScreen(state),
    lightMode:()=>{this.toggleLightMode();this.renderCampaign(state)},
    lightLabel:()=>'MODO LEVE: '+(this.lightModeOn()?'ON':'OFF'),
@@ -938,6 +941,9 @@ create(){
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   // First visit only: point out the main buttons (never blocks input).
+  // First journey: the short tutorial opens once (never under automation).
+  {let seen=true;try{seen=localStorage.getItem('torre2-tutorial-seen')==='1'}catch{}
+   if(!seen&&!navigator.webdriver&&!(state.wins>0)&&state.stage===0){this.time.delayedCall(350,()=>{if(this.scene.isActive()&&hubAlive.active)this.tutorialScreen(state,0)})}}
   if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive()&&hubAlive.active)this.campaignTips()});}
   // A newly unlocked Evento 3x3 is announced once (owner 2026-11-22).
   {const fresh=EVENTS_3X3.find(ev=>eventStatus(state,ev).state==='open'&&!(state.events3x3?.announced||[]).includes(ev.id));
@@ -1510,6 +1516,81 @@ create(){
   this.button(320,268,360,30,'DESAFIO PERSONALIZADO'+(cs.run?' · LUTA '+cs.run.fight+'/'+cs.run.rules.series:''),()=>this.customScreen(readCampaign()||state,'series'),true).setData('torre2-challenges-series',true);
   this.uiLabel(320,290,'Lutas seguidas com suas regras · prêmio no final',8,'#dcf4fb',[.5,.5],4);
   this.button(320,334,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(readCampaign()||state)).setData('torre2-challenges-back',true);
+ }
+ // Tutorial curto (owner 2026-11-22, item 35): four illustrated pages.
+ tutorialScreen(state,page=0){
+  this.children.removeAll(true);this.backdrop();
+  try{localStorage.setItem('torre2-tutorial-seen','1')}catch{}
+  const pages=[
+   {title:'Bem-vindo à campanha!',art:'npc',lines:['Cada card é um treinador da rota. Toque em BATALHAR para enfrentar o próximo.',
+    'Vença os treinadores para chegar ao líder do ginásio e ganhar a insígnia.',
+    'EQUIPE mostra seus Pokémon, BOLSA os itens, CENTRO cura e LOJA vende Poké Balls.']},
+   {title:'Na arena',art:'mon',lines:['Mova seu Pokémon arrastando na tela (ou WASD no teclado).',
+    'ATK é o golpe básico. HAB 2 e HAB 3 são golpes especiais. ULT é o golpe forte (libera no Nv 8).',
+    'ESQUIVA desvia sem levar dano. AUTO luta sozinho e VEL deixa a luta 1,5x ou 2x mais rápida.']},
+   {title:'Capturar e cuidar',art:'ball',lines:['Na grama alta aparecem Pokémon selvagens: jogue a Poké Ball ANTES do nocaute.',
+    'Pokémon desmaiado não luta: passe no CENTRO para curar a equipe.',
+    'No SUMÁRIO você troca golpes, dá APELIDO e abre a FICHA (potencial, habilidade e item).']},
+   {title:'Muito mais para fazer',art:'oak',lines:['MAIS → DESAFIOS: Torre, Eventos 3x3, Luta e Desafio personalizado.',
+    'MAIS → MISSÕES DA CIDADE: ajude os NPCs e ganhe prêmios. Há missões diárias também.',
+    'Ganhe itens de batalha, procure shinies e complete a Pokédex. Boa jornada!']}];
+  const p=Math.max(0,Math.min(pages.length-1,page)),pg=pages[p];
+  this.screenBanner(20,320,'Como jogar','badges');
+  this.uiSection(30,52,580,256);
+  const g=this.add.graphics().setDepth(3);
+  nativeRect(g,46,70,150,200,MENU_UI.contorno,8);nativeRect(g,48,72,146,196,0x1d3c7a,7);
+  g.fillStyle(0xffffff,.06).fillCircle(121,160,56);g.fillStyle(0x000000,.3).fillEllipse(121,238,80,12);
+  if(pg.art==='npc')this.npcSprite(this.playerNpc(),121,240,4,5);
+  else if(pg.art==='oak')this.npcSprite('prof_oak',121,240,4,5);
+  else if(pg.art==='mon')this.pokemonIdleSprite('charmander',121,236,84,5,null,'height');
+  else{const k='torre2-frlg-mart-pokeball';if(this.textures.exists(k))this.add.image(121,170,k).setScale(4).setDepth(5);this.pokemonIdleSprite('pidgey',121,236,52,5,null,'height')}
+  this.uiLabel(400,86,pg.title,13,MENU_UI.amarillo,[.5,.5],4).setData('torre2-tutorial-page',p);
+  pg.lines.forEach((t,i)=>{const y=124+i*48;
+   g.fillStyle(MENU_UI.oro,1).fillCircle(226,y,4);
+   const l=this.uiLabel(238,y,t,8,'#ffffff',[0,.5],4);l.setWordWrapWidth?.(350);estrechar(l,360)});
+  for(let i=0;i<pages.length;i++)g.fillStyle(i===p?MENU_UI.oro:0x34465f,1).fillCircle(320-((pages.length-1)*9)+i*18,288,4);
+  const back=()=>this.renderCampaign(readCampaign()||state);
+  if(p>0)this.button(150,334,140,28,'◀ ANTERIOR',()=>this.tutorialScreen(state,p-1),false,9).setData('torre2-tutorial-prev',true);
+  this.button(320,334,140,28,'FECHAR',back,false,9).setData('torre2-tutorial-close',true);
+  this.button(490,334,140,28,p<pages.length-1?'PRÓXIMO ▶':'JOGAR!',()=>p<pages.length-1?this.tutorialScreen(state,p+1):back(),true,9).setData('torre2-tutorial-next',true);
+ }
+ // Missões da cidade (owner 2026-11-22, item 16; npc-quests.js).
+ questCtx(){return {typesOf:kantoTypes,starsOf:m=>potentialStars(potentialOf(m)),hasAbility:m=>!!hiddenAbilityOf(m),towerBest:s=>towerBest(s)}}
+ questsScreen(state){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('town');
+  const cur=readCampaign()||state,ctx=this.questCtx(),sum=questSummary(cur,ctx);
+  this.screenBanner(20,320,'Missões da cidade','badges');
+  this.uiLabel(320,46,'Fale com os NPCs, aceite a missão e volte para entregar · '+sum.done+'/'+sum.total+' feitas'+(sum.ready?' · '+sum.ready+' prontas!':''),7,sum.ready?'#9ff0bf':MENU_UI.suave,[.5,.5]);
+  const order={ready:0,active:1,available:2,done:3,locked:4};
+  const shown=QUESTS.map(q=>({q,st:questState(cur,q,ctx)})).filter(x=>x.st!=='locked').sort((a,b)=>order[a.st]-order[b.st]||a.q.stage-b.q.stage);
+  const locked=QUESTS.length-shown.length;
+  const per=6,pages=Math.max(1,Math.ceil(shown.length/per)),page=Math.min(pages-1,Math.max(0,this.__torre2QuestPage|0));
+  const g=this.add.graphics().setDepth(3);
+  const save=next=>{try{saveCampaign(next);return true}catch{this.campaignNotice('Não foi possível salvar.','#ff9d9d');return false}};
+  shown.slice(page*per,page*per+per).forEach(({q,st},i)=>{
+   const x=14+(i%2)*308,y=58+Math.floor(i/2)*86,w=302,h=82;
+   const col={ready:0x50cc84,active:0x4e92bc,available:MENU_UI.oro,done:0x5d6b80}[st];
+   nativeRect(g,x,y,w,h,col,7);nativeRect(g,x+2,y+2,w-4,h-4,st==='done'?0x111a33:0x1b2a5e,6);
+   this.npcSprite(spriteIdForTrainer(q.sprite),x+26,y+68,1.9,5);
+   this.uiLabel(x+52,y+13,q.npc,9,MENU_UI.amarillo,[0,.5],5);
+   this.uiLabel(x+w-8,y+13,CITY_NAMES[q.stage],6,MENU_UI.suave,[1,.5],5);
+   estrechar(this.uiLabel(x+52,y+29,st==='available'?'“'+q.line+'”':objectiveText(q),7,st==='available'?'#dcf4fb':'#ffffff',[0,.5],5),w-60);
+   const n=questProgress(cur,q,ctx);
+   if(st==='active'||st==='ready'){nativeRect(g,x+52,y+41,140,7,0x0c1725,3);g.fillStyle(st==='ready'?0x50cc84:0x7ab3f5,1).fillRect(x+53,y+42,Math.max(2,Math.round(138*n/q.goal)),5);
+    this.uiLabel(x+198,y+45,n+'/'+q.goal,7,'#ffffff',[0,.5],5)}
+   else if(st==='available')estrechar(this.uiLabel(x+52,y+45,objectiveText(q),7,'#ffe08a',[0,.5],5),w-60);
+   estrechar(this.uiLabel(x+52,y+60,'Prêmio: '+rewardText(q.reward,k=>HELD_ITEMS[k]?.name||k),7,'#9ff0bf',[0,.5],5),st==='done'?w-60:w-150);
+   if(st==='available')this.button(x+w-48,y+62,80,18,'ACEITAR',()=>{const next=acceptQuest(readCampaign()||cur,q.id);if(next&&save(next)){this.campaignNotice(q.npc+': “'+q.line+'”','#ffe08a');this.questsScreen(next)}},true,7).setData('torre2-quest-accept',q.id);
+   else if(st==='ready')this.button(x+w-48,y+62,80,18,'ENTREGAR',()=>{const next=claimQuest(readCampaign()||cur,q.id,ctx);if(next&&save(next)){this.campaignNotice(q.npc+': Obrigado! '+rewardText(q.reward,k=>HELD_ITEMS[k]?.name||k),'#9ff0bf');this.questsScreen(next)}},true,7).setData('torre2-quest-claim',q.id);
+   else if(st==='done')this.uiLabel(x+w-12,y+62,'✓ FEITA',8,'#9ff0bf',[1,.5],5);
+   else this.uiLabel(x+w-12,y+62,'EM ANDAMENTO',7,'#7ab3f5',[1,.5],5);
+  });
+  if(locked)this.uiLabel(320,320,locked+' missões novas aparecem nas próximas cidades',7,MENU_UI.suave,[.5,.5]);
+  const go=d=>{this.__torre2QuestPage=(page+d+pages)%pages;this.questsScreen(readCampaign()||cur)};
+  this.button(150,340,110,24,'◀ PÁGINA',()=>go(-1),false,8).setData('torre2-quests-prev',true);
+  this.button(320,340,200,24,'◀ VOLTAR',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-quests-back',true);
+  this.button(490,340,110,24,(page+1)+'/'+pages+' ▶',()=>go(1),false,8).setData('torre2-quests-next',true);
+  this.__torre2Quests={shown:shown.length,locked,page,pages,ready:sum.ready};
  }
  // Luta / Desafio personalizado (README 6 and 11, custom-battles.js).
  customScreen(state,mode='single'){
@@ -3707,9 +3788,18 @@ create(){
   }).setData('torre2-summary-back',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
-  label(24,61,stats.name.toUpperCase(),C.gold,15);
+  label(24,61,(member.nickname||stats.name).toUpperCase(),C.gold,15).setData('torre2-summary-name',member.nickname||stats.name);
+  // Apelido (item 25): tap to rename; empty restores the species name.
+  button(156,57,44,16,'APELIDO',()=>{
+   const v=window.prompt('Apelido para '+stats.name+' (até 12 letras, vazio para tirar):',member.nickname||'');
+   if(v===null)return;
+   const now=readCampaign()||state,next=setNickname(now,member.uid,v);
+   if(!next)return;
+   try{saveCampaign(next)}catch{this.summaryWarning='APELIDO NÃO SALVO';return this.showSummary(now,index,slot,page)}
+   this.showSummary(next,index,slot,page);
+  }).setData('torre2-summary-nickname',true);
   const typesCaption=stats.types.join('  /  ');
-  label(25,80,'NV. '+stats.level,C.white,11).setData('torre2-summary-level',typesCaption);
+  label(25,80,'NV. '+stats.level+(member.nickname?' · '+stats.name.toUpperCase():''),C.white,member.nickname?9:11).setData('torre2-summary-level',typesCaption);
   stats.types.slice(0,2).reverse().forEach((t,i)=>pill(200-i*48,80,t));
   const {def,etapa}=buscar(member.id);
   const dex=(etapa>0?def.evoluciones[etapa-1]?.dex:def.dex)||'0150';

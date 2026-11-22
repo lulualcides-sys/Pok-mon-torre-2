@@ -37,7 +37,11 @@ export function bubbleScreen(world,cam,ui,halfW=40){
  const p=ui?.getWorldPoint?ui.getWorldPoint(sx,sy):{x:sx,y:sy};
  const uv=ui?.worldView||{x:0,y:0,width:SCREEN_W,height:SCREEN_H};
  const left=uv.x+uv.width*.11+halfW+14,right=uv.x+uv.width-halfW-24;
- return {x:Math.max(left,Math.min(right,p.x)),y:Math.max(uv.y+uv.height*.17,Math.min(uv.y+uv.height*.84,p.y)),offscreen};
+ let y=Math.max(uv.y+uv.height*.17,Math.min(uv.y+uv.height*.84,p.y));
+ // Keep clear of the AUTO / VEL buttons on the right (UI 550-610, 132-188).
+ const busy=y>uv.y+uv.height*.36&&y<uv.y+uv.height*.53;
+ const r=busy?Math.min(right,uv.x+uv.width*.84-halfW-8):right;
+ return {x:Math.max(left,Math.min(r,p.x)),y,offscreen};
 }
 export function speechFor(slot,move){
  const name=String(move?.nombre||'').replace(/^ULT\s*[·:-]\s*/i,'').trim();

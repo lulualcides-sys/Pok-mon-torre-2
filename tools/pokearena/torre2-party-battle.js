@@ -23,6 +23,7 @@ import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 import {installArenaTrainers} from './arena-trainers.js';
 import {installTerrain} from './terrain.js';
+import {installBattleSpeed} from './battle-speed.js';
 import {playerSpriteId} from './frlg-npc.js';
 import {installShinyEntrance} from './shiny-fx.js';
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
@@ -39,6 +40,7 @@ export function createPartyMatch(state,opponent,wild=false){
   hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m),
   // Individual traits (individuality.js): potential, hidden ability, item.
   heldItem:m.heldItem??null,...(m.potential?{potential:m.potential}:{}),
+  ...(m.nickname?{nickname:m.nickname}:{}),
   ...(m.hiddenAbility!==undefined?{hiddenAbility:m.hiddenAbility}:{})
  }));
  const gym=STAGES[state.stage];
@@ -175,6 +177,19 @@ export function installPartyBattle(scene){
  const terrainHud=label(scene,320,117,'',8,'#ffe9a8',2802);
  installTerrain(scene,{hud:{label:t=>terrainHud.active&&terrainHud.text!==t&&terrainHud.setText(t),announce:t=>announce(t)}});
  scene.events.once('shutdown',()=>terrainHud.destroy());
+ // Battle speed 1x/1.5x/2x (whole combat clock, campaign only).
+ installBattleSpeed(scene);
+ // Nicknames (owner 2026-11-22): the player's HP panel shows the nickname.
+ const hud=scene.hud;
+ if(hud&&typeof hud.pintarIdentidad==='function'&&!hud.__torre2Nick){
+  const paint=hud.pintarIdentidad,hudObj=hud;hud.__torre2Nick=true;
+  const nick=lado=>{try{if(lado?.l?.lado!==0)return;const m=party.friend[party.playerIndex];if(!m?.nickname)return;
+   const species=String(lado.l.nombre||'').toLowerCase();
+   for(const o of lado.identidad||[])if(typeof o?.text==='string'&&o.text.toLowerCase()===species)o.setText(m.nickname)}catch{}};
+  hud.pintarIdentidad=function(lado){const r=paint.call(this,lado);nick(lado);return r};
+  (hud.lados||[]).forEach(nick);
+  scene.events.once('shutdown',()=>{if(hudObj.pintarIdentidad!==paint){hudObj.pintarIdentidad=paint;hudObj.__torre2Nick=false}});
+ }
  scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));

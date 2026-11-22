@@ -346,3 +346,16 @@ export function installIndividuality(target=globalThis,random=Math.random){
  };
  return target.__torre2Indiv;
 }
+// --- Apelidos (owner 2026-11-22, item 25) -------------------------------------
+export const NICK_MAX=12;
+export function cleanNickname(text){
+ return String(text??'').normalize('NFC').replace(/[^\p{L}\p{N} .'\-]/gu,'').replace(/\s+/g,' ').trim().slice(0,NICK_MAX);
+}
+// New state with the nickname set (empty clears it), or null if not found.
+export function setNickname(state,uid,text){
+ const next=JSON.parse(JSON.stringify(state));
+ const m=[...list(next.team),...list(next.box)].find(x=>x?.uid===uid);if(!m)return null;
+ const n=cleanNickname(text);if(n)m.nickname=n;else delete m.nickname;
+ return next;
+}
+export const displayName=(member,species)=>member?.nickname||species;

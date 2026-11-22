@@ -605,17 +605,20 @@ function extrasPage(scene,state,handlers){
  actions.push(['MISSÕES',handlers.missions,'badges']);
  actions.push(['TROCA',handlers.trade,'team']);
  actions.push(['INSTALAR APP',handlers.installApp,'fullscreen']);
- // Four columns, five rows: every option fits above VOLTAR.
+ // Owner 2026-11-22: city missions (item 16) and the short tutorial (35).
+ actions.push(['MISSÕES DA CIDADE',handlers.quests,'badges']);
+ actions.push(['COMO JOGAR',handlers.tutorial,'dex']);
+ // Four columns, six rows: every option fits above VOLTAR.
  actions.forEach(([name,fn,icon],i)=>{
-  const x=104+(i%4)*110,y=82+Math.floor(i/4)*40;
+  const x=104+(i%4)*110,y=82+Math.floor(i/4)*34;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
-  control(scene,layer,x,y,104,34,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
+  control(scene,layer,x,y,104,30,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
    {id:'cards-extras-'+i,size:9,icon,wrap:true});
  });
- control(scene,layer,236,290,168,28,'VOLTAR',()=>layer.destroy(true),
+ control(scene,layer,236,292,168,24,'VOLTAR',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
- const credits=text(scene,layer,320,322,'ARTE DOS CENÁRIOS · CRÉDITOS',8,UI.tenue);
- const z=scene.add.zone(320,322,240,14).setInteractive({useHandCursor:true});
+ const credits=text(scene,layer,320,323,'ARTE DOS CENÁRIOS · CRÉDITOS',8,UI.tenue);
+ const z=scene.add.zone(320,323,240,14).setInteractive({useHandCursor:true});
  z.on('pointerdown',()=>window.open('assets/ui/scenic/CREDITS.txt','_blank','noopener'));
  layer.add(z);credits.setData('torre2-credits',true);
  return layer;

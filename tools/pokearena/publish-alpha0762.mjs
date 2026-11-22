@@ -111,6 +111,9 @@ const newModuleNames=[
  ['tools/pokearena/torre2-trainer-look.js','torre2/trainer-look.js'],
  // Terrains from real Electric/Grass/Water/Psychic ULT casts (README 8).
  ['tools/pokearena/torre2-terrain.js','torre2/terrain.js'],
+ // City missions (item 16) and battle speed (item 21).
+ ['tools/pokearena/torre2-npc-quests.js','torre2/npc-quests.js'],
+ ['tools/pokearena/torre2-battle-speed.js','torre2/battle-speed.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
