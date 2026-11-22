@@ -22,6 +22,7 @@ import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 import {installArenaTrainers} from './arena-trainers.js';
+import {installTerrain} from './terrain.js';
 import {playerSpriteId} from './frlg-npc.js';
 import {installShinyEntrance} from './shiny-fx.js';
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
@@ -170,6 +171,10 @@ export function installPartyBattle(scene){
  scene.__torre2CampaignLabelGuard=campaignLabelGuard;
  scene.events.once('shutdown',()=>{scene.__torre2CampaignLabelGuard=null;});
  const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2802);
+ // Terrains (README 8): an Electric/Grass/Water/Psychic ULT changes the floor.
+ const terrainHud=label(scene,320,117,'',8,'#ffe9a8',2802);
+ installTerrain(scene,{hud:{label:t=>terrainHud.active&&terrainHud.text!==t&&terrainHud.setText(t),announce:t=>announce(t)}});
+ scene.events.once('shutdown',()=>terrainHud.destroy());
  scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));

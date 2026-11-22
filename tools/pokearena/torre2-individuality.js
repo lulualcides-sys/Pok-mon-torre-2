@@ -316,7 +316,9 @@ export function installIndividuality(target=globalThis,random=Math.random){
  target.__torre2Indiv={
   hp(fighter){const m=memberOf(fighter);return m?hpMultiplier(m,fighter.lado===0?0:1):1},
   damage(src,dst,g){
-   try{const a=side(src),d=side(dst);if(!a||!d)return 1;return damageMultiplier(a,d,g,{weather:weatherOf(dst)})}catch{return 1}
+   // Terrain (terrain.js) multiplies here too: one damage hook in luchador.js.
+   const terrain=(()=>{try{return globalThis.__torre2Terrain?.damage?.(src,dst,g)??1}catch{return 1}})();
+   try{const a=side(src),d=side(dst);if(!a||!d)return terrain;return damageMultiplier(a,d,g,{weather:weatherOf(dst)})*terrain}catch{return terrain}
   },
   final(src,dst,g,d){
    try{
