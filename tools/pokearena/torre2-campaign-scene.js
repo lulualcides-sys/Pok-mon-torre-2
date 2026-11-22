@@ -35,7 +35,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {installIndividuality,potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {installIndividuality,potentialOf,potentialStars,potentialGrade,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -3383,47 +3383,79 @@ create(){
   this.screenBanner(20,300,'Ficha do Pokémon','badges');
   const g=this.add.graphics().setDepth(2);
   nativeRect(g,12,44,200,250,MENU_UI.contorno,8);nativeRect(g,14,46,196,246,0x13233b,7);
-  g.fillStyle(0x000000,.3).fillEllipse(112,190,90,14);
-  this.pokemonIdleSprite(member.id,112,190,90,5,null,'height');
+  const p=potentialOf(member),stars=potentialStars(p);
+  // Card glow by rating (1 star grey … 5 stars gold).
+  const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
+  g.fillStyle(glow,.16).fillRoundedRect(18,50,188,130,6);
+  g.fillStyle(0x000000,.3).fillEllipse(112,158,90,14);
+  this.pokemonIdleSprite(member.id,112,158,80,5,null,'height');
   const nice=member.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   this.uiLabel(112,64,nice+' · Nv '+(member.progression?.level||5),11,MENU_UI.amarillo,[.5,.5],4);
-  const p=potentialOf(member),stars=potentialStars(p);
-  this.uiLabel(112,220,'Potencial '+'★'.repeat(stars)+'☆'.repeat(5-stars),11,'#ffe08a',[.5,.5],4).setData('torre2-ficha-stars',stars);
-  [['HP',p.hp,0x64cb9c],['ATK',p.atk,0xf6a268],['DEF',p.def,0x7ab3f5]].forEach(([k,v,c],i)=>{const y=240+i*16;
-   this.uiLabel(30,y,k,8,MENU_UI.suave,[0,.5],4);nativeRect(g,62,y-4,110,8,0x0c1725,3);
-   g.fillStyle(c,1).fillRect(63,y-3,Math.max(2,Math.round(108*v/31)),6);this.uiLabel(196,y,v+'/31',7,'#ffffff',[1,.5],4)});
-  // Right column: ability, item, rivals.
+  // Potential: five drawn pixel stars (filled gold / empty slate) popping in.
+  this.uiLabel(112,176,'POTENCIAL',8,'#ffe08a',[.5,.5],4);
+  const starPts=r=>Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;return new Phaser.Geom.Point(Math.cos(a)*q,Math.sin(a)*q)});
+  for(let i=0;i<5;i++){
+   const on=i<stars,sg=this.add.graphics({x:64+i*24,y:194}).setDepth(4);
+   if(on){sg.fillStyle(0x7a4a00,1).fillPoints(starPts(10),true);sg.fillStyle(0xffd23f,1).fillPoints(starPts(8.5),true);
+    sg.fillStyle(0xfff3b0,1).fillPoints(starPts(3.5).map(pt=>new Phaser.Geom.Point(pt.x-1.5,pt.y-2)),true)}
+   else{sg.fillStyle(0x0c1725,1).fillPoints(starPts(10),true);sg.fillStyle(0x34465f,1).fillPoints(starPts(8),true)}
+   sg.setScale(on?0:1).setData('torre2-ficha-star',on?'on':'off');
+   if(on)this.tweens.add({targets:sg,scale:1,duration:260,delay:120+i*90,ease:'Back.Out'});
+   if(on&&stars===5)this.tweens.add({targets:sg,alpha:.65,duration:700,delay:700+i*120,yoyo:true,repeat:-1});
+  }
+  this.uiLabel(112,212,potentialTotalWord(p),9,'#'+glow.toString(16).padStart(6,'0'),[.5,.5],4).setData('torre2-ficha-stars',stars);
+  // Stats: segmented bar (31 points) + FireRed-style judge word.
+  POTENTIAL_STATS.forEach(([k,label],i)=>{const v=p[k],y=232+i*20,c=[0x64cb9c,0xf6a268,0x7ab3f5][i];
+   this.uiLabel(22,y,label,8,MENU_UI.suave,[0,.5],4);
+   nativeRect(g,46,y-5,84,10,0x0c1725,3);
+   const seg=Math.round(v/31*12);
+   for(let j=0;j<12;j++){g.fillStyle(j<seg?c:0x22324a,1).fillRect(48+j*6.7,y-3,5.4,6)}
+   if(v>=31)g.fillStyle(0xffffff,.45).fillRect(48,y-3,80,2);
+   this.uiLabel(142,y,v+'',7,'#ffffff',[.5,.5],4);
+   this.uiLabel(206,y,potentialGrade(v),6,v>=26?'#ffe08a':'#b9c8e0',[1,.5],4);
+  });
+  // Right column: ability, item, bag, rivals (one card each).
   nativeRect(g,222,44,406,250,MENU_UI.contorno,8);nativeRect(g,224,46,402,246,0x13233b,7);
+  const card=(y,h,color,a=.14)=>{g.fillStyle(color,a).fillRoundedRect(230,y,390,h,5);g.lineStyle(1,color,.55).strokeRoundedRect(230,y,390,h,5)};
   const ha=hiddenAbilityOf(member);
-  this.uiLabel(238,64,'Habilidade oculta',10,MENU_UI.amarillo,[0,.5],4);
-  this.uiLabel(238,84,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',10,ha?'#e8c8ff':'#8ea2c8',[0,.5],4).setData('torre2-ficha-ability',ha||'none');
-  estrechar(this.uiLabel(238,100,ha?HIDDEN_ABILITIES[ha].desc:'Só cerca de 5% dos Pokémon nascem com uma habilidade rara.',8,'#dcf4fb',[0,.5],4),370);
+  card(50,50,ha?0xb57cf0:0x4e6a8f,ha?.18:.08);
+  this.uiLabel(240,62,'HABILIDADE OCULTA',8,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(240,78,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',10,ha?'#e8c8ff':'#8ea2c8',[0,.5],4).setData('torre2-ficha-ability',ha||'none');
+  estrechar(this.uiLabel(240,92,ha?HIDDEN_ABILITIES[ha].desc:'Só cerca de 5% dos Pokémon nascem com uma das 25 habilidades raras.',7,'#dcf4fb',[0,.5],4),370);
   const item=heldItemOf(member);
   const icon=(key,x,y,scale=1)=>this.textures.exists(heldIconKey(key))?
-   this.add.image(x,y,heldIconKey(key)).setScale(scale).setDepth(4).setData('torre2-held-icon',key):null;
+   this.add.image(x,y,heldIconKey(key)).setScale(scale).setDepth(5).setData('torre2-held-icon',key):null;
   const equip=key=>{
    const now=readCampaign()||cur,next=equipItem(now,member.uid,key);
    if(!next)return this.individualScreen(now,index);
    try{saveCampaign(next)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9d9d')}
    this.individualScreen(next,index);
   };
-  this.uiLabel(238,124,'Item equipado',10,MENU_UI.amarillo,[0,.5],4);
-  if(item)icon(item,250,146);
-  this.uiLabel(item?268:238,146,item?HELD_ITEMS[item].name:'Nenhum',10,item?'#9ff0bf':'#8ea2c8',[0,.5],4).setData('torre2-ficha-item',item||'none');
-  estrechar(this.uiLabel(238,164,item?itemDesc(item):HOW_TO_GET,7,'#dcf4fb',[0,.5],4),380);
-  if(item)this.button(560,146,110,20,'TIRAR ITEM',()=>equip(null),true,8).setData('torre2-ficha-equip','none');
-  // Bag: tap an original FRLG icon to equip it (the old one goes back to the bag).
+  card(104,56,item?0x5fbf8f:0x4e6a8f,item?.16:.08);
+  nativeRect(g,238,112,40,40,0x0c1725,4);g.lineStyle(1,item?0x9ff0bf:0x34465f,1).strokeRoundedRect(238,112,40,40,4);
+  if(item)icon(item,258,132,1.5);else this.uiLabel(258,132,'—',10,'#34465f',[.5,.5],4);
+  this.uiLabel(288,116,'ITEM EQUIPADO',8,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(288,131,item?HELD_ITEMS[item].name:'Nenhum',10,item?'#9ff0bf':'#8ea2c8',[0,.5],4).setData('torre2-ficha-item',item||'none');
+  const only=item&&HELD_ITEMS[item].only&&!HELD_ITEMS[item].only.includes(member.id);
+  estrechar(this.uiLabel(288,146,item?itemDesc(item)+(only?' · sem efeito neste Pokémon':''):HOW_TO_GET,7,only?'#ffb3b3':'#dcf4fb',[0,.5],4),item?240:326);
+  if(item)this.button(572,132,84,20,'TIRAR',()=>equip(null),true,8).setData('torre2-ficha-equip','none');
+  // Bag: original FRLG icons, 2 rows of 14, pages when there are more.
   const owned=Object.entries(cur.inventory?.held||{}).filter(([k,n])=>n>0&&HELD_ITEMS[k]);
-  this.uiLabel(238,180,owned.length?'Bolsa · toque para equipar':'Bolsa vazia',8,MENU_UI.suave,[0,.5],4);
-  owned.slice(0,14).forEach(([k,n],i)=>{const x=250+i*26,y=200;
-   const zone=this.add.rectangle(x,y,24,24,0x0c1725,1).setDepth(3).setStrokeStyle(1,0x4e92bc).setInteractive({useHandCursor:true});
+  const per=28,pages=Math.max(1,Math.ceil(owned.length/per));
+  const page=Math.min(pages-1,Math.max(0,this.__torre2BagPage|0));
+  card(164,72,0x4e92bc,.08);
+  this.uiLabel(240,174,owned.length?'BOLSA · toque para equipar ('+owned.length+')':'BOLSA VAZIA',8,MENU_UI.amarillo,[0,.5],4);
+  owned.slice(page*per,page*per+per).forEach(([k,n],i)=>{const x=250+(i%14)*26,y=196+Math.floor(i/14)*26;
+   const zone=this.add.rectangle(x,y,24,24,0x0c1725,1).setDepth(4).setStrokeStyle(1,0x4e92bc).setInteractive({useHandCursor:true});
    zone.on('pointerup',()=>equip(k));zone.setData('torre2-ficha-equip',k);
-   icon(k,x,y);if(n>1)this.uiLabel(x+11,y+9,String(n),6,'#ffffff',[1,.5],5);
+   icon(k,x,y);if(n>1)this.uiLabel(x+11,y+9,String(n),6,'#ffffff',[1,.5],6);
   });
+  if(pages>1)this.button(588,174,52,16,(page+1)+'/'+pages+' ▶',()=>{this.__torre2BagPage=(page+1)%pages;this.individualScreen(readCampaign()||cur,index)},true,7);
   const rivals=rivalsOf(member.id);
-  this.uiLabel(238,226,'Rivais',10,MENU_UI.amarillo,[0,.5],4);
-  estrechar(this.uiLabel(238,244,rivals.length?rivals.map(r=>r.charAt(0).toUpperCase()+r.slice(1)).join(', ')+' e evoluções · +10% de dano entre rivais':'Sem rival conhecido',8,rivals.length?'#ffb37a':'#8ea2c8',[0,.5],4),370);
-  this.uiLabel(238,268,'Vitórias em rivalidade: '+(Number(cur.rivalryWins)||0),8,'#dcf4fb',[0,.5],4);
+  card(240,48,rivals.length?0xf6a268:0x4e6a8f,rivals.length?.12:.06);
+  this.uiLabel(240,252,'RIVAIS',8,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(612,252,'Vitórias em rivalidade: '+(Number(cur.rivalryWins)||0),7,'#dcf4fb',[1,.5],4);
+  estrechar(this.uiLabel(240,272,rivals.length?rivals.map(r=>r.charAt(0).toUpperCase()+r.slice(1)).join(', ')+' e evoluções · +10% de dano entre rivais':'Sem rival conhecido',8,rivals.length?'#ffb37a':'#8ea2c8',[0,.5],4),370);
   this.button(320,330,240,28,'◀ SUMÁRIO',()=>this.showSummary(readCampaign()||cur,index)).setData('torre2-ficha-back',true);
   this.__torre2Ficha={id:member.id,stars,ability:ha,item,rivals};
  }

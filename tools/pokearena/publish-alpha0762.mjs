@@ -226,6 +226,14 @@ let fighter=await read(path.join(original,'luchador.js'));
  exactly(fighter,hpOld,'campaign HP scaling');exactly(fighter,dmgOld,'campaign damage scaling');
  fighter=fighter.replace(hpOld,'return this.escena.datos?.torre2?Math.max(1,Math.round(torre2ScaledHp(base,torre2FighterLevel(this))*(globalThis.__torre2Indiv?.hp?.(this)??1))):base}')
   .replace(dmgOld,'if(fuente.lado===0)d*=torre2PlayerDamageBoost;d*=globalThis.__torre2Indiv?.damage?.(fuente,this,g)??1;}');
+ // Final damage (Focus Band, Sturdy, Shell Bell, Scope Lens, Volt/Water
+ // Absorb, King's Rock) and a per-frame tick (Leftovers, Quick Claw, herbs,
+ // Pressure, Ice Body): campaign branch only, right before the HP change.
+ const hitOld='delete this.est.congelado;this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
+ const tickOld='tickGen3Status(this,dt);intento=gen3StatusInput(this,intento)}';
+ exactly(fighter,hitOld,'campaign final damage');exactly(fighter,tickOld,'campaign status tick');
+ fighter=fighter.replace(hitOld,'delete this.est.congelado;if(e.datos?.torre2&&d>0&&!g.puro&&fuente&&fuente!==this)d=globalThis.__torre2Indiv?.final?.(fuente,this,g,d)??d;this.hp=Math.max(this.inmortal?1:0,this.hp-d);')
+  .replace(tickOld,'tickGen3Status(this,dt);globalThis.__torre2Indiv?.tick?.(this,dt);intento=gen3StatusInput(this,intento)}');
 }
 const poisonHit='this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
 exactly(fighter,poisonHit,'poison HP hit pathway');
@@ -378,7 +386,7 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
 {
  const src='tools/pokearena/torre2-held-items',prov=JSON.parse(await read(path.join(src,'PROVENANCE.json')));
  must(prov.source==='pret/pokefirered'&&/^[0-9a-f]{40}$/.test(prov.commit),'held item icon provenance');
- const keys=Object.keys(prov.items||{});must(keys.length===17,'17 FRLG held items required');
+ const keys=Object.keys(prov.items||{});must(keys.length===47,'47 FRLG held items required (every hold item except berries and mail)');
  const target=path.join(root,'assets/ui/frlg/items/held');await fs.mkdir(target,{recursive:true});
  for(const key of keys){
   must(/^[a-z]+$/.test(key),'bad held item '+key);

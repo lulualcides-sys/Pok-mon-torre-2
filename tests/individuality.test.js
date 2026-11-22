@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HIDDEN_CHANCE,HELD_ITEMS,equipItem,giveItem,
  areRivals,rivalsOf,partyHasRivalry,hpMultiplier,damageMultiplier,installIndividuality,
- LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,itemForType} from '../tools/pokearena/torre2-individuality.js';
+ LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,itemForType,finalAdjust,tickAdjust,expFactor,blocksEvolution,moneyFactor,
+ wildLevelShift,escapesWildLoss,machoBraceGrowth,potentialGrade,itemDesc} from '../tools/pokearena/torre2-individuality.js';
 const read=f=>fs.readFileSync(new URL('../tools/pokearena/'+f,import.meta.url),'utf8');
 
 test('potential: stable per Pokémon, 0–31, different between same-species individuals',()=>{
@@ -22,7 +23,7 @@ test('hidden ability: about 5%, stable, known kinds only',()=>{
  assert.ok(n>100&&n<320,'≈'+HIDDEN_CHANCE+'%: '+n);
  assert.equal(hiddenAbilityOf({uid:'y',hiddenAbility:'casca'}),'casca');
  assert.equal(hiddenAbilityOf({uid:'y',hiddenAbility:null}),null);
- assert.equal(Object.keys(HIDDEN_ABILITIES).length,5);
+ assert.equal(Object.keys(HIDDEN_ABILITIES).length,25);
 });
 test('held items: equip from the bag, swap back, unknown refused',()=>{
  let s={team:[{id:'charmander',uid:'c1'}],box:[],inventory:{}};
@@ -32,7 +33,7 @@ test('held items: equip from the bag, swap back, unknown refused',()=>{
  s=equipItem(s,'c1','magnet');assert.equal(s.team[0].heldItem,'magnet');assert.equal(s.inventory.held.charcoal,1);
  s=equipItem(s,'c1',null);assert.equal(s.team[0].heldItem,null);assert.equal(s.inventory.held.magnet,1);
  assert.equal(equipItem(s,'c1','dragonfang'),null,'not owned');assert.equal(equipItem(s,'c1','nope'),null);
- assert.equal(Object.keys(HELD_ITEMS).length,17);
+ assert.equal(Object.keys(HELD_ITEMS).length,47);
 });
 test('rivalries: families, both directions, party check',()=>{
  assert.ok(areRivals('charizard','blastoise'));assert.ok(areRivals('hitmonchan','hitmonlee'));
@@ -86,4 +87,51 @@ test('held items: how to earn them (leaders, 3x3 events, wild 5%)',()=>{
  assert.equal(wildItemRoll(['ELECTRIC'],()=>0.01),'magnet');assert.equal(wildItemRoll(['ELECTRIC'],()=>0.06),null);
  const core=read('torre2-campaign-core.js');
  assert.match(core,/LEADER_ITEMS\[/);assert.match(core,/EVENT_ITEMS\[/);assert.match(core,/wildItemRoll\(/);
+});
+
+test('25 hidden abilities: type pinch, weather, absorb, sturdy, intimidate',()=>{
+ const me=(ha,extra={})=>({member:{id:'charmander',uid:'u',potential:{hp:15.5,atk:15.5,def:15.5},hiddenAbility:ha},side:0,hpRatio:1,hp:100,hpMax:100,types:['FIRE'],...extra});
+ const foe={member:{id:'onix'},side:1,types:['ROCK'],hp:100,hpMax:100,hpRatio:1};
+ const F=1+((15-15.5)/31)*.1,near=(a,b)=>Math.abs(a-b)<1e-6;// potential 15 → ×F (atk) or ÷F (def)
+ assert.ok(near(damageMultiplier(me('chama',{hpRatio:.2}),foe,{tipo:'FIRE'}),1.25*F));
+ assert.ok(near(damageMultiplier(me('chama',{hpRatio:.9}),foe,{tipo:'FIRE'}),1*F));
+ assert.ok(near(damageMultiplier(me('clorofila'),foe,{tipo:'GRASS'},{weather:'sun'}),1.2*F));
+ assert.ok(near(damageMultiplier(me('clorofila'),foe,{tipo:'GRASS'},{weather:'rain'}),1*F));
+ assert.ok(near(damageMultiplier(foe,me('gordura'),{tipo:'ICE'}),.5/F));
+ assert.ok(near(damageMultiplier(foe,me('intimidacao'),{tipo:'ROCK'}),.9/F));
+ assert.ok(near(damageMultiplier(me('coragem',{status:true}),foe,{tipo:'FIRE'}),1.2*F));
+ const absorb=finalAdjust(foe,me('absorvevolt'),{tipo:'ELECTRIC'},40,()=>.5);
+ assert.equal(absorb.d,0);assert.equal(absorb.dstHeal,12.5);
+ const sturdy=finalAdjust(foe,me('robustez'),{tipo:'ROCK'},500,()=>.5);assert.equal(sturdy.d,99);
+ assert.equal(finalAdjust(foe,me('robustez',{hpRatio:.5,hp:50}),{tipo:'ROCK'},500,()=>.5).d,500,'only at full HP');
+ assert.equal(tickAdjust({side:1},.1,{playerAbility:'pressao'}).cdDelta<0,true);
+});
+test('47 FRLG held items: battle, tick and campaign effects',()=>{
+ const m=(item,id='charmander',extra={})=>({member:{id,uid:'u',potential:{hp:15.5,atk:15.5,def:15.5},hiddenAbility:null,heldItem:item},side:0,hpRatio:1,hp:100,hpMax:100,types:['FIRE'],...extra});
+ const foe={member:{id:'onix'},side:1,types:['ROCK'],hp:100,hpMax:100,hpRatio:1};
+ const F=1+((15-15.5)/31)*.1,near=(a,b)=>Math.abs(a-b)<1e-6;// potential 15 → ×F (atk) or ÷F (def)
+ for(const k of Object.keys(HELD_ITEMS))assert.ok(itemDesc(k).length>5,k);
+ assert.ok(near(damageMultiplier(m('lightball','pikachu'),foe,{tipo:'ELECTRIC'}),1.4*F));
+ assert.ok(near(damageMultiplier(m('lightball','raichu'),foe,{tipo:'ELECTRIC'}),1*F),'species items only for their species');
+ assert.ok(near(damageMultiplier(m('choiceband'),foe,{tipo:'NORMAL'}),1.15*F));
+ assert.equal(finalAdjust(foe,m('focusband'),{tipo:'ROCK'},500,()=>.05).d,99);
+ assert.equal(finalAdjust(foe,m('focusband'),{tipo:'ROCK'},500,()=>.5).d,500);
+ assert.equal(finalAdjust(m('shellbell'),foe,{tipo:'FIRE'},40,()=>.5).srcHeal,5);
+ const crit=finalAdjust(m('scopelens'),foe,{tipo:'FIRE'},40,()=>.01);assert.equal(crit.d,60);assert.ok(crit.crit);
+ assert.equal(finalAdjust(m('kingsrock'),foe,{tipo:'FIRE'},40,()=>.01).stun,.25);
+ assert.ok(near(tickAdjust(m('leftovers'),.2).heal,100/64*.2));
+ assert.ok(near(tickAdjust(m('quickclaw'),.2).cdDelta,.02));
+ assert.equal(tickAdjust({...m('whiteherb'),est:{armaduraRota:{}}},.1).cure,'armaduraRota');
+ assert.equal(tickAdjust({...m('whiteherb'),est:{armaduraRota:{}}},.1,{},{whiteherb:true}).cure,null,'once per battle');
+ assert.equal(expFactor({heldItem:'luckyegg'}),1.5);assert.equal(expFactor({}),1);
+ assert.ok(blocksEvolution({heldItem:'everstone'}));assert.equal(moneyFactor([{},{heldItem:'amuletcoin'}]),2);
+ assert.equal(wildLevelShift({heldItem:'cleansetag'}),2);assert.ok(escapesWildLoss({heldItem:'smokeball'}));
+ const brace={uid:'b',heldItem:'machobrace',potential:{hp:30,atk:10,def:31}};
+ assert.equal(machoBraceGrowth(brace),'atk');assert.equal(brace.potential.atk,11);
+ assert.equal(potentialGrade(31),'Perfeito');assert.equal(potentialGrade(3),'Fraco');
+ const pub=read('publish-alpha0762.mjs');
+ assert.match(pub,/globalThis\.__torre2Indiv\?\.final\?\.\(fuente,this,g,d\)/);
+ assert.match(pub,/tickGen3Status\(this,dt\);globalThis\.__torre2Indiv\?\.tick\?\.\(this,dt\)/);
+ const core=read('torre2-campaign-core.js');
+ for(const f of ['expFactor(member)','blocksEvolution(member)','moneyFactor(next.team)','wildLevelShift(','escapesWildLoss(','machoBraceGrowth(member)'])assert.ok(core.includes(f),f);
 });

@@ -1,7 +1,7 @@
 {
  "source": "pret/pokefirered",
  "commit": "ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
- "note": "Original Pokémon FireRed/LeafGreen held-item icons (graphics/items/icons + icon_palettes), indexed pixels kept, color 0 transparent. Personal fangame use, same pipeline as install-frlg-mart-item-icons.mjs.",
+ "note": "Original Pokémon FireRed/LeafGreen held-item icons (every hold item, no berries/mail) (graphics/items/icons + icon_palettes), indexed pixels kept, color 0 transparent. Personal fangame use, same pipeline as install-frlg-mart-item-icons.mjs.",
  "items": {
   "silkscarf": {
    "icon": "graphics/items/icons/silk_scarf.png",
@@ -70,6 +70,126 @@
   "metalcoat": {
    "icon": "graphics/items/icons/metal_coat.png",
    "palette": "graphics/items/icon_palettes/metal_coat.pal"
+  },
+  "brightpowder": {
+   "icon": "graphics/items/icons/bright_powder.png",
+   "palette": "graphics/items/icon_palettes/bright_powder.pal"
+  },
+  "whiteherb": {
+   "icon": "graphics/items/icons/in_battle_herb.png",
+   "palette": "graphics/items/icon_palettes/white_herb.pal"
+  },
+  "machobrace": {
+   "icon": "graphics/items/icons/macho_brace.png",
+   "palette": "graphics/items/icon_palettes/macho_brace.pal"
+  },
+  "expshare": {
+   "icon": "graphics/items/icons/exp_share.png",
+   "palette": "graphics/items/icon_palettes/exp_share.pal"
+  },
+  "quickclaw": {
+   "icon": "graphics/items/icons/quick_claw.png",
+   "palette": "graphics/items/icon_palettes/quick_claw.pal"
+  },
+  "soothebell": {
+   "icon": "graphics/items/icons/soothe_bell.png",
+   "palette": "graphics/items/icon_palettes/soothe_bell.pal"
+  },
+  "mentalherb": {
+   "icon": "graphics/items/icons/in_battle_herb.png",
+   "palette": "graphics/items/icon_palettes/mental_herb.pal"
+  },
+  "choiceband": {
+   "icon": "graphics/items/icons/choice_band.png",
+   "palette": "graphics/items/icon_palettes/choice_band.pal"
+  },
+  "kingsrock": {
+   "icon": "graphics/items/icons/kings_rock.png",
+   "palette": "graphics/items/icon_palettes/kings_rock.pal"
+  },
+  "amuletcoin": {
+   "icon": "graphics/items/icons/amulet_coin.png",
+   "palette": "graphics/items/icon_palettes/amulet_coin.pal"
+  },
+  "cleansetag": {
+   "icon": "graphics/items/icons/cleanse_tag.png",
+   "palette": "graphics/items/icon_palettes/cleanse_tag.pal"
+  },
+  "souldew": {
+   "icon": "graphics/items/icons/soul_dew.png",
+   "palette": "graphics/items/icon_palettes/soul_dew.pal"
+  },
+  "deepseatooth": {
+   "icon": "graphics/items/icons/deep_sea_tooth.png",
+   "palette": "graphics/items/icon_palettes/deep_sea_tooth.pal"
+  },
+  "deepseascale": {
+   "icon": "graphics/items/icons/deep_sea_scale.png",
+   "palette": "graphics/items/icon_palettes/deep_sea_scale.pal"
+  },
+  "smokeball": {
+   "icon": "graphics/items/icons/smoke_ball.png",
+   "palette": "graphics/items/icon_palettes/smoke_ball.pal"
+  },
+  "everstone": {
+   "icon": "graphics/items/icons/everstone.png",
+   "palette": "graphics/items/icon_palettes/everstone.pal"
+  },
+  "focusband": {
+   "icon": "graphics/items/icons/focus_band.png",
+   "palette": "graphics/items/icon_palettes/focus_band.pal"
+  },
+  "luckyegg": {
+   "icon": "graphics/items/icons/lucky_egg.png",
+   "palette": "graphics/items/icon_palettes/lucky_egg.pal"
+  },
+  "scopelens": {
+   "icon": "graphics/items/icons/scope_lens.png",
+   "palette": "graphics/items/icon_palettes/scope_lens.pal"
+  },
+  "leftovers": {
+   "icon": "graphics/items/icons/leftovers.png",
+   "palette": "graphics/items/icon_palettes/leftovers.pal"
+  },
+  "dragonscale": {
+   "icon": "graphics/items/icons/dragon_scale.png",
+   "palette": "graphics/items/icon_palettes/dragon_scale.pal"
+  },
+  "lightball": {
+   "icon": "graphics/items/icons/light_ball.png",
+   "palette": "graphics/items/icon_palettes/light_ball.pal"
+  },
+  "upgrade": {
+   "icon": "graphics/items/icons/up_grade.png",
+   "palette": "graphics/items/icon_palettes/up_grade.pal"
+  },
+  "shellbell": {
+   "icon": "graphics/items/icons/shell_bell.png",
+   "palette": "graphics/items/icon_palettes/shell.pal"
+  },
+  "seaincense": {
+   "icon": "graphics/items/icons/sea_incense.png",
+   "palette": "graphics/items/icon_palettes/sea_incense.pal"
+  },
+  "laxincense": {
+   "icon": "graphics/items/icons/lax_incense.png",
+   "palette": "graphics/items/icon_palettes/lax_incense.pal"
+  },
+  "luckypunch": {
+   "icon": "graphics/items/icons/lucky_punch.png",
+   "palette": "graphics/items/icon_palettes/lucky_punch.pal"
+  },
+  "metalpowder": {
+   "icon": "graphics/items/icons/metal_powder.png",
+   "palette": "graphics/items/icon_palettes/metal_powder.pal"
+  },
+  "thickclub": {
+   "icon": "graphics/items/icons/thick_club.png",
+   "palette": "graphics/items/icon_palettes/thick_club.pal"
+  },
+  "stick": {
+   "icon": "graphics/items/icons/stick.png",
+   "palette": "graphics/items/icon_palettes/stick.pal"
   }
  },
  "files": {
@@ -89,6 +209,36 @@
   "spelltag.png": "b8fda2b60734d349af6813684b2e858e25b6814de375ec611752336424a0f7a0",
   "dragonfang.png": "08a4e43e8c410ef77f983849fb2a1c115c362a108b6ddf7980a09a73832a4386",
   "blackglasses.png": "57b2100caf33fc3ca246204e7ad7f763759cf7a66463be4b6fbd000f3e2aa185",
-  "metalcoat.png": "0e5d62dd4816dab0e6b8998ce4e59c3b98c98bc0f7e458490d70bfe3548d02bc"
+  "metalcoat.png": "0e5d62dd4816dab0e6b8998ce4e59c3b98c98bc0f7e458490d70bfe3548d02bc",
+  "brightpowder.png": "701e0870ac994c9b936d5ec1fcbfb7abaf69298ccb7d97d15209862bf4cd4d01",
+  "whiteherb.png": "b6588c9a4dadf2c50e1ac8211bfce5be90eacf0429c63a56175e93a34f79a41f",
+  "machobrace.png": "f783040a8d7839599127c7714651a3829260c8aff9ca249d4c477c759a01793c",
+  "expshare.png": "461d962edec7a896572dd5a3b1d7ea76008e65e1d55c6f9ce6a2de2108e044d7",
+  "quickclaw.png": "ae96e287d21d503b9982976671437048ad4f640f2add54fea56700e775c579ba",
+  "soothebell.png": "582c795d3d4f1305032d7bfb333998553c0654e89eba40d69724245fd8fbcae3",
+  "mentalherb.png": "ec9a916892b6ceec27dda5161e805ef2a8470c9c55ddf9afe5d4692859741f74",
+  "choiceband.png": "e0c2861fd6dd13210fdc167718e78939db64a4ac6fe406ea893d46160e08d6e8",
+  "kingsrock.png": "dbc7ab0664bba8e6017e797775eb7825ab1e0ee113eef29d2e20a17a7d222a66",
+  "amuletcoin.png": "a629a260652ebbc44fa814693efe04f44993db7323b897df45189f2555981d8b",
+  "cleansetag.png": "5db236fe560912804e847c09b1c03c71dccac858840596ca0c53004d2ed0bd15",
+  "souldew.png": "eeb68286dd84088625c4de2b40fcbddc1c68b5291c61da1142e583a625d92089",
+  "deepseatooth.png": "f7a8e3cd9794248d19e47d6747eadcaddeed003a843e6e0df6d135103171300d",
+  "deepseascale.png": "5bf15e240dff7d356bfbf182b4c82ee6a1b551487d6d166a01b0eea30aa0f11c",
+  "smokeball.png": "11c9497eb37c817a2c8329f58f8cca3eb39f3d0ff9eafa17785ddc3ab3a4cdb8",
+  "everstone.png": "8f854a45d636408a44c91ee99d53448a229f1cbdef91fc8f6747de34a85cc438",
+  "focusband.png": "e621944731f94e22b3ad2fb3b1a98b202fa904a1937ccea782674c576f34436d",
+  "luckyegg.png": "1c5e1b4e043d0be608a4dccdc97f33f0584d652d565d70d49563df7c24621178",
+  "scopelens.png": "4f4043942fd01f8ef048ca915a614ccb3de35100862dc52869e0b523ab1055e7",
+  "leftovers.png": "8e23ed4a6f0b6e464e8f99ac04e555ea51dbd9652baa7fae0a3a6225f1e2d5d8",
+  "dragonscale.png": "c210346f78c9b09976047175ff332a2b47fb6f603a60751533e7617575cb272e",
+  "lightball.png": "195ba038f0bdbca07794b8b437871b1a0ce1988876c28eb7d28054c10054d80a",
+  "upgrade.png": "afa7e7fb08053c02684cebb7b640eac5f96642cd211ee92bd52d0467c519889e",
+  "shellbell.png": "fb29a8d7fda75404d7d499d4a6c6a7a1a3706f120fd12420bcaabfb069bb4f06",
+  "seaincense.png": "8752030d628cb75f1ce159acf2215e3dcbb9d5a53e194c3249306ff8ee44c071",
+  "laxincense.png": "c161793602442eddd747581725c592bdc1e7f4760e87e6b4725f4a179f2d1759",
+  "luckypunch.png": "c0426307382a128d22d8c863d72d10872356638f829becd24ba6c8e24cebfc8b",
+  "metalpowder.png": "4c5e62cfafba83f5b4382e3a6092ca7260896b25149b4b0a73324bfcfc48143a",
+  "thickclub.png": "53a2bbd4f135d688b2a13647a5b71834671ffa5b16b8dd1cd525be458270c94f",
+  "stick.png": "0b6ecb220ffbdc3556f8601e747e80efc783b9fe0ae0ded3e52a5869a5fa4813"
  }
 }
