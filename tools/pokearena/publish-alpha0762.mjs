@@ -373,6 +373,21 @@ for(const name of ['Idle','Attack','Shoot','SpAttack','Emit']){
  exactly(rosterPatched,anchor,'native gym arena list');
  rosterPatched=rosterPatched.replace(anchor,'imagen:`assets/arenas/gimnasios/${id}-amplia.jpg`,ovalo:{...ovaloGym}})).concat('+JSON.stringify(extra)+');');
 }
+// Owner 2026-11-22: held items use their ORIGINAL FireRed icons
+// (pret/pokefirered, pinned commit, hashes in torre2-held-items/PROVENANCE.json).
+{
+ const src='tools/pokearena/torre2-held-items',prov=JSON.parse(await read(path.join(src,'PROVENANCE.json')));
+ must(prov.source==='pret/pokefirered'&&/^[0-9a-f]{40}$/.test(prov.commit),'held item icon provenance');
+ const keys=Object.keys(prov.items||{});must(keys.length===17,'17 FRLG held items required');
+ const target=path.join(root,'assets/ui/frlg/items/held');await fs.mkdir(target,{recursive:true});
+ for(const key of keys){
+  must(/^[a-z]+$/.test(key),'bad held item '+key);
+  const bytes=await fs.readFile(path.join(src,key+'.png'));
+  must(createHash('sha256').update(bytes).digest('hex')===prov.files[key+'.png'],'held item icon hash mismatch '+key);
+  await fs.writeFile(path.join(target,key+'.png'),bytes);
+ }
+ await fs.writeFile(path.join(target,'PROVENANCE.json'),JSON.stringify(prov,null,1));
+}
 const inputHash=createHash('sha256');
 inputHash.update(rosterPatched);
 inputHash.update(version.src+'|'+oldModule+'|'+process.env.GITHUB_SHA);

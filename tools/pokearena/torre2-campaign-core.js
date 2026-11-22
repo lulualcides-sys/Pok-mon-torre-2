@@ -18,6 +18,7 @@ import {KANTO_151_IDS,KANTO_151} from './all-kanto-species.js';
 import {weatherWeight,pickWeighted,ROUTE_WEATHERS} from './route-weather.js';
 import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from './challenge-tower.js';
 import {EVENTS_3X3,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult} from './battle-events.js';
+import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem} from './individuality.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -676,7 +677,7 @@ export function resolveBattle(s,won,random=Math.random){
   }
   recordSeen(next,opponent.id);
   const member=next.team[next.active];
-  next.lastRewardTM=null;
+  next.lastRewardTM=null;next.lastHeldReward=null;
   const reward=xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),opponent.leader?'leader':'trainer');
   const shared=awardSharedTeamExperience(next,reward,{kind:'trainer'});
   const growth=shared.gains.find(g=>g.index===next.active);
@@ -688,14 +689,18 @@ export function resolveBattle(s,won,random=Math.random){
    // Secret title "Especialista": the whole team shares one type.
    if(monoTypeTeam(next.team))next.secretFlags={...(next.secretFlags||{}),monoLeader:true};
    const awards=next.stage<GYMS.length?next.badges:(next.leagueHonors??=[]);
-   if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
+   const freshBadge=!awards.includes(STAGES[next.stage].badge);
+   if(freshBadge)awards.push(STAGES[next.stage].badge);
+   // Held item of the gym's type, first win only (individuality.js).
+   if(freshBadge&&LEADER_ITEMS[next.stage]){
+    next.inventory=giveItem(next,LEADER_ITEMS[next.stage]).inventory;next.lastHeldReward=LEADER_ITEMS[next.stage]}
    const tm=grantGymTM(next,next.stage);
    next.lastRewardTM=tm.added?tm.item.name:null;
    next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
    if(next.stage>=STAGES.length)next.champion=true;
   }else next.trainer++;
   next.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
-   shared.totalRecipients+' Pokémon). '+(next.lastRewardTM?'Recebeu '+next.lastRewardTM+'. ':'')+(shared.evolutions.length?
+   shared.totalRecipients+' Pokémon). '+(next.lastRewardTM?'Recebeu '+next.lastRewardTM+'. ':'')+(next.lastHeldReward?'Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'. ':'')+(shared.evolutions.length?
    shared.evolutions.length+' evolução(ões) após a batalha!':'');
   return {won:true,message:next.lastMessage,reward,growth,sharedExp:shared.gains,
    evolutions:shared.evolutions,opponent};
@@ -1015,8 +1020,9 @@ export function resolveEventBattle(s,token,won){
    next.wins++;rechargeRematches(next);
   }else next.losses++;
   const r=resolveEventResult(next,id,!!won);
-  Object.assign(next,r.state);next.eventPending=null;
-  const message=r.message+(won?' +'+xp+' EXP.':'');
+  Object.assign(next,r.state);next.eventPending=null;next.lastHeldReward=null;
+  if(r.first&&EVENT_ITEMS[id]){next.inventory=giveItem(next,EVENT_ITEMS[id]).inventory;next.lastHeldReward=EVENT_ITEMS[id]}
+  const message=r.message+(won?' +'+xp+' EXP.':'')+(next.lastHeldReward?' Item de batalha: '+HELD_ITEMS[next.lastHeldReward].name+'.':'');
   next.lastMessage=message;
   return {won:!!won,message,reward:xp,event3x3:r.reward||null,
    growth:share?.gains.find(g=>g.index===next.active),sharedExp:share?.gains||[],evolutions:share?.evolutions||[]};
@@ -1034,7 +1040,7 @@ export function startWildBattle(s){
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }
-export function resolveWildBattle(s,won){
+export function resolveWildBattle(s,won,random=Math.random){
  if(!s.pendingWild)return {won:false,message:'Encontro selvagem expirado.'};
  return commitBattleOutcome(s,next=>{
   const wild=next.pendingWild;
@@ -1056,6 +1062,10 @@ export function resolveWildBattle(s,won){
    next.lastMessage=wild.id+' desmaiou e foi embora. '+(next.champion?'Ele volta depois de mais algumas vitórias.':'Ele volta depois que você zerar a Liga.');
   }else
   next.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
+  // Small chance (5%) of the held item of the wild Pokémon's type.
+  next.lastHeldReward=wildItemRoll(kantoTypes(wild.id),random);
+  if(next.lastHeldReward){next.inventory=giveItem(next,next.lastHeldReward).inventory;
+   next.lastMessage+=' Ele deixou cair: '+HELD_ITEMS[next.lastHeldReward].name+'!'}
   return {won:true,message:next.lastMessage,growth,
    sharedExp:shared.gains,evolutions:shared.evolutions};
  });

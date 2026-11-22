@@ -35,7 +35,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {installIndividuality,potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {installIndividuality,potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -165,6 +165,9 @@ class Campanha extends Phaser.Scene{
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
   }
+  // Original FireRed held-item icons (24x24, torre2-held-items/PROVENANCE.json).
+  for(const key of Object.keys(HELD_ITEMS))
+   if(!this.textures.exists(heldIconKey(key)))this.load.image(heldIconKey(key),HELD_ICON_DIR+key+'.png');
   // Cards-only campaign: do not upload city/cave/route atlases to WebGL.
   // Genuine trainer sprites remain available below.
   const stage=state?.stage??0;
@@ -3396,25 +3399,31 @@ create(){
   this.uiLabel(238,84,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',10,ha?'#e8c8ff':'#8ea2c8',[0,.5],4).setData('torre2-ficha-ability',ha||'none');
   estrechar(this.uiLabel(238,100,ha?HIDDEN_ABILITIES[ha].desc:'Só cerca de 5% dos Pokémon nascem com uma habilidade rara.',8,'#dcf4fb',[0,.5],4),370);
   const item=heldItemOf(member);
-  this.uiLabel(238,128,'Item equipado',10,MENU_UI.amarillo,[0,.5],4);
-  this.uiLabel(238,148,item?HELD_ITEMS[item].name:'Nenhum',10,item?'#9ff0bf':'#8ea2c8',[0,.5],4).setData('torre2-ficha-item',item||'none');
-  estrechar(this.uiLabel(238,164,item?itemDesc(item):'Ganhe itens na Loja de pontos (Missões).',8,'#dcf4fb',[0,.5],4),370);
+  const icon=(key,x,y,scale=1)=>this.textures.exists(heldIconKey(key))?
+   this.add.image(x,y,heldIconKey(key)).setScale(scale).setDepth(4).setData('torre2-held-icon',key):null;
+  const equip=key=>{
+   const now=readCampaign()||cur,next=equipItem(now,member.uid,key);
+   if(!next)return this.individualScreen(now,index);
+   try{saveCampaign(next)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9d9d')}
+   this.individualScreen(next,index);
+  };
+  this.uiLabel(238,124,'Item equipado',10,MENU_UI.amarillo,[0,.5],4);
+  if(item)icon(item,250,146);
+  this.uiLabel(item?268:238,146,item?HELD_ITEMS[item].name:'Nenhum',10,item?'#9ff0bf':'#8ea2c8',[0,.5],4).setData('torre2-ficha-item',item||'none');
+  estrechar(this.uiLabel(238,164,item?itemDesc(item):HOW_TO_GET,7,'#dcf4fb',[0,.5],4),380);
+  if(item)this.button(560,146,110,20,'TIRAR ITEM',()=>equip(null),true,8).setData('torre2-ficha-equip','none');
+  // Bag: tap an original FRLG icon to equip it (the old one goes back to the bag).
   const owned=Object.entries(cur.inventory?.held||{}).filter(([k,n])=>n>0&&HELD_ITEMS[k]);
-  const cycle=[null,...owned.map(([k])=>k)];
-  if(cycle.length>1||item){
-   const nextKey=cycle[(cycle.indexOf(item)+1)%cycle.length]??null;
-   this.button(510,148,190,22,nextKey?'TROCAR → '+HELD_ITEMS[nextKey].name:'TIRAR ITEM',()=>{
-    const now=readCampaign()||cur,next=equipItem(now,member.uid,nextKey);
-    if(!next)return this.individualScreen(now,index);
-    try{saveCampaign(next)}catch{return this.campaignNotice('Não foi possível salvar.','#ff9d9d')}
-    this.individualScreen(next,index);
-   },true,8).setData('torre2-ficha-equip',nextKey||'none');
-  }
-  this.uiLabel(238,192,'Itens na bolsa: '+(owned.length?owned.map(([k,n])=>HELD_ITEMS[k].name+' ×'+n).join(', '):'nenhum'),8,'#dcf4fb',[0,.5],4);
+  this.uiLabel(238,180,owned.length?'Bolsa · toque para equipar':'Bolsa vazia',8,MENU_UI.suave,[0,.5],4);
+  owned.slice(0,14).forEach(([k,n],i)=>{const x=250+i*26,y=200;
+   const zone=this.add.rectangle(x,y,24,24,0x0c1725,1).setDepth(3).setStrokeStyle(1,0x4e92bc).setInteractive({useHandCursor:true});
+   zone.on('pointerup',()=>equip(k));zone.setData('torre2-ficha-equip',k);
+   icon(k,x,y);if(n>1)this.uiLabel(x+11,y+9,String(n),6,'#ffffff',[1,.5],5);
+  });
   const rivals=rivalsOf(member.id);
-  this.uiLabel(238,220,'Rivais',10,MENU_UI.amarillo,[0,.5],4);
-  estrechar(this.uiLabel(238,240,rivals.length?rivals.map(r=>r.charAt(0).toUpperCase()+r.slice(1)).join(', ')+' e evoluções · +10% de dano entre rivais':'Sem rival conhecido',8,rivals.length?'#ffb37a':'#8ea2c8',[0,.5],4),370);
-  this.uiLabel(238,266,'Vitórias em rivalidade: '+(Number(cur.rivalryWins)||0),8,'#dcf4fb',[0,.5],4);
+  this.uiLabel(238,226,'Rivais',10,MENU_UI.amarillo,[0,.5],4);
+  estrechar(this.uiLabel(238,244,rivals.length?rivals.map(r=>r.charAt(0).toUpperCase()+r.slice(1)).join(', ')+' e evoluções · +10% de dano entre rivais':'Sem rival conhecido',8,rivals.length?'#ffb37a':'#8ea2c8',[0,.5],4),370);
+  this.uiLabel(238,268,'Vitórias em rivalidade: '+(Number(cur.rivalryWins)||0),8,'#dcf4fb',[0,.5],4);
   this.button(320,330,240,28,'◀ SUMÁRIO',()=>this.showSummary(readCampaign()||cur,index)).setData('torre2-ficha-back',true);
   this.__torre2Ficha={id:member.id,stars,ability:ha,item,rivals};
  }

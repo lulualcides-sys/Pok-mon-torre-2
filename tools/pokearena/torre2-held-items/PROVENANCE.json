@@ -1,0 +1,94 @@
+{
+ "source": "pret/pokefirered",
+ "commit": "ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
+ "note": "Original Pokémon FireRed/LeafGreen held-item icons (graphics/items/icons + icon_palettes), indexed pixels kept, color 0 transparent. Personal fangame use, same pipeline as install-frlg-mart-item-icons.mjs.",
+ "items": {
+  "silkscarf": {
+   "icon": "graphics/items/icons/silk_scarf.png",
+   "palette": "graphics/items/icon_palettes/silk_scarf.pal"
+  },
+  "charcoal": {
+   "icon": "graphics/items/icons/charcoal.png",
+   "palette": "graphics/items/icon_palettes/charcoal.pal"
+  },
+  "mysticwater": {
+   "icon": "graphics/items/icons/mystic_water.png",
+   "palette": "graphics/items/icon_palettes/mystic_water.pal"
+  },
+  "miracleseed": {
+   "icon": "graphics/items/icons/miracle_seed.png",
+   "palette": "graphics/items/icon_palettes/miracle_seed.pal"
+  },
+  "magnet": {
+   "icon": "graphics/items/icons/magnet.png",
+   "palette": "graphics/items/icon_palettes/magnet.pal"
+  },
+  "nevermeltice": {
+   "icon": "graphics/items/icons/never_melt_ice.png",
+   "palette": "graphics/items/icon_palettes/never_melt_ice.pal"
+  },
+  "blackbelt": {
+   "icon": "graphics/items/icons/black_belt.png",
+   "palette": "graphics/items/icon_palettes/black_type_enhancing_item.pal"
+  },
+  "poisonbarb": {
+   "icon": "graphics/items/icons/poison_barb.png",
+   "palette": "graphics/items/icon_palettes/poison_barb.pal"
+  },
+  "softsand": {
+   "icon": "graphics/items/icons/soft_sand.png",
+   "palette": "graphics/items/icon_palettes/soft_sand.pal"
+  },
+  "sharpbeak": {
+   "icon": "graphics/items/icons/sharp_beak.png",
+   "palette": "graphics/items/icon_palettes/sharp_beak.pal"
+  },
+  "twistedspoon": {
+   "icon": "graphics/items/icons/twisted_spoon.png",
+   "palette": "graphics/items/icon_palettes/twisted_spoon.pal"
+  },
+  "silverpowder": {
+   "icon": "graphics/items/icons/silver_powder.png",
+   "palette": "graphics/items/icon_palettes/silver_powder.pal"
+  },
+  "hardstone": {
+   "icon": "graphics/items/icons/hard_stone.png",
+   "palette": "graphics/items/icon_palettes/hard_stone.pal"
+  },
+  "spelltag": {
+   "icon": "graphics/items/icons/spell_tag.png",
+   "palette": "graphics/items/icon_palettes/spell_tag.pal"
+  },
+  "dragonfang": {
+   "icon": "graphics/items/icons/dragon_fang.png",
+   "palette": "graphics/items/icon_palettes/dragon_fang.pal"
+  },
+  "blackglasses": {
+   "icon": "graphics/items/icons/black_glasses.png",
+   "palette": "graphics/items/icon_palettes/black_type_enhancing_item.pal"
+  },
+  "metalcoat": {
+   "icon": "graphics/items/icons/metal_coat.png",
+   "palette": "graphics/items/icon_palettes/metal_coat.pal"
+  }
+ },
+ "files": {
+  "silkscarf.png": "de4fcc525f0747c590bc7b1d82d987f8814bcb08d698ff80e594f7260e75d947",
+  "charcoal.png": "e659e74d4e4fb309d1af530f956da7e15e8adcfac05bde4a61eebe4895dea28e",
+  "mysticwater.png": "a08cb87279c2201edc6cc5b8f7cbb0ce2e76587d383a3208034f95d57f2880c5",
+  "miracleseed.png": "b3460de669c0047fde5a3e4e0ff9f06818fb702f8248285089b436e9e569f823",
+  "magnet.png": "ffedf5375aea6a662f84429f8ba8aaf42cf8aa822e904128fbfbbef5a336270b",
+  "nevermeltice.png": "f1df728bc2f74338c97818429b9e8646c3b5dc733424ac92a61e670162897ced",
+  "blackbelt.png": "89d73ae27a82b7c0b96ac93d68674c7f8bd8193ffecff412a514cb5ec72826de",
+  "poisonbarb.png": "5758a58d22d45dbeb5a7da953cb758864d2a005a4df05b5557dc4beb679473af",
+  "softsand.png": "8de7a2a9a1f0cef2b65982cd50f6fcc550f9b89d2ed63b87c9e72b08da74cba7",
+  "sharpbeak.png": "4ebab9adaf52a1e77316a1792f894cfc4b2af15cc5815abb500f59c395f7c40b",
+  "twistedspoon.png": "854117437fe5e1b499bc82034da576de66a7e48ebb53398d6c8c8a9f3016c85a",
+  "silverpowder.png": "038d8e2d2663660cf6885f745073d53001e0b7267025f7f9422ddd86e7d628f2",
+  "hardstone.png": "c6f97f63fdc168c05c7f2293f0fc96d6da581884abfe6effcf601ac4e9de5db5",
+  "spelltag.png": "b8fda2b60734d349af6813684b2e858e25b6814de375ec611752336424a0f7a0",
+  "dragonfang.png": "08a4e43e8c410ef77f983849fb2a1c115c362a108b6ddf7980a09a73832a4386",
+  "blackglasses.png": "57b2100caf33fc3ca246204e7ad7f763759cf7a66463be4b6fbd000f3e2aa185",
+  "metalcoat.png": "0e5d62dd4816dab0e6b8998ce4e59c3b98c98bc0f7e458490d70bfe3548d02bc"
+ }
+}

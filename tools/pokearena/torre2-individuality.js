@@ -3,8 +3,10 @@
  *  - Potencial individual (5): HP/ATK/DEF 0–31 per Pokémon (like IVs),
  *    stable from its own UID, ±5% at most on HP, damage dealt and taken.
  *  - Habilidade oculta (9): about 5% of Pokémon carry one rare passive.
- *  - Equipamentos (1): one held item per Pokémon (type boosters +10% for
- *    moves of that type, or a vest that cuts damage taken by 8%).
+ *  - Equipamentos (1): one held item per Pokémon, only the 17 original
+ *    FireRed type items (+10% for moves of that type), with their original
+ *    FRLG icons (torre2-held-items/, pret/pokefirered). Earned from leaders
+ *    (first win), 3x3 events (first win), wild battles (5%) and the points shop.
  *  - Rivalidade (10): rival species fight harder against each other (+10%
  *    damage both ways) and the player's wins against a rival are counted.
  * The combat hook (globalThis.__torre2Indiv) multiplies the campaign's own
@@ -47,11 +49,32 @@ export const HELD_ITEMS=Object.freeze({
  softsand:{name:'Areia Macia',type:'GROUND'},sharpbeak:{name:'Bico Afiado',type:'FLYING'},
  twistedspoon:{name:'Colher Torta',type:'PSYCHIC'},silverpowder:{name:'Pó Prateado',type:'BUG'},
  hardstone:{name:'Pedra Dura',type:'ROCK'},spelltag:{name:'Selo Fantasma',type:'GHOST'},
- dragonfang:{name:'Presa de Dragão',type:'DRAGON'},vest:{name:'Colete Reforçado',guard:.08}
+ dragonfang:{name:'Presa de Dragão',type:'DRAGON'},blackglasses:{name:'Óculos Escuros',type:'DARK'},
+ metalcoat:{name:'Revestimento Metálico',type:'STEEL'}
 });
+// Original FRLG icon of each item, served from assets/ui/frlg/items/held/.
+export const HELD_ICON_DIR='assets/ui/frlg/items/held/';
+export const heldIconKey=key=>'torre2-held-'+key;
+export function itemForType(type){
+ const t=String(type||'').toUpperCase();
+ return Object.keys(HELD_ITEMS).find(k=>HELD_ITEMS[k].type===t)||null;
+}
+// How to earn them (owner 2026-11-22: "Como a gente pode adquirir os itens?").
+// Leaders: the item of the gym's type on the FIRST win (stage index).
+export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','miracleseed','poisonbarb',
+ 'twistedspoon','charcoal','softsand','nevermeltice','blackbelt','spelltag','dragonfang','silkscarf']);
+export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e2:'mysticwater',e3:'metalcoat',e4:'blackbelt',e5:'blackglasses',e6:'dragonfang'});
+export const WILD_ITEM_CHANCE=.05;
+// Wild win: small chance of the item of the wild Pokémon's first type.
+export function wildItemRoll(types,random=Math.random){
+ const r=Number(random());
+ if(!(Number.isFinite(r)&&r>=0&&r<WILD_ITEM_CHANCE))return null;
+ return itemForType(list(types)[0]);
+}
+export const HOW_TO_GET='Ganhe itens vencendo líderes e eventos 3x3 pela 1ª vez, com 5% de chance em lutas selvagens e na Loja de pontos.';
 export const ITEM_TYPE_BONUS=1.10;
 export function heldItemOf(member){return HELD_ITEMS[member?.heldItem]?member.heldItem:null}
-export function itemDesc(key){const it=HELD_ITEMS[key];if(!it)return '';return it.guard?'Recebe 8% menos dano':'+10% de dano com golpes do tipo '+it.type}
+export function itemDesc(key){const it=HELD_ITEMS[key];return it?'+10% de dano com golpes do tipo '+it.type:''}
 // Owned (not equipped) items live in inventory.held = {key: count}.
 export function equipItem(state,uid,key){
  const next=JSON.parse(JSON.stringify(state));
@@ -125,8 +148,6 @@ export function damageMultiplier(atk,def,move){
   const ha=hiddenAbilityOf(def.member);
   if(ha==='casca')m*=.90;
   if(ha==='sorte')m*=.95;
-  const it=HELD_ITEMS[heldItemOf(def.member)];
-  if(it?.guard)m*=1-it.guard;
  }
  if(atk?.member&&def?.member&&areRivals(atk.member.id,def.member.id))m*=RIVAL_BONUS;
  return m;
