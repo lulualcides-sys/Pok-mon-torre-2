@@ -2,7 +2,8 @@
  * "golpes que modificam o cenário"). Campaign battles only.
  * No new moves are invented (FRLG has no terrain moves): a real ULT cast of
  * an Electric, Grass, Water or Psychic move turns the arena floor into that
- * terrain for a few seconds.
+ * terrain for a few seconds, with a 25% chance per ULT (not every ULT),
+ * covering the whole arena.
  *  - Campo Elétrico: Electric moves +30%.
  *  - Campo Gramado: Grass moves +30% and both fighters recover 1/16 HP every
  *    4 s.
@@ -11,8 +12,10 @@
  * Visual: a pixel layer on the arena floor (Phaser Graphics, no Canvas2D),
  * under the fighters, plus a small HUD label like the weather one.
  */
-import {CAMPO} from '../config.js';
+import {LIENZO} from '../arena.js';
 export const TERRAIN_SECONDS=12;
+// Not every ULT: a chance per real ULT cast of the type (owner 2026-11-22).
+export const TERRAIN_CHANCE=.25;
 export const TERRAINS=Object.freeze({
  eletrico:{name:'CAMPO ELÉTRICO',type:'ELECTRIC',color:0xffe14a,accent:0xfff7b0},
  gramado:{name:'CAMPO GRAMADO',type:'GRASS',color:0x5cc84a,accent:0x2f8f3a},
@@ -21,9 +24,12 @@ export const TERRAINS=Object.freeze({
 });
 const BY_TYPE=Object.freeze(Object.fromEntries(Object.entries(TERRAINS).map(([k,t])=>[t.type,k])));
 export const TERRAIN_BOOST=1.3;
-export function terrainFromCast(slot,move){
+export function terrainFromCast(slot,move,random=Math.random){
  if(slot!=='e')return null;
- return BY_TYPE[String(move?.tipo||'').toUpperCase()]||null;
+ const kind=BY_TYPE[String(move?.tipo||'').toUpperCase()]||null;
+ if(!kind)return null;
+ const r=Number(random());
+ return Number.isFinite(r)&&r>=0&&r<TERRAIN_CHANCE?kind:null;
 }
 export function terrainDamage(kind,moveType){
  const t=TERRAINS[kind];if(!t)return 1;const type=String(moveType||'').toUpperCase();
@@ -32,14 +38,13 @@ export function terrainDamage(kind,moveType){
  return 1;
 }
 export function terrainHeal(kind,hpMax,dt){return kind==='gramado'?(Number(hpMax)||0)/64*Math.max(0,Math.min(.25,Number(dt)||0)):0}
-// Deterministic pattern inside the floor ellipse (cx,cy,rx,ry). phase: frames.
+// Deterministic pattern over the WHOLE arena (rect x,y,w,h). phase: frames.
 const hash=i=>{let h=(i+1)*2654435761>>>0;h^=h>>>13;h=Math.imul(h,1274126177)>>>0;return (h>>>0)/4294967296};
-export function terrainPattern(kind,phase,ell){
+export function terrainPattern(kind,phase,rect){
  const out=[];if(!TERRAINS[kind])return out;
- const n=kind==='gramado'?72:kind==='aquatico'?12:kind==='eletrico'?28:30;
+ const n=kind==='gramado'?150:kind==='aquatico'?24:kind==='eletrico'?56:60;
  for(let i=0;i<n;i++){
-  const a=hash(i)*Math.PI*2,r=Math.sqrt(hash(i+97))*.92;
-  let x=ell.cx+Math.cos(a)*ell.rx*r,y=ell.cy+Math.sin(a)*ell.ry*r;
+  let x=rect.x+hash(i)*rect.w,y=rect.y+hash(i+97)*rect.h;
   if(kind==='psiquico'){y-=((phase*1.2+i*13)%40);}
   out.push({x:Math.round(x),y:Math.round(y),i,on:kind==='eletrico'?((phase+i*5)%14)<5:true,
    grow:kind==='aquatico'?((phase*.9+i*9)%36)/36:0,alpha:kind==='psiquico'?.35+.45*Math.abs(Math.sin((phase+i*7)/9)):1});
@@ -60,12 +65,12 @@ function drawPattern(g,kind,items,fade){
  }
 }
 // --- Phaser install (party-battle.js, campaign only) --------------------------
-export function installTerrain(scene,{ellipse,hud}={}){
+export function installTerrain(scene,{rect,hud,random=Math.random}={}){
  if(!scene?.datos?.torre2?.party||scene.__torre2Terrain)return null;
- const ell=ellipse||{cx:CAMPO.x+CAMPO.w/2,cy:CAMPO.y+CAMPO.h/2,rx:CAMPO.w/2,ry:CAMPO.h/2};
+ const area=rect||{x:LIENZO.x,y:LIENZO.y,w:LIENZO.w,h:LIENZO.h};
  const layer=scene.add.graphics().setDepth(2);
  const state={kind:'none',remaining:0,phase:0,acc:0,fade:0,casts:0};
- const api={state,ell,
+ const api={state,area,
   set(kind){if(!TERRAINS[kind])return;state.kind=kind;state.remaining=TERRAIN_SECONDS;state.casts++;hud?.announce?.(TERRAINS[kind].name+'!')},
   damage(src,dst,g){return state.kind==='none'?1:terrainDamage(state.kind,g?.tipo)},
   heal(f,dt){return state.kind==='none'?0:terrainHeal(state.kind,typeof f?.hpMax==='function'?f.hpMax():f?.hpMax,dt)}};
@@ -82,14 +87,14 @@ export function installTerrain(scene,{ellipse,hud}={}){
   layer.clear();const kind=state.kind==='ending'?state.last:state.kind;
   if(!kind||state.fade<=0)return;
   const t=TERRAINS[kind];
-  layer.fillStyle(t.color,.16*state.fade).fillEllipse(ell.cx,ell.cy,ell.rx*2,ell.ry*2);
-  layer.lineStyle(3,t.color,.45*state.fade).strokeEllipse(ell.cx,ell.cy,ell.rx*2,ell.ry*2);
-  drawPattern(layer,kind,terrainPattern(kind,state.phase,ell),state.fade);
+  // The whole arena changes, not only the fighting oval.
+  layer.fillStyle(t.color,.2*state.fade).fillRect(area.x,area.y,area.w,area.h);
+  drawPattern(layer,kind,terrainPattern(kind,state.phase,area),state.fade);
  };
  scene.events.on('update',update);
  // Native cast hook chain (arena-trainers.js installed the first listener).
  const previous=globalThis.__torre2Cast;
- const cast=(l,slot,h)=>{try{previous?.(l,slot,h)}catch{}if(l?.escena===scene){const k=terrainFromCast(slot,h);if(k)api.set(k)}};
+ const cast=(l,slot,h)=>{try{previous?.(l,slot,h)}catch{}if(l?.escena===scene){const k=terrainFromCast(slot,h,random);if(k)api.set(k)}};
  globalThis.__torre2Cast=cast;globalThis.__torre2Terrain=api;scene.__torre2Terrain=api;
  scene.events.once('shutdown',()=>{scene.events.off('update',update);layer.destroy();
   if(globalThis.__torre2Cast===cast)globalThis.__torre2Cast=previous||null;
