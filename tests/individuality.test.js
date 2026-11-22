@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {potentialOf,potentialStars,hiddenAbilityOf,HIDDEN_ABILITIES,HIDDEN_CHANCE,HELD_ITEMS,equipItem,giveItem,
  areRivals,rivalsOf,partyHasRivalry,hpMultiplier,damageMultiplier,installIndividuality,
- LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,itemForType,finalAdjust,tickAdjust,expFactor,blocksEvolution,moneyFactor,
+ potentialPercent,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,itemForType,finalAdjust,tickAdjust,expFactor,blocksEvolution,moneyFactor,
  wildLevelShift,escapesWildLoss,machoBraceGrowth,potentialGrade,itemDesc} from '../tools/pokearena/torre2-individuality.js';
 const read=f=>fs.readFileSync(new URL('../tools/pokearena/'+f,import.meta.url),'utf8');
 
@@ -134,4 +134,10 @@ test('47 FRLG held items: battle, tick and campaign effects',()=>{
  assert.match(pub,/tickGen3Status\(this,dt\);globalThis\.__torre2Indiv\?\.tick\?\.\(this,dt\)/);
  const core=read('torre2-campaign-core.js');
  for(const f of ['expFactor(member)','blocksEvolution(member)','moneyFactor(next.team)','wildLevelShift(','escapesWildLoss(','machoBraceGrowth(member)'])assert.ok(core.includes(f),f);
+});
+
+test('potential percent shown in the UI',()=>{
+ assert.equal(potentialPercent(31,'hp'),'+5%');assert.equal(potentialPercent(0,'atk'),'−5%');
+ assert.equal(potentialPercent(31,'def'),'+4,8%','DEF: less damage taken');assert.equal(potentialPercent(0,'def'),'−5,3%');
+ assert.equal(potentialPercent(16,'hp'),'+0,2%');
 });

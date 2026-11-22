@@ -32,6 +32,13 @@ export function potentialStars(p){const t=p.hp+p.atk+p.def;return t>=84?5:t>=66?
 export function potentialGrade(v){return v>=31?'Perfeito':v>=26?'Fantástico':v>=21?'Muito bom':v>=16?'Bom':v>=11?'Razoável':'Fraco'}
 export function potentialTotalWord(p){const s=potentialStars(p);return ['','Comum','Promissor','Acima da média','Excelente','Lendário'][s]}
 const ivFactor=v=>1+((v-15.5)/31)*.10; // 0 → 0.95, 31 → 1.05
+// Percent shown in the UI: how much this potential point changes the stat
+// (HP: max HP · ATK: damage dealt · DEF: damage taken, inverted).
+export function potentialPercent(v,stat='atk'){
+ const f=ivFactor(clampIv(v)),pct=(stat==='def'?1/f-1:f-1)*(stat==='def'?-100:100);
+ const r=Math.round(pct*10)/10;
+ return (r>0?'+':r<0?'−':'±')+String(Math.abs(r)).replace('.',',')+'%';
+}
 // --- 9. Habilidades ocultas --------------------------------------------------
 export const HIDDEN_ABILITIES=Object.freeze({
  furia:{name:'Fúria Oculta',desc:'+15% de dano com o HP abaixo de 1/3'},

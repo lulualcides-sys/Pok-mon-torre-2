@@ -35,7 +35,7 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  startSilphBattle,resolveSilphBattle,sendTrade,previewTrade,receiveTrade,kantoTypes,
  startTowerBattle,resolveTowerBattle,currentTowerFloor,startEventBattle,resolveEventBattle} from './campaign-core.js';
 import {EVENTS_3X3,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {installIndividuality,potentialOf,potentialStars,potentialGrade,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -917,14 +917,19 @@ create(){
   // League (Victory Road, Elite Four, Champion): the dungeon theme.
   this.campaignMusic(state.stage>=8?'dungeon':'town');
   const cards=renderTrainerCardHub(this,state,handlers);
+  // Destroyed when another screen clears the scene: delayed hub messages
+  // must not appear over the Summary or other screens (owner print 2026-11-22).
+  const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   // First visit only: point out the main buttons (never blocks input).
-  if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive())this.campaignTips()});}
+  if(!this.__torre2TipsShown){this.__torre2TipsShown=true;this.time.delayedCall(450,()=>{if(this.scene.isActive()&&hubAlive.active)this.campaignTips()});}
   // A newly unlocked Evento 3x3 is announced once (owner 2026-11-22).
   {const fresh=EVENTS_3X3.find(ev=>eventStatus(state,ev).state==='open'&&!(state.events3x3?.announced||[]).includes(ev.id));
    if(fresh){const ann=[...(state.events3x3?.announced||[]),...EVENTS_3X3.filter(ev=>eventStatus(state,ev).state!=='locked').map(ev=>ev.id)];
-    try{const cur=readCampaign()||state;saveCampaign({...cur,events3x3:{...(cur.events3x3||{}),announced:[...new Set(ann)]}});state.events3x3={...(state.events3x3||{}),announced:[...new Set(ann)]}}catch{}
-    this.time.delayedCall(900,()=>{if(this.scene.isActive())this.campaignNotice('Nova luta 3x3 liberada: '+fresh.name+'! Mais opções → DESAFIOS → EVENTOS 3x3',MENU_UI.amarillo)})}}
+    // Marked as announced only when the notice is really shown on the map.
+    this.time.delayedCall(900,()=>{if(!this.scene.isActive()||!hubAlive.active)return;
+     try{const cur=readCampaign()||state;saveCampaign({...cur,events3x3:{...(cur.events3x3||{}),announced:[...new Set(ann)]}});state.events3x3={...(state.events3x3||{}),announced:[...new Set(ann)]}}catch{}
+     this.campaignNotice('Nova luta 3x3 liberada: '+fresh.name+'! Mais opções → DESAFIOS → EVENTOS 3x3',MENU_UI.amarillo)})}}
   return cards;
  }
  // Only explicitly flagged QA sessions may exercise the old path engine.
@@ -1174,6 +1179,7 @@ create(){
  }
  // Short on-screen notice (save export/import feedback).
  campaignNotice(message,color=MENU_UI.amarillo){
+  this.__torre2Notice?.forEach(o=>o?.active&&o.destroy());
   const t=this.uiLabel(320,346,message,9,color,[.5,.5],9600).setData('torre2-campaign-notice',true);
   // Readable toast: dark rounded backdrop so it never mixes with the buttons
   // underneath (owner print 2026-11-22).
@@ -1181,6 +1187,7 @@ create(){
   bg.fillStyle(0x0a1422,.94).fillRoundedRect(320-w/2,336,w,20,6);
   bg.lineStyle(1,0xf0cb6d,.8).strokeRoundedRect(320-w/2,336,w,20,6);
   if(t.displayWidth>612)t.setScale(612/t.displayWidth);
+  this.__torre2Notice=[t,bg];
   this.time.delayedCall(2600,()=>{t.active&&t.destroy();bg.active&&bg.destroy()});
   return t;
  }
@@ -3424,7 +3431,10 @@ create(){
    for(let j=0;j<12;j++){g.fillStyle(j<seg?c:0x22324a,1).fillRect(48+j*6.7,y-3,5.4,6)}
    if(v>=31)g.fillStyle(0xffffff,.45).fillRect(48,y-3,80,2);
    this.uiLabel(142,y,v+'',7,'#ffffff',[.5,.5],4);
-   this.uiLabel(206,y,potentialGrade(v),6,v>=26?'#ffe08a':'#b9c8e0',[1,.5],4);
+   this.uiLabel(206,y-4,potentialGrade(v),6,v>=26?'#ffe08a':'#b9c8e0',[1,.5],4);
+   // Tiny percent: what this potential changes (owner 2026-11-22).
+   const pc=potentialPercent(v,k);
+   this.uiLabel(206,y+5,pc,5,pc.startsWith('+')?'#8ff0b5':pc.startsWith('−')?'#ff9d9d':'#b9c8e0',[1,.5],4).setData('torre2-ficha-pct',k+':'+pc);
   });
   // Right column: ability, item, bag, rivals (one card each).
   nativeRect(g,222,44,406,250,MENU_UI.contorno,8);nativeRect(g,224,46,402,246,0x13233b,7);
@@ -3474,6 +3484,8 @@ create(){
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
+  // A map notice must not stay on top of the Summary (owner print 2026-11-22).
+  this.__torre2Notice?.forEach(o=>o?.active&&o.destroy());this.__torre2Notice=null;
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
@@ -3611,6 +3623,10 @@ create(){
   statRows.forEach(([name,value,max,color],i)=>{
    const y=194+i*20;
    label(25,y,name,C.muted,10);label(198,y,String(value),C.white,10).setOrigin(1,0);
+   // Tiny potential percent under the bar (HP/ATK/DEF; not for Mewtwo tester).
+   const pk={HP:'hp',ATK:'atk',DEF:'def'}[name];
+   if(pk&&member.id!=='mewtwo'){const pc=potentialPercent(potentialOf(member)[pk],pk);
+    textoMenu(this,168,y+13,pc,{tam:5,color:pc.startsWith('+')?'#8ff0b5':pc.startsWith('−')?'#ff9d9d':'#b9c8e0',borde:2,colorBorde:MENU_UI.bordeTexto,literal:true}).setOrigin(1,.5).setDepth(16).setData('torre2-summary-pct',pk+':'+pc)}
    const bar=this.add.graphics().setDepth(14),ratio=Math.min(1,Math.max(0,value/max));
    bar.fillStyle(0x0a1422,1).fillRoundedRect(56,y+2,112,9,4);bar.fillStyle(0x1d3046,1).fillRoundedRect(57,y+3,110,7,3);
    bar.fillStyle(color,1).fillRoundedRect(57,y+3,Math.max(6,110*ratio),7,3);
@@ -3618,8 +3634,25 @@ create(){
   });
   if(member.id==='mewtwo')label(25,282,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
   // Individual Pokémon (README 5/9/1/10): potential, hidden ability, item.
-  else button(24,276,174,26,'FICHA '+'★'.repeat(potentialStars(potentialOf(member)))+(hiddenAbilityOf(member)?' ✦':''),
-   ()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
+  else{
+   // Ficha card in the same style as the Ficha screen: drawn gold stars,
+   // rating word, hidden-ability seal and the equipped item icon.
+   const pot=potentialOf(member),st=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
+   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][st];
+   const card=button(24,268,174,38,'',()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
+   const fx=this.add.graphics().setDepth(14);
+   fx.fillStyle(glow,.18).fillRoundedRect(27,271,168,32,4);
+   label(34,273,'FICHA DO POKÉMON ▸',C.gold,9);
+   const pts=r=>Array.from({length:10},(_,i)=>{const q=i%2?r*.45:r,an=-Math.PI/2+i*Math.PI/5;return new Phaser.Geom.Point(Math.cos(an)*q,Math.sin(an)*q)});
+   for(let i=0;i<5;i++){const sg=this.add.graphics({x:41+i*18,y:294}).setDepth(15),on=i<st;
+    if(on){sg.fillStyle(0x7a4a00,1).fillPoints(pts(8),true);sg.fillStyle(0xffd23f,1).fillPoints(pts(6.7),true);sg.fillStyle(0xfff3b0,1).fillPoints(pts(2.6).map(q=>new Phaser.Geom.Point(q.x-1.2,q.y-1.5)),true)}
+    else{sg.fillStyle(0x0c1725,1).fillPoints(pts(8),true);sg.fillStyle(0x4a5f7d,1).fillPoints(pts(6.4),true)}}
+   label(132,289,potentialTotalWord(pot),'#'+glow.toString(16).padStart(6,'0'),8);
+   // Hidden-ability seal: a drawn purple diamond (the font has no ✦ glyph).
+   if(ha){fx.fillStyle(0x3a1d5c,1).fillPoints([[170,270],[177,277],[170,284],[163,277]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true);
+    fx.fillStyle(0xd7b4ff,1).fillPoints([[170,272],[175,277],[170,282],[165,277]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true)}
+   if(it&&this.textures.exists(heldIconKey(it)))this.add.image(182,290,heldIconKey(it)).setDepth(15);
+  }
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
    try{
     if(!selectTeamMember(state,index))return;
