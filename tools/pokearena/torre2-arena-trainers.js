@@ -119,13 +119,16 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
  scene.events.on('postupdate',follow);
  scene.__torre2ArenaTrainers=api;
  // Native cast hook (habilidades.js presentar, patched in the published copy).
+ // Chained: other campaign listeners (terrain.js) keep receiving casts.
+ const previous=globalThis.__torre2Cast;
  const cast=(l,slot,h)=>{
+  try{previous?.(l,slot,h)}catch{}
   if(l?.escena!==scene||!scene.scene.isActive())return;
   const text=speechFor(slot,h);if(text)api.say(l.lado===0?0:1,text);
  };
  globalThis.__torre2Cast=cast;
  scene.events.once('shutdown',()=>{
-  if(globalThis.__torre2Cast===cast)globalThis.__torre2Cast=null;
+  if(globalThis.__torre2Cast===cast)globalThis.__torre2Cast=previous||null;
   scene.events.off('postupdate',follow);
   scene.__torre2ArenaTrainers=null;
   for(const t of trainers.filter(Boolean)){t.bubble?.destroy();t.spr.destroy();t.shadow.destroy()}

@@ -109,6 +109,8 @@ const newModuleNames=[
  ['tools/pokearena/torre2-custom-battles.js','torre2/custom-battles.js'],
  // Trainer customization: outfit colour, pose and accessories (README 3).
  ['tools/pokearena/torre2-trainer-look.js','torre2/trainer-look.js'],
+ // Terrains from real Electric/Grass/Water/Psychic ULT casts (README 8).
+ ['tools/pokearena/torre2-terrain.js','torre2/terrain.js'],
  // Pokédex filters (pure), imported by the campaign scene.
  ['tools/pokearena/torre2-dex-filter.js','torre2/dex-filter.js'],
  // Multiplayer by code (main menu): WebRTC link + emulated room server for
