@@ -89,8 +89,8 @@ export const QUESTS=Object.freeze([
  Q('q52',9,'oak','Prof. Carvalho','O sonho de todo pesquisador: os 151 de Kanto!','dexCaught',151,{},{money:50000,items:{ultraball:20}})
 ]);
 // --- Rare missions (owner 2026-11-22: "mais difíceis e recompensas bem
-// melhores, mas raras de aparecer 3%"): each campaign victory has a 3% chance
-// to make one of these appear. Much harder goals, much better prizes.
+// melhores, mas raras de aparecer 3%"): each NEW map has a 3% chance to make
+// one of these appear. Much harder goals, much better prizes.
 export const RARE_CHANCE=.03;
 const R=(id,sprite,npc,line,kind,goal,extra,reward)=>Object.freeze({id,stage:1,rare:true,sprite,npc,line,kind,goal,...extra,reward});
 export const RARE_QUESTS=Object.freeze([
@@ -108,20 +108,21 @@ export const RARE_QUESTS=Object.freeze([
  R('r12','clerk','Dono da Loja de Departamentos','Junte 25 itens de batalha diferentes. Pago muito bem!','held',25,{},{money:60000,items:{masterball:1}})
 ]);
 export const ALL_QUESTS=Object.freeze([...QUESTS,...RARE_QUESTS]);
-// Rolls 3% for every NEW victory since the last check. Returns the new state
-// and the id that appeared (one at a time while another rare is open).
+// Rolls 3% ONCE per new map (campaign stage) reached since the last check
+// (owner 2026-11-22: "a cada mapa, se não fica muito fácil"). A save seen for
+// the first time only records its current map. One rare mission at a time.
 export function rollRareQuest(s,random=Math.random){
- const nq=s?.npcQuests||{},wins=Number(s?.wins)||0,checked=Number.isFinite(nq.rareChecked)?nq.rareChecked:wins;
+ const nq=s?.npcQuests||{},stage=Number(s?.stage)||0,checked=Number.isFinite(nq.rareStage)?nq.rareStage:stage;
  const rare=list(nq.rare),done=list(nq.done);
  const open=rare.filter(id=>!done.includes(id));
  let appeared=null;
- if((Number(s?.stage)||0)>=1&&!open.length){
-  for(let w=checked;w<wins&&!appeared;w++){const r=Number(random());if(Number.isFinite(r)&&r>=0&&r<RARE_CHANCE){
+ if(stage>=1&&!open.length){
+  for(let st=checked+1;st<=stage&&!appeared;st++){const r=Number(random());if(Number.isFinite(r)&&r>=0&&r<RARE_CHANCE){
    const pool=RARE_QUESTS.filter(q=>!rare.includes(q.id)&&!done.includes(q.id));
    if(pool.length)appeared=pool[Math.min(pool.length-1,Math.floor(Number(random())*pool.length)||0)].id}}
  }
- if(checked===wins&&!appeared&&Number.isFinite(nq.rareChecked))return {state:s,appeared:null};
- return {state:{...s,npcQuests:{...nq,accepted:nq.accepted||{},done,rare:appeared?[...rare,appeared]:rare,rareChecked:wins}},appeared};
+ if(checked===stage&&!appeared&&Number.isFinite(nq.rareStage))return {state:s,appeared:null};
+ return {state:{...s,npcQuests:{...nq,accepted:nq.accepted||{},done,rare:appeared?[...rare,appeared]:rare,rareStage:Math.max(checked,stage)}},appeared};
 }
 // Stage 9 means "after the League". Rare missions exist only once rolled.
 export function questUnlocked(s,q){if(q.rare)return list(s?.npcQuests?.rare).includes(q.id);return q.stage<=8?(Number(s?.stage)||0)>=q.stage||!!s?.champion:!!s?.champion}

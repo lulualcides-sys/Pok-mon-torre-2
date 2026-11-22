@@ -941,7 +941,7 @@ create(){
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   // First visit only: point out the main buttons (never blocks input).
-  // Rare missions (3% per victory): rolled for the wins since the last check.
+  // Rare missions (3% per new map): rolled once for each map reached.
   {try{const cur=readCampaign()||state,r=rollRareQuest(cur);
    if(r.state!==cur){saveCampaign(r.state);state.npcQuests=r.state.npcQuests}
    if(r.appeared){const q=ALL_QUESTS.find(x=>x.id===r.appeared);
@@ -1592,7 +1592,7 @@ create(){
    else if(st==='done')this.uiLabel(x+w-12,y+62,'✓ FEITA',8,'#9ff0bf',[1,.5],5);
    else this.uiLabel(x+w-12,y+62,'EM ANDAMENTO',7,'#7ab3f5',[1,.5],5);
   });
-  this.uiLabel(320,320,(locked?locked+' missões novas nas próximas cidades · ':'')+'Missões RARAS: '+Math.round(RARE_CHANCE*100)+'% de chance a cada vitória ('+sum.rareDone+'/'+(ALL_QUESTS.length-QUESTS.length)+' feitas)',7,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,320,(locked?locked+' missões novas nas próximas cidades · ':'')+'Missões RARAS: '+Math.round(RARE_CHANCE*100)+'% de chance a cada mapa novo ('+sum.rareDone+'/'+(ALL_QUESTS.length-QUESTS.length)+' feitas)',7,MENU_UI.suave,[.5,.5]);
   const go=d=>{this.__torre2QuestPage=(page+d+pages)%pages;this.questsScreen(readCampaign()||cur)};
   this.button(150,340,110,24,'◀ PÁGINA',()=>go(-1),false,8).setData('torre2-quests-prev',true);
   this.button(320,340,200,24,'◀ VOLTAR',()=>this.renderCampaign(readCampaign()||cur)).setData('torre2-quests-back',true);
