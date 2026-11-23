@@ -1,0 +1,103 @@
+name: Poké Arena 2D — captura automática de versão nova
+# Captura autorizada pelos donos (docs/CREDITOS-E-LICENCAS.md). Tenta a cada 4 h.
+# Enquanto a Cloudflare do site responder 403, registra "bloqueado" e termina sem erro.
+# Quando o site liberar e houver Alpha nova, guarda tudo num release com SHA-256
+# e avisa na issue #615. NÃO altera o jogo publicado: a porta exige QA e aprovação.
+on:
+  schedule:
+    - cron: '41 1-23/4 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/pokearena/discover-upstream-capture.mjs'
+      - 'tests/discover-upstream-capture.test.js'
+      - '.github/workflows/pokearena-auto-capture.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pokearena-auto-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Testar o descobridor e o comparador
+        run: node --test tests/discover-upstream-capture.test.js tests/compare-upstream-captures.test.js
+      - name: Tentar capturar o site oficial
+        id: cap
+        if: github.event_name != 'pull_request'
+        run: |
+          set +e
+          node tools/pokearena/discover-upstream-capture.mjs "$RUNNER_TEMP/captura" > "$RUNNER_TEMP/cap.log" 2>&1
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/cap.log"
+          if [ "$code" != 0 ]; then
+            echo "state=blocked" >> "$GITHUB_OUTPUT"
+            echo "::warning::Site oficial indisponível para o GitHub Actions (provável 403 da Cloudflare). Nada capturado; jogo publicado intacto."
+            printf '### Captura automática\n- Estado: **bloqueado**\n- Motivo: %s\n' "$(tail -1 "$RUNNER_TEMP/cap.log")" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          json="$(grep '^UPSTREAM_DISCOVER ' "$RUNNER_TEMP/cap.log" | sed 's/^UPSTREAM_DISCOVER //')"
+          alpha="$(jq -r '.alpha // empty' <<<"$json")"
+          if [ -z "$alpha" ]; then
+            echo "state=no-version" >> "$GITHUB_OUTPUT"
+            echo "::warning::config.js sem VERSION oficial; nada é arquivado."
+            exit 0
+          fi
+          known="$(jq -r '.alpha' data/alpha*-source-modules.json | sort -u | tr '\n' ' ')"
+          echo "Versões já capturadas: $known"
+          if grep -qw -- "$alpha" <<<"$known"; then
+            echo "state=same" >> "$GITHUB_OUTPUT"
+            printf '### Captura automática\n- Site acessível, Alpha %s já capturada antes.\n' "$alpha" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "state=new"
+            echo "alpha=$alpha"
+            echo "tag=torre2-upstream-source-alpha${alpha//./}-auto"
+            echo "summary=$json"
+          } >> "$GITHUB_OUTPUT"
+      - name: Arquivar versão nova em release permanente
+        if: steps.cap.outputs.state == 'new'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALPHA: ${{ steps.cap.outputs.alpha }}
+          TAG: ${{ steps.cap.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG já existe"; exit 0; fi
+          # Comparação automática com a última captura arquivada (0.77.3)
+          mkdir -p "$RUNNER_TEMP/base"
+          gh release download torre2-upstream-source-alpha0773-20261120 --pattern 'torre2-upstream-source-alpha0773.tar.gz*' --dir "$RUNNER_TEMP/base"
+          (cd "$RUNNER_TEMP/base" && sha256sum --check torre2-upstream-source-alpha0773.tar.gz.sha256 && tar -xzf torre2-upstream-source-alpha0773.tar.gz)
+          node tools/pokearena/compare-upstream-captures.mjs "$RUNNER_TEMP/base" "$RUNNER_TEMP/captura" "$RUNNER_TEMP/captura/COMPARACAO-0773.md"
+          cat "$RUNNER_TEMP/captura/COMPARACAO-0773.md" >> "$GITHUB_STEP_SUMMARY"
+          pkg="$RUNNER_TEMP/torre2-upstream-source-alpha${ALPHA//./}.tar.gz"
+          tar -czf "$pkg" -C "$RUNNER_TEMP/captura" .
+          (cd "$RUNNER_TEMP" && sha256sum "$(basename "$pkg")" > "$(basename "$pkg").sha256")
+          gh release create "$TAG" --target "$GITHUB_SHA" --prerelease \
+            --title "Fonte Poké Arena 2D Alpha $ALPHA (captura automática)" \
+            --notes "Captura automática autorizada pelos donos do Poké Arena 2D. Pin com SHA-256 e FALHAS.txt dentro do pacote. Não publicada no Torre 2: a porta exige QA e aprovação." \
+            "$pkg" "$pkg.sha256"
+      - name: Avisar na issue de upstream
+        if: steps.cap.outputs.state == 'new'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALPHA: ${{ steps.cap.outputs.alpha }}
+          TAG: ${{ steps.cap.outputs.tag }}
+          SUMMARY: ${{ steps.cap.outputs.summary }}
+        run: |
+          gh issue comment 615 --body "Alpha **$ALPHA** capturada automaticamente: release \`$TAG\`.
+          Resumo: \`$SUMMARY\`
+          Comparação com a 0.77.3: \`COMPARACAO-0773.md\` dentro do pacote e no resumo do run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Próximo passo: porta para o Torre 2 (conflitos de espécies exigem aprovação do dono; QA Chromium)."
