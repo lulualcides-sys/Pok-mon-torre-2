@@ -64,3 +64,19 @@ Abra **Security → WAF → Custom rules → Create rule** e preencha:
 
 - [ ] Administrador do Poké Arena 2D: criar a regra do passo 3 (e, se necessário, desligar o Bot Fight Mode) e enviar o token.
 - [ ] Dono do Torre 2: salvar o token como segredo `TORRE2_CAPTURE_TOKEN` e rodar **Actions → "Poké Arena 2D — captura automática de versão nova" → Run workflow** para o teste real.
+
+## Caminho alternativo, sem Cloudflare: pacote entregue (pronto)
+
+Se for mais simples para os donos, eles podem mandar o pacote direto, sem criar regra nem token:
+
+1. Fazer um ZIP (ou `.tar.gz`) da pasta publicada do site. Ela deve conter `src-XXXXXXXXXX/` (com `main.js` e `config.js`), `assets/` e `index.html`.
+2. Anexá-lo a um release deste repositório com tag que comece por **`upstream-package-`** (ex.: `upstream-package-0780`).
+
+O workflow `pokearena-import-package.yml` dispara sozinho e faz o seguinte:
+- baixa só esse anexo;
+- recusa o pacote se faltar qualquer módulo importado, se não houver `VERSION` ou se houver links simbólicos;
+- compara com a 0.77.3;
+- arquiva o resultado num release permanente com SHA-256;
+- avisa na issue #615.
+
+O importador foi validado com o pacote real da 0.77.3: 128 de 128 módulos, com pin idêntico. Um pacote sem `lodo.js` foi recusado.
