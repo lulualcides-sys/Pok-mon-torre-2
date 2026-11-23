@@ -1,6 +1,6 @@
 # Captura de uma versão nova do Poké Arena 2D pelo PC do dono (23/11/2026)
 
-**Estado: ferramenta pronta. Captura da 0.78 ainda NÃO feita. Porta para o Torre 2 ainda NÃO feita.**
+**Estado: ferramenta pronta e captura automática configurada (`.github/workflows/pokearena-auto-capture.yml`, a cada 4 h). Captura da 0.78 ainda NÃO feita. Porta para o Torre 2 ainda NÃO feita.**
 
 ## Por que pelo PC
 
