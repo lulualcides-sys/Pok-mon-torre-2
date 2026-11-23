@@ -60,6 +60,17 @@ Referência para **validar** a porta quando os arquivos chegarem. **Não** é um
 - **Dragon Dance:** cada uso acumula ataques básicos mais rápidos, mais dano e velocidade; no máximo, sem calor.
 - **Outrage:** fúria, mais forte e rápido por um tempo; depois o usuário fica confuso.
 
-**Biblioteca executável da 0.77.3:**
-- Dragon Claw, Earthquake, Dig e Dragon Dance existem, mas em kits de outros Pokémon e possivelmente com outra mecânica.
-- **Outrage não existe** (0 ocorrências).
+**Pesquisa nas duas bibliotecas** (corrigida em 23/11, depois da indicação do dono):
+
+| Golpe | Cliente-base (catálogo nativo `data/pokearena2d-source-moves.json`, captura `src-2c69e32038`) | Motor (forma) na 0.77.3 | Torre 2 (aprovados) |
+| --- | --- | --- | --- |
+| Dragon Claw | **Gible/Gabite/Garchomp LMB** | `tajo`, usado por outros Pokémon | só planejado (`needs-new-phaser-vfx`) |
+| Earthquake | **Gible**; Onix/Steelix Q | `pulso` (com `ralentiza`) | só planejado |
+| Dig | **Gible** e Onix/Steelix `esp` | `vuelo` modo `tierra` | só planejado |
+| Dragon Dance | Gyarados, Drakloak/Dragapult Q | `potenciar` (`acumula`) | só planejado |
+| Outrage | **Gible/Gabite/Garchomp E** (escopo `disabled` naquela versão) | `furia` existe (ULT "Saiyan") | só planejado |
+
+- A linha Gible **já existia no cliente-base**, desativada, com exatamente esses cinco golpes.
+- Os cinco motores (`tajo`, `pulso`, `vuelo/tierra`, `potenciar`, `furia`) são executáveis na 0.77.3.
+- Nenhum dos cinco tem VFX próprio aprovado no Torre 2. Pela regra de 06/11, vale o nativo.
+- Do kit antigo da Gible só sobrou o metadado (nome, forma e slot). Os parâmetros exatos (alcance, raio, duração, estilo de VFX) só virão com os arquivos da 0.78.
