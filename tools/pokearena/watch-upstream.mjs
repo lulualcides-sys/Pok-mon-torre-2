@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {captureAuthHeaders,blockDiagnostic} from './public-client-http.mjs';
 
 const SOURCE = 'https://www.pokearena2d.com/';
 const CATALOG = 'data/pokearena2d-source-moves.json';
@@ -19,10 +20,14 @@ export function health(runs) {
 }
 async function get(url, headers = {}, fetcher = fetch) {
   let error;
+  // Autorização da captura (segredo TORRE2_CAPTURE_TOKEN) só para o site original;
+  // com ela, redirecionamentos são recusados para o token nunca sair da origem.
+  const auth=url.startsWith(SOURCE)?captureAuthHeaders():undefined;
+  const options=auth?{headers:{...headers,...auth},redirect:'error'}:{headers};
   for (let i=0; i<2; i++) {
     try {
-      const response=await fetcher(url, {headers, signal: AbortSignal.timeout(12000)});
-      if (!response.ok) throw Error('HTTP '+response.status);
+      const response=await fetcher(url, {...options, signal: AbortSignal.timeout(12000)});
+      if (!response.ok) throw Error(url.startsWith(SOURCE)?blockDiagnostic(response,!!auth):'HTTP '+response.status);
       return await response.text();
     } catch(e) {error=e; if (/HTTP (?:403|404)\b/.test(String(e))) break;}
   }

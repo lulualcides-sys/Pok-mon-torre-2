@@ -30,11 +30,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Testar o descobridor e o comparador
-        run: node --test tests/discover-upstream-capture.test.js tests/compare-upstream-captures.test.js
+      - name: Testar o descobridor, o comparador e a autorização da captura
+        run: node --test tests/discover-upstream-capture.test.js tests/compare-upstream-captures.test.js tests/capture-auth-header.test.js tests/public-client-http.test.mjs
+      - name: Verificar se a autorização da captura está configurada (sem mostrar o valor)
+        env:
+          TORRE2_CAPTURE_TOKEN: ${{ secrets.TORRE2_CAPTURE_TOKEN }}
+        run: |
+          if [ -n "$TORRE2_CAPTURE_TOKEN" ]; then
+            echo "Segredo TORRE2_CAPTURE_TOKEN: configurado (cabeçalho X-Torre2-Capture será enviado)"
+            printf -- '- Autorização X-Torre2-Capture: **configurada**\n' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice::Segredo TORRE2_CAPTURE_TOKEN ausente: captura sem cabeçalho de autorização"
+            printf -- '- Autorização X-Torre2-Capture: **ausente** (ver docs/CLOUDFLARE-CAPTURA-TORRE2.md)\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Tentar capturar o site oficial
         id: cap
         if: github.event_name != 'pull_request'
+        env:
+          TORRE2_CAPTURE_TOKEN: ${{ secrets.TORRE2_CAPTURE_TOKEN }}
         run: |
           set +e
           node tools/pokearena/discover-upstream-capture.mjs "$RUNNER_TEMP/captura" > "$RUNNER_TEMP/cap.log" 2>&1
@@ -43,8 +56,11 @@ jobs:
           cat "$RUNNER_TEMP/cap.log"
           if [ "$code" != 0 ]; then
             echo "state=blocked" >> "$GITHUB_OUTPUT"
-            echo "::warning::Site oficial indisponível para o GitHub Actions (provável 403 da Cloudflare). Nada capturado; jogo publicado intacto."
-            printf '### Captura automática\n- Estado: **bloqueado**\n- Motivo: %s\n' "$(tail -1 "$RUNNER_TEMP/cap.log")" >> "$GITHUB_STEP_SUMMARY"
+            reason="$(tail -1 "$RUNNER_TEMP/cap.log")"
+            echo "::warning::Site oficial indisponível para o GitHub Actions: $reason. Nada capturado; jogo publicado intacto."
+            # Diagnóstico para o administrador do site: IP/colo de saída deste runner (página do próprio Cloudflare).
+            trace="$(curl -sS -m 15 https://www.pokearena2d.com/cdn-cgi/trace 2>/dev/null | grep -E '^(ip|colo|loc|http|tls)=' | tr '\n' ' ' || true)"
+            printf '### Captura automática\n- Estado: **bloqueado**\n- Motivo: %s\n- Saída do runner (cdn-cgi/trace): %s\n- Horário UTC: %s\n' "$reason" "${trace:-indisponível}" "$(date -u +%FT%TZ)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           json="$(grep '^UPSTREAM_DISCOVER ' "$RUNNER_TEMP/cap.log" | sed 's/^UPSTREAM_DISCOVER //')"

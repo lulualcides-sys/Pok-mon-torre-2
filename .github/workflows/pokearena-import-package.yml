@@ -1,0 +1,97 @@
+name: Poké Arena 2D — importar pacote entregue (sem acessar o site)
+# Fluxo alternativo ao Cloudflare: os donos (ou o dono do Torre 2) publicam um release
+# com tag "upstream-package-*" contendo o ZIP/tar.gz do site (src-XXXX/, assets/, index.html)
+# ou as partes torre2-export-*.json geradas pelo tools/pokearena/browser-export-console.js.
+# Este workflow baixa SÓ os anexos desse release do próprio repositório, valida a
+# completude (todos os imports presentes, VERSION no config.js), compara com a 0.77.3,
+# arquiva em release permanente e avisa na issue 615. Não publica o jogo.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag do release com o pacote (ex.: upstream-package-0780)'
+        required: true
+  pull_request:
+    paths:
+      - 'tools/pokearena/import-upstream-package.mjs'
+      - 'tests/import-upstream-package.test.js'
+      - '.github/workflows/pokearena-import-package.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pokearena-import-package
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'upstream-package-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Testar importador e comparador
+        run: node --test tests/import-upstream-package.test.js tests/compare-upstream-captures.test.js
+      - name: Baixar e extrair o pacote entregue
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in upstream-package-*) ;; *) echo "::error::tag precisa começar com upstream-package-"; exit 1;; esac
+          dl="$RUNNER_TEMP/download"; ex="$RUNNER_TEMP/extraido"; mkdir -p "$dl" "$ex"
+          gh release download "$TAG" --dir "$dl" --pattern '*.zip' --pattern '*.tar.gz' --pattern '*.tgz' --pattern 'torre2-export-*.json'
+          ls -la "$dl"
+          n=0
+          for f in "$dl"/*; do
+            n=$((n+1)); d="$ex/p$n"; mkdir -p "$d"
+            case "$f" in
+              *.zip) unzip -q -o "$f" -d "$d" ;;
+              *.tar.gz|*.tgz) tar -xzf "$f" -C "$d" --no-same-owner --no-same-permissions ;;
+              *.json) cp "$f" "$ex/" ;;  # partes do browser-export-console.js; o importador expande
+            esac
+          done
+          test "$n" -gt 0 || { echo "::error::release sem .zip/.tar.gz/torre2-export-*.json"; exit 1; }
+          # recusa caminhos absolutos/.. já impedidos por unzip/tar; recusa links simbólicos
+          if find "$ex" -type l | grep -q .; then echo "::error::pacote contém links simbólicos"; exit 1; fi
+      - name: Importar e validar completude
+        id: imp
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          node tools/pokearena/import-upstream-package.mjs "$RUNNER_TEMP/extraido" "$RUNNER_TEMP/captura" | tee "$RUNNER_TEMP/imp.log"
+          json="$(grep '^UPSTREAM_IMPORT ' "$RUNNER_TEMP/imp.log" | sed 's/^UPSTREAM_IMPORT //')"
+          alpha="$(jq -r .alpha <<<"$json")"
+          echo "alpha=$alpha" >> "$GITHUB_OUTPUT"
+          echo "summary=$json" >> "$GITHUB_OUTPUT"
+          printf '### Importação de pacote entregue\n- Resultado: `%s`\n' "$json" >> "$GITHUB_STEP_SUMMARY"
+      - name: Comparar com a 0.77.3 e arquivar
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALPHA: ${{ steps.imp.outputs.alpha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/base"
+          gh release download torre2-upstream-source-alpha0773-20261120 --pattern 'torre2-upstream-source-alpha0773.tar.gz*' --dir "$RUNNER_TEMP/base"
+          (cd "$RUNNER_TEMP/base" && sha256sum --check torre2-upstream-source-alpha0773.tar.gz.sha256 && tar -xzf torre2-upstream-source-alpha0773.tar.gz)
+          node tools/pokearena/compare-upstream-captures.mjs "$RUNNER_TEMP/base" "$RUNNER_TEMP/captura" "$RUNNER_TEMP/captura/COMPARACAO-0773.md"
+          cat "$RUNNER_TEMP/captura/COMPARACAO-0773.md" >> "$GITHUB_STEP_SUMMARY"
+          tag="torre2-upstream-source-alpha${ALPHA//./}-pacote"
+          if gh release view "$tag" >/dev/null 2>&1; then echo "Release $tag já existe; nada a fazer"; exit 0; fi
+          pkg="$RUNNER_TEMP/torre2-upstream-source-alpha${ALPHA//./}.tar.gz"
+          tar -czf "$pkg" -C "$RUNNER_TEMP/captura" .
+          (cd "$RUNNER_TEMP" && sha256sum "$(basename "$pkg")" > "$(basename "$pkg").sha256")
+          gh release create "$tag" --target "$GITHUB_SHA" --prerelease \
+            --title "Fonte Poké Arena 2D Alpha $ALPHA (pacote entregue)" \
+            --notes "Pacote entregue e validado (todos os imports presentes, VERSION oficial). Pin SHA-256 e comparação com a 0.77.3 dentro do pacote. Não publicado no Torre 2: a porta exige QA e aprovação." \
+            "$pkg" "$pkg.sha256"
+          gh issue comment 615 --body "Alpha **$ALPHA** importada de pacote entregue: release \`$tag\`. Comparação com a 0.77.3 no resumo do run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
