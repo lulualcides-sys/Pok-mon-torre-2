@@ -34,3 +34,32 @@ Previsão a conferir com o `compare-upstream-captures.mjs` quando os arquivos ch
 - **Caminhos prontos (PR #694):**
   - pacote entregue pelos donos, em release com tag `upstream-package-0780`;
   - ou regra no Cloudflare com token `TORRE2_CAPTURE_TOKEN`.
+
+## Pokédex oficial da 0.78 — linha Gible (transcrita dos prints do dono, 23/11/2026)
+
+Referência para **validar** a porta quando os arquivos chegarem. **Não** é um kit implementado: a mecânica, a hitbox, os VFX e as animações só existem no código original.
+
+- Pokédex com **51 Pokémon**.
+- Papel: **Physical**. A frase do card é "Dance, dig, quake".
+- Gible e Gabite evoluem quando a EXP enche. Garchomp é a forma final.
+
+| | Gible #0443 | Gabite #0444 | Garchomp #0445 |
+| --- | --- | --- | --- |
+| HP / SPD | 119 / 136 | 144 / 142 | 169 / 148 |
+| ATK / DEF | 0.98 / 0.94 | 1.10 / 1.00 | 1.22 / 1.06 |
+| Basic — Dragon Claw | 4.8 DMG, combo ×3 | 5.4 DMG, combo ×3 | 5.6 DMG, combo ×4 |
+| Skill — Earthquake (30 energia, CD 7 s) | 11 DMG, Slow | 12 DMG, Slow | 13 DMG, Stun + Slow |
+| Dash — Dig (CD 8 s) | 4 DMG | 5 DMG | 6 DMG |
+| Q — Dragon Dance (20 energia, CD 2.5 s) | acumula | acumula | acumula |
+| ULT — Outrage | 8 DMG | 9 DMG | 11 DMG |
+
+**Textos dos golpes:**
+- **Dragon Claw:** golpes rápidos que cortam projéteis inimigos.
+- **Earthquake:** onda ao redor que causa lentidão.
+- **Dig:** segurar para ficar sob a terra, intocável e mais rápido; soltar para sair com um tremor.
+- **Dragon Dance:** cada uso acumula ataques básicos mais rápidos, mais dano e velocidade; no máximo, sem calor.
+- **Outrage:** fúria, mais forte e rápido por um tempo; depois o usuário fica confuso.
+
+**Biblioteca executável da 0.77.3:**
+- Dragon Claw, Earthquake, Dig e Dragon Dance existem, mas em kits de outros Pokémon e possivelmente com outra mecânica.
+- **Outrage não existe** (0 ocorrências).
