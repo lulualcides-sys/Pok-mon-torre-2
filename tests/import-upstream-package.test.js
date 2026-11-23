@@ -57,3 +57,24 @@ test('duas versões no mesmo pacote são recusadas',async()=>{
  const {importPackage}=await load();
  await assert.rejects(importPackage(await pkg({...BASE,'outra/src-aaaaaaaaaa/main.js':'x'}),os.tmpdir()+'/x'),/ambíguo/);
 });
+
+test('partes do browser-export-console.js são expandidas e importadas',async()=>{
+ const {importPackage}=await load();
+ const files={};
+ for(const [k,v] of Object.entries(BASE)){const rel=k.replace('site/arena2d/','');files[rel]=Buffer.from(v).toString('base64');}
+ const p1={},p2={};Object.entries(files).forEach(([k,v],i)=>(i%2?p2:p1)[k]=v);
+ const dir=await pkg({
+  'torre2-export-0780-parte-1.json':JSON.stringify({format:'torre2-browser-export-v1',src:'src-0123456789',alpha:'0.78.0',part:1,parts:2,failures:['assets/x.png :: HTTP 404'],files:p1}),
+  'torre2-export-0780-parte-2.json':JSON.stringify({format:'torre2-browser-export-v1',src:'src-0123456789',alpha:'0.78.0',part:2,parts:2,failures:[],files:p2}),
+ });
+ const out=await fs.mkdtemp(path.join(os.tmpdir(),'imp-b-'));
+ const r=await importPackage(dir,out);
+ assert.equal(r.ok,true);assert.equal(r.alpha,'0.78.0');assert.equal(r.modules,4);
+ assert.equal(r.browserExportParts,2);assert.equal(r.assetGaps,1);
+});
+
+test('exportação com caminho inseguro é recusada',async()=>{
+ const {importPackage}=await load();
+ const dir=await pkg({'torre2-export-x.json':JSON.stringify({format:'torre2-browser-export-v1',src:'src-0123456789',files:{'../fora.js':'eA=='}})});
+ await assert.rejects(importPackage(dir,os.tmpdir()+'/y'),/caminho inseguro/);
+});

@@ -35,7 +35,7 @@ async function walk(root,rel='',out=[]){
 /** Acha a pasta que contém src-*\/main.js (raiz do site dentro do pacote). */
 export async function findSiteRoot(dir){
  const files=await walk(dir);
- const mains=files.filter(f=>{const p=f.split('/');return p.length>=2&&p.at(-1)==='main.js'&&SRC.test(p.at(-2));});
+ const mains=files.filter(f=>!(files.some(x=>x.startsWith('_export/'))&&!f.startsWith('_export/'))).filter(f=>{const p=f.split('/');return p.length>=2&&p.at(-1)==='main.js'&&SRC.test(p.at(-2));});
  const roots=[...new Set(mains.map(f=>f.split('/').slice(0,-2).join('/')))];
  const srcs=[...new Set(mains.map(f=>f.split('/').at(-2)))];
  if(!mains.length)throw Error('IMPORT: pacote sem src-XXXXXXXXXX/main.js');
@@ -43,7 +43,28 @@ export async function findSiteRoot(dir){
  return {root:path.join(dir,roots[0]),src:srcs[0],files};
 }
 
+/** Expande partes "torre2-browser-export-v1" (geradas pelo browser-export-console.js) em <dir>/_export/. */
+export async function expandBrowserExports(dir){
+ const files=(await walk(dir)).filter(f=>f.endsWith('.json'));
+ let n=0;const failures=[];
+ for(const f of files){
+  let j;
+  try{j=JSON.parse(await fs.readFile(path.join(dir,f),'utf8'));}catch{continue;}
+  if(j?.format!=='torre2-browser-export-v1')continue;
+  if(!SRC.test(j.src||''))throw Error('IMPORT: exportação com src inválido em '+f);
+  n++;failures.push(...(j.failures||[]));
+  for(const [rel,b64] of Object.entries(j.files||{})){
+   if(!/^[\w\-./]+$/.test(rel)||rel.split('/').includes('..')||rel.startsWith('/'))throw Error('IMPORT: caminho inseguro na exportação: '+rel);
+   const target=path.join(dir,'_export',rel);
+   await fs.mkdir(path.dirname(target),{recursive:true});
+   await fs.writeFile(target,Buffer.from(b64,'base64'));
+  }
+ }
+ return {parts:n,exportFailures:failures};
+}
+
 export async function importPackage(dir,out){
+ const exp=await expandBrowserExports(dir);
  const {root,src}=await findSiteRoot(dir);
  const srcDir=path.join(root,src);
  const modFiles=(await walk(srcDir)).filter(f=>f.endsWith('.js'));
@@ -87,7 +108,8 @@ export async function importPackage(dir,out){
  await fs.writeFile(path.join(out,'MANIFEST.txt'),['alpha='+alpha,'src='+src,'origin=pacote-entregue',
   'importedAt='+new Date().toISOString(),'modules='+modFiles.length,'assets='+Object.keys(assets).length,
   'indexHtmlSha256='+indexSha,''].join('\n'));
- return {ok:true,alpha,src,modules:modFiles.length,assets:Object.keys(assets).length,failures:[],pin:pinName};
+ return {ok:true,alpha,src,modules:modFiles.length,assets:Object.keys(assets).length,failures:[],pin:pinName,
+  browserExportParts:exp.parts,assetGaps:exp.exportFailures.length};
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

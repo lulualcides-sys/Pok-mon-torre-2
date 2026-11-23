@@ -1,6 +1,7 @@
 name: Poké Arena 2D — importar pacote entregue (sem acessar o site)
 # Fluxo alternativo ao Cloudflare: os donos (ou o dono do Torre 2) publicam um release
-# com tag "upstream-package-*" contendo o ZIP/tar.gz do site (src-XXXX/, assets/, index.html).
+# com tag "upstream-package-*" contendo o ZIP/tar.gz do site (src-XXXX/, assets/, index.html)
+# ou as partes torre2-export-*.json geradas pelo tools/pokearena/browser-export-console.js.
 # Este workflow baixa SÓ os anexos desse release do próprio repositório, valida a
 # completude (todos os imports presentes, VERSION no config.js), compara com a 0.77.3,
 # arquiva em release permanente e avisa na issue 615. Não publica o jogo.
@@ -47,7 +48,7 @@ jobs:
           set -euo pipefail
           case "$TAG" in upstream-package-*) ;; *) echo "::error::tag precisa começar com upstream-package-"; exit 1;; esac
           dl="$RUNNER_TEMP/download"; ex="$RUNNER_TEMP/extraido"; mkdir -p "$dl" "$ex"
-          gh release download "$TAG" --dir "$dl" --pattern '*.zip' --pattern '*.tar.gz' --pattern '*.tgz'
+          gh release download "$TAG" --dir "$dl" --pattern '*.zip' --pattern '*.tar.gz' --pattern '*.tgz' --pattern 'torre2-export-*.json'
           ls -la "$dl"
           n=0
           for f in "$dl"/*; do
@@ -55,9 +56,10 @@ jobs:
             case "$f" in
               *.zip) unzip -q -o "$f" -d "$d" ;;
               *.tar.gz|*.tgz) tar -xzf "$f" -C "$d" --no-same-owner --no-same-permissions ;;
+              *.json) cp "$f" "$ex/" ;;  # partes do browser-export-console.js; o importador expande
             esac
           done
-          test "$n" -gt 0 || { echo "::error::release sem .zip/.tar.gz"; exit 1; }
+          test "$n" -gt 0 || { echo "::error::release sem .zip/.tar.gz/torre2-export-*.json"; exit 1; }
           # recusa caminhos absolutos/.. já impedidos por unzip/tar; recusa links simbólicos
           if find "$ex" -type l | grep -q .; then echo "::error::pacote contém links simbólicos"; exit 1; fi
       - name: Importar e validar completude
