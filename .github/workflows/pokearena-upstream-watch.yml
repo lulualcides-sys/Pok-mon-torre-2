@@ -39,6 +39,8 @@ jobs:
         id: probe
         env:
           GH_TOKEN: ${{ github.token }}
+          # Autorização combinada com os donos (cabeçalho X-Torre2-Capture); vazio = sem cabeçalho.
+          TORRE2_CAPTURE_TOKEN: ${{ secrets.TORRE2_CAPTURE_TOKEN }}
         run: node tools/pokearena/watch-upstream.mjs
       - name: Arquivar resultado mesmo se origem estiver bloqueada
         if: always()

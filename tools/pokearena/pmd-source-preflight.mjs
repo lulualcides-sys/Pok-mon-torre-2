@@ -1,16 +1,22 @@
 /**
  * Read-only availability check for a CRITICAL original-game asset.
- * No authentication, mirrors, proxy fallback or HTTP 403 workarounds.
+ * No mirrors, proxy fallback or HTTP 403 workarounds. Only the owner-issued
+ * X-Torre2-Capture header (secret TORRE2_CAPTURE_TOKEN) is sent when present.
  * "blocked" never means that the game or the new upstream build passed QA.
  */
+import {captureAuthHeaders} from './public-client-http.mjs';
 export const PUBLIC_PMD_MANIFEST='https://www.pokearena2d.com/assets/pmd/manifest.json';
 
 export async function publicPmdPreflight(fetcher=fetch){
  try{
-  const response=await fetcher(PUBLIC_PMD_MANIFEST,{signal:AbortSignal.timeout(12000)});
+  const auth=captureAuthHeaders();
+  const options={signal:AbortSignal.timeout(12000)};
+  if(auth){options.headers=auth;options.redirect='error';}
+  const response=await fetcher(PUBLIC_PMD_MANIFEST,options);
   if(!response?.ok)
    return {ok:false,reason:'pmd-http-'+String(response?.status??'unknown'),
-    httpStatus:response?.status??null};
+    httpStatus:response?.status??null,
+    cfRay:response?.headers?.get?.('cf-ray')??null,authHeader:auth?'sent':'absent'};
   const manifest=await response.json();
   const entries=manifest&&typeof manifest==='object'&&!Array.isArray(manifest)
     ?Object.entries(manifest):[];

@@ -24,6 +24,8 @@ jobs:
           fetch-depth: 1
       - name: Sonda da versão oficial e fingerprint antes de capturar
         id: check
+        env:
+          TORRE2_CAPTURE_TOKEN: ${{ secrets.TORRE2_CAPTURE_TOKEN }}
         run: node tools/pokearena/capture-gate.mjs
       - name: Registrar decisão e bloqueios mesmo sem nova captura
         if: always()
@@ -44,6 +46,8 @@ jobs:
         with:
           node-version: '24'
       - name: Identificar fontes do site e recuperar arquivos publicamente servidos
+        env:
+          TORRE2_CAPTURE_TOKEN: ${{ secrets.TORRE2_CAPTURE_TOKEN }}
         run: |
           set -euo pipefail
           node --check tools/pokearena/capture-client.mjs
