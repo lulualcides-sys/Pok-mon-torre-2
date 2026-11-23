@@ -30,8 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Testar o descobridor
-        run: node --test tests/discover-upstream-capture.test.js
+      - name: Testar o descobridor e o comparador
+        run: node --test tests/discover-upstream-capture.test.js tests/compare-upstream-captures.test.js
       - name: Tentar capturar o site oficial
         id: cap
         if: github.event_name != 'pull_request'
@@ -76,6 +76,12 @@ jobs:
         run: |
           set -euo pipefail
           if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG já existe"; exit 0; fi
+          # Comparação automática com a última captura arquivada (0.77.3)
+          mkdir -p "$RUNNER_TEMP/base"
+          gh release download torre2-upstream-source-alpha0773-20261120 --pattern 'torre2-upstream-source-alpha0773.tar.gz*' --dir "$RUNNER_TEMP/base"
+          (cd "$RUNNER_TEMP/base" && sha256sum --check torre2-upstream-source-alpha0773.tar.gz.sha256 && tar -xzf torre2-upstream-source-alpha0773.tar.gz)
+          node tools/pokearena/compare-upstream-captures.mjs "$RUNNER_TEMP/base" "$RUNNER_TEMP/captura" "$RUNNER_TEMP/captura/COMPARACAO-0773.md"
+          cat "$RUNNER_TEMP/captura/COMPARACAO-0773.md" >> "$GITHUB_STEP_SUMMARY"
           pkg="$RUNNER_TEMP/torre2-upstream-source-alpha${ALPHA//./}.tar.gz"
           tar -czf "$pkg" -C "$RUNNER_TEMP/captura" .
           (cd "$RUNNER_TEMP" && sha256sum "$(basename "$pkg")" > "$(basename "$pkg").sha256")
@@ -93,4 +99,5 @@ jobs:
         run: |
           gh issue comment 615 --body "Alpha **$ALPHA** capturada automaticamente: release \`$TAG\`.
           Resumo: \`$SUMMARY\`
-          Próximo passo: porta para o Torre 2 (comparar kits nativos, QA Chromium, aprovação)."
+          Comparação com a 0.77.3: \`COMPARACAO-0773.md\` dentro do pacote e no resumo do run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Próximo passo: porta para o Torre 2 (conflitos de espécies exigem aprovação do dono; QA Chromium)."
