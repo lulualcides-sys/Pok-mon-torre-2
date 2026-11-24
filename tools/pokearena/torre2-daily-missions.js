@@ -12,7 +12,7 @@ export const MISSION_TYPES=Object.freeze(['FIRE','WATER','GRASS','ELECTRIC','BUG
 const TYPE_PT={FIRE:'Fogo',WATER:'Água',GRASS:'Planta',ELECTRIC:'Elétrico',BUG:'Inseto',NORMAL:'Normal',POISON:'Veneno',FLYING:'Voador',ROCK:'Pedra',PSYCHIC:'Psíquico'};
 // kind → how to describe and how much it asks.
 const POOL=Object.freeze([
- {kind:'wins',goals:[3,4,5],text:n=>'Vença '+n+' batalhas'},
+ {kind:'wins',goals:[3,4,5],text:n=>'Vença '+n+' batalhas contra treinadores'},
  {kind:'captures',goals:[1,2,3],text:n=>'Capture '+n+' Pokémon'},
  {kind:'captureType',goals:[1],text:(n,t)=>'Capture um Pokémon do tipo '+(TYPE_PT[t]||t)},
  {kind:'dexSeen',goals:[2,3],text:n=>'Veja '+n+' espécies novas na Pokédex'},
@@ -20,25 +20,44 @@ const POOL=Object.freeze([
 ]);
 const REWARDS=Object.freeze([{items:{pokeball:5}},{items:{greatball:3}},{items:{superpotion:2}},{items:{ultraball:2}},{money:1500}]);
 export const DAILY_BONUS=Object.freeze({items:{ultraball:3},money:3000});
-export function missionsFor(key){
+// ctx (owner 2026-11-24, "missão bugada"): only missions the player CAN do
+// where they are. ctx.types = Pokémon types found in the tall grass already
+// reachable; ctx.rematch = the VS Seeker has a beaten trainer to fight again.
+// Without ctx (old callers/tests) every mission kind stays possible.
+export function feasibleKind(p,ctx){
+ if(!ctx)return true;
+ if(p.kind==='captureType')return list(ctx.types).some(t=>MISSION_TYPES.includes(t));
+ if(p.kind==='rematch')return ctx.rematch!==false;
+ return true;
+}
+export function missionsFor(key,ctx=null){
  const r=rng(seedOf('torre2-daily-'+key));
- const kinds=[...POOL].sort(()=>r()-.5).slice(0,3);
+ const kinds=[...POOL].sort(()=>r()-.5).filter(p=>feasibleKind(p,ctx)).slice(0,3);
+ const types=ctx?MISSION_TYPES.filter(t=>list(ctx.types).includes(t)):MISSION_TYPES;
  return kinds.map((p,i)=>{const goal=p.goals[Math.floor(r()*p.goals.length)];
-  const type=p.kind==='captureType'?MISSION_TYPES[Math.floor(r()*MISSION_TYPES.length)]:null;
+  const type=p.kind==='captureType'?types[Math.floor(r()*types.length)]:null;
   return {id:key+'-'+i,kind:p.kind,goal,type,text:p.text(goal,type),reward:REWARDS[Math.floor(r()*REWARDS.length)]}});
 }
 const uids=s=>[...list(s?.team),...list(s?.box)].map(m=>m?.uid).filter(u=>typeof u==='string');
-export function baselineOf(s){return {wins:s?.wins||0,uids:uids(s),dexSeen:list(s?.dexSeen).length,rematchWins:s?.rematches?.wins||0}}
+const trainerWins=s=>Math.max(0,(Number(s?.wins)||0)-(Number(s?.wildWins)||0));
+export function baselineOf(s){return {wins:s?.wins||0,trainerWins:trainerWins(s),uids:uids(s),dexSeen:list(s?.dexSeen).length,rematchWins:s?.rematches?.wins||0}}
+const impossible=(m,ctx)=>!!ctx&&((m.kind==='captureType'&&!list(ctx.types).includes(m.type))||(m.kind==='rematch'&&ctx.rematch===false));
 // Returns a NEW state whose daily block belongs to today (callers save it).
-export function ensureDaily(s,key=dayKey()){
- if(s?.daily?.day===key&&Array.isArray(s.daily.missions))return s;
- return {...s,daily:{day:key,baseline:baselineOf(s),missions:missionsFor(key),claimed:[],bonus:false}};
+// Today's missions are rebuilt (same baseline) when one of them cannot be
+// done yet where the player is and nothing was claimed today.
+export function ensureDaily(s,key=dayKey(),ctx=null){
+ if(s?.daily?.day===key&&Array.isArray(s.daily.missions)){
+  const d=s.daily;
+  if(!ctx||list(d.claimed).length||d.bonus||!d.missions.some(m=>impossible(m,ctx)))return s;
+  return {...s,daily:{...d,missions:missionsFor(key,ctx)}};
+ }
+ return {...s,daily:{day:key,baseline:baselineOf(s),missions:missionsFor(key,ctx),claimed:[],bonus:false}};
 }
 // typesOf(id) → ['FIRE',...] for captureType; optional.
 export function missionProgress(s,m,typesOf=()=>[]){
  const b=s?.daily?.baseline||baselineOf(s);
  const fresh=[...list(s?.team),...list(s?.box)].filter(x=>typeof x?.uid==='string'&&!list(b.uids).includes(x.uid));
- const n=m.kind==='wins'?(s?.wins||0)-b.wins:
+ const n=m.kind==='wins'?(Number.isFinite(b.trainerWins)?trainerWins(s)-b.trainerWins:(s?.wins||0)-b.wins):
   m.kind==='captures'?fresh.length:
   m.kind==='captureType'?fresh.filter(x=>list(typesOf(x.id)).includes(m.type)).length:
   m.kind==='dexSeen'?list(s?.dexSeen).length-b.dexSeen:
@@ -68,14 +87,26 @@ export function claimDaily(s,id,typesOf=()=>[]){
 // spent in the shop on existing campaign items. The Master Ball can be bought
 // once per journey. Points live in the campaign save (missionPoints).
 export const POINTS_PER_MISSION=10,POINTS_BONUS=25;
+// Owner 2026-11-24: more items. icon = the original FRLG sprite shown in the
+// shop (ball / mart item / held item); only items the campaign already uses.
 export const POINT_SHOP=Object.freeze([
- {id:'master',name:'Master Ball',cost:250,items:{masterball:1},oncePerJourney:true},
- {id:'ultra5',name:'5× Ultra Ball',cost:60,items:{ultraball:5}},
- {id:'great10',name:'10× Great Ball',cost:40,items:{greatball:10}},
- {id:'super5',name:'5× Super Poção',cost:50,items:{superpotion:5}},
- {id:'fullheal3',name:'3× Cura Total',cost:40,items:{fullheal:3}},
+ {id:'master',name:'Master Ball',desc:'Captura garantida',cost:250,items:{masterball:1},oncePerJourney:true,icon:'ball:masterball'},
+ {id:'ultra5',name:'5× Ultra Ball',desc:'Ótima chance de captura',cost:60,items:{ultraball:5},icon:'ball:ultraball'},
+ {id:'great10',name:'10× Great Ball',desc:'Boa chance de captura',cost:40,items:{greatball:10},icon:'ball:greatball'},
+ {id:'poke15',name:'15× Poké Ball',desc:'Para a grama alta',cost:20,items:{pokeball:15},icon:'ball:pokeball'},
+ {id:'potion10',name:'10× Poção',desc:'Recupera 20 HP',cost:25,items:{potion:10},icon:'mart:potion'},
+ {id:'super5',name:'5× Super Poção',desc:'Recupera 50 HP',cost:50,items:{superpotion:5},icon:'mart:superpotion'},
+ {id:'fullheal3',name:'3× Cura Total',desc:'Cura qualquer status',cost:40,items:{fullheal:3},icon:'mart:fullheal'},
+ {id:'status10',name:'Kit de remédios',desc:'2 de cada remédio de status',cost:30,items:{antidote:2,paralyzeheal:2,awakening:2,burnheal:2,iceheal:2},icon:'mart:antidote'},
+ {id:'money5k',name:'₽ 5.000',desc:'Dinheiro para a loja',cost:35,money:5000,icon:'money'},
+ {id:'money20k',name:'₽ 20.000',desc:'Dinheiro para a loja',cost:120,money:20000,icon:'money'},
  // README item 1: a random held item (individuality.js HELD_ITEMS).
- {id:'heldbox',name:'Item de batalha surpresa',cost:45,heldRandom:true}
+ {id:'heldbox',name:'Item surpresa',desc:'Item de batalha aleatório',cost:45,heldRandom:true,icon:'gift'},
+ {id:'leftovers',name:'Sobras',desc:'Item de batalha · recupera HP',cost:90,held:'leftovers',icon:'held:leftovers'},
+ {id:'luckyegg',name:'Ovo da Sorte',desc:'Item de batalha · mais EXP',cost:80,held:'luckyegg',icon:'held:luckyegg'},
+ {id:'expshare',name:'Compartilhar EXP',desc:'Item de batalha · EXP dividida',cost:80,held:'expshare',icon:'held:expshare'},
+ {id:'quickclaw',name:'Garra Rápida',desc:'Item de batalha',cost:70,held:'quickclaw',icon:'held:quickclaw'},
+ {id:'focusband',name:'Faixa do Foco',desc:'Item de batalha',cost:70,held:'focusband',icon:'held:focusband'}
 ]);
 export function missionPoints(s){return Math.max(0,Math.floor(Number(s?.missionPoints)||0))}
 export function claimDailyWithPoints(s,id,typesOf=()=>[]){
@@ -92,13 +123,17 @@ export function buyWithPoints(s,id,random=Math.random,heldKeys=[]){
  const item=POINT_SHOP.find(x=>x.id===id);if(!item)return null;
  if(!shopItemState(s,item).ok)return null;
  if(item.heldRandom&&!heldKeys.length)return null;
+ if(item.held&&heldKeys.length&&!heldKeys.includes(item.held))return null;
  const next=JSON.parse(JSON.stringify(s));
  next.missionPoints=missionPoints(s)-item.cost;
  if(item.heldRandom){
   const key=heldKeys[Math.min(heldKeys.length-1,Math.floor(Math.max(0,Number(random())||0)*heldKeys.length))];
   next.inventory.held={...(next.inventory.held||{}),[key]:((next.inventory.held||{})[key]||0)+1};
   next.lastHeldItem=key;
- }else applyReward(next,{items:item.items});
+ }else if(item.held){
+  next.inventory.held={...(next.inventory.held||{}),[item.held]:((next.inventory.held||{})[item.held]||0)+1};
+  next.lastHeldItem=item.held;
+ }else applyReward(next,{items:item.items,money:item.money});
  if(item.oncePerJourney)next.pointShopBought=[...list(s?.pointShopBought),item.id];
  return next;
 }

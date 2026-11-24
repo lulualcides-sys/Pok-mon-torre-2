@@ -35,8 +35,8 @@ test('fifteen 3x3 events: unlocks, teams of three, first-win reward only once',(
  assert.deepEqual(eventTeam(EVENTS_3X3[0],20).map(m=>m.level),[18,20,22]);
  assert.deepEqual(playerTrio([{hp:0},{hp:50},{hp:100},{hp:10},{hp:90}]).map(x=>x.i),[1,2,3]);
  let s={badges:['b'],money:100,inventory:{greatball:0},wins:3,losses:1};
- const r1=resolveEventResult(s,'e1',true);assert.ok(r1.first);assert.equal(r1.state.money,1600);assert.equal(r1.state.inventory.greatball,3);
- const r2=resolveEventResult(r1.state,'e1',true);assert.ok(!r2.first);assert.equal(r2.state.money,1600);
+ const r1=resolveEventResult(s,'e1',true);assert.ok(r1.first);assert.equal(r1.state.money,2100);assert.equal(r1.state.inventory.greatball,5);
+ const r2=resolveEventResult(r1.state,'e1',true);assert.ok(!r2.first);assert.equal(r2.state.money,2100);
  assert.equal(eventStatus(r2.state,EVENTS_3X3[0]).state,'won');
  const lost=resolveEventResult(s,'e2',false);assert.equal(lost.state.money,100);assert.equal(lost.state.events3x3.won.length,0);
  assert.match(eventToken(s,'e1'),/^event3-e1-3-1$/);

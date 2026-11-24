@@ -33,6 +33,6 @@ test('Team Rocket events: stories, 3x3, unlocks, rewards and held items',()=>{
  const scene=read('torre2-campaign-scene.js');assert.match(scene,/torre2-challenges-rocket/);assert.match(scene,/ev\.story\|\|\[\]/);
 });
 test('trainer reactions at the end of a battle; night shade and forms in battle',()=>{
- const at=read('torre2-arena-trainers.js');assert.match(at,/scene\.fase!=='fin'/);assert.match(at,/'Isso aí!'/);assert.match(at,/FRAMES\.back/);
+ const at=read('torre2-arena-trainers.js');assert.match(at,/scene\.fase!=='fin'/);assert.match(read('torre2-arena-follow.js'),/'Isso aí!'/);assert.match(at,/FRAMES\.back/);
  const pb=read('torre2-party-battle.js');assert.match(pb,/ARENA_SHADE\[timeOfDay\(\)\]/);
 });

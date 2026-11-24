@@ -45,6 +45,21 @@ const server=http.createServer(async(req,res)=>{
    });
    await page.waitForTimeout(235);
   }
+
+  // New journey (owner 2026-11-24): required name, then the trainer look.
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   if(c.__torre2IntroName)c.__torre2IntroName.valor='Ash';
+   const go=c.children.list.find(x=>x.getData?.('torre2-intro-name-continue'));
+   if(!go)throw Error('Name step missing');go.emit('pointerdown');
+  });
+  await page.waitForTimeout(260);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const go=c.children.list.find(x=>x.getData?.('torre2-intro-look-continue'));
+   if(!go)throw Error('Look step missing');go.emit('pointerdown');
+  });
+  await page.waitForTimeout(260);
   const opening=await page.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;

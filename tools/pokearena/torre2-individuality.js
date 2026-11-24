@@ -21,13 +21,17 @@ const clampIv=v=>Math.max(0,Math.min(31,Math.floor(Number(v))));
 const up=v=>String(v||'').toUpperCase();
 // --- 5. Potencial -------------------------------------------------------------
 export const POTENTIAL_STATS=Object.freeze([['hp','HP'],['atk','ATK'],['def','DEF']]);
-export function potentialOf(member){
- const p=member?.potential;
- if(p&&[p.hp,p.atk,p.def].every(Number.isFinite))return {hp:clampIv(p.hp),atk:clampIv(p.atk),def:clampIv(p.def)};
- const seed=String(member?.uid||member?.id||'x');
- return {hp:hash(seed+':hp')%32,atk:hash(seed+':atk')%32,def:hash(seed+':def')%32};
-}
 export function potentialStars(p){const t=p.hp+p.atk+p.def;return t>=84?5:t>=66?4:t>=46?3:t>=26?2:1}
+export function potentialOf(member){
+ const p=member?.potential,seed=String(member?.uid||member?.id||'x');
+ const base=p&&[p.hp,p.atk,p.def].every(Number.isFinite)?{hp:clampIv(p.hp),atk:clampIv(p.atk),def:clampIv(p.def)}:
+  {hp:hash(seed+':hp')%32,atk:hash(seed+':atk')%32,def:hash(seed+':def')%32};
+ // Owner 2026-11-24: a shiny always has at least 4 stars. Each point is
+ // lifted to 22–31 (deterministic per Pokémon), so the total is at least 66.
+ if(member?.shiny===true&&potentialStars(base)<4)
+  for(const k of ['hp','atk','def'])base[k]=Math.max(base[k],22+hash(seed+':shiny-'+k)%10);
+ return base;
+}
 // FireRed-style judge words (the IV judge in the Battle Frontier/Tower).
 export function potentialGrade(v){return v>=31?'Perfeito':v>=26?'Fantástico':v>=21?'Muito bom':v>=16?'Bom':v>=11?'Razoável':'Fraco'}
 export function potentialTotalWord(p){const s=potentialStars(p);return ['','Comum','Promissor','Acima da média','Excelente','Lendário'][s]}
@@ -69,10 +73,12 @@ export const HIDDEN_ABILITIES=Object.freeze({
 });
 export const HIDDEN_CHANCE=5; // percent
 export function hiddenAbilityOf(member){
- if(member?.hiddenAbility===null)return null;
  if(HIDDEN_ABILITIES[member?.hiddenAbility])return member.hiddenAbility;
- const seed=String(member?.uid||'');if(!seed)return null;
- if(hash(seed+':ha')%100>=HIDDEN_CHANCE)return null;
+ // Owner 2026-11-24: a shiny always has a hidden ability.
+ const shiny=member?.shiny===true;
+ if(member?.hiddenAbility===null&&!shiny)return null;
+ const seed=String(member?.uid||(shiny?member?.id:'')||'');if(!seed)return null;
+ if(!shiny&&hash(seed+':ha')%100>=HIDDEN_CHANCE)return null;
  const keys=Object.keys(HIDDEN_ABILITIES);return keys[hash(seed+':hak')%keys.length];
 }
 // --- 1. Equipamentos ---------------------------------------------------------
@@ -130,8 +136,12 @@ export function itemForType(type){
 // Leaders: the item of the gym's type on the FIRST win (stage index).
 export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','miracleseed','poisonbarb',
  'twistedspoon','charcoal','softsand','nevermeltice','blackbelt','spelltag','dragonfang','silkscarf']);
-export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e2:'mysticwater',e3:'metalcoat',e4:'blackbelt',e5:'blackglasses',e6:'dragonfang',
- k1:'smokeball',k2:'amuletcoin',k3:'cleansetag',k4:'kingsrock',k5:'choiceband'});
+// Owner 2026-11-24: every 3x3/Rocket challenge gives a battle item on its
+// (single) win; better items on later maps.
+export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e7:'silverpowder',k1:'smokeball',
+ e2:'mysticwater',e8:'seaincense',e3:'metalcoat',e9:'poisonbarb',k2:'amuletcoin',
+ e10:'hardstone',e11:'charcoal',k3:'cleansetag',e4:'blackbelt',e12:'scopelens',e13:'nevermeltice',k4:'kingsrock',
+ e5:'blackglasses',e14:'leftovers',e6:'dragonfang',e15:'luckyegg',k5:'choiceband'});
 export const WILD_ITEM_CHANCE=.05;
 // Wild win: small chance of the item of the wild Pokémon's first type.
 export function wildItemRoll(types,random=Math.random){

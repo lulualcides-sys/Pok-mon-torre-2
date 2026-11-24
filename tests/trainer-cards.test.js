@@ -21,7 +21,7 @@ test('trainer cards are a separate native Phaser UI without changing saves or th
   scene.indexOf(' renderLegacyCampaign(state,')),/renderTrainerCardMapTab\(this/);
  assert.match(scene,/capture:at=>this\.grassScreen\(state,Number\.isInteger\(at\)\?at:null\)/);
  assert.match(scene,/training:\(\)=>this\.enterTraining\(state\)/);
- assert.match(card,/'CAPTURA',handlers\.capture/);
+ assert.match(card,/'CAPTURA',\(\)=>handlers\.capture/);
  assert.match(card,/'TREINO',handlers\.training/);
  assert.match(card,/'TELA CHEIA'/);
  assert.match(card,/'MAIS'/);

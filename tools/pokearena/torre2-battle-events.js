@@ -38,64 +38,64 @@ export const EVENTS_3X3=Object.freeze([
  {id:'e1',name:'Gêmeos Léo e Lia',sprite:'camper',minBadges:1,
   team:['pidgeotto','nidorino','oddish'],
   line:'Três contra três! Um só Pokémon não segura a gente. Monte sua melhor trinca!',
-  reward:{money:1500,items:{greatball:3}}},
+  reward:{money:2000,items:{greatball:5}}},
  {id:'e2',name:'Marujo Bruto',sprite:'sailor',minBadges:2,
   team:['machop','tentacool','krabby'],
   line:'No mar a gente luta em trio! Três dos seus contra três dos meus. Segura essa onda!',
-  reward:{money:2500,items:{superpotion:3}}},
+  reward:{money:3000,items:{ultraball:3}}},
  {id:'e3',name:'Cientista Dra. Vera',sprite:'scientist',minBadges:3,
   team:['magnemite','voltorb','grimer'],
   line:'Hipótese: três Pokémon bem combinados vencem qualquer um sozinho. Vamos testar no 3x3!',
-  reward:{money:3500,items:{ultraball:3}}},
+  reward:{money:4500,items:{ultraball:4}}},
  {id:'e4',name:'Faixa-Preta Kenji',sprite:'blackbelt',minBadges:5,
   team:['primeape','hitmonlee','machoke'],
   line:'Um golpe é força. Três golpes em sequência é arte! Mostre o seu trio!',
-  reward:{money:4500,items:{fullheal:3}}},
+  reward:{money:8000,items:{ultraball:6}}},
  {id:'e5',name:'Médium Selene',sprite:'channeler',minBadges:7,
   team:['haunter','hypno','kadabra'],
   line:'Três espíritos me acompanham... e os seus três vão sentir o frio do outro lado!',
-  reward:{money:6000,items:{ultraball:5}}},
+  reward:{money:12000,items:{ultraball:10}}},
  {id:'e6',name:'Ás Lendário Rafa',sprite:'ace',champion:true,
   team:['dragonite','gyarados','arcanine'],
   line:'Campeão, hein? Campeões de verdade vencem em trio. 3x3, sem desculpas!',
-  reward:{money:10000,items:{ultraball:10}}},
+  reward:{money:25000,items:{ultraball:15}}},
  // Nine more (owner 2026-11-22: "umas 15 batalhas 3x3"), spread across the journey.
  {id:'e7',name:'Caçador Beto',sprite:'bugcatcher',minBadges:1,
   team:['beedrill','butterfree','parasect'],
   line:'Meus insetos atacam em enxame! Três de uma vez. Você aguenta o zumbido?',
-  reward:{money:1800,items:{potion:5}}},
+  reward:{money:2000,items:{superpotion:4}}},
  {id:'e8',name:'Pescador Tonho',sprite:'fisherman',minBadges:2,
   team:['poliwhirl','seaking','starmie'],
   line:'Pesquei os três maiores do lago hoje. Vamos ver se você fisga uma vitória!',
-  reward:{money:2800,items:{greatball:5}}},
+  reward:{money:3000,items:{superpotion:5}}},
  {id:'e9',name:'Motoqueiro Rex',sprite:'biker',minBadges:3,
   team:['weezing','muk','raticate'],
   line:'Na estrada a gangue anda em trio! Acelera aí, 3x3 sem freio!',
-  reward:{money:3600,items:{superpotion:4}}},
+  reward:{money:4500,items:{fullheal:3}}},
  {id:'e10',name:'Montanhista Duda',sprite:'hiker',minBadges:4,
   team:['graveler','onix','rhyhorn'],
   line:'Três rochas são uma montanha! Tenta escalar essa, se for capaz!',
-  reward:{money:4000,items:{fullheal:3}}},
+  reward:{money:6000,items:{ultraball:5}}},
  {id:'e11',name:'Domadora Lume',sprite:'picnicker',minBadges:4,
   team:['rapidash','growlithe','ninetales'],
   line:'Minha trinca de fogo nunca se apaga. Prepare-se para o calor do 3x3!',
-  reward:{money:4200,items:{ultraball:2}}},
+  reward:{money:6000,items:{ultraball:5}}},
  {id:'e12',name:'Ninja Sombra',sprite:'rocker',minBadges:6,
   team:['venomoth','golbat','arbok'],
   line:'Você nem vai ver de onde vêm os três golpes... Silêncio. Começou.',
-  reward:{money:5200,items:{ultraball:3}}},
+  reward:{money:10000,items:{ultraball:8}}},
  {id:'e13',name:'Patinadora Neve',sprite:'acef',minBadges:6,
   team:['dewgong','cloyster','jynx'],
   line:'Três passos no gelo e você escorrega! Vamos dançar um 3x3 congelante!',
-  reward:{money:5400,items:{superpotion:5}}},
+  reward:{money:10000,items:{fullheal:5}}},
  {id:'e14',name:'Professora Íris',sprite:'woman',minBadges:8,
   team:['alakazam','slowbro','exeggutor'],
   line:'Já previ esta luta: três mentes contra três corações. Mostre que eu errei!',
-  reward:{money:7500,items:{ultraball:5}}},
+  reward:{money:15000,items:{ultraball:10}}},
  {id:'e15',name:'Veterano Heitor',sprite:'gentleman',champion:true,
   team:['aerodactyl','lapras','snorlax'],
   line:'Lendas de Kanto, meu jovem. Três gigantes contra o seu melhor trio!',
-  reward:{money:12000,items:{ultraball:10}}}
+  reward:{money:25000,items:{ultraball:15}}}
 ]);
 // Eventos da Equipe Rocket (owner 2026-11-22, item 19): small stories from
 // FireRed's Rocket plot, each ending in a 3x3 against a Rocket trio. Same
@@ -104,23 +104,23 @@ export const ROCKET_EVENTS=Object.freeze([
  {id:'k1',rocket:true,name:'Recrutas do Mt. Moon',place:'Mt. Moon',sprite:'rocket',minBadges:1,
   team:['zubat','rattata','ekans'],
   story:['Ei, pirralho! Os fósseis do Mt. Moon agora são da Equipe Rocket!','O chefe quer os fósseis para vender caro... e ninguém vai atrapalhar!'],
-  line:'Quer os fósseis? Então derrote nosso trio!',reward:{money:2500,items:{greatball:5}}},
+  line:'Quer os fósseis? Então derrote nosso trio!',reward:{money:3000,items:{greatball:5}}},
  {id:'k2',rocket:true,name:'Esconderijo do Cassino',place:'Cassino de Celadon',sprite:'rocketf',minBadges:3,
   team:['koffing','grimer','raticate'],
   story:['Shh! O Cassino de Celadon é só fachada...','O esconderijo da Equipe Rocket fica atrás do pôster. Você viu demais!'],
-  line:'Agora vai ter que lutar contra nós três!',reward:{money:5000,items:{ultraball:3}}},
+  line:'Agora vai ter que lutar contra nós três!',reward:{money:6000,items:{ultraball:5}}},
  {id:'k3',rocket:true,name:'Invasão da Torre Pokémon',place:'Torre Pokémon',sprite:'rocket',minBadges:4,
   team:['golbat','arbok','gastly'],
   story:['A Torre Pokémon de Lavender é nossa base agora!','O Sr. Fuji está preso lá em cima e os espíritos estão agitados...'],
-  line:'Ninguém sobe enquanto a Equipe Rocket estiver aqui!',reward:{money:6500,items:{superpotion:5}}},
+  line:'Ninguém sobe enquanto a Equipe Rocket estiver aqui!',reward:{money:8000,items:{ultraball:5}}},
  {id:'k4',rocket:true,name:'Segredos da Mansão',place:'Mansão Pokémon',sprite:'scientist',minBadges:6,
   team:['muk','weezing','hypno'],
   story:['Os diários da Mansão Pokémon falam de um Pokémon criado em laboratório...','A Equipe Rocket me pagou para apagar tudo. Você não vai ler nada!'],
-  line:'Meus Pokémon vão proteger os segredos!',reward:{money:8000,items:{ultraball:5}}},
+  line:'Meus Pokémon vão proteger os segredos!',reward:{money:12000,items:{ultraball:8}}},
  {id:'k5',rocket:true,name:'O retorno de Giovanni',place:'Esconderijo secreto',sprite:'giovanni',champion:true,
   team:['nidoking','nidoqueen','rhydon'],
   story:['Então você é o treinador que derrotou a Equipe Rocket tantas vezes...','Mesmo Campeão, você não conhece o verdadeiro poder de Giovanni.'],
-  line:'Três contra três. Vamos ver quem é o mais forte de Kanto!',reward:{money:20000,items:{ultraball:10}}}
+  line:'Três contra três. Vamos ver quem é o mais forte de Kanto!',reward:{money:40000,items:{ultraball:20}}}
 ]);
 export const ALL_EVENTS=Object.freeze([...EVENTS_3X3,...ROCKET_EVENTS]);
 // Each win has a small chance to earn one of the challenger's Pokémon.
@@ -133,13 +133,18 @@ export function eventPokemonRoll(ev,random=Math.random){
 }
 export const EVENT_SIZE=3;
 const badgeCount=s=>list(s?.badges).length;
+// Owner 2026-11-24: each challenge is won ONCE (no rematch after a win);
+// the reward is shown on its card and scales with the map that unlocks it.
 export function eventStatus(s,ev){
  if(!ev)return {state:'locked',reason:'Evento desconhecido.'};
  const done=list(s?.events3x3?.won).includes(ev.id);
+ if(done)return {state:'won',reason:'Vencido ✔ · prêmio recebido'};
  if(ev.champion&&!s?.champion)return {state:'locked',reason:'Depois de zerar a Liga'};
  if(!ev.champion&&badgeCount(s)<ev.minBadges&&!s?.champion)return {state:'locked',reason:'Precisa de '+ev.minBadges+' insígnia(s)'};
- return {state:done?'won':'open',reason:done?'Vencido · pode lutar de novo':'Disponível'};
+ return {state:'open',reason:'Disponível'};
 }
+// Tier label of the reward (bigger maps, bigger prizes).
+export function rewardTier(ev){return ev?.champion?'ÉPICO':(ev?.minBadges||0)>=5?'ÓTIMO':(ev?.minBadges||0)>=3?'BOM':'MÉDIO'}
 // Levels: from the cap of the current stage, the ace a bit stronger.
 export function eventTeam(ev,cap){
  const top=Math.max(5,Math.min(100,(Number(cap)||20)+2));

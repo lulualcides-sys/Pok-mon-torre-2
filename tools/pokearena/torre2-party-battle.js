@@ -286,6 +286,17 @@ export function installPartyBattle(scene){
  const hudBalls=Array.from({length:12},()=>originalBallSprite(scene,0,0,'pokeball',16,2481).setVisible(false));
  const sharedBeam=scene.add.graphics().setDepth(2603);
  const sharedBall=scene.add.graphics().setDepth(2604);
+ // Shiny fighters: the HUD portrait is the original shiny portrait too (the
+ // native preload only fetches the portrait of the normal sheet).
+ const shinyPortrait=actor=>{
+  const dex=String(actor?.dex||'');if(!dex.endsWith('-shinyt2'))return;
+  const key='retrato-'+dex;
+  const apply=()=>{if(!scene.scene.isActive())return;for(const lado of scene.hud?.lados||[])if(lado.l===actor&&lado.retrato?.active)lado.retrato.setTexture(key)};
+  if(scene.textures.exists(key))return apply();
+  scene.load.image(key,'assets/pmd/'+dex+'/portrait.png');scene.load.once('filecomplete-image-'+key,apply);
+  if(!scene.load.isLoading())scene.load.start();
+ };
+ for(const a of actors)shinyPortrait(a);
  const memberDex=m=>{
   try{
    const {def,etapa}=buscar(m.id);
@@ -302,8 +313,8 @@ export function installPartyBattle(scene){
   const member=party.friend[i],y=slotStart+i*slotStep;
   let img=null;
   if(member){
-   const dex=memberDex(member),idle='pmd-'+dex+'-Idle';
-   const portrait='torre2-portrait-'+dex;
+   const plain=memberDex(member),dex=member.shiny===true&&scene.textures.exists('pmd-'+plain+'-shinyt2-Idle')?plain+'-shinyt2':plain,idle='pmd-'+dex+'-Idle';
+   const portrait='torre2-portrait-'+plain;
    const key=scene.textures.exists(idle)?idle:
     scene.textures.exists(portrait)?portrait:null;
    if(key){
@@ -478,11 +489,13 @@ export function installPartyBattle(scene){
    party.changes++;
    const x=actor.x,y=actor.y;
    actor.def=found.def;actor.etapa=found.etapa??0;
-   actor.aspecto=null;actor.jefe=null;
+   // Shiny members use their original shiny PMD sheet (NNNN-shinyt2).
+   actor.aspecto=member.shiny===true&&scene.manifiesto?.[memberDex(member)+'-shinyt2']?'shinyt2':null;actor.jefe=null;
    // Native reiniciar() changes stats, but the previous PMD animation can
    // remain playing (Bulbasaur visible under Mewtwo's HUD). Refresh both.
    scene.tweens.killTweensOf(actor.spr);
    actor.reiniciar(x,y);
+   shinyPortrait(actor);
    const idleTexture='pmd-'+actor.dex+'-Idle';
    const idleAnimation=actor.dex+'-Idle-0';
    actor.spr.anims.stop();
