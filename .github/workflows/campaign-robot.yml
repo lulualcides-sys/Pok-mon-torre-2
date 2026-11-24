@@ -44,6 +44,12 @@ concurrency:
   group: pt2-campaign-robot
   cancel-in-progress: false
 
+# Same pinned audited 0.77.3 build as the Pages publish workflow.
+env:
+  TORRE2_ALPHA0773_RUN: '44740488716'
+  TORRE2_ALPHA0773_COMMIT: 'a604fa1427b3e2e6f0d5b5f9c485ca5f0e29ac67'
+  TORRE2_ALPHA0773_DIGEST: 'sha256:5c2cc6ffe849cb4392e70a50cb38a522cd1342b0bbba674fc75bf793f7e18fa7'
+
 jobs:
   robot:
     runs-on: ubuntu-24.04
