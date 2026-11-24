@@ -12,6 +12,8 @@
  * Never touches hitboxes, damage, move data, VFX or other modes.
  */
 import {CAMPO,FUENTE} from '../config.js';
+import {FACE_DEADZONE,facingToward,END_LINES,endLine} from './arena-follow.js';
+export {FACE_DEADZONE,facingToward,END_LINES,endLine};
 // FRLG overworld sheet (144x32): 0 front, 1 back, 2 side (facing left),
 // 3-4 walk front, 5-6 walk back, 7-8 walk side.
 export const FRAMES=Object.freeze({front:0,back:1,side:2,walkSide:[7,8]});
@@ -71,7 +73,7 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
   const spr=scene.add.image(from.x,from.y,texKey,f0).setOrigin(.5,1).setScale(1.5).setDepth(WORLD_DEPTH+1)
    .setFlipX(side===0).setData('torre2-arena-trainer',side);
   const shadow=scene.add.ellipse(from.x,from.y,18,5,0x000000,.4).setDepth(WORLD_DEPTH);
-  const t={side,texKey,spr,shadow,stand,walking:true,bubble:null,walkT:0};
+  const t={side,texKey,spr,shadow,stand,walking:true,bubble:null,walkT:0,busy:false};
   trainers[side]=t;return t;
  };
  make(0,playerTexture);
@@ -86,12 +88,14 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
   trainers,
   // Hand position for the Poké Ball (world coordinates).
   hand(side){const t=trainers[side];return t?{x:t.stand.x+(side===0?9:-9),y:t.stand.y-27}:null},
-  // Small throw motion: lean forward, step, back.
+  // Small throw motion: lean forward, step, back (from where it stands now).
   throwBall(side){
    const t=trainers[side];if(!t)return;
-   scene.tweens.add({targets:t.spr,x:t.stand.x+(side===0?5:-5),y:t.stand.y-3,duration:110,yoyo:true,ease:'Quad.Out',
+   const x0=t.stand.x,y0=t.stand.y;t.busy=true;t.face=null;
+   t.spr.setFlipX(side===0);
+   scene.tweens.add({targets:t.spr,x:x0+(side===0?5:-5),y:y0-3,duration:110,yoyo:true,ease:'Quad.Out',
     onStart:()=>t.spr.setFrame(frameKey(scene,t.texKey,FRAMES.walkSide[0])),
-    onComplete:()=>{t.spr.setPosition(t.stand.x,t.stand.y).setFrame(frameKey(scene,t.texKey,FRAMES.side))}});
+    onComplete:()=>{t.spr.setPosition(x0,y0).setFrame(frameKey(scene,t.texKey,FRAMES.side));t.busy=false}});
   },
   say(side,text){
    const t=trainers[side];if(!t||!text)return null;
@@ -127,20 +131,36 @@ export function installArenaTrainers(scene,{playerTexture,foeTexture}={}){
   const winner=lost(1)&&!lost(0)?0:lost(0)&&!lost(1)?1:null;
   for(const t of trainers.filter(Boolean)){
    if(t.walking)continue;
+   t.busy=true;const y0=t.spr.y;
    if(t.side===winner){
     t.spr.setFrame(frameKey(scene,t.texKey,FRAMES.front));
-    scene.tweens.add({targets:t.spr,y:t.stand.y-10,duration:170,yoyo:true,repeat:3,ease:'Quad.Out'});
-    api.say(t.side,t.side===0?'Isso aí!':'Hahaha! Ganhei!');
+    scene.tweens.add({targets:t.spr,y:y0-10,duration:170,yoyo:true,repeat:3,ease:'Quad.Out'});
+    api.say(t.side,endLine(t.side===0?'playerWin':'foeWin'));
    }else if(winner!==null){
     t.spr.setFrame(frameKey(scene,t.texKey,FRAMES.back));
-    scene.tweens.add({targets:t.spr,y:t.stand.y+2,duration:500,ease:'Sine.InOut'});
-    api.say(t.side,t.side===0?'Ah, não...':'Não acredito...');
+    scene.tweens.add({targets:t.spr,y:y0+2,duration:500,ease:'Sine.InOut'});
+    api.say(t.side,endLine(t.side===0?'playerLose':'foeLose'));
    }
   }
   scene.__torre2TrainersEnding=winner;
  };
  scene.events.on('update',ending);
  scene.events.once('shutdown',()=>scene.events.off('update',ending));
+ // Stay in place and turn to watch the Pokémon now on the field (it changes
+ // after a switch). Only the facing frame changes, never the position.
+ const walk=()=>{
+  for(const t of trainers.filter(Boolean)){
+   if(t.walking||t.busy||scene.fase==='fin')continue;
+   const f=scene.luchadores?.[t.side];
+   if(!f||!Number.isFinite(f.x))continue;
+   const face=facingToward({x:t.spr.x,y:t.spr.y-16},f,t.face||(t.side===0?'side-right':'side-left'));
+   if(face===t.face)continue;
+   t.face=face;
+   t.spr.setFrame(frameKey(scene,t.texKey,face==='front'?FRAMES.front:face==='back'?FRAMES.back:FRAMES.side)).setFlipX(face==='side-right');
+  }
+ };
+ scene.events.on('update',walk);
+ scene.events.once('shutdown',()=>scene.events.off('update',walk));
  // Keep bubbles over their trainer (or on the screen edge) every frame.
  const follow=()=>{for(const t of trainers.filter(Boolean)){const b=t.bubble;if(b?.active){b.__torre2Follow();b.__torre2Arrow?.setVisible(!!b.getData('offscreen'))}}};
  scene.events.on('postupdate',follow);

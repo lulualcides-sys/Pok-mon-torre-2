@@ -32,7 +32,7 @@ test('stored per device; wiring in card, map, battle and publisher',()=>{
  const store={m:{},getItem(k){return this.m[k]??null},setItem(k,v){this.m[k]=v}};
  assert.ok(saveLook({outfit:'roxo'},store));assert.equal(readLook(store).outfit,'roxo');
  const read=f=>fs.readFileSync(new URL('../tools/pokearena/'+f,import.meta.url),'utf8');
- assert.match(read('torre2-campaign-scene.js'),/torre2-trainer-card-look/);
+ assert.match(read('torre2-campaign-scene.js'),/torre2-intro-look-continue/);
  assert.match(read('torre2-frlg-npc.js'),/player-look/);assert.match(read('torre2-party-battle.js'),/frlg-npc-player-look/);
  assert.match(read('publish-alpha0762.mjs'),/torre2-trainer-look\.js','torre2\/trainer-look\.js'/);
 });

@@ -802,6 +802,13 @@ export function selectTeamMember(s,index){
  s.active=index;
  return true;
 }
+// Battles against TRAINERS only (owner 2026-11-24: the Trainer Card must not
+// count wild Pokémon). Wild results are kept apart since this version; older
+// saves have no split yet, so they keep their previous totals.
+export function trainerRecord(s){
+ const w=Number(s?.wins)||0,l=Number(s?.losses)||0;
+ return {wins:Math.max(0,w-(Number(s?.wildWins)||0)),losses:Math.max(0,l-(Number(s?.wildLosses)||0))};
+}
 export function healTeam(s){
  // A denied save must never make the team appear cured in the live session.
  // Persist the complete treatment first, preserving member references on success.
@@ -1097,7 +1104,7 @@ export function resolveWildBattle(s,won,random=Math.random){
   const wild=next.pendingWild;
   next.pendingWild=null;
   if(!won){
-   next.losses++;
+   next.losses++;next.wildLosses=(Number(next.wildLosses)||0)+1;
    // Smoke Ball: the player runs away unhurt.
    const smoke=escapesWildLoss(next.team[next.active]);
    if(!smoke)next.team[next.active].hp=Math.min(next.team[next.active].hp??100,50);
@@ -1108,7 +1115,7 @@ export function resolveWildBattle(s,won,random=Math.random){
   const shared=awardSharedTeamExperience(next,
    xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'wild'),{kind:'wild'});
   const growth=shared.gains.find(g=>g.index===next.active);
-  next.wins++;rechargeRematches(next);
+  next.wins++;next.wildWins=(Number(next.wildWins)||0)+1;rechargeRematches(next);
   next.pendingCapture=null;
   if(wild.legendary){
    next.legendaryDefeated=markLegendaryDefeated(next,wild.id);

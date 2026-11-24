@@ -56,6 +56,7 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-npc-quests.js',
   'tools/pokearena/torre2-battle-speed.js',
   'tools/pokearena/torre2-world.js',
+  'tools/pokearena/torre2-arena-follow.js',
   'tools/pokearena/torre2-dex-filter.js',
   'tools/pokearena/torre2-multiplayer-core.js',
   'tools/pokearena/torre2-multiplayer.js'

@@ -13,6 +13,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar,TIPOS} from '../datos.js';
 import {sfx} from '../sonido.js';
+import {campoTexto} from '../campos.js';
 import {ensureDaily,missionProgress,claimDaily,DAILY_BONUS,claimDailyWithPoints,missionPoints,POINT_SHOP,shopItemState,buyWithPoints,POINTS_PER_MISSION,POINTS_BONUS} from './daily-missions.js';
 import {filterDexRows,paginate,cycle,DEX_SHOW,DEX_SHOW_LABEL,DEX_TYPES,TYPE_LABEL} from './dex-filter.js';
 import {storyFor,markStorySeen,SPEAKERS} from './story.js';
@@ -26,7 +27,7 @@ import {readLegacy,saveLegacy,syncLegacy,TITLES,titleById,ACHIEVEMENT_REWARDS,re
 import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
-import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
+import {trainerRecord,readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,trainerSpeciesForLevel,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
@@ -60,7 +61,7 @@ import {renderInteriorScene,ROOM_CROPS} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
-import {renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
+import {extrasPage,renderTrainerCardHub,renderTrainerCardMapTab,pixelIcon,ownerArt,leaderSpriteKind,trainerSpriteKind} from './trainer-cards.js';
 import {installCampaignAudioSettings,readAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -248,6 +249,8 @@ class Campanha extends Phaser.Scene{
 create(){
   // Phaser reuses this Scene instance on restart; remove stale treatment locks.
   this.__torre2CenterBusy=false;
+  // A battle or a new scene start never returns into the MAIS page.
+  this.__torre2BackToExtras=false;
   // Restore the native Poké Arena 2D camera/viewport; no injected map zoom.
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
@@ -358,6 +361,8 @@ create(){
  // consistent visual hierarchy and tactile feedback on CAMPAIGN buttons only.
  // The trainer-card hub, Arena HUD, move keys and native combat UI are untouched.
  button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null,captionInset=0){
+  // Opened from MAIS: the way back is MAIS, not the cards.
+  if(this.__torre2BackToExtras&&/VOLTAR AOS CARDS/i.test(label))label=label.replace(/VOLTAR AOS CARDS/i,'VOLTAR');
   const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
   // Keep the native caption sizing, icon gutter and exact click geometry.
@@ -435,12 +440,13 @@ create(){
    const npc=addFireRedNPC(this,'oak',320,234,{scale:4.9,depth:2});
    npc?.setData('torre2-professor-oak-lecture-fallback',true);
   }
-  let player=null;try{player=localStorage.getItem('torre2-trainer-name')}catch{}
+  // Owner 2026-11-24: every new journey asks the name (required) and the
+  // trainer's look right after Oak; the look can only change here.
   const dialogue=[
-   'Olá'+(player?', '+player:'')+'! Bem-vindo ao mundo dos Pokémon!',
+   'Olá! Bem-vindo ao mundo dos Pokémon!',
    'Sou o Professor Oak. Estudo as criaturas que vivem por toda Kanto.',
    'Você conhecerá treinadores, rotas e os oito líderes de ginásio.',
-   'Sua jornada começa agora. Escolha um Pokémon para ser seu parceiro!'
+   'Antes de começar, me conte: qual é o seu nome?'
   ];
   // Native dialogue box with the speaker tag and page dots.
   const box=this.add.graphics().setDepth(3);
@@ -458,10 +464,40 @@ create(){
   this.button(548,328,120,26,'CONTINUAR ▶',()=>{
    index++;
    if(index<dialogue.length){message.setText(dialogue[index]);paintDots();return;}
-   this.__torre2OakIntroSeen=true;
    this.children.removeAll(true);
-   this.starterSelection();
+   this.introNameScreen();
   },true,10).setData('torre2-oak-continue',true);
+ }
+ // New journey, step 2: the trainer's name. Required: it cannot continue
+ // with an empty name (owner 2026-11-24).
+ introNameScreen(){
+  this.children.removeAll(true);this.backdrop();this.campaignMusic('title');
+  this.screenBanner(20,320,'Qual é o seu nome?','dex');
+  const g=this.add.graphics().setDepth(1);
+  nativeMarco(g,110,56,420,244,'panel');
+  g.fillStyle(0x000000,.3).fillEllipse(200,226,70,12);
+  this.npcSprite('prof_oak',200,226,4,3);
+  nativeRect(g,262,82,250,58,MENU_UI.contorno,8);nativeRect(g,264,84,246,54,0xf4f1e6,7);
+  g.fillStyle(0xf4f1e6,1).fillTriangle(264,104,264,118,252,111);
+  const say=textoMenu(this,276,98,'Como você se chama? Escreva o seu nome de treinador.',{tam:8,color:MENU_UI.textoOscuro,borde:0,literal:true}).setOrigin(0,0).setDepth(3);
+  say.setWordWrapWidth?.(226);
+  this.uiLabel(387,160,'NOME (até 12 letras)',8,MENU_UI.suave,[.5,.5],3);
+  let saved='';try{saved=localStorage.getItem('torre2-trainer-name')||''}catch{}
+  const clean=v=>String(v||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,12);
+  const error=this.uiLabel(387,210,'Escreva um nome para continuar.',8,'#ff9d9d',[.5,.5],3).setVisible(false)
+   .setData('torre2-intro-name-error',true);
+  let field=null;
+  const go=()=>{
+   const name=clean(field?.valor).trim();
+   if(!name){error.setVisible(true);this.cameras.main.shake?.(120,.004);field?.foco?.();return}
+   try{localStorage.setItem('torre2-trainer-name',name)}catch{}
+   field?.quitar?.();this.__torre2IntroName=null;
+   this.lookScreen(null,null,{intro:true});
+  };
+  try{field=campoTexto(this,{x:287,y:170,w:200,h:28,max:12,placeholder:'SEU NOME',valor:saved,mayusculas:false,filtro:clean,alIntro:go,alCambiar:()=>error.setVisible(false)})}
+  catch(e){console.warn('Torre 2: name field',e)}
+  this.__torre2IntroName=field;field?.foco?.();
+  this.button(387,252,180,28,'CONTINUAR ▶',go,true,10).setData('torre2-intro-name-continue',true);
  }
  starterSelection(){
   if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
@@ -899,6 +935,7 @@ create(){
   this.__torre2CardsOnly=true;
   this.__torre2PathData={buscar};
   if(state.champion)return this.hallOfFameScreen(state);
+  this.__torre2HubNoticeAt=0;
   // The original audio modal remains accessible through MAIS; its small
   // tab sits below the 200-depth cards and never covers card controls.
   installCampaignAudioSettings(this);
@@ -937,6 +974,8 @@ create(){
   // League (Victory Road, Elite Four, Champion): the dungeon theme.
   this.campaignMusic(state.stage>=8?'dungeon':'town');
   const cards=renderTrainerCardHub(this,state,handlers);
+  // Back from a screen opened in MAIS: MAIS opens again (owner 2026-11-24).
+  if(this.__torre2BackToExtras){this.__torre2BackToExtras=false;extrasPage(this,state,handlers)}
   // Destroyed when another screen clears the scene: delayed hub messages
   // must not appear over the Summary or other screens (owner print 2026-11-22).
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
@@ -946,7 +985,18 @@ create(){
   {try{const cur=readCampaign()||state,r=rollRareQuest(cur);
    if(r.state!==cur){saveCampaign(r.state);state.npcQuests=r.state.npcQuests}
    if(r.appeared){const q=ALL_QUESTS.find(x=>x.id===r.appeared);
-    this.time.delayedCall(1300,()=>{if(this.scene.isActive()&&hubAlive.active)this.campaignNotice('★ MISSÃO RARA apareceu: '+q.npc+'! Veja em Mais → Missões da cidade','#ffd23f')})}}catch(e){console.warn('Torre 2: rare quest',e)}}
+    this.queueHubNotice(1300,()=>{if(this.scene.isActive()&&hubAlive.active)this.campaignNotice('★ MISSÃO RARA apareceu: '+q.npc+'! Veja em Mais → Missões da cidade','#ffd23f')})}}catch(e){console.warn('Torre 2: rare quest',e)}}
+  // City missions completed (owner 2026-11-24): an alert once per mission as
+  // soon as it is ready to claim.
+  {try{const cur=readCampaign()||state,nq=cur.npcQuests||{},seen=new Set(nq.readyAnnounced||[]),ctx=this.questCtx();
+   const ready=ALL_QUESTS.filter(q=>nq.accepted?.[q.id]&&!seen.has(q.id)&&questState(cur,q,ctx)==='ready');
+   if(ready.length){
+    const next={...cur,npcQuests:{...nq,readyAnnounced:[...seen,...ready.map(q=>q.id)]}};
+    this.queueHubNotice(700,()=>{if(!this.scene.isActive()||!hubAlive.active)return;
+     try{saveCampaign(next);state.npcQuests=next.npcQuests}catch{}
+     const who=ready.length===1?ready[0].npc:ready.length+' missões';
+     this.campaignNotice('✔ Missão da cidade concluída: '+who+'! Resgate o prêmio em Mais → Missões da cidade','#9ff0bf');
+     this.__torre2QuestReadyNotice=ready.map(q=>q.id)})}}catch(e){console.warn('Torre 2: quest ready notice',e)}}
   // First journey: the short tutorial opens once (never under automation).
   {let seen=true;try{seen=localStorage.getItem('torre2-tutorial-seen')==='1'}catch{}
    if(!seen&&!navigator.webdriver&&!(state.wins>0)&&state.stage===0){this.time.delayedCall(350,()=>{if(this.scene.isActive()&&hubAlive.active)this.tutorialScreen(state,0)})}}
@@ -955,7 +1005,7 @@ create(){
   {const fresh=EVENTS_3X3.find(ev=>eventStatus(state,ev).state==='open'&&!(state.events3x3?.announced||[]).includes(ev.id));
    if(fresh){const ann=[...(state.events3x3?.announced||[]),...EVENTS_3X3.filter(ev=>eventStatus(state,ev).state!=='locked').map(ev=>ev.id)];
     // Marked as announced only when the notice is really shown on the map.
-    this.time.delayedCall(900,()=>{if(!this.scene.isActive()||!hubAlive.active)return;
+    this.queueHubNotice(900,()=>{if(!this.scene.isActive()||!hubAlive.active)return;
      try{const cur=readCampaign()||state;saveCampaign({...cur,events3x3:{...(cur.events3x3||{}),announced:[...new Set(ann)]}});state.events3x3={...(state.events3x3||{}),announced:[...new Set(ann)]}}catch{}
      this.campaignNotice('Nova luta 3x3 liberada: '+fresh.name+'! Mais opções → DESAFIOS → EVENTOS 3x3',MENU_UI.amarillo)})}}
   return cards;
@@ -1166,12 +1216,13 @@ create(){
   const KEY='torre2-tips-v1';
   try{if(!force&&(localStorage.getItem(KEY)==='done'||navigator.webdriver))return false}catch{return false}
   const steps=[
-   [422,320,210,36,'Batalhar','Toque aqui para enfrentar o próximo treinador da rota.'],
+   [492,320,140,36,'Batalhar','Toque aqui para enfrentar o próximo treinador da rota.'],
+   [418,324,70,30,'Captura','Vá à grama alta para encontrar e capturar Pokémon selvagens.'],
    [166,56,464,246,'Cards da rota','Cada card é um treinador. Vença todos para desafiar o líder.'],
    [8,324,80,30,'Equipe','Veja seus Pokémon, o HP e escolha quem luta primeiro.'],
    [92,324,80,30,'Bolsa','Use Poções, remédios de status e ensine TMs.'],
    [176,324,80,30,'Centro','O Centro Pokémon cura toda a equipe de graça.'],
-   [344,324,70,30,'Mais','Pokédex, insígnias, mapa, cartão do treinador e cópia do save.']
+   [344,324,70,30,'Mais','Pokédex, insígnias, lendários, missões, cartão do treinador e cópia do save.']
   ];
   const D=9200;let i=0,objs=[];
   const clear=()=>{objs.forEach(o=>o?.active&&o.destroy());objs=[]};
@@ -1206,6 +1257,12 @@ create(){
   return true;
  }
  // Short on-screen notice (save export/import feedback).
+ // Hub messages one after another (each toast lasts 2.6 s), never on top of
+ // each other.
+ queueHubNotice(delay,fn){
+  const at=Math.max(delay,this.__torre2HubNoticeAt||0);this.__torre2HubNoticeAt=at+2800;
+  return this.time.delayedCall(at,fn);
+ }
  campaignNotice(message,color=MENU_UI.amarillo){
   this.__torre2Notice?.forEach(o=>o?.active&&o.destroy());
   const t=this.uiLabel(320,346,message,9,color,[.5,.5],9600).setData('torre2-campaign-notice',true);
@@ -1458,8 +1515,12 @@ create(){
   });
   this.button(150,330,240,28,'◀ VOLTAR AOS CARDS',()=>this.renderCampaign(state)).setData('torre2-legendary-back',true);
   const mb=state.inventory?.masterball||0;
-  originalBallSprite(this,420,330,'masterball',18,9);
-  this.uiLabel(436,330,'Master Ball ×'+mb,8,mb?'#e8c8ff':MENU_UI.tenue,[0,.5]);
+  // Master Ball count in its own chip between the two buttons (owner print:
+  // the label overlapped SILPH CO.).
+  {const cg=this.add.graphics().setDepth(8);nativeRect(cg,300,317,190,26,MENU_UI.contorno,7);nativeRect(cg,302,319,186,22,0x1b1d4a,6);
+   originalBallSprite(this,324,330,'masterball',18,9).setData('torre2-legendary-masterball',mb);
+   this.uiLabel(342,330,'Master Ball',8,mb?'#e8c8ff':'#c8d6f0',[0,.5],9);
+   this.uiLabel(478,330,'× '+mb,9,mb?MENU_UI.amarillo:MENU_UI.tenue,[1,.5],9);}
   this.button(566,330,120,26,'SILPH CO.',()=>this.silphScreen(state),!state.masterBallGiven,8).setData('torre2-hub-silph',true);
   this.__torre2LegendaryHub=LEGENDARIES.map(l=>({id:l.id,...this.legendaryStatusFor(state,l.id)}));
  }
@@ -1890,9 +1951,18 @@ create(){
  }
  // Daily missions (Mais → MISSÕES): three per day, claimed once each, bonus.
  speciesTypes(id){try{const {def,etapa}=buscar(id);return (etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{return []}}
+ // What the player can really do today (owner 2026-11-24: no impossible
+ // daily missions): types in the tall grass already reachable, VS Seeker.
+ dailyCtx(s){
+  const types=new Set();
+  for(let st=0;st<=Math.min(8,Number(s?.stage)||0);st++){
+   try{for(const id of new Set(wildAvailability(st).wild||[]))for(const ty of this.speciesTypes(id)||[])types.add(String(ty).toUpperCase())}catch{}
+  }
+  return {types:[...types],rematch:(Number(s?.stage)||0)>0||(Number(s?.trainer)||0)>0};
+ }
  missionsScreen(state){
   this.children.removeAll(true);this.backdrop();
-  let cur=readCampaign()||state;const today=ensureDaily(cur);
+  let cur=readCampaign()||state;const today=ensureDaily(cur,undefined,this.dailyCtx(cur));
   if(today!==cur){try{saveCampaign(today)}catch{}cur=today}
   const d=cur.daily,typesOf=id=>this.speciesTypes(id);
   this.screenBanner(20,300,'Missões do dia','badges');
@@ -1944,31 +2014,51 @@ create(){
    'Abra o menu do navegador (⋮) e toque em "Instalar app" ou "Adicionar à tela inicial".',MENU_UI.amarillo);
  }
  // Points shop (owner list item 19): mission points → existing items.
- pointShopScreen(state){
+ // Points shop (owner 2026-11-24: more items, aligned grid, nothing over the
+ // buttons): 3×3 cards per page with the original FRLG sprites.
+ pointShopScreen(state,page=0){
   this.children.removeAll(true);this.backdrop();
   const cur=readCampaign()||state,pts=missionPoints(cur);
+  const PER=9,pages=Math.max(1,Math.ceil(POINT_SHOP.length/PER));page=Math.max(0,Math.min(pages-1,page));
   this.screenBanner(20,300,'Loja de pontos','badges');
-  this.uiLabel(320,46,'Cada missão dá '+POINTS_PER_MISSION+' pontos · o bônus do dia dá '+POINTS_BONUS,8,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,46,'Cada missão do dia dá '+POINTS_PER_MISSION+' pontos · o bônus do dia dá '+POINTS_BONUS,8,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,252);
-  this.uiLabel(320,74,'Seus pontos: '+pts,12,MENU_UI.amarillo,[.5,.5]);
   const g=this.add.graphics().setDepth(3);
-  const ball={master:'masterball',ultra5:'ultraball',great10:'greatball'};
-  POINT_SHOP.forEach((it,i)=>{
-   const y=92+i*42,st=shopItemState(cur,it);
-   nativeRect(g,24,y,592,38,st.ok?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,26,y+2,588,34,st.ok?0x2a3f78:0x0a1a46,6);
-   if(ball[it.id])originalBallSprite(this,48,y+19,ball[it.id],20,5);
-   else this.uiLabel(48,y+19,'✚',12,'#9ff0bf',[.5,.5],5);
-   this.uiLabel(72,y+13,it.name+(it.oncePerJourney?' (1 por jornada)':''),10,'#ffffff',[0,.5],5);
-   this.uiLabel(72,y+28,st.ok?it.cost+' pontos':st.reason,8,st.ok?'#ffd47a':'#8ea2c8',[0,.5],5);
-   if(st.ok)this.button(540,y+19,130,24,'Trocar · '+it.cost,()=>{
+  // Points chip.
+  nativeRect(g,236,63,168,22,MENU_UI.contorno,7);nativeRect(g,238,65,164,18,0x3a2a08,6);
+  this.uiLabel(320,74,'Seus pontos: '+pts,10,MENU_UI.amarillo,[.5,.5],5).setData('torre2-shop-points',pts);
+  const icon=(spec,x,y)=>{
+   const [kind,key]=String(spec||'').split(':');
+   if(kind==='ball')return originalBallSprite(this,x,y,key,24,6);
+   if(kind==='mart'&&this.textures.exists('torre2-frlg-mart-'+key))return this.add.image(x,y,'torre2-frlg-mart-'+key).setScale(1.3).setDepth(6);
+   if(kind==='held'&&this.textures.exists(heldIconKey(key)))return this.add.image(x,y,heldIconKey(key)).setScale(1.5).setDepth(6);
+   if(kind==='money')return this.uiLabel(x,y,'₽',14,MENU_UI.amarillo,[.5,.5],6);
+   return this.uiLabel(x,y,'?',14,'#e8c8ff',[.5,.5],6);
+  };
+  POINT_SHOP.slice(page*PER,page*PER+PER).forEach((it,i)=>{
+   const x=18+(i%3)*204,y=92+Math.floor(i/3)*70,w=196,h=64,st=shopItemState(cur,it);
+   nativeRect(g,x,y,w,h,st.ok?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,x+2,y+2,w-4,h-4,st.ok?0x2a3f78:0x0a1a46,6);
+   // Icon window.
+   nativeRect(g,x+8,y+8,34,34,MENU_UI.contorno,6);nativeRect(g,x+9,y+9,32,32,0x0c1725,5);
+   icon(it.icon,x+25,y+25);
+   estrechar(this.uiLabel(x+50,y+16,it.name,9,'#ffffff',[0,.5],5),w-58).setData('torre2-shop-item',it.id);
+   estrechar(this.uiLabel(x+50,y+31,it.oncePerJourney?(it.desc+' · 1 por jornada'):it.desc,6,'#b9c8e0',[0,.5],5),w-58);
+   // Bottom line: cost on the left, action on the right — never overlapping.
+   this.uiLabel(x+10,y+52,'★ '+it.cost+' pts',8,st.ok?'#ffd47a':'#8ea2c8',[0,.5],5);
+   if(st.ok)this.button(x+w-40,y+51,70,17,'TROCAR',()=>{
     const now=readCampaign()||cur,next=buyWithPoints(now,it.id,Math.random,Object.keys(HELD_ITEMS));
-    if(!next)return this.pointShopScreen(now);
+    if(!next)return this.pointShopScreen(now,page);
     try{saveCampaign(next)}catch{return this.campaignNotice('Compra não salva: tente de novo','#ff9d9d')}
-    this.pointShopScreen(next);this.campaignNotice('Você trocou: '+(it.heldRandom&&next.lastHeldItem?HELD_ITEMS[next.lastHeldItem].name+' (equipe na Ficha do Pokémon)':it.name),'#9ff0bf');
-   },true,8).setData('torre2-shop-buy',it.id);
+    this.pointShopScreen(next,page);
+    this.campaignNotice('Você trocou: '+(it.heldRandom&&next.lastHeldItem?HELD_ITEMS[next.lastHeldItem].name:it.name)+(it.held||it.heldRandom?' (equipe na Ficha do Pokémon)':''),'#9ff0bf');
+   },true,7).setData('torre2-shop-buy',it.id);
+   else estrechar(this.uiLabel(x+w-8,y+52,st.reason,6,'#8ea2c8',[1,.5],5),110);
   });
-  this.button(320,334,240,28,'◀ MISSÕES',()=>this.missionsScreen(readCampaign()||cur)).setData('torre2-shop-back',true);
-  this.__torre2PointShop={points:pts,items:POINT_SHOP.map(it=>({id:it.id,ok:shopItemState(cur,it).ok}))};
+  this.button(170,334,200,28,'◀ MISSÕES',()=>this.missionsScreen(readCampaign()||cur)).setData('torre2-shop-back',true);
+  this.button(392,334,44,28,'<',()=>this.pointShopScreen(cur,(page-1+pages)%pages),false,10).setData('torre2-shop-prev',true);
+  this.uiLabel(470,334,'Página '+(page+1)+'/'+pages,8,MENU_UI.suave,[.5,.5]);
+  this.button(548,334,44,28,'>',()=>this.pointShopScreen(cur,(page+1)%pages),false,10).setData('torre2-shop-next',true);
+  this.__torre2PointShop={points:pts,page,pages,items:POINT_SHOP.map(it=>({id:it.id,ok:shopItemState(cur,it).ok}))};
  }
  // Pokémon trade by code (Mais → TROCA). Send moves the Pokémon out of this
  // save into a code; Receive pastes a friend's code once.
@@ -2221,7 +2311,7 @@ create(){
   const rows=[['Nome',name],['Título',title?title.name:'—'],['Campanha zerada',legacy.championRuns.length+'×'],
    ['Dinheiro','₽ '+Number(state.money||0).toLocaleString('pt-BR')],
    ['Pokédex',(state.dexCaught||[]).length+' capturados · '+dexSeen+' vistos'],
-   ['Vitórias',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
+   ['Batalhas',trainerRecord(state).wins+' vitórias · '+trainerRecord(state).losses+' derrotas (treinadores)'],
    ['Equipe',(state.team||[]).length+' na equipe · '+(state.box||[]).length+' no PC'],
    ['Shiny',(state.dexShinyCaught||[]).length+' capturados · '+(state.dexShinySeen||[]).length+' avistados']];
   rows.forEach(([k,v],i)=>{
@@ -2240,7 +2330,6 @@ create(){
    this.pokemonIdleSprite(fav.id,540,224,52,6,sp=>sp.setData('torre2-card-favorite',fav.id),'height');
    this.uiLabel(540,232,(fav.nickname||fav.id).toUpperCase(),7,'#ffe08a',[.5,.5],7)}
   else this.npcSprite(this.playerNpc(),500,224,3.6,5);
-  this.button(462,120,72,18,'VISUAL',()=>this.lookScreen(state),false,7).setData('torre2-trainer-card-look',true);
   // Pokédex medal (owner list item 21): bronze 50, silver 100, gold 151.
   const caughtN=new Set(state.dexCaught||[]).size,medal=caughtN>=151?[MENU_UI.oro,'OURO']:caughtN>=100?[0xc0c8d8,'PRATA']:caughtN>=50?[0xcd8a4a,'BRONZE']:null;
   if(medal){g.fillStyle(MENU_UI.contorno,1).fillCircle(556,130,15);g.fillStyle(medal[0],1).fillCircle(556,130,13);
@@ -2263,27 +2352,57 @@ create(){
   this.__torre2TrainerCard={name,id:h,badges:got};
  }
  // Personalização do treinador (README item 3, trainer-look.js).
- lookScreen(state,draft=null){
-  this.children.removeAll(true);this.backdrop();this.campaignMusic('town');
+ lookScreen(state,draft=null,{intro=false}={}){
+  // Owner 2026-11-24: the look is chosen only when a journey starts.
+  this.children.removeAll(true);this.backdrop();this.campaignMusic(intro?'title':'town');
   const look=draft||readLook();
-  this.screenBanner(20,300,'Visual do treinador','badges');
-  this.uiLabel(320,46,'Cores, poses e acessórios feitos com o sprite original do FireRed',7,MENU_UI.suave,[.5,.5]);
+  if(intro&&!this.__torre2IntroGender){let gd='red';try{gd=localStorage.getItem('torre2-trainer-gender')==='leaf'?'leaf':'red'}catch{}this.__torre2IntroGender=gd}
+  const gender=this.__torre2IntroGender||'red',base=intro?(gender==='leaf'?'green_normal':'red_normal'):playerSpriteId();
+  if(intro&&!this.textures.exists('frlg-npc-'+base)){
+   this.load.image('frlg-npc-'+base,'assets/ui/frlg/npc/'+base+'.png');
+   this.load.once('complete',()=>{if(this.scene.isActive())this.lookScreen(state,look,{intro})});
+   if(!this.load.isLoading())this.load.start();
+  }
+  this.screenBanner(20,300,intro?'Escolha o seu visual':'Visual do treinador','badges');
+  this.uiLabel(320,46,intro?'Só dá para escolher agora, no começo da jornada':'Cores, poses e acessórios feitos com o sprite original do FireRed',7,intro?'#ffe08a':MENU_UI.suave,[.5,.5]);
   this.uiSection(16,56,608,248);
   const g=this.add.graphics().setDepth(3);
   // Live preview: rebuild the runtime texture from the draft.
-  try{buildLookTexture(this,playerSpriteId(),look)}catch(e){console.warn(e)}
+  try{buildLookTexture(this,base,look)}catch(e){console.warn(e)}
   nativeRect(g,32,70,200,220,MENU_UI.contorno,8);nativeRect(g,34,72,196,216,0x1d3c7a,7);
   g.fillStyle(0xffffff,.06).fillCircle(132,170,70);g.fillStyle(0x000000,.3).fillEllipse(132,268,90,14);
-  this.npcSprite(playerLookId(this,playerSpriteId()),132,270,6,5);
-  const rows=[['outfit','Cor da roupa'],['pose','Pose'],['accessory','Acessório']];
-  rows.forEach(([key,name],i)=>{const y=96+i*48;
+  if(this.textures.exists('frlg-npc-'+base))this.npcSprite(playerLookId(this,base),132,270,6,5);
+  const rows=[...(intro?[['gender','Personagem']]:[]),['outfit','Cor da roupa'],['pose','Pose'],['accessory','Acessório']];
+  const step=intro?40:48,top=intro?88:96;
+  rows.forEach(([key,name],i)=>{const y=top+i*step;
+   if(key==='gender'){
+    nativeRect(g,252,y-16,356,32,0x1b2a5e,6);
+    this.uiLabel(266,y,name,9,MENU_UI.amarillo,[0,.5],4);
+    this.uiLabel(486,y,gender==='leaf'?'Menina':'Menino',9,'#ffffff',[.5,.5],4).setData('torre2-look-value','gender:'+gender);
+    const flip=()=>{this.__torre2IntroGender=gender==='leaf'?'red':'leaf';this.lookScreen(state,look,{intro})};
+    this.button(416,y,26,24,'<',flip,false,9).setData('torre2-look-prev','gender');
+    this.button(574,y,26,24,'>',flip,false,9).setData('torre2-look-next','gender');
+    return;
+   }
    nativeRect(g,252,y-16,356,32,0x1b2a5e,6);
    this.uiLabel(266,y,name,9,MENU_UI.amarillo,[0,.5],4);
    this.uiLabel(486,y,lookLabel(look,key),9,'#ffffff',[.5,.5],4).setData('torre2-look-value',key+':'+look[key]);
-   this.button(416,y,26,24,'<',()=>this.lookScreen(state,cycleLook(look,key,-1)),false,9).setData('torre2-look-prev',key);
-   this.button(574,y,26,24,'>',()=>this.lookScreen(state,cycleLook(look,key,1)),false,9).setData('torre2-look-next',key);
+   this.button(416,y,26,24,'<',()=>this.lookScreen(state,cycleLook(look,key,-1),{intro}),false,9).setData('torre2-look-prev',key);
+   this.button(574,y,26,24,'>',()=>this.lookScreen(state,cycleLook(look,key,1),{intro}),false,9).setData('torre2-look-next',key);
   });
-  this.uiLabel(430,236,'Os acessórios aparecem nas poses de frente e andando.',7,MENU_UI.suave,[.5,.5],4);
+  this.uiLabel(430,intro?250:236,'Os acessórios aparecem nas poses de frente e andando.',7,MENU_UI.suave,[.5,.5],4);
+  if(intro){
+   this.button(430,280,200,26,'PADRÃO',()=>this.lookScreen(state,defaultLook(),{intro}),false,8).setData('torre2-look-reset',true);
+   this.button(200,334,180,28,'◀ NOME',()=>this.introNameScreen()).setData('torre2-intro-look-back',true);
+   this.button(440,334,220,28,'CONTINUAR ▶',()=>{
+    try{localStorage.setItem('torre2-trainer-gender',gender)}catch{}
+    if(!saveLook(look))return this.campaignNotice('Não foi possível salvar.','#ff9d9d');
+    this.__torre2IntroGender=null;this.__torre2LookBuilt=false;this.ensurePlayerLook(true);
+    this.__torre2OakIntroSeen=true;this.children.removeAll(true);this.starterSelection();
+   },true,10).setData('torre2-intro-look-continue',true);
+   this.__torre2Look={...look,gender,intro:true};
+   return;
+  }
   const leave=()=>{this.ensurePlayerLook(true);this.trainerCardScreen(readCampaign()||state)};
   this.button(340,270,140,26,'PADRÃO',()=>this.lookScreen(state,defaultLook()),false,8).setData('torre2-look-reset',true);
   this.button(500,270,160,26,'SALVAR',()=>{if(!saveLook(look))this.campaignNotice('Não foi possível salvar.','#ff9d9d');else{this.campaignNotice('Visual salvo!','#9ff0bf');leave()}},true,8).setData('torre2-look-save',true);
@@ -2320,7 +2439,7 @@ create(){
    ['Campanha zerada',legacy.championRuns.length+'×'],
    ['Torre de desafios','melhor andar '+(Number(state.tower?.best)||0)],
    ['Eventos 3x3',((state.events3x3?.won||[]).length)+'/'+EVENTS_3X3.length+' vencidos'],
-   ['Batalhas',(state.wins||0)+' vitórias · '+(state.losses||0)+' derrotas'],
+   ['Batalhas',trainerRecord(state).wins+' vitórias · '+trainerRecord(state).losses+' derrotas (treinadores)'],
    ['Multiplayer',mp.w+' vitórias · '+mp.l+' derrotas'],
    ['Títulos',Object.keys(legacy.titles||{}).length+' de '+TITLES.length],
    ['Rivalidades vencidas',String(Number(state.rivalryWins)||0)],
@@ -2337,8 +2456,14 @@ create(){
  // Achievements computed only from the existing save (read-only).
  achievementList(state){
   const caught=(state.dexCaught||[]).length,seen=new Set([...(state.dexSeen||[]),...(state.dexCaught||[])]).size;
-  const owned=(state.team||[]).length+(state.box||[]).length,badges=(state.badges||[]).length,wins=state.wins||0;
+  const owned=(state.team||[]).length+(state.box||[]).length,badges=(state.badges||[]).length;
+  // Owner 2026-11-24: battle achievements count TRAINER battles only.
+  const wins=trainerRecord(state).wins,wildWins=Number(state.wildWins)||0;
   const shiny=(state.dexShinyCaught||[]).length;
+  const all=[...(state.team||[]),...(state.box||[])];
+  const legs=LEGENDARIES.filter(l=>(state.dexCaught||[]).includes(l.id)).length;
+  const maxLv=all.reduce((a,m)=>Math.max(a,Number(m?.progression?.level??m?.level)||0),0);
+  let quests={done:0,rareDone:0};try{quests=questSummary(state,this.questCtx?.()||{})}catch{}
   return [
    ['Primeiro parceiro','Recebeu o Pokémon inicial',owned,1],
    ['Primeira captura','Capturou um Pokémon selvagem',owned,2],
@@ -2350,19 +2475,41 @@ create(){
    ['Meio caminho','Conquiste 4 insígnias',badges,4],
    ['Todas as insígnias','Conquiste as 8 insígnias',badges,8],
    ['Campeão de Kanto','Vença a Liga Pokémon',state.champion?1:0,1],
-   ['Veterano','Vença 10 batalhas',wins,10],
-   ['Lenda','Vença 50 batalhas',wins,50],
-   ['Brilho raro','Capture um Pokémon shiny',shiny,1]
+   ['Veterano','Vença 10 batalhas contra treinadores',wins,10],
+   ['Lenda','Vença 50 batalhas contra treinadores',wins,50],
+   ['Brilho raro','Capture um Pokémon shiny',shiny,1],
+   ['Centenário','Vença 100 batalhas contra treinadores',wins,100],
+   ['Treinador de elite','Vença 250 batalhas contra treinadores',wins,250],
+   ['Explorador','Vença 25 Pokémon selvagens',wildWins,25],
+   ['Caçador','Capture 25 espécies',caught,25],
+   ['Pesquisador sênior','Capture 50 espécies',caught,50],
+   ['Quase lá','Capture 100 espécies',caught,100],
+   ['Reta final','Conquiste 6 insígnias',badges,6],
+   ['Lendário','Capture um Pokémon lendário',legs,1],
+   ['Mestre lendário','Capture todos os lendários',legs,LEGENDARIES.length],
+   ['Rico','Junte ₽ 50.000',Number(state.money)||0,50000],
+   ['Revanchista','Vença 10 revanches do VS Seeker',Number(state.rematches?.wins)||0,10],
+   ['Rei da Torre','Chegue ao andar 10 da Torre',Number(state.tower?.best)||0,10],
+   ['Herói dos eventos','Vença 5 eventos 3x3',(state.events3x3?.won||[]).length,5],
+   ['Ajudante da cidade','Complete 10 missões da cidade',quests.done||0,10],
+   ['Herói de Kanto','Complete 30 missões da cidade',quests.done||0,30],
+   ['Missão rara','Complete uma missão rara',quests.rareDone||0,1],
+   ['Rival à altura','Vença 5 rivalidades',Number(state.rivalryWins)||0,5],
+   ['Equipe forte','Tenha um Pokémon no nível 50',maxLv,50],
+   ['Nível máximo','Tenha um Pokémon no nível 100',maxLv,100],
+   ['Bem equipado','Equipe um item de batalha',all.filter(m=>m?.heldItem).length,1],
+   ['Com carinho','Dê um apelido a um Pokémon',all.filter(m=>m?.nickname).length,1]
   ].map(([name,desc,value,goal])=>({name,desc,value:Math.min(value,goal),goal,done:value>=goal}));
  }
- achievementsScreen(state){
+ achievementsScreen(state,page=0){
   this.children.removeAll(true);this.backdrop();
   const list=this.achievementList(state),done=list.filter(a=>a.done).length;
+  const PER=16,pages=Math.max(1,Math.ceil(list.length/PER));page=Math.max(0,Math.min(pages-1,page));
   this.screenBanner(20,300,'Conquistas','badges');
-  this.uiLabel(320,46,done+' de '+list.length+' conquistadas',8,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,46,done+' de '+list.length+' conquistadas · página '+(page+1)+'/'+pages,8,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,252);
   const g=this.add.graphics().setDepth(3);
-  list.forEach((a,i)=>{
+  list.slice(page*PER,page*PER+PER).forEach((a,i)=>{
    const x=16+(i%4)*154,y=64+Math.floor(i/4)*60;
    nativeRect(g,x,y,150,56,a.done?MENU_UI.oro:MENU_UI.apagadoBorde,7);
    nativeRect(g,x+2,y+2,146,52,a.done?0x2a3f78:0x0a1638,6);
@@ -2380,9 +2527,9 @@ create(){
     const z=this.add.zone(x+120,y+45,54,20).setDepth(8).setInteractive({useHandCursor:true}).setData('torre2-achievement-claim',a.name);
     z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();
      const cur=readCampaign()||state,next=claimAchievement(cur,a.name);
-     if(!next)return this.achievementsScreen(cur);
+     if(!next)return this.achievementsScreen(cur,page);
      try{saveCampaign(next)}catch{return this.campaignNotice('Recompensa não salva: tente de novo','#ff9d9d')}
-     this.achievementsScreen(next);this.campaignNotice('Recompensa: '+rewardLabel(reward),'#9ff0bf');
+     this.achievementsScreen(next,page);this.campaignNotice('Recompensa: '+rewardLabel(reward),'#9ff0bf');
     });
     estrechar(this.uiLabel(x+42,y+45,rewardLabel(reward),6,'#ffd47a'),48);
    }else if(a.done&&reward&&claimed){this.uiLabel(x+42,y+45,'✓ '+rewardLabel(reward),6,'#9ff0bf');}
@@ -2392,9 +2539,11 @@ create(){
     this.uiLabel(x+140,y+43,a.value+'/'+a.goal,6,MENU_UI.suave,[1,.5]);
    }else if(a.done&&!reward)this.uiLabel(x+42,y+43,'Concluída',6,'#9ff0bf');
   });
-  this.button(220,334,190,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-achievements-back',true);
-  this.button(430,334,190,28,'VOLTAR AOS CARDS',()=>this.renderCampaign(state));
-  this.__torre2Achievements={done,total:list.length};
+  this.button(160,334,170,28,'◀ CARTÃO',()=>this.trainerCardScreen(state)).setData('torre2-achievements-back',true);
+  this.button(350,334,170,28,'VOLTAR AOS CARDS',()=>this.renderCampaign(state));
+  this.button(480,334,40,28,'<',()=>this.achievementsScreen(state,(page-1+pages)%pages),false,10).setData('torre2-achievements-prev',true);
+  this.button(528,334,40,28,'>',()=>this.achievementsScreen(state,(page+1)%pages),false,10).setData('torre2-achievements-next',true);
+  this.__torre2Achievements={done,total:list.length,page,pages};
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
@@ -4153,6 +4302,53 @@ create(){
   });
   return zone;
  }
+ // Read-only Summary of a Pokémon in the PC box (owner 2026-11-24). Moves,
+ // stats, potential, ability and item exactly as the battle would use them;
+ // nothing here changes the save.
+ boxSummary(state,boxIndex,pcPage=0){
+  const cur=readCampaign()||state,member=cur.box?.[boxIndex];
+  if(!member)return this.pcScreen(cur,pcPage);
+  this.children.removeAll(true);this.backdrop();
+  this.screenBanner(20,300,'Sumário · Caixa do PC','team');
+  const info=this.memberInfo(member),stats=pokemonStats(member),kit=resolveLoadout(member);
+  const g=this.add.graphics().setDepth(2),col=TIPOS[stats.types[0]]??0x5f86bd;
+  nativeRect(g,12,44,218,256,MENU_UI.contorno,8);nativeRect(g,14,46,214,252,0x13233b,7);
+  g.fillStyle(col,.16).fillRoundedRect(20,74,202,104,6);g.fillStyle(0x000000,.3).fillEllipse(121,166,96,14);
+  this.pokemonIdleSprite(member.id,121,166,84,5,null,'height');
+  const species=String(stats.name||member.id).toUpperCase();
+  estrechar(this.uiLabel(121,58,(member.nickname||species)+(member.shiny?' ✦':''),11,MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
+  this.uiLabel(121,190,'NV '+stats.level+(member.nickname?' · '+species:''),9,'#ffffff',[.5,.5],4);
+  stats.types.slice(0,2).forEach((ty,k)=>{const n=Math.min(2,stats.types.length),px=121-(n*56-4)/2+k*56;
+   pastillaTipo(g,px,200,ty,52,13);this.uiLabel(px+26,207,ty[0]+ty.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],5)});
+  this.uiLabel(24,226,'HP',8,MENU_UI.suave,[0,.5],4);this.hpBar(g,46,222,130,info.hp,8);
+  this.uiLabel(218,226,info.hp===0?'KO':info.condition==='Pronto'?info.hp+'%':info.condition,8,info.tone,[1,.5],4);
+  [['ATK',stats.attack,160,0xf6a268],['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]].forEach(([k,v,max,c],i)=>{
+   const y=246+i*18;this.uiLabel(24,y,k,8,MENU_UI.suave,[0,.5],4);
+   nativeRect(g,56,y-4,130,8,0x0a1422,3);g.fillStyle(c,1).fillRoundedRect(57,y-3,Math.max(4,128*Math.min(1,v/max)),6,3);
+   this.uiLabel(218,y,String(v),8,'#ffffff',[1,.5],4)});
+  // Right: the four battle slots, then potential, ability and item.
+  nativeRect(g,240,44,388,256,MENU_UI.contorno,8);nativeRect(g,242,46,384,252,0x13233b,7);
+  this.uiLabel(254,60,'GOLPES',9,MENU_UI.amarillo,[0,.5],4);
+  ['lmb','rmb','q','e'].forEach((slot,i)=>{const mv=kit[slot],y=82+i*26;
+   nativeRect(g,250,y-11,368,23,0x0c1d46,5);
+   if(mv?.tipo){g.fillStyle(TIPOS[mv.tipo]??0x5f86bd,1).fillRoundedRect(252,y-9,4,19,2)}
+   this.uiLabel(262,y,['ATK','HAB 2','HAB 3','ULT'][i],7,MENU_UI.suave,[0,.5],4);
+   estrechar(this.uiLabel(310,y,mv?.nombre||'—',9,mv?'#ffffff':'#6f7f9a',[0,.5],4),220).setData('torre2-box-summary-move',slot+':'+(mv?.nombre||''));
+   if(mv?.tipo){pastillaTipo(g,556,y-6,mv.tipo,56,12);this.uiLabel(584,y,mv.tipo[0]+mv.tipo.slice(1).toLowerCase(),7,'#ffffff',[.5,.5],5)}
+  });
+  const pot=potentialOf(member),st=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
+  nativeRect(g,250,186,368,104,0x0c1d46,6);
+  this.uiLabel(262,200,'POTENCIAL',8,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(352,200,'★'.repeat(st)+'☆'.repeat(5-st)+'  '+potentialTotalWord(pot),9,'#ffe08a',[0,.5],4);
+  this.uiLabel(262,224,'HABILIDADE',8,MENU_UI.amarillo,[0,.5],4);
+  estrechar(this.uiLabel(352,224,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',9,ha?'#e8c8ff':'#8ea2c8',[0,.5],4),256);
+  this.uiLabel(262,248,'ITEM',8,MENU_UI.amarillo,[0,.5],4);
+  if(it&&this.textures.exists(heldIconKey(it)))this.add.image(360,248,heldIconKey(it)).setDepth(5);
+  estrechar(this.uiLabel(it?376:352,248,it?HELD_ITEMS[it].name:'Nenhum',9,it?'#9ff0bf':'#8ea2c8',[0,.5],4),230);
+  this.uiLabel(262,272,'Para trocar golpes, item ou apelido, retire-o para a equipe.',7,MENU_UI.suave,[0,.5],4);
+  this.button(320,330,220,28,'◀ PC',()=>this.pcScreen(readCampaign()||cur,pcPage)).setData('torre2-box-summary-back',true);
+  this.__torre2BoxSummary={id:member.id,boxIndex,moves:['lmb','rmb','q','e'].map(k=>kit[k]?.nombre||null)};
+ }
  pcScreen(state,page=0){
   // Read-only filtered PC presentation; all transfers address original box
   // indexes, not filtered row indexes. Saves and team order never change here.
@@ -4206,7 +4402,10 @@ create(){
     }});
   });
   boxView.rows.forEach(({member,actualIndex},i)=>{
-   this.pcRow(member,BOX_X,ROW(i),BOX_W,{dataKey:'torre2-pc-box-index',dataValue:actualIndex,onTap:()=>{
+   // Owner 2026-11-24: see the Summary of a Pokémon kept in the box.
+   this.button(BOX_X+BOX_W/2-17,ROW(i),34,25,'VER',()=>this.boxSummary(state,actualIndex,safePage),false,7)
+    .setData('torre2-pc-box-summary',actualIndex);
+   this.pcRow(member,BOX_X-19,ROW(i),BOX_W-38,{dataKey:'torre2-pc-box-index',dataValue:actualIndex,onTap:()=>{
     const result=attemptTransfer(()=>{
      if(state.team.length<6)return withdrawPokemon(state,actualIndex);
      if(Number.isInteger(this.pcSelected))

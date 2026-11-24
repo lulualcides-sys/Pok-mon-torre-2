@@ -9,6 +9,7 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {requestCardPortrait} from './card-portrait-cache.js';
 import {ball,drawBadgeIcon} from './campaign-art.js';
+import {originalBallSprite} from './ball-sprites.js';
 // Native Poké Arena 2D UI kit: same panels, gold buttons, Cifras font, type
 // pills and lock as the base client menus (League/Gyms). Presentation only.
 import {UI,marco,aro,rectRedondo,candado,pastillaTipo,fondoMenu} from '../ui.js';
@@ -122,6 +123,7 @@ const ITEM_SPRITES={
  shop:['torre2-art-icon-mart',null,78,null,true],
  badges:['torre2-frlg-badges',0,14]};
 export function pixelIcon(scene,layer,kind,x,y,scale=2){
+ if(kind==='masterball'){const img=originalBallSprite(scene,x,y,'masterball',14*scale,0);layer.add(img);img.setData('torre2-pixel-icon',kind);return img}
  const sprite=ITEM_SPRITES[kind];
  if(sprite&&scene.textures.exists(sprite[0])){
   const [key,frame,content,rect,smooth]=sprite;
@@ -573,7 +575,7 @@ function typePills(scene,layer,types,cx,y){
   text(scene,layer,x0+i*(w+gap)+w/2,y+7,t,10,UI.texto);
  });
 }
-function extrasPage(scene,state,handlers){
+export function extrasPage(scene,state,handlers){
  const layer=scene.add.container(0,0).setDepth(410);
  layer.setData('torre2-cards-extras',true);
  const shade=scene.add.graphics();
@@ -583,9 +585,11 @@ function extrasPage(scene,state,handlers){
  layer.add(scene.add.zone(320,180,640,360).setInteractive());
  text(scene,layer,320,52,'MAIS OPÇÕES',20,UI.amarillo);
  text(scene,layer,320,74,'CAMPANHA DE KANTO',10,UI.suave);
- const close=fn=>()=>{layer.destroy(true);fn?.()};
+ // Owner 2026-11-24: a screen opened from MAIS goes back to MAIS (not to the
+ // cards). The campaign scene reopens this page on its next hub render.
+ const close=(fn,back=true)=>()=>{layer.destroy(true);scene.__torre2BackToExtras=back;fn?.()};
  const actions=[
-  ['CAPTURA',handlers.capture,'capture'],['TREINO',handlers.training,'train'],
+  ['TREINO',handlers.training,'train'],
   ['VS SEEKER',handlers.rematchAtlas,'seeker'],['POKÉDEX',handlers.dex,'dex'],
   ['INSÍGNIAS',handlers.badges,'badges'],['ÁUDIO',handlers.audio,'audio'],
   ['TELA CHEIA',()=>{if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
@@ -598,7 +602,7 @@ function extrasPage(scene,state,handlers){
  actions.push(['SALVAR CÓPIA',handlers.saveExport,'bag']);
  actions.push(['RESTAURAR CÓPIA',handlers.saveImport,'bag']);
  actions.push(['RANKING',handlers.ranking,'badges']);
- actions.push(['LENDÁRIOS',handlers.legendaries,'capture']);
+ actions.push(['LENDÁRIOS',handlers.legendaries,'masterball']);
  actions.push(['DESAFIOS',handlers.tower,'badges']);
  actions.push(['SILPH CO.',handlers.silph,'bag']);
  actions.push([handlers.lightLabel?.()||'MODO LEVE',handlers.lightMode,'fullscreen']);
@@ -612,7 +616,10 @@ function extrasPage(scene,state,handlers){
  actions.forEach(([name,fn,icon],i)=>{
   const x=104+(i%4)*110,y=82+Math.floor(i/4)*34;
   const keepOpen=name==='TELA CHEIA'||name==='MAPA DE KANTO'||name==='SALVAR CÓPIA';
-  control(scene,layer,x,y,104,30,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn),
+  // Overlays drawn over the cards (audio, install, reset) do not re-render
+  // the hub: they never mark the way back to MAIS.
+  const overlay=name==='ÁUDIO'||name==='INSTALAR APP'||name==='REINICIAR JORNADA';
+  control(scene,layer,x,y,104,30,name,keepOpen?(()=>{if(name!=='SALVAR CÓPIA')layer.destroy(true);fn?.()}):close(fn,!overlay),
    {id:'cards-extras-'+i,size:9,icon,wrap:true});
  });
  control(scene,layer,236,292,168,24,'VOLTAR',()=>layer.destroy(true),
@@ -689,7 +696,7 @@ function cityPanel(scene,layer,state,all,handlers={}){
   const g=scene.add.graphics();layer.add(g);
   if(active){rectRedondo(g,x+5,ry-1,w-10,23,UI.oro,4,.28);aro(g,x+5,ry-1,w-10,23,UI.oro,4,.9);}
   rectRedondo(g,x+8,ry,21,21,UI.contorno,4);rectRedondo(g,x+9,ry+1,19,19,0x0c1844,3);
-  if(!m){ball(g,x+18,ry+10,4);g.setAlpha(.45);continue;}
+  if(!m){g.setAlpha(.45);const b=pixelIcon(scene,layer,'team',x+18,ry+10,1);b?.setAlpha?.(.55);b?.setData?.('torre2-empty-slot-ball',i);continue;}
   ball(g,x+18,ry+10,4);
   portrait(scene,layer,m.id,x+18,ry+10,21,'team');
   const lv=m.progression?.level??m.level??'?';
@@ -933,11 +940,14 @@ function cardsPage(scene,state,handlers){
   {size:10,id:'cards-'+i,icon}));
  control(scene,layer,344,324,70,30,'MAIS',()=>extrasPage(scene,state,handlers),
   {id:'cards-more',size:10,icon:'more'});
+ // Owner 2026-11-24: tall-grass capture lives on the bar, not inside MAIS.
+ control(scene,layer,418,324,70,30,'CAPTURA',()=>handlers.capture?.(),
+  {id:'cards-capture',size:10,icon:'capture'});
  const cta=current.leader?(state.stage>=8?'▶ DESAFIAR':'▶ DESAFIAR LÍDER'):'▶ BATALHAR';
  // Regular trainers: one tap to fight. Leaders: preview with their line first.
- const primary=control(scene,layer,422,320,210,36,cta,
+ const primary=control(scene,layer,492,320,140,36,cta,
   current.leader?()=>detailPage(scene,state,handlers,current):()=>handlers.battle?.(),
-  {gold:true,id:'cards-open-current',size:14});
+  {gold:true,id:'cards-open-current',size:current.leader?11:13});
  primary.setData('torre2-card-primary',current.index);
  scene.__torre2CardUI={stage:state.stage,mode:'cards',total:all.length,
   page,section:sections[page].kind,active:current.index,

@@ -90,7 +90,29 @@ export const ACHIEVEMENT_REWARDS=Object.freeze({
  'Lenda':{money:10000},
  'Brilho raro':{items:{ultraball:10}},
  'Campeão de Kanto':{money:20000},
- 'Mestre da Pokédex':{money:50000}
+ 'Mestre da Pokédex':{money:50000},
+ // Owner 2026-11-24: more achievements (wins count trainers only).
+ 'Centenário':{items:{ultraball:5}},
+ 'Treinador de elite':{money:25000},
+ 'Explorador':{items:{greatball:5}},
+ 'Caçador':{items:{ultraball:3}},
+ 'Pesquisador sênior':{money:8000},
+ 'Quase lá':{money:15000},
+ 'Reta final':{items:{fullheal:3},money:5000},
+ 'Lendário':{items:{ultraball:5}},
+ 'Mestre lendário':{money:30000},
+ 'Rico':{items:{superpotion:5}},
+ 'Revanchista':{items:{greatball:10}},
+ 'Rei da Torre':{items:{ultraball:5}},
+ 'Herói dos eventos':{money:10000},
+ 'Ajudante da cidade':{items:{superpotion:5}},
+ 'Herói de Kanto':{money:20000},
+ 'Rival à altura':{items:{ultraball:3}},
+ 'Equipe forte':{items:{fullheal:3}},
+ 'Nível máximo':{money:20000},
+ 'Bem equipado':{items:{potion:5}},
+ 'Com carinho':{items:{pokeball:5}},
+ 'Missão rara':{items:{ultraball:5}}
 });
 export function rewardLabel(reward){
  if(!reward)return '';
