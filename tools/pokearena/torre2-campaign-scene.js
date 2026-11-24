@@ -1217,12 +1217,12 @@ create(){
   try{if(!force&&(localStorage.getItem(KEY)==='done'||navigator.webdriver))return false}catch{return false}
   const steps=[
    [492,320,140,36,'Batalhar','Toque aqui para enfrentar o próximo treinador da rota.'],
-   [418,324,70,30,'Captura','Vá à grama alta para encontrar e capturar Pokémon selvagens.'],
+   [344,324,70,30,'Captura','Vá à grama alta para encontrar e capturar Pokémon selvagens.'],
    [166,56,464,246,'Cards da rota','Cada card é um treinador. Vença todos para desafiar o líder.'],
    [8,324,80,30,'Equipe','Veja seus Pokémon, o HP e escolha quem luta primeiro.'],
    [92,324,80,30,'Bolsa','Use Poções, remédios de status e ensine TMs.'],
    [176,324,80,30,'Centro','O Centro Pokémon cura toda a equipe de graça.'],
-   [344,324,70,30,'Mais','Pokédex, insígnias, lendários, missões, cartão do treinador e cópia do save.']
+   [418,324,70,30,'Mais','Pokédex, insígnias, lendários, missões, cartão do treinador e cópia do save.']
   ];
   const D=9200;let i=0,objs=[];
   const clear=()=>{objs.forEach(o=>o?.active&&o.destroy());objs=[]};

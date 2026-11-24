@@ -938,10 +938,10 @@ function cardsPage(scene,state,handlers){
  ];
  bottom.forEach(([label,fn,icon],i)=>control(scene,layer,8+i*84,324,80,30,label,fn,
   {size:10,id:'cards-'+i,icon}));
- control(scene,layer,344,324,70,30,'MAIS',()=>extrasPage(scene,state,handlers),
+ control(scene,layer,418,324,70,30,'MAIS',()=>extrasPage(scene,state,handlers),
   {id:'cards-more',size:10,icon:'more'});
  // Owner 2026-11-24: tall-grass capture lives on the bar, not inside MAIS.
- control(scene,layer,418,324,70,30,'CAPTURA',()=>handlers.capture?.(),
+ control(scene,layer,344,324,70,30,'CAPTURA',()=>handlers.capture?.(),
   {id:'cards-capture',size:10,icon:'capture'});
  const cta=current.leader?(state.stage>=8?'▶ DESAFIAR':'▶ DESAFIAR LÍDER'):'▶ BATALHAR';
  // Regular trainers: one tap to fight. Leaders: preview with their line first.

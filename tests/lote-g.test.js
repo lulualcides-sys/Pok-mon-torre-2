@@ -85,7 +85,8 @@ test('MAIS: back returns to MAIS, CAPTURA on the bar, Lendários with the Master
  assert.match(cards,/scene\.__torre2BackToExtras=back/);
  assert.match(scene,/if\(this\.__torre2BackToExtras\)\{this\.__torre2BackToExtras=false;extrasPage\(this,state,handlers\)\}/);
  assert.doesNotMatch(cards,/\['CAPTURA',handlers\.capture/);
- assert.match(cards,/control\(scene,layer,418,324,70,30,'CAPTURA'/);
+ assert.match(cards,/control\(scene,layer,344,324,70,30,'CAPTURA'/);
+ assert.match(cards,/control\(scene,layer,418,324,70,30,'MAIS'/);
  assert.match(cards,/\['LENDÁRIOS',handlers\.legendaries,'masterball'\]/);
  assert.match(cards,/originalBallSprite\(scene,x,y,'masterball'/);
  assert.match(cards,/torre2-empty-slot-ball/);
