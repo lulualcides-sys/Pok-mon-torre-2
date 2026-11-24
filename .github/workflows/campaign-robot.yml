@@ -1,0 +1,124 @@
+name: Pokémon Torre 2 — robô que joga a campanha
+
+# Plays the real campaign in headless Chromium (AUTO + 2x speed) and writes a
+# short text report: badges, battles, captures, FPS and JS errors. Screenshots
+# only on problems. Costs GitHub Actions minutes, not chat tokens.
+# Run it from Actions → "robô que joga a campanha" → Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      badges:
+        description: 'Meta: "tudo" (8 insígnias + Liga) ou um número de 1 a 8'
+        default: 'tudo'
+        required: true
+      minutes:
+        description: 'Minutos por parte (até 330; ao acabar o tempo ele continua sozinho numa nova parte)'
+        default: '330'
+        required: true
+      max_parts:
+        description: 'Máximo de partes seguidas (cada parte dura até ~5,5 h)'
+        default: '6'
+        required: true
+      resume_run:
+        description: 'Uso interno: id da execução anterior para continuar a mesma jornada'
+        default: ''
+        required: false
+      part:
+        description: 'Uso interno: número desta parte'
+        default: '1'
+        required: false
+      starter:
+        description: 'Inicial: random, bulbasaur, charmander ou squirtle'
+        default: 'random'
+        required: true
+  schedule:
+    # Once a week (Sunday), a short journey to catch regressions early.
+    - cron: '17 9 * * 0'
+
+permissions:
+  contents: read
+  # actions: write lets a part start the next part of the same journey.
+  actions: write
+
+concurrency:
+  group: pt2-campaign-robot
+  cancel-in-progress: false
+
+jobs:
+  robot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependências
+        run: npm install --no-audit --no-fund
+      - name: Montar o mesmo site do GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/pokearena/restore-audited-alpha0773.sh _site
+          node tools/pokearena/publish-alpha0762.mjs
+      - name: Baixar a jornada da parte anterior
+        if: github.event.inputs.resume_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: pokemon-torre-2-robo-campanha
+          run-id: ${{ github.event.inputs.resume_run }}
+          github-token: ${{ github.token }}
+          path: test-evidence/robo-anterior
+      - name: Robô joga a campanha
+        id: robot
+        shell: bash
+        env:
+          BADGES: ${{ github.event.inputs.badges || '2' }}
+          MINUTES: ${{ github.event.inputs.minutes || '45' }}
+          STARTER: ${{ github.event.inputs.starter || 'random' }}
+          RESUME_RUN: ${{ github.event.inputs.resume_run || '' }}
+        run: |
+          set -euo pipefail
+          case "$STARTER" in random|bulbasaur|charmander|squirtle) ;; *) echo "inicial inválido"; exit 1;; esac
+          [[ "$BADGES" =~ ^([1-8]|tudo)$ ]] || { echo "meta inválida"; exit 1; }
+          [[ -z "$RESUME_RUN" || "$RESUME_RUN" =~ ^[0-9]+$ ]] || { echo "execução anterior inválida"; exit 1; }
+          [[ "$MINUTES" =~ ^[0-9]+$ ]] && [ "$MINUTES" -ge 1 ] && [ "$MINUTES" -le 330 ] || { echo "minutos inválidos"; exit 1; }
+          resume=()
+          if [ -n "$RESUME_RUN" ]; then resume=(--resume test-evidence/robo-anterior); fi
+          status=0
+          CHROME_BIN="$(command -v google-chrome)" node tools/dev/campaign-robot.cjs \
+            --site _site --badges "$BADGES" --minutes "$MINUTES" --starter "$STARTER" \
+            --out test-evidence/campaign-robot "${resume[@]}" || status=$?
+          cat test-evidence/campaign-robot/report.md >> "$GITHUB_STEP_SUMMARY" || true
+          finished="$(node -p "require('./test-evidence/campaign-robot/report.json').finished" 2>/dev/null || echo '')"
+          echo "finished=$finished" >> "$GITHUB_OUTPUT"
+          exit $status
+      - name: Guardar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-torre-2-robo-campanha
+          path: test-evidence/campaign-robot/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Continuar a mesma jornada numa nova parte
+        if: always() && steps.robot.outputs.finished == 'tempo esgotado' && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BADGES: ${{ github.event.inputs.badges }}
+          MINUTES: ${{ github.event.inputs.minutes }}
+          STARTER: ${{ github.event.inputs.starter }}
+          MAX_PARTS: ${{ github.event.inputs.max_parts || '6' }}
+          PART: ${{ github.event.inputs.part || '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$PART" =~ ^[0-9]+$ && "$MAX_PARTS" =~ ^[0-9]+$ ]] || exit 1
+          if [ "$PART" -ge "$MAX_PARTS" ]; then echo "Limite de $MAX_PARTS partes atingido." >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          next=$((PART + 1))
+          gh workflow run campaign-robot.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" \
+            -f badges="$BADGES" -f minutes="$MINUTES" -f starter="$STARTER" -f max_parts="$MAX_PARTS" \
+            -f resume_run="$GITHUB_RUN_ID" -f part="$next"
+          echo "➡️ A jornada continua na parte $next (nova execução deste workflow)." >> "$GITHUB_STEP_SUMMARY"
