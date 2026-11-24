@@ -188,7 +188,7 @@ export function installWildCapture(scene){
   if(!partyFoe||partyFoe.id!==save.pendingWild.id||
      scene.datos?.p2!==save.pendingWild.id){
    console.error('Torre 2: wild capture species mismatch',partyFoe?.id,scene.datos?.p2,save.pendingWild.id);
-   const warning=txt(scene,320,100,'CAPTURA BLOQUEADA · ESPÉCIE INCONSISTENTE',10,'#ff9d9d').setOrigin(.5);
+   const warning=txt(scene,320,84,'CAPTURA BLOQUEADA · ESPÉCIE INCONSISTENTE',10,'#ff9d9d').setOrigin(.5);
    scene.time.delayedCall(2200,()=>warning.active&&warning.destroy());
    return close();
   }
@@ -219,7 +219,7 @@ export function installWildCapture(scene){
   let result=null;
   const gfx=scene.add.graphics().setDepth(2308);
   gfx.__torre2BallWorld=true;
-  const caption=txt(scene,320,100,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
+  const caption=txt(scene,320,84,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
   activeVisuals.push(gfx,caption);
   const obj=enemyPortrait(enemy);
   const body=obj?snapshotBody(enemy):null;
@@ -365,11 +365,15 @@ export function installWildCapture(scene){
             });
             // A brief clear success panel matches the moment shown in the user's
             // capture reference, without changing original Arena 2D effects.
-            const panel=frame(scene,156,133,328,68);
-            const heading=txt(scene,320,148,'GOTCHA!',24,'#ffda6a').setOrigin(.5);
-            const destination=save.team.some(p=>p.uid===result.pokemon?.uid)?'EQUIPE':'PC';
-            const info=txt(scene,320,181,(result.pokemon?.id||'POKÉMON').toUpperCase()+
-             ' CAPTURADO · '+destination,12,'#ddf8e6').setOrigin(.5);
+            // FireRed line "Gotcha! X was caught!" in a rounded native box;
+            // the full result card opens on the map right after.
+            const nice=String(result.pokemon?.id||'Pokémon').replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+            const panel=scene.add.graphics().setDepth(2703);
+            panel.fillStyle(0x020814,.5).fillRoundedRect(163,131,320,62,10);
+            panel.fillStyle(0x0a1a33,1).fillRoundedRect(160,128,320,62,10);
+            panel.lineStyle(2,0xf0d07d,1).strokeRoundedRect(160,128,320,62,10);
+            const heading=txt(scene,320,148,'GOTCHA!',22,'#ffda6a').setOrigin(.5);
+            const info=txt(scene,320,175,nice+' foi capturado!',12,'#ddf8e6').setOrigin(.5);
             activeVisuals.push(panel,heading,info);
             scene.__torre2CaptureDebug.state='CAUGHT';
             caption.setText('CAPTURA CONCLUÍDA!').setColor('#a4ffc1');

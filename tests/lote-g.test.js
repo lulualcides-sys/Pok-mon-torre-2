@@ -170,3 +170,12 @@ test('capture menu and PC box summary redesign keep the same hit points',()=>{
  assert.match(cap,/setData\('torre2-capture-close',true\)/);
  assert.match(scene,/setData\('torre2-box-star',on\?'on':'off'\)/);
 });
+test('capture result card: recorded once by the core, shown on the map, then cleared',()=>{
+ const core=read('torre2-campaign-core.js'),scene=read('torre2-campaign-scene.js'),cap=read('torre2-capture-arena.js');
+ assert.match(core,/const newDex=!\(s\.dexCaught\|\|\[\]\)\.includes\(candidate\.id\)/);
+ assert.match(core,/next\.lastCapture=\{uid:member\.uid,id:candidate\.id,where:/);
+ assert.match(scene,/if\(lc\?\.uid\)this\.captureResultScreen\(readCampaign\(\)\|\|state\)/);
+ assert.match(scene,/delete next\.lastCapture;saveCampaign\(next\)/);
+ assert.match(scene,/torre2-capture-nickname/);assert.match(scene,/NOVO NA POKÉDEX!/);
+ assert.match(cap,/foi capturado!/);
+});

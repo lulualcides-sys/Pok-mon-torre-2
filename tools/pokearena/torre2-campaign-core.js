@@ -752,10 +752,13 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   next.dexSeen=[...(s.dexSeen||[])];next.dexCaught=[...(s.dexCaught||[])];
   next.dexShinySeen=[...(s.dexShinySeen||[])];
   next.dexShinyCaught=[...(s.dexShinyCaught||[])];
+  const newDex=!(s.dexCaught||[]).includes(candidate.id);
   recordCaught(next,candidate.id);
   if(member.shiny)recordShiny(next,candidate.id,true);
   const destination=next.team.length<6?'Equipe':'PC';
   if(destination==='Equipe')next.team.push(member);else next.box.push(member);
+  // Capture result screen on the map (owner 2026-11-24): shown once.
+  next.lastCapture={uid:member.uid,id:candidate.id,where:destination==='Equipe'?'team':'box',newDex,shiny:member.shiny===true,ball,chance:Math.round(outcome.chance*100)};
   // Secret title "Captura Perfeita": the player's Pokémon took no damage.
   if(options.playerUntouched===true)next.secretFlags={...(s.secretFlags||{}),cleanCatch:true};
   next.lastMessage=candidate.id+' capturado! '+destination+
@@ -767,7 +770,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  s.inventory[ball]--;
  s.lastMessage=next.lastMessage;
  if(!outcome.caught)return {ok:false,reason:s.lastMessage,...outcome};
- s.pendingWild=null;
+ s.pendingWild=null;s.lastCapture=next.lastCapture;
  if(next.secretFlags)s.secretFlags=next.secretFlags;
  recordCaught(s,candidate.id);
  if(member.shiny){
