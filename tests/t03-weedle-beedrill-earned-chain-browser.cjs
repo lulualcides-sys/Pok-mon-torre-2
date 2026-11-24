@@ -152,7 +152,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-weedle-chain-earned-evolution.
    await tap(470,61);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',
     null,{timeout:15000});
-   await tap(316,186);
+   await tap(316,153);
    try{
     await page.waitForFunction(balls=>window.kanto.readCampaign().inventory.pokeball===balls-1,
      old.balls,{timeout:20000});

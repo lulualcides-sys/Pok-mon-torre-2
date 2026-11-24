@@ -1256,7 +1256,7 @@ const server=http.createServer(async(req,res)=>{
     const menu=c.children.list.filter(o=>typeof o.text==='string')
       .map(o=>o.text).join(' | ');
     const choice=c.children.list.find(o=>o.type==='Zone'&&
-      Math.abs(o.x-316)<2&&Math.abs(o.y-187)<2&&o.input?.enabled);
+      Math.abs(o.x-316)<2&&Math.abs(o.y-153)<2&&o.input?.enabled);
     if(!choice)return {opener:true,menu,choice:false};
     // Capture is rolled at physical impact, NOT on the menu click.
     // Inject a deterministic RNG into the isolated test scene.

@@ -97,7 +97,7 @@ const log=(...a)=>console.log('[robo]',...a);
     // tapping outside it (margin zone of the menu).
     if(st.phase==='torre2-aim'){aimSince||=Date.now();if(Date.now()-aimSince>4000){aimSince=0;report.menuClosed=(report.menuClosed||0)+1;
      await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('combate');
-      const z=c.children.list.find(o=>o.type==='Zone'&&o.depth===2715&&Math.round(o.x)===324&&Math.round(o.y)===290);z?.emit('pointerdown',{},0,0,{stopPropagation(){}})})}}
+      const z=c.children.list.find(o=>o.type==='Zone'&&o.getData?.('torre2-capture-close'));z?.emit('pointerdown',{},0,0,{stopPropagation(){}})})}}
     else aimSince=0;
     // Capture a NEW species when its HP is low (the real Poké Ball button).
     if(wild&&!tried&&st.canCapture&&st.foeHp>0&&st.foeHp<.45&&st.phase==='lucha'){
@@ -107,7 +107,7 @@ const log=(...a)=>console.log('[robo]',...a);
        const z=c.children.list.find(o=>o.type==='Zone'&&o.getData?.('torre2-capture-single-button'));z?.emit('pointerdown',{},0,0,{stopPropagation(){}})});
       await sleep(400);
       await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('combate');
-       const zones=c.children.list.filter(o=>o.type==='Zone'&&o.depth===2715&&Math.round(o.x)===316);zones[0]?.emit('pointerdown',{},0,0,{stopPropagation(){}})});
+       const zones=c.children.list.filter(o=>o.type==='Zone'&&o.getData?.('torre2-capture-ball')==='pokeball');zones[0]?.emit('pointerdown',{},0,0,{stopPropagation(){}})});
      }
     }
     // A fight over 6 minutes is recorded (print + warning) and left like a

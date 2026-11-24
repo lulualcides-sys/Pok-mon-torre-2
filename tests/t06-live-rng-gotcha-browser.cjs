@@ -85,7 +85,7 @@ const saveReport=()=>fs.writeFileSync('test-evidence/t06-live-rng-gotcha.json',J
    await click(470,61);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',
     null,{timeout:7000});
-   await click(316,186);
+   await click(316,153);
    // Poll for one of the TWO authentic RNG outcomes, not a predefined success.
    await page.waitForFunction(()=>{
     const game=window.__pt2Game,b=game.scene.getScene('combate'),s=__t06Core.readCampaign();

@@ -126,26 +126,55 @@ export function installWildCapture(scene){
   // This menu crosses the Pokéball's screen position. Hide the underlying
   // icon and disable its native hit zone until the player leaves the menu.
   setCaptureIconVisible(false);
-  add(frame(scene,173,109,299,169));
-  add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
-  const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
-  add(txt(scene,187,142,state.pendingWild.id.toUpperCase()+
-   ' · HP '+hp+'%',11,'#d2f5e5'));
-  const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL',masterball:'MASTER BALL'};
+  // Owner 2026-11-24 ("tá bem feio"): native-style panel — wild Pokémon card
+  // with HP bar, one row per ball (sprite, quantity, chance bar) and a real
+  // VOLTAR button. Same throw/close logic and hit areas as before.
+  const labels={pokeball:'Poké Ball',greatball:'Great Ball',ultraball:'Ultra Ball',masterball:'Master Ball'};
   // The Master Ball (one per journey, from Giovanni) only shows when owned.
   const kinds=['pokeball','greatball','ultraball',...((state.inventory.masterball||0)>0?['masterball']:[])];
-  const step=kinds.length>3?21:27,top=kinds.length>3?173:178;
+  const X=166,W=300,step=kinds.length>3?27:29,top=152,Y=70,H=top-Y+kinds.length*step+38;
+  const g=scene.add.graphics().setDepth(2703);add(g);
+  g.fillStyle(0x020814,.55).fillRoundedRect(X+3,Y+4,W,H,10);
+  g.fillStyle(0x0a1a33,1).fillRoundedRect(X,Y,W,H,10);
+  g.lineStyle(2,0xf0d07d,1).strokeRoundedRect(X,Y,W,H,10);
+  g.fillStyle(0x1b3a6b,1).fillRoundedRect(X+6,Y+6,W-12,24,7);
+  g.fillStyle(0xffffff,.08).fillRect(X+14,Y+8,W-28,2);
+  add(originalBallSprite(scene,X+22,Y+18,'pokeball',16,2708));
+  add(txt(scene,X+36,Y+9,'LANÇAR POKÉBOLA',13,'#ffe5a4'));
+  // Wild Pokémon card.
+  const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
+  const nice=String(state.pendingWild.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  g.fillStyle(0x10284a,1).fillRoundedRect(X+8,Y+35,W-16,32,6);
+  add(txt(scene,X+18,Y+40,nice+(state.pendingWild.shiny?' ✦':''),11,state.pendingWild.shiny?'#ffd23f':'#ffffff'));
+  if(state.pendingWild.level)add(txt(scene,X+W-18,Y+40,'Nv '+state.pendingWild.level,10,'#c8d6f0').setOrigin(1,0));
+  const hb=X+18,hw=W-90,hy=Y+57;
+  g.fillStyle(0x061120,1).fillRoundedRect(hb-1,hy-1,hw+2,7,3);
+  g.fillStyle(hp>50?0x50cc84:hp>20?0xf2c14e:0xe0533d,1).fillRoundedRect(hb,hy,Math.max(3,hw*hp/100),5,2);
+  add(txt(scene,X+W-18,hy-5,'HP '+hp+'%',9,'#d2f5e5').setOrigin(1,0));
+  // One row per ball.
   for(const [i,kind]of kinds.entries()){
    const y=top+i*step,owned=state.inventory[kind]||0;
-   add(originalBallSprite(scene,200,y+4,kind,16,2708));
    const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,
     status:fighterCaptureStatus(enemy)},kind);
-   add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
-    '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
-   if(owned)add(hit(scene,316,y+8,275,step-2,()=>throwBall(kind)));
+   const pct=Math.round(chance*100);
+   g.fillStyle(owned?0x1b2f57:0x111a2e,1).fillRoundedRect(X+8,y-12,W-16,26,6);
+   g.lineStyle(1,owned?0x4e92bc:0x2a3550,1).strokeRoundedRect(X+8,y-12,W-16,26,6);
+   add(originalBallSprite(scene,X+24,y+1,kind,20,2708).setAlpha(owned?1:.45));
+   add(txt(scene,X+40,y-9,labels[kind],11,owned?'#ffffff':'#7f8aa6'));
+   add(txt(scene,X+132,y-8,'×'+owned,10,owned?'#ffd47a':'#7f8aa6'));
+   // Chance bar.
+   const bx=X+172,bw=80;
+   g.fillStyle(0x061120,1).fillRoundedRect(bx,y-3,bw,8,3);
+   if(pct>0)g.fillStyle(pct>=60?0x50cc84:pct>=30?0xf2c14e:0xe0533d,owned?1:.45).fillRoundedRect(bx+1,y-2,Math.max(3,(bw-2)*Math.min(1,chance)),6,2);
+   add(txt(scene,X+W-14,y-8,pct+'%',10,owned?'#d2f5e5':'#7f8aa6').setOrigin(1,0));
+   if(owned)add(hit(scene,316,y+1,W-16,26,()=>throwBall(kind)).setData('torre2-capture-ball',kind));
   }
-  add(txt(scene,225,265,'TOQUE NA MARGEM PARA VOLTAR',8,'#9bd9dc'));
-  add(hit(scene,324,290,250,17,close));
+  // VOLTAR button.
+  const by=top+kinds.length*step+4;
+  g.fillStyle(0x0a233b,1).fillRoundedRect(X+W/2-62,by-11,124,24,7);
+  g.fillStyle(0x2a5fa8,1).fillRoundedRect(X+W/2-60,by-9,120,20,6);
+  add(txt(scene,X+W/2,by-7,'◀ VOLTAR',11,'#ffffff').setOrigin(.5,0));
+  add(hit(scene,X+W/2,by+1,124,24,close).setData('torre2-capture-close',true));
  }
  function throwBall(kind){
   // No throw (the wild Pokémon fainted while the menu was open, no ball…):

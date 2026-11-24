@@ -4396,43 +4396,64 @@ create(){
   this.children.removeAll(true);this.backdrop();
   this.screenBanner(20,300,'Sumário · Caixa do PC','team');
   const info=this.memberInfo(member),stats=pokemonStats(member),kit=resolveLoadout(member);
+  const pot=potentialOf(member),stars=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
   const g=this.add.graphics().setDepth(2),col=TIPOS[stats.types[0]]??0x5f86bd;
+  const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
+  const hex=c=>'#'+c.toString(16).padStart(6,'0');
+  // Left: identity, sprite on a type-tinted stage, HP and stats.
   nativeRect(g,12,44,218,256,MENU_UI.contorno,8);nativeRect(g,14,46,214,252,0x13233b,7);
-  g.fillStyle(col,.16).fillRoundedRect(20,74,202,104,6);g.fillStyle(0x000000,.3).fillEllipse(121,166,96,14);
-  this.pokemonIdleSprite(member,121,166,84,5,null,'height');
   const species=String(stats.name||member.id).toUpperCase();
-  estrechar(this.uiLabel(121,58,(member.nickname||species)+(member.shiny?' ✦':''),11,MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
-  this.uiLabel(121,190,'NV '+stats.level+(member.nickname?' · '+species:''),9,'#ffffff',[.5,.5],4);
-  stats.types.slice(0,2).forEach((ty,k)=>{const n=Math.min(2,stats.types.length),px=121-(n*56-4)/2+k*56;
-   pastillaTipo(g,px,200,ty,52,13);this.uiLabel(px+26,207,ty[0]+ty.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],5)});
-  this.uiLabel(24,226,'HP',8,MENU_UI.suave,[0,.5],4);this.hpBar(g,46,222,130,info.hp,8);
-  this.uiLabel(218,226,info.hp===0?'KO':info.condition==='Pronto'?info.hp+'%':info.condition,8,info.tone,[1,.5],4);
-  [['ATK',stats.attack,160,0xf6a268],['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]].forEach(([k,v,max,c],i)=>{
-   const y=246+i*18;this.uiLabel(24,y,k,8,MENU_UI.suave,[0,.5],4);
-   nativeRect(g,56,y-4,130,8,0x0a1422,3);g.fillStyle(c,1).fillRoundedRect(57,y-3,Math.max(4,128*Math.min(1,v/max)),6,3);
-   this.uiLabel(218,y,String(v),8,'#ffffff',[1,.5],4)});
-  // Right: the four battle slots, then potential, ability and item.
-  nativeRect(g,240,44,388,256,MENU_UI.contorno,8);nativeRect(g,242,46,384,252,0x13233b,7);
-  this.uiLabel(254,60,'GOLPES',9,MENU_UI.amarillo,[0,.5],4);
-  ['lmb','rmb','q','e'].forEach((slot,i)=>{const mv=kit[slot],y=82+i*26;
-   nativeRect(g,250,y-11,368,23,0x0c1d46,5);
-   if(mv?.tipo){g.fillStyle(TIPOS[mv.tipo]??0x5f86bd,1).fillRoundedRect(252,y-9,4,19,2)}
-   this.uiLabel(262,y,['ATK','HAB 2','HAB 3','ULT'][i],7,MENU_UI.suave,[0,.5],4);
-   estrechar(this.uiLabel(310,y,mv?.nombre||'—',9,mv?'#ffffff':'#6f7f9a',[0,.5],4),220).setData('torre2-box-summary-move',slot+':'+(mv?.nombre||''));
-   if(mv?.tipo){pastillaTipo(g,556,y-6,mv.tipo,56,12);this.uiLabel(584,y,mv.tipo[0]+mv.tipo.slice(1).toLowerCase(),7,'#ffffff',[.5,.5],5)}
+  estrechar(this.uiLabel(121,60,(member.nickname||species)+(member.shiny?' ✦':''),11,member.shiny?'#ffd23f':MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
+  this.uiLabel(121,75,'NV '+stats.level+(member.nickname?' · '+species:''),8,'#c8d6f0',[.5,.5],4);
+  g.fillStyle(col,.18).fillRoundedRect(22,84,198,92,7);g.fillStyle(col,.10).fillRoundedRect(22,140,198,36,{tl:0,tr:0,bl:7,br:7});
+  g.lineStyle(1,col,.6).strokeRoundedRect(22,84,198,92,7);
+  g.fillStyle(0x000000,.32).fillEllipse(121,166,96,12);
+  this.pokemonIdleSprite(member,121,166,78,5,null,'height');
+  stats.types.slice(0,2).forEach((ty,k)=>{const n=Math.min(2,stats.types.length),px=121-(n*58-4)/2+k*58;
+   pastillaTipo(g,px,184,ty,54,14);this.uiLabel(px+27,191,ty[0]+ty.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],5)});
+  const bar=(y,label,v,max,c,txtv,tc='#ffffff')=>{this.uiLabel(24,y,label,8,MENU_UI.suave,[0,.5],4);
+   nativeRect(g,58,y-4,124,9,0x0a1422,4);g.fillStyle(c,1).fillRoundedRect(59,y-3,Math.max(4,122*Math.min(1,v/max)),7,3);
+   g.fillStyle(0xffffff,.25).fillRect(61,y-2,Math.max(2,118*Math.min(1,v/max)),1);
+   this.uiLabel(218,y,txtv,8,tc,[1,.5],4)};
+  bar(214,'HP',info.hp,100,info.hp>50?0x50cc84:info.hp>20?0xf2c14e:0xe0533d,info.hp===0?'KO':info.condition==='Pronto'?info.hp+'%':info.condition,info.tone);
+  bar(234,'ATK',stats.attack,160,0xf6a268,String(stats.attack));
+  bar(254,'DEF',stats.defense,165,0x7ab3f5,String(stats.defense));
+  bar(274,'SPD',stats.speed,200,0x9cd4d7,String(stats.speed));
+  // Right top: the four battle slots.
+  nativeRect(g,240,44,388,138,MENU_UI.contorno,8);nativeRect(g,242,46,384,134,0x13233b,7);
+  this.uiLabel(254,58,'GOLPES',9,MENU_UI.amarillo,[0,.5],4);
+  ['lmb','rmb','q','e'].forEach((slot,i)=>{const mv=kit[slot],y=80+i*25,tc=TIPOS[mv?.tipo]??0x5f86bd;
+   g.fillStyle(0x0c1d46,1).fillRoundedRect(250,y-10,368,21,5);
+   if(mv?.tipo){g.fillStyle(tc,1).fillRoundedRect(250,y-10,5,21,{tl:5,bl:5,tr:0,br:0});g.fillStyle(tc,.12).fillRoundedRect(255,y-10,363,21,{tl:0,bl:0,tr:5,br:5})}
+   this.uiLabel(264,y,['ATK','HAB 2','HAB 3','ULT'][i],7,MENU_UI.suave,[0,.5],4);
+   estrechar(this.uiLabel(310,y,String(mv?.nombre||'—').replace(/^ULT\s*·\s*/,''),9,mv?'#ffffff':'#6f7f9a',[0,.5],4),220).setData('torre2-box-summary-move',slot+':'+(mv?.nombre||''));
+   if(mv?.tipo){pastillaTipo(g,558,y-7,mv.tipo,56,14);this.uiLabel(586,y,mv.tipo[0]+mv.tipo.slice(1).toLowerCase(),7,'#ffffff',[.5,.5],5)}
   });
-  const pot=potentialOf(member),st=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
-  nativeRect(g,250,186,368,104,0x0c1d46,6);
-  this.uiLabel(262,200,'POTENCIAL',8,MENU_UI.amarillo,[0,.5],4);
-  this.uiLabel(352,200,'★'.repeat(st)+'☆'.repeat(5-st)+'  '+potentialTotalWord(pot),9,'#ffe08a',[0,.5],4);
-  this.uiLabel(262,224,'HABILIDADE',8,MENU_UI.amarillo,[0,.5],4);
-  estrechar(this.uiLabel(352,224,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',9,ha?'#e8c8ff':'#8ea2c8',[0,.5],4),256);
-  this.uiLabel(262,248,'ITEM',8,MENU_UI.amarillo,[0,.5],4);
-  if(it&&this.textures.exists(heldIconKey(it)))this.add.image(360,248,heldIconKey(it)).setDepth(5);
-  estrechar(this.uiLabel(it?376:352,248,it?HELD_ITEMS[it].name:'Nenhum',9,it?'#9ff0bf':'#8ea2c8',[0,.5],4),230);
-  this.uiLabel(262,272,'Para trocar golpes, item ou apelido, retire-o para a equipe.',7,MENU_UI.suave,[0,.5],4);
+  // Right bottom: potential (drawn stars), hidden ability and held item.
+  const card=(x,y,w,h,c,a=.14)=>{nativeRect(g,x,y,w,h,MENU_UI.contorno,7);nativeRect(g,x+1,y+1,w-2,h-2,0x13233b,6);g.fillStyle(c,a).fillRoundedRect(x+2,y+2,w-4,h-4,5)};
+  card(240,188,190,62,glow,.16);
+  this.uiLabel(250,200,'POTENCIAL',8,MENU_UI.amarillo,[0,.5],4);
+  const starPts=r=>Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;return new Phaser.Geom.Point(Math.cos(a)*q,Math.sin(a)*q)});
+  for(let i=0;i<5;i++){const on=i<stars,sg=this.add.graphics({x:262+i*22,y:222}).setDepth(5);
+   if(on){sg.fillStyle(0x7a4a00,1).fillPoints(starPts(9),true);sg.fillStyle(0xffd23f,1).fillPoints(starPts(7.5),true);
+    sg.fillStyle(0xfff3b0,1).fillPoints(starPts(3).map(pt=>new Phaser.Geom.Point(pt.x-1.2,pt.y-1.8)),true)}
+   else{sg.fillStyle(0x0c1725,1).fillPoints(starPts(9),true);sg.fillStyle(0x34465f,1).fillPoints(starPts(7),true)}
+   sg.setData('torre2-box-star',on?'on':'off')}
+  this.uiLabel(376,222,potentialTotalWord(pot),8,hex(glow),[0,.5],4);
+  this.uiLabel(250,240,'HP '+pot.hp+' · ATK '+pot.atk+' · DEF '+pot.def,7,'#b9c8e0',[0,.5],4);
+  card(438,188,190,62,ha?0xb57cf0:0x4e6a8f,ha?.18:.06);
+  this.uiLabel(448,200,'HABILIDADE OCULTA',8,MENU_UI.amarillo,[0,.5],4);
+  estrechar(this.uiLabel(448,218,ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma',9,ha?'#e8c8ff':'#8ea2c8',[0,.5],4),172);
+  if(ha)estrechar(this.uiLabel(448,236,HIDDEN_ABILITIES[ha].desc,6,'#dcf4fb',[0,.5],4),172);
+  card(240,256,388,44,it?0x5fbf8f:0x4e6a8f,it?.16:.06);
+  nativeRect(g,248,262,32,32,0x0c1725,5);
+  if(it&&this.textures.exists(heldIconKey(it)))this.add.image(264,278,heldIconKey(it)).setScale(1.2).setDepth(5);
+  else this.uiLabel(264,278,'—',9,'#34465f',[.5,.5],5);
+  this.uiLabel(290,268,'ITEM',8,MENU_UI.amarillo,[0,.5],4);
+  estrechar(this.uiLabel(326,268,it?HELD_ITEMS[it].name:'Nenhum',9,it?'#9ff0bf':'#8ea2c8',[0,.5],4),290);
+  estrechar(this.uiLabel(290,286,it?itemDesc(it):'Retire para a equipe para trocar golpes, item ou apelido.',7,'#dcf4fb',[0,.5],4),330);
   this.button(320,330,220,28,'◀ PC',()=>this.pcScreen(readCampaign()||cur,pcPage)).setData('torre2-box-summary-back',true);
-  this.__torre2BoxSummary={id:member.id,boxIndex,moves:['lmb','rmb','q','e'].map(k=>kit[k]?.nombre||null)};
+  this.__torre2BoxSummary={id:member.id,boxIndex,stars,moves:['lmb','rmb','q','e'].map(k=>kit[k]?.nombre||null)};
  }
  pcScreen(state,page=0){
   // Read-only filtered PC presentation; all transfers address original box

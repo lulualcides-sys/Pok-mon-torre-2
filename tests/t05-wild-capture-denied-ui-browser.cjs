@@ -80,7 +80,7 @@ const server=http.createServer(async(req,res)=>{
    },key);
    await tap(470,61);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:8000});
-   await tap(316,186);
+   await tap(316,153);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate')
     .__torre2CaptureDebug?.state==='SAVE_ERROR',null,{timeout:15000});
    const denied=await page.evaluate(()=>{
@@ -101,7 +101,7 @@ const server=http.createServer(async(req,res)=>{
   }
   await tap(470,61);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:8000});
-  await tap(316,186);
+  await tap(316,153);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate')
    .__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:22000});
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:15000});
