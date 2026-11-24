@@ -18,6 +18,7 @@ test('every gameplay module physically overlaid into release triggers QA and pub
   'tools/pokearena/torre2-gen3-status.js',
   'tools/pokearena/batch24/runtime.js',
   'tools/pokearena/torre2-campaign-core.js',
+  'tools/pokearena/torre2-route-data.js',
   'tools/pokearena/torre2-trainer-cards.js',
   'tools/pokearena/torre2-campaign-scene.js',
   // Reviewed: identical to the built module plus playerSpriteId (Red/Leaf).

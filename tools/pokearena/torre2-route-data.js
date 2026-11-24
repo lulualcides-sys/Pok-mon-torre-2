@@ -6,32 +6,51 @@ import {FRLG_MACHINES} from './frlg-learnsets.js';
 export const KANTO_ROUTES=Object.freeze([
  {area:'Route 1 · Route 2 · Viridian Forest · Route 22',label:'ROUTE 1 / VIRIDIAN FOREST',
   wild:['pidgey','rattata','caterpie','weedle','pikachu','metapod','kakuna',
-   'spearow','mankey','nidoran-f','nidoran-m','geodude']},
+   'spearow','mankey','nidoran-f','nidoran-m','geodude',
+   // Owner 2026-11-24: fishing at Route 22 (Old Rod).
+   'magikarp']},
  {area:'Route 3 · Mt. Moon · Route 4 · Cerulean',label:'MT. MOON / CERULEAN',
   wild:['zubat','geodude','paras','clefairy','sandshrew','ekans',
-   'staryu','psyduck','poliwag','jigglypuff','clefairy','parasect','zubat']},
+   'staryu','psyduck','poliwag','jigglypuff','clefairy','parasect','zubat',
+   // Cerulean / Route 4 water (Good Rod).
+   'goldeen','krabby']},
  {area:'Route 24/25 · Route 5/6 · S.S. Anne · Diglett Cave',
   label:'CERULEAN / VERMILION ROUTES',
   wild:['meowth','pidgey','oddish','bellsprout','diglett','dugtrio',
-   'magnemite','voltorb','drowzee','farfetchd','eevee','ponyta']},
+   'magnemite','voltorb','drowzee','farfetchd','eevee','ponyta',
+   // Route 24/25 grass, Vermilion sea and S.S. Anne harbour.
+   'weepinbell','tentacool','horsea','slowpoke']},
  {area:'Route 7 · Route 8',label:'CELADON ROUTES',
   wild:['growlithe','vulpix','pidgeotto','rattata','meowth','ekans',
-   'abra','kadabra','venonat','oddish','gloom','bellsprout','exeggcute']},
+   'abra','kadabra','venonat','oddish','gloom','bellsprout','exeggcute',
+   // Rock Tunnel and the Celadon Game Corner prize.
+   'graveler','porygon']},
  {area:'Safari Zone · Fuchsia',label:'SAFARI ZONE',
   wild:['exeggcute','nidoran-f','nidoran-m','rhyhorn','paras','doduo','venonat',
-   'kangaskhan','chansey','scyther','pinsir','tauros','ditto','nidorina','nidorino']},
+   'kangaskhan','chansey','scyther','pinsir','tauros','ditto','nidorina','nidorino',
+   // Safari lakes; rare: Lickitung and the three Kanto starters (so the
+   // 151-species Pokédex can be completed).
+   'seaking','lickitung','bulbasaur','charmander','squirtle']},
  {area:'Route 5 · Route 8',label:'SAFFRON ROUTES',
   wild:['pidgey','meowth','growlithe','vulpix','oddish','bellsprout',
-   'drowzee','hypno','gastly','haunter','venomoth','mr-mime','kadabra']},
+   'drowzee','hypno','gastly','haunter','venomoth','mr-mime','kadabra',
+   // Power Plant, Fighting Dojo and the sleeping Snorlax of Route 12/16.
+   'electrode','magneton','hitmonlee','hitmonchan','snorlax']},
  {area:'Pokémon Mansion · Cinnabar',label:'POKÉMON MANSION',
   wild:['koffing','grimer','raticate','vulpix','growlithe','ditto',
-   'weezing','muk','ponyta','rapidash','magmar','electabuzz','seel','shellder']},
+   'weezing','muk','ponyta','rapidash','magmar','electabuzz','seel','shellder',
+   // Seafoam Islands and Routes 19-21.
+   'tentacruel','tangela','golduck','slowbro','jynx','kingler']},
  {area:'Route 22 · Victory Road',label:'VIRIDIAN / VICTORY',
   wild:['mankey','spearow','rattata','nidoran-m','nidoran-f','onix','machop',
-   'cubone','marowak','rhyhorn','rhydon','dugtrio','sandshrew','sandslash']},
+   'cubone','marowak','rhyhorn','rhydon','dugtrio','sandshrew','sandslash',
+   // Route 23 grass and water (Super Rod).
+   'fearow','arbok','primeape','poliwhirl','gyarados']},
  {area:'Route 23 · Victory Road',label:'VICTORY ROAD / LIGA',
   wild:['onix','machop','machoke','geodude','golbat','zubat','rhyhorn',
-   'dragonair','dratini','seadra','dewgong','lapras','omanyte','kabuto']},
+   'dragonair','dratini','seadra','dewgong','lapras','omanyte','kabuto',
+   // Old Amber fossil.
+   'aerodactyl']},
 ]);
 export const ROUTE_STOP_TYPES=Object.freeze(['grass','center','mart']);
 export function routeEncounterTable(stage){

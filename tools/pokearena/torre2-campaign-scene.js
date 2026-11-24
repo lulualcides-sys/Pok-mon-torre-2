@@ -3262,7 +3262,11 @@ create(){
   // Green means genuinely caught (Pokédex), never merely available in grass.
   const caught=new Set(state.dexCaught||[]);
   const cards=this.add.graphics().setDepth(616);
-  [...new Set(area.wild)].slice(0,12).forEach((id,i)=>{
+  // Owner 2026-11-24: more species per route → 12 per page.
+  const uniq=[...new Set(area.wild)],gPages=Math.max(1,Math.ceil(uniq.length/12));
+  const gKey=(revisit?areaStage:state.stage)+'';if(this.__torre2GrassArea!==gKey){this.__torre2GrassArea=gKey;this.__torre2GrassPage=0}
+  const gPage=Math.min(gPages-1,Math.max(0,this.__torre2GrassPage|0));
+  uniq.slice(gPage*12,gPage*12+12).forEach((id,i)=>{
    const x=40+(i%4)*141,y=120+Math.floor(i/4)*46;
    const owned=caught.has(id),available=area.available.includes(id);
    let types=[];try{const {def,etapa}=buscar(id);types=(etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{}
@@ -3293,7 +3297,12 @@ create(){
    if(ww!==1)this.uiLabel(x+131,y+33,ww>1?'▲':'▼',8,ww>1?'#7dff8a':'#ff8a7a',[.5,.5],621)
     .setData('torre2-weather-mark',ww>1?'more':'less');
   });
-  label(320,262,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite',8,MENU_UI.amarillo);
+  label(320,262,'Encontros realizados: '+(state.wildEncountersStage||0)+' · sem limite'+(gPages>1?' · '+uniq.length+' espécies · página '+(gPage+1)+'/'+gPages:''),8,MENU_UI.amarillo);
+  if(gPages>1){
+   const flip=d=>{this.__torre2GrassPage=(gPage+d+gPages)%gPages;close();this.grassScreen(state,areaStage)};
+   modalButton(86,262,84,20,'◀ ANTERIOR',()=>flip(-1)).setData?.('torre2-grass-prev',true);
+   modalButton(554,262,84,20,'PRÓXIMA ▶',()=>flip(1)).setData?.('torre2-grass-next',true);
+  }
   modalButton(174,292,224,30,'◀ VOLTAR AO MAPA',close);
   modalButton(466,292,224,30,'PROCURAR POKÉMON',()=>{
    let found;

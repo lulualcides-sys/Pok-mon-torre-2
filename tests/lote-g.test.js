@@ -135,3 +135,12 @@ test('challenges: reward shown, won once, prizes grow with the map',async()=>{
  assert.match(scene,/if\(st\.state==='open'\)this\.button\(x\+150,y\+104,90,18,'LUTAR'/);
  assert.match(scene,/eventRewardPanel\(g,ev,x\+48,y\+35,148/);
 });
+test('routes: catchable FRLG species added, grass screen paged, route table published',()=>{
+ const routes=read('torre2-route-data.js'),pub=read('publish-alpha0762.mjs'),scene=read('torre2-campaign-scene.js');
+ for(const id of ['magikarp','goldeen','krabby','tentacool','horsea','slowpoke','weepinbell','porygon','graveler','seaking','lickitung',
+  'electrode','magneton','hitmonlee','hitmonchan','snorlax','tentacruel','tangela','golduck','slowbro','jynx','kingler',
+  'fearow','arbok','primeape','poliwhirl','gyarados','aerodactyl','bulbasaur','charmander','squirtle'])
+  assert.match(routes,new RegExp("'"+id+"'"),id);
+ assert.match(pub,/\['tools\/pokearena\/torre2-route-data\.js','torre2\/route-data\.js'\]/);
+ assert.match(scene,/uniq\.slice\(gPage\*12,gPage\*12\+12\)/);
+});
