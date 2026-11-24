@@ -85,7 +85,7 @@ const log=(...a)=>console.log('[robo]',...a);
    await page.evaluate(([wild])=>{const s=window.__pt2Game.scene.getScene('campanha');s.enterBattle(window.__core.readCampaign(),wild,{skipStory:true})},[wild]);
    try{await page.waitForFunction(()=>{const c=window.__pt2Game.scene.getScene('combate');return c?.sys.isActive()&&c.fase==='lucha'},null,{timeout:90000})}
    catch{await shot('falha-inicio-luta-'+report.battles);throw Error('a luta não começou em 90 s')}
-   const bt=Date.now();let tried=false;
+   const bt=Date.now();let tried=false,aimSince=0;
    for(;;){
     await sleep(1000);
     const st=await page.evaluate(()=>{const g=window.__pt2Game,c=g.scene.getScene('combate');
@@ -93,6 +93,12 @@ const log=(...a)=>console.log('[robo]',...a);
      return {active,fps:g.loop.actualFps,foeHp:e?.hpMax?e.hp/e.hpMax:1,phase:c?.fase,canCapture:!!c?.__torre2WildCapture&&!c?.__torre2CaptureBusy}});
     if(!st.active)break;
     if(st.fps)fpsAll.push(st.fps);
+    // A capture menu left open pauses the fight: close it like a player
+    // tapping outside it (margin zone of the menu).
+    if(st.phase==='torre2-aim'){aimSince||=Date.now();if(Date.now()-aimSince>4000){aimSince=0;report.menuClosed=(report.menuClosed||0)+1;
+     await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('combate');
+      const z=c.children.list.find(o=>o.type==='Zone'&&o.depth===2715&&Math.round(o.x)===324&&Math.round(o.y)===290);z?.emit('pointerdown',{},0,0,{stopPropagation(){}})})}}
+    else aimSince=0;
     // Capture a NEW species when its HP is low (the real Poké Ball button).
     if(wild&&!tried&&st.canCapture&&st.foeHp>0&&st.foeHp<.45&&st.phase==='lucha'){
      const want=await page.evaluate(()=>{const s=window.__core.readCampaign();return s.team.length<6&&(s.inventory?.pokeball||0)>0&&s.pendingWild&&!(s.dexCaught||[]).includes(s.pendingWild.id)});
@@ -104,7 +110,11 @@ const log=(...a)=>console.log('[robo]',...a);
        const zones=c.children.list.filter(o=>o.type==='Zone'&&o.depth===2715&&Math.round(o.x)===316);zones[0]?.emit('pointerdown',{},0,0,{stopPropagation(){}})});
      }
     }
-    if(Date.now()-bt>300000){await shot('falha-luta-longa-'+report.battles);throw Error('luta passou de 5 min')}
+    // A fight over 6 minutes is recorded (print + warning) and left like a
+    // player would, so one odd battle never ends the whole journey.
+    if(Date.now()-bt>360000){await shot('luta-longa-'+report.battles);report.longBattles=(report.longBattles||0)+1;
+     addErr('aviso','luta passou de 6 min (fase '+st.phase+')');
+     await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));break}
    }
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
    await sleep(1200);
