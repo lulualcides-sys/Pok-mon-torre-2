@@ -1011,6 +1011,7 @@ export function eventSpeciesOk(id){return supportedKanto.has(id)}
 export function startEventBattle(s,id){
  const ev=ALL_EVENTS.find(e=>e.id===id);
  const st=eventStatus(s,ev);if(st.state==='locked')return {ok:false,reason:st.reason};
+ if(st.state==='won')return {ok:false,reason:'Você já venceu este desafio.'};
  const trio=playerTrio(s.team);
  if(trio.length<3)return {ok:false,reason:'Você precisa de 3 Pokémon com HP na equipe. Cure-os no Centro Pokémon.'};
  const team=eventTeam(ev,currentLevelCap(Math.min(s.stage,STAGES.length-1))).filter(m=>eventSpeciesOk(m.id));

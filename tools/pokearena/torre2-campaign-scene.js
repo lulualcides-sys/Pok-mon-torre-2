@@ -39,8 +39,8 @@ import {favoriteMember,toggleFavorite} from './world.js';
 import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,questState,questProgress,acceptQuest,claimQuest,questSummary,rewardText} from './npc-quests.js';
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
-import {EVENTS_3X3,ROCKET_EVENTS,ALL_EVENTS,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {rewardTier,EVENTS_3X3,ROCKET_EVENTS,ALL_EVENTS,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
+import {EVENT_ITEMS,setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -1744,7 +1744,7 @@ create(){
   this.children.removeAll(true);this.backdrop();this.campaignMusic('dungeon');
   const LIST=kind==='rocket'?ROCKET_EVENTS:EVENTS_3X3;
   this.screenBanner(20,300,kind==='rocket'?'Equipe Rocket':'Eventos 3x3','badges');
-  this.uiLabel(320,46,'Seus 3 primeiros Pokémon com HP contra os 3 do desafiante · prêmio na 1ª vitória · 5% de chance de um Pokémon dele',7,MENU_UI.suave,[.5,.5]);
+  this.uiLabel(320,46,'Seu trio contra o trio do desafiante · cada desafio vale uma vez · 5% de ganhar um Pokémon dele',7,MENU_UI.suave,[.5,.5]);
   this.uiSection(8,56,624,252);
   const g=this.add.graphics().setDepth(3);
   const per=6,pages=Math.ceil(LIST.length/per),page=Math.min(pages-1,Math.max(0,kind==='rocket'?0:this.__torre2EventPage|0));
@@ -1752,11 +1752,14 @@ create(){
    const x=16+(i%3)*206,y=64+Math.floor(i/3)*122,st=eventStatus(state,ev),locked=st.state==='locked';
    nativeRect(g,x,y,202,118,st.state==='won'?0x50cc84:locked?MENU_UI.apagadoBorde:MENU_UI.oro,8);
    nativeRect(g,x+2,y+2,198,114,locked?0x0a1638:0x1b2a5e,7);
-   if(!locked)this.npcSprite(spriteIdForTrainer(ev.sprite),x+28,y+70,2.2,5);
-   this.uiLabel(x+52,y+16,locked?'???':ev.name,9,locked?'#8ea2c8':MENU_UI.amarillo,[0,.5],5);
-   this.uiLabel(x+52,y+32,ev.place&&!locked?ev.place+' · '+st.reason:st.reason,7,st.state==='won'?'#9ff0bf':locked?'#ff9daa':'#dcf4fb',[0,.5],5);
-   if(!locked)ev.team.forEach((id,k)=>this.pokemonIdleSprite(id,x+76+k*42,y+84,30,5,null,'height'));
-   if(!locked)this.button(x+150,y+104,90,18,'LUTAR',()=>this.eventIntro(readCampaign()||state,ev.id),st.state!=='won',7).setData('torre2-event-fight',ev.id);
+   if(!locked)this.npcSprite(spriteIdForTrainer(ev.sprite),x+26,y+76,2.2,5);
+   estrechar(this.uiLabel(x+50,y+14,locked?'???':ev.name,9,locked?'#8ea2c8':MENU_UI.amarillo,[0,.5],5),146);
+   estrechar(this.uiLabel(x+50,y+27,ev.place&&!locked?ev.place+' · '+st.reason:st.reason,6,st.state==='won'?'#9ff0bf':locked?'#ff9daa':'#dcf4fb',[0,.5],5),146);
+   // Reward (owner 2026-11-24): what this win gives, shown before fighting.
+   this.eventRewardPanel(g,ev,x+48,y+35,148,st.state==='won');
+   if(!locked)ev.team.forEach((id,k)=>this.pokemonIdleSprite(id,x+66+k*34,y+95,21,5,null,'height'));
+   if(st.state==='open')this.button(x+150,y+104,90,18,'LUTAR',()=>this.eventIntro(readCampaign()||state,ev.id),true,7).setData('torre2-event-fight',ev.id);
+   else if(st.state==='won'){nativeRect(g,x+106,y+96,90,17,0x1b5a3a,5);this.uiLabel(x+151,y+104,'✔ VENCIDO',7,'#9ff0bf',[.5,.5],6).setData('torre2-event-won',ev.id)}
   });
   const won=LIST.filter(e=>eventStatus(state,e).state==='won').length;
   this.button(320,334,200,28,'◀ DESAFIOS',()=>this.challengesScreen(readCampaign()||state)).setData('torre2-events-back',true);
@@ -1766,10 +1769,31 @@ create(){
   this.uiLabel(616,46,won+'/'+LIST.length,8,'#9ff0bf',[1,.5]);
   this.__torre2Events=LIST.map(e=>({id:e.id,state:eventStatus(state,e).state}));
  }
+ // Reward chip of a 3x3/Rocket challenge: tier, money, items and the battle
+ // item, with the original sprites.
+ eventRewardPanel(g,ev,x,y,w,got=false){
+  const r=ev.reward||{},held=EVENT_ITEMS[ev.id],tier=rewardTier(ev);
+  const tierColor={MÉDIO:'#b9c8e0',BOM:'#9ff0bf',ÓTIMO:'#ffd47a',ÉPICO:'#e8a8ff'}[tier];
+  nativeRect(g,x,y,w,32,got?0x163a2a:0x0c1725,5);
+  this.uiLabel(x+6,y+8,'PRÊMIO · '+tier+(got?' · RECEBIDO':''),6,tierColor,[0,.5],6);
+  this.uiLabel(x+w-6,y+8,'₽ '+Number(r.money||0).toLocaleString('pt-BR'),7,MENU_UI.amarillo,[1,.5],6);
+  const NAMES={pokeball:'Poké Ball',greatball:'Great Ball',ultraball:'Ultra Ball',superpotion:'Super Poção',potion:'Poção',fullheal:'Cura Total'};
+  let cx=x+6;const cy=y+22;
+  for(const [k,n] of Object.entries(r.items||{})){
+   if(/ball$/.test(k))originalBallSprite(this,cx+5,cy,k,11,6);
+   else if(this.textures.exists('torre2-frlg-mart-'+k))this.add.image(cx+5,cy,'torre2-frlg-mart-'+k).setScale(.5).setDepth(6);
+   const l=this.uiLabel(cx+13,cy,n+'× '+(NAMES[k]||k),6,'#ffffff',[0,.5],6);cx+=17+l.displayWidth;
+  }
+  if(held&&HELD_ITEMS[held]){
+   if(this.textures.exists(heldIconKey(held)))this.add.image(cx+7,cy,heldIconKey(held)).setScale(.55).setDepth(6);
+   estrechar(this.uiLabel(cx+16,cy,HELD_ITEMS[held].name,6,'#e8c8ff',[0,.5],6),Math.max(20,x+w-cx-20)).setData('torre2-event-reward-item',held);
+  }
+ }
  // The challenger's 3x3 line, then the fight.
  eventIntro(state,id){
   const ev=ALL_EVENTS.find(e=>e.id===id);if(!ev)return;
   const st=eventStatus(state,ev);if(st.state==='locked')return this.campaignNotice(st.reason,'#ff9daa');
+  if(st.state==='won')return this.campaignNotice('Você já venceu este desafio.','#9ff0bf');
   this.playStory(state,{key:'event3-'+id,place:ev.place||'Evento especial 3x3',speaker:ev.sprite,speakerName:ev.name.toUpperCase(),bg:{room:true},entrance:false,
    lines:[...(ev.story||[]).map(t=>[ev.sprite,t]),[ev.sprite,ev.line],[ev.sprite,'Regras: 3 contra 3. Quem derrubar os três do outro primeiro, vence!']]},
    next=>this.enterEventBattle(next,id));

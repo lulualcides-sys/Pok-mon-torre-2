@@ -120,3 +120,18 @@ test('points shop: 16 items with sprites, specific held items and money',async()
  assert.match(scene,/pointShopScreen\(state,page=0\)\{/);
  assert.match(scene,/const x=18\+\(i%3\)\*204,y=92\+Math\.floor\(i\/3\)\*70/);
 });
+test('challenges: reward shown, won once, prizes grow with the map',async()=>{
+ const {ALL_EVENTS,eventStatus,rewardTier}=await import('../tools/pokearena/torre2-battle-events.js');
+ const {EVENT_ITEMS,HELD_ITEMS}=await import('../tools/pokearena/torre2-individuality.js');
+ for(const ev of ALL_EVENTS){assert.ok(HELD_ITEMS[EVENT_ITEMS[ev.id]],ev.id+' gives a battle item');assert.ok(ev.reward.money>=2000)}
+ const lvl=ev=>ev.champion?9:ev.minBadges;
+ const sorted=[...ALL_EVENTS].sort((a,b)=>lvl(a)-lvl(b));
+ for(let i=1;i<sorted.length;i++)if(lvl(sorted[i])>lvl(sorted[i-1]))assert.ok(sorted[i].reward.money>=sorted[i-1].reward.money,sorted[i].id);
+ assert.equal(rewardTier(ALL_EVENTS.find(e=>e.id==='e1')),'MÉDIO');assert.equal(rewardTier(ALL_EVENTS.find(e=>e.id==='k5')),'ÉPICO');
+ const won={badges:['a','b'],events3x3:{won:['e1']}};
+ assert.equal(eventStatus(won,ALL_EVENTS[0]).state,'won');
+ const core=read('torre2-campaign-core.js'),scene=read('torre2-campaign-scene.js');
+ assert.match(core,/if\(st\.state==='won'\)return \{ok:false,reason:'Você já venceu este desafio\.'\}/);
+ assert.match(scene,/if\(st\.state==='open'\)this\.button\(x\+150,y\+104,90,18,'LUTAR'/);
+ assert.match(scene,/eventRewardPanel\(g,ev,x\+48,y\+35,148/);
+});

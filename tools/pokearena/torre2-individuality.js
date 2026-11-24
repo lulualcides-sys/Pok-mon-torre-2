@@ -136,8 +136,12 @@ export function itemForType(type){
 // Leaders: the item of the gym's type on the FIRST win (stage index).
 export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','miracleseed','poisonbarb',
  'twistedspoon','charcoal','softsand','nevermeltice','blackbelt','spelltag','dragonfang','silkscarf']);
-export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e2:'mysticwater',e3:'metalcoat',e4:'blackbelt',e5:'blackglasses',e6:'dragonfang',
- k1:'smokeball',k2:'amuletcoin',k3:'cleansetag',k4:'kingsrock',k5:'choiceband'});
+// Owner 2026-11-24: every 3x3/Rocket challenge gives a battle item on its
+// (single) win; better items on later maps.
+export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e7:'silverpowder',k1:'smokeball',
+ e2:'mysticwater',e8:'seaincense',e3:'metalcoat',e9:'poisonbarb',k2:'amuletcoin',
+ e10:'hardstone',e11:'charcoal',k3:'cleansetag',e4:'blackbelt',e12:'scopelens',e13:'nevermeltice',k4:'kingsrock',
+ e5:'blackglasses',e14:'leftovers',e6:'dragonfang',e15:'luckyegg',k5:'choiceband'});
 export const WILD_ITEM_CHANCE=.05;
 // Wild win: small chance of the item of the wild Pokémon's first type.
 export function wildItemRoll(types,random=Math.random){
