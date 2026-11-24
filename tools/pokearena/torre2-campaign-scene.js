@@ -983,6 +983,8 @@ create(){
   const cards=renderTrainerCardHub(this,state,handlers);
   // Back from a screen opened in MAIS: MAIS opens again (owner 2026-11-24).
   if(this.__torre2BackToExtras){this.__torre2BackToExtras=false;extrasPage(this,state,handlers)}
+  // A Pokémon was just caught: its result card (owner 2026-11-24).
+  {const lc=(readCampaign()||state).lastCapture;if(lc?.uid)this.captureResultScreen(readCampaign()||state)}
   // Destroyed when another screen clears the scene: delayed hub messages
   // must not appear over the Summary or other screens (owner print 2026-11-22).
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
@@ -1984,6 +1986,70 @@ create(){
  }
  // Daily missions (Mais → MISSÕES): three per day, claimed once each, bonus.
  speciesTypes(id){try{const {def,etapa}=buscar(id);return (etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{return []}}
+ // Capture result card (owner 2026-11-24: "melhore quando captura"): the
+ // FireRed moment after "Gotcha!" — the new Pokémon on a platform, its
+ // data, NEW Pokédex badge, where it went, and an optional nickname.
+ captureResultScreen(state){
+  const lc=state.lastCapture;if(!lc?.uid)return;
+  const all=[...(state.team||[]),...(state.box||[])],member=all.find(m=>m?.uid===lc.uid);
+  const D=9300,objs=[];const keep=o=>{if(o)objs.push(o);return o};
+  const done=()=>{objs.forEach(o=>o?.active&&o.destroy());
+   try{const cur=readCampaign();if(cur?.lastCapture?.uid===lc.uid){const next={...cur};delete next.lastCapture;saveCampaign(next)}}catch{}};
+  if(!member){done();return}
+  let stats;try{stats=pokemonStats(member)}catch{stats={name:member.id,level:member.progression?.level||5,types:[]}}
+  const pot=potentialOf(member),stars=potentialStars(pot),ha=hiddenAbilityOf(member);
+  const col=TIPOS[stats.types?.[0]]??0x5f86bd;
+  keep(this.add.zone(320,180,640,360).setDepth(D).setInteractive());
+  const g=keep(this.add.graphics().setDepth(D+1));
+  g.fillStyle(0x020814,.86).fillRect(0,0,640,360);
+  nativeMarco(g,96,26,448,300,'panel',{borde:member.shiny?0xffd23f:MENU_UI.oro});
+  // Header.
+  nativeRect(g,112,38,416,30,0x1b3a6b,7);
+  keep(originalBallSprite(this,130,53,lc.ball||'pokeball',18,D+3));
+  const L=(x,y,s,c,v,o=[0,.5])=>keep(this.uiLabel(x,y,v,s,c,o,D+3));
+  L(146,53,14,'#ffda6a','Capturado!');
+  if(lc.newDex){nativeRect(g,412,44,108,18,0x1b5a3a,6);L(466,53,8,'#9ff0bf','NOVO NA POKÉDEX!',[.5,.5]).setData('torre2-capture-newdex',true)}
+  // Platform + animated sprite with a soft glow and sparkles.
+  const cx=220,ground=210;
+  g.fillStyle(col,.14).fillCircle(cx,150,74);g.fillStyle(0xffffff,.05).fillCircle(cx,150,52);
+  g.fillStyle(0x061433,.9).fillEllipse(cx,ground+6,170,32);g.fillStyle(col,1).fillEllipse(cx,ground+2,160,26);
+  g.fillStyle(0xffffff,.22).fillEllipse(cx,ground,128,16);
+  keep(this.pokemonIdleSprite(member,cx,ground+1,110,D+3,sp=>{keep(sp);sp.setScale(sp.scaleX*.2,sp.scaleY*.2);
+   this.tweens.add({targets:sp,scaleX:sp.scaleX*5,scaleY:sp.scaleY*5,duration:380,ease:'Back.Out'})},'height'));
+  const fx=keep(this.add.graphics().setDepth(D+4));let ph=0;
+  const tw=keep(this.time.addEvent({delay:70,loop:true,callback:()=>{if(!fx.active)return;fx.clear();ph++;
+   for(let i=0;i<7;i++){const a=i/7*Math.PI*2+ph*.06,r=62+((ph+i*9)%18),x=cx+Math.cos(a)*r,y=150+Math.sin(a)*r*.62,on=((ph+i*3)%10)<6;
+    if(!on)continue;const c=member.shiny?0xffd23f:i%2?0xffffff:0x9fe8ff;fx.fillStyle(c,.85).fillRect(x-1,y-4,2,8).fillRect(x-4,y-1,8,2)}}}));
+  objs.push({active:true,destroy:()=>tw.remove()});
+  // Data.
+  const species=String(stats.name||member.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
+  const dx=grassPortraitDex(member.id),dexNo=dx?String(Number(dx)).padStart(3,'0'):'';
+  L(330,88,8,MENU_UI.suave,(dexNo?'Nº '+dexNo+' · ':'')+'Nível '+(stats.level||member.progression?.level||5));
+  L(330,108,15,member.shiny?'#ffd23f':'#ffffff',species+(member.shiny?' ✦':'')).setData('torre2-capture-result',member.id);
+  (stats.types||[]).slice(0,2).forEach((ty,k)=>{pastillaTipo(g,330+k*62,122,ty,58,15);L(359+k*62,129,8,'#ffffff',ty[0]+ty.slice(1).toLowerCase(),[.5,.5])});
+  // Potential stars (drawn, like the Ficha).
+  L(330,158,8,MENU_UI.amarillo,'POTENCIAL');
+  const starPts=r=>Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*.45:r;return new Phaser.Geom.Point(Math.cos(a)*q,Math.sin(a)*q)});
+  for(let i=0;i<5;i++){const on=i<stars,sg=keep(this.add.graphics({x:338+i*20,y:176}).setDepth(D+3));
+   if(on){sg.fillStyle(0x7a4a00,1).fillPoints(starPts(8),true);sg.fillStyle(0xffd23f,1).fillPoints(starPts(6.5),true)}
+   else{sg.fillStyle(0x0c1725,1).fillPoints(starPts(8),true);sg.fillStyle(0x34465f,1).fillPoints(starPts(6),true)}}
+  L(440,176,8,'#ffd47a',potentialTotalWord(pot));
+  L(330,198,8,MENU_UI.amarillo,'HABILIDADE');
+  estrechar(L(330,214,9,ha?'#e8c8ff':'#8ea2c8',ha?'✦ '+HIDDEN_ABILITIES[ha].name:'Nenhuma'),190);
+  nativeRect(g,326,228,200,22,lc.where==='team'?0x1b5a3a:0x2a3f78,6);
+  L(426,239,8,'#ffffff',lc.where==='team'?'Foi para a sua EQUIPE':'Equipe cheia · foi para o PC',[.5,.5]).setData('torre2-capture-where',lc.where);
+  // Actions.
+  const btn=(x,label,fn,gold,key)=>{const b=this.button(x,292,170,28,label,fn,gold,10).setDepth(D+6).setData(key,true);
+   this.children.list.slice(-3).forEach(o=>{if(o!==b)o.setDepth?.(D+5)});keep(b);this.children.list.slice(-3).forEach(o=>keep(o));return b};
+  btn(222,'DAR APELIDO',()=>{
+   const v=window.prompt('Apelido para '+species+' (até 12 letras):',member.nickname||'');
+   if(v===null)return;const now=readCampaign()||state,next=setNickname(now,member.uid,v);if(!next)return;
+   try{saveCampaign(next)}catch{return this.campaignNotice('Apelido não salvo.','#ff9d9d')}
+   done();this.campaignNotice('Apelido salvo: '+(next.team.concat(next.box).find(m=>m.uid===member.uid)?.nickname||species),'#9ff0bf');
+  },false,'torre2-capture-nickname');
+  btn(418,'CONTINUAR ▶',done,true,'torre2-capture-continue');
+  this.__torre2CaptureResult={id:member.id,newDex:!!lc.newDex,where:lc.where,stars};
+ }
  // The single place each battle item comes from (owner 2026-11-24).
  heldSourceText(key){
   const li=LEADER_ITEMS.indexOf(key);
