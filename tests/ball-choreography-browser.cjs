@@ -141,7 +141,7 @@ const server=http.createServer(async(req,res)=>{
    const assertNoManualAim = !zone(522,184);
    if(!assertNoManualAim)throw Error('Manual capture aim must not exist');
 
-   zone(316,186).emit('pointerdown');zone(316,186)?.emit('pointerdown');
+   zone(316,153).emit('pointerdown');zone(316,153)?.emit('pointerdown');
   },mode);
  };
  await throwBall('breakout');
@@ -181,7 +181,7 @@ const server=http.createServer(async(req,res)=>{
    throw Error('Saved member should not have burn before throwing');
   b.__torre2CaptureRandom=()=>0;
   const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-  z(430,241).emit('pointerdown');z(316,186).emit('pointerdown');
+  z(430,241).emit('pointerdown');z(316,153).emit('pointerdown');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
  const gotcha=await page.evaluate(()=>{

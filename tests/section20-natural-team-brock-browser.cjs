@@ -198,7 +198,7 @@ const server=http.createServer(async(req,res)=>{
     });
     await tap(ballControl.x,ballControl.y);
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:12000});
-    await sync();await tap(316,186);
+    await sync();await tap(316,153);
     await page.waitForFunction(n=>window.kanto.readCampaign()?.inventory?.pokeball===n-1,
      t0.balls,{timeout:15000});
     await page.waitForFunction(()=>{

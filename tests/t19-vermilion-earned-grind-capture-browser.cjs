@@ -213,7 +213,7 @@ const server=http.createServer(async(req,res)=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.scene.isActive()&&b.fase==='torre2-aim';
   },null,{timeout:10000});
-  await tap(316,186);
+  await tap(316,153);
   await page.waitForFunction(({balls})=>{
    const s=window.kanto.readCampaign(),b=window.__pt2Game.scene.getScene('combate');
    return s.inventory.pokeball===balls-1&&(

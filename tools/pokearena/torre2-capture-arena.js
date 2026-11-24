@@ -132,7 +132,7 @@ export function installWildCapture(scene){
   const labels={pokeball:'Poké Ball',greatball:'Great Ball',ultraball:'Ultra Ball',masterball:'Master Ball'};
   // The Master Ball (one per journey, from Giovanni) only shows when owned.
   const kinds=['pokeball','greatball','ultraball',...((state.inventory.masterball||0)>0?['masterball']:[])];
-  const X=166,W=300,step=kinds.length>3?27:29,top=185,Y=103,H=top-Y+kinds.length*step+38;
+  const X=166,W=300,step=kinds.length>3?27:29,top=152,Y=70,H=top-Y+kinds.length*step+38;
   const g=scene.add.graphics().setDepth(2703);add(g);
   g.fillStyle(0x020814,.55).fillRoundedRect(X+3,Y+4,W,H,10);
   g.fillStyle(0x0a1a33,1).fillRoundedRect(X,Y,W,H,10);

@@ -74,7 +74,7 @@ async function sync(page){await page.evaluate(()=>new Promise(r=>requestAnimatio
    await sync(page);await tap(page,470,61); // 'CAPTURAR' shown by wild Phaser HUD
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:7000});
    await page.screenshot({path:'test-evidence/section20-wild-pokeball-menu.png'});
-   await sync(page);await tap(page,316,186); // normal Poké Ball x5 (not RNG override)
+   await sync(page);await tap(page,316,153); // normal Poké Ball x5 (not RNG override)
    await page.waitForFunction(()=>window.kanto.readCampaign()?.inventory?.pokeball===4,null,{timeout:12000});
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');

@@ -166,7 +166,7 @@ test('capture menu never freezes the fight when no ball is thrown',()=>{
 test('capture menu and PC box summary redesign keep the same hit points',()=>{
  const cap=read('torre2-capture-arena.js'),scene=read('torre2-campaign-scene.js');
  assert.match(cap,/hit\(scene,316,y\+1,W-16,26,\(\)=>throwBall\(kind\)\)\.setData\('torre2-capture-ball',kind\)/);
- assert.match(cap,/top=185/,'Poké Ball row stays at the legacy tap point (316,186)');
+ assert.match(cap,/top=152,Y=70/,'menu higher on screen (owner 2026-11-24); Poké Ball row at (316,153)');
  assert.match(cap,/setData\('torre2-capture-close',true\)/);
  assert.match(scene,/setData\('torre2-box-star',on\?'on':'off'\)/);
 });

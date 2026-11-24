@@ -95,7 +95,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   assert.deepEqual(hidden,{ballHidden:true,interactive:false},
    'Selection modal must hide and disable underlying Pokéball button');
   await page.screenshot({path:'test-evidence/t06-mobile-pokeball-menu.png'});
-  await tap(316,186);
+  await tap(316,153);
   await page.waitForFunction(()=>{
    const d=window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug;
    return d?.state==='RESUME';
@@ -112,7 +112,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2CaptureRandom=()=>0;});
   await tap(430,241);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
-  await tap(316,186);
+  await tap(316,153);
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.__torre2CaptureDebug?.state==='CAUGHT';
