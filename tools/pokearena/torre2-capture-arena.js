@@ -148,8 +148,12 @@ export function installWildCapture(scene){
   add(hit(scene,324,290,250,17,close));
  }
  function throwBall(kind){
-  if(busy||enemy.hp<=0||!enemy.hpMax)return;
-  const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return;
+  // No throw (the wild Pokémon fainted while the menu was open, no ball…):
+  // close the menu so the paused battle resumes (robot report 2026-11-24:
+  // the fight stayed frozen in 'torre2-aim').
+  if(busy)return;
+  if(enemy.hp<=0||!enemy.hpMax)return close();
+  const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return close();
   // A wild capture must always award the same species actually on the field.
   const partyFoe=scene.datos?.torre2?.party?.foes?.[scene.datos.torre2.party.enemyIndex];
   if(!partyFoe||partyFoe.id!==save.pendingWild.id||
@@ -157,7 +161,7 @@ export function installWildCapture(scene){
    console.error('Torre 2: wild capture species mismatch',partyFoe?.id,scene.datos?.p2,save.pendingWild.id);
    const warning=txt(scene,320,100,'CAPTURA BLOQUEADA · ESPÉCIE INCONSISTENTE',10,'#ff9d9d').setOrigin(.5);
    scene.time.delayedCall(2200,()=>warning.active&&warning.destroy());
-   return;
+   return close();
   }
   // Capture returns directly to the campaign: preserve the current party HP
   // instead of restoring the pre-battle save when awarding the wild Pokémon.

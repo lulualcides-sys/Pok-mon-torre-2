@@ -156,3 +156,10 @@ test('every battle item has exactly ONE source and is given once per journey',as
  const eq={inventory:{held:{}},team:[{heldItem:'magnet'}],box:[]};assert.equal(I.giveHeldOnce(eq,'magnet').given,false,'equipped counts as obtained');
  const core=read('torre2-campaign-core.js');assert.doesNotMatch(core,/wildItemRoll\(/);assert.match(core,/giveHeldOnce\(next,LEADER_ITEMS/);
 });
+test('capture menu never freezes the fight when no ball is thrown',()=>{
+ const cap=read('torre2-capture-arena.js');
+ assert.match(cap,/if\(enemy\.hp<=0\|\|!enemy\.hpMax\)return close\(\);/);
+ assert.match(cap,/\(save\.inventory\?\.\[kind\]\?\?0\)<1\)return close\(\);/);
+ const robot=fs.readFileSync(new URL('../tools/dev/campaign-robot.cjs',import.meta.url),'utf8');
+ assert.match(robot,/st\.phase==='torre2-aim'/);assert.match(robot,/luta passou de 6 min/);
+});
