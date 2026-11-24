@@ -80,7 +80,11 @@ function text(scene,x,y,content,style={}){return scene.add.text(x,y,content,{...
 // Preload all six team members so the map does not show empty squares.
 function portraitId(member){
  const {def,etapa}=buscar(member.id);
- return (etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
+ const dex=(etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
+ // Shiny individuals use their original shiny PMD sheet when it is installed
+ // (install-shiny-sprites.mjs, owner 2026-11-24); otherwise the normal one.
+ if(member?.shiny===true&&globalThis.__pt2Game?.registry?.get('manifiesto')?.[dex+'-shinyt2'])return dex+'-shinyt2';
+ return dex;
 }
 function portraitKey(member){return 'torre2-portrait-'+portraitId(member)}
 // The Kanto Pokédex is in National Dex order. Use its number for every
@@ -666,7 +670,10 @@ create(){
  // Animated full-body PMD Idle sprite (the same art as in battle), facing
  // the player. Loaded on demand and released when the scene shuts down.
  pokemonIdleSprite(id,x,y,maxSize=88,depth=6,onReady=null,fitContent=false){
-  const dex=portraitId({id});
+  // A member object may be passed instead of the id: shiny members show their
+  // original shiny sheet.
+  const who=typeof id==='object'&&id?id:{id};id=who.id;
+  const dex=portraitId(who);
   const idle=this.registry.get('manifiesto')?.[dex]?.anims?.Idle;
   if(!idle)return null;
   const key='torre2-idle-'+dex,anim=key+'-front';
@@ -892,7 +899,7 @@ create(){
    p.fillStyle(MENU_UI.oroBorde,1).fillEllipse(x,y+76,84,16);
    p.fillStyle(MENU_UI.oro,1).fillEllipse(x,y+74,72,11);
    p.fillStyle(MENU_UI.oroLuz,.6).fillEllipse(x,y+73,50,5);
-   if(!this.pokemonIdleSprite(member.id,x,y+75,66,6))this.drawPortrait(member,x,y+48,44,6);
+   if(!this.pokemonIdleSprite(member,x,y+75,66,6))this.drawPortrait(member,x,y+48,44,6);
    // Name plaque, level and types.
    nativeRect(p,x-62,y+88,124,32,MENU_UI.oroBorde,6);nativeRect(p,x-60,y+90,120,28,0x1b1446,5);
    const name=member.id.replace(/-/g,' ').toUpperCase().slice(0,16);
@@ -1126,7 +1133,9 @@ create(){
  evolutionScene(list,onDone=null){
   const queue=(list||[]).filter(e=>e?.from&&e?.to&&e.from!==e.to);
   if(!queue.length){onDone?.();return}
-  const {from,to}=queue.shift();
+  const {from,to,uid}=queue.shift();
+  // A shiny Pokémon evolves into the shiny sheet of its new form.
+  let sh=false;try{const s=readCampaign();sh=[...(s?.team||[]),...(s?.box||[])].some(m=>m?.uid===uid&&m.shiny===true)}catch{}
   const nice=id=>String(id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   const objs=[];const keep=o=>{if(o)objs.push(o);return o};
   const D=9500;
@@ -1175,8 +1184,8 @@ create(){
    before=before||{active:true,setVisible(){return this},setTintFill(){return this},clearTint(){return this}};
    after=after||before;finish();}});
   keep(fallback);
-  keep(this.pokemonIdleSprite(from,320,203,120,D+3,sp=>{if(done){sp.destroy();return}before=keep(sp);ready()}));
-  keep(this.pokemonIdleSprite(to,320,203,120,D+3,sp=>{if(done){sp.destroy();return}after=keep(sp);sp.setVisible(false);ready()}));
+  keep(this.pokemonIdleSprite({id:from,shiny:sh},320,203,120,D+3,sp=>{if(done){sp.destroy();return}before=keep(sp);ready()}));
+  keep(this.pokemonIdleSprite({id:to,shiny:sh},320,203,120,D+3,sp=>{if(done){sp.destroy();return}after=keep(sp);sp.setVisible(false);ready()}));
  }
  // Post-battle evolution: one random legal Kanto form, chosen exactly once
  // per Eevee UID through the existing primary/backup atomic save path.
@@ -1461,7 +1470,7 @@ create(){
     const x=24+i*100,cy=y+34;
     nativeRect(g,x,cy,96,72,MENU_UI.panelBorde,6);nativeRect(g,x+2,cy+2,92,68,0x0f2352,5);
     g.fillStyle(MENU_UI.oro,.9).fillEllipse(x+48,cy+50,64,10);g.fillStyle(MENU_UI.oroLuz,.5).fillEllipse(x+48,cy+49,44,5);
-    if(!this.pokemonIdleSprite(m.id,x+48,cy+51,40,6,null,true)){
+    if(!this.pokemonIdleSprite(m,x+48,cy+51,40,6,null,true)){
      try{const dex=portraitId({id:m.id}),key='torre2-portrait-'+dex;
       requestCardPortrait(this,key,'assets/pmd/'+dex+'/portrait.png',()=>{if(g.active)this.add.image(x+48,cy+28,key).setDisplaySize(34,34).setDepth(6)})}catch{}
     }
@@ -1690,7 +1699,7 @@ create(){
   this.uiLabel(507,78,'Seus lutadores',9,MENU_UI.amarillo,[.5,.5],4);
   const picks=eligible.slice(0,rules.size);
   picks.forEach((idx,k)=>{const m=cur.team[idx],x=507+(k-(picks.length-1)/2)*62;
-   this.pokemonIdleSprite(m.id,x,134,44,5,null,'height');
+   this.pokemonIdleSprite(m,x,134,44,5,null,'height');
    const lvl=m.progression?.level||5,cap=rules.level&&lvl>rules.level?rules.level:lvl;
    this.uiLabel(x,146,'Nv '+cap+(cap<lvl?'↓':''),7,'#dcf4fb',[.5,.5],5);
    if(run)this.uiLabel(x,158,'HP '+Math.round(Number(run.hp?.[m.uid]??100))+'%',7,'#9ff0bf',[.5,.5],5);
@@ -1823,7 +1832,7 @@ create(){
   if(floor){
    this.npcSprite(spriteIdForTrainer(floor.trainer),270,262,3,5);
    floor.team.forEach((m,i)=>{const x=340+i*92;
-    this.pokemonIdleSprite(m.id,x,250,46,5,null,'height');
+    this.pokemonIdleSprite(m,x,250,46,5,null,'height');
     label(x,272,m.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase())+' Nv '+m.level,7,'#ffffff',[.5,.5])});
   }
   this.button(110,334,180,28,'SAIR DA TORRE',()=>{
@@ -1879,7 +1888,7 @@ create(){
   team.forEach((m,i)=>{
    const x=398+i*57,y=114;
    nativeRect(g,x,y,53,58,MENU_UI.panelBorde,6);nativeRect(g,x+1,y+1,51,56,0x0f2352,5);
-   this.pokemonIdleSprite(m.id,x+26,y+42,30,5,null,'height');
+   this.pokemonIdleSprite(m,x+26,y+42,30,5,null,'height');
    this.uiLabel(x+26,y+51,'Nv '+m.level,6,'#ffffff',[.5,.5],6);
   });
   nativeRect(g,394,182,226,52,MENU_UI.oroBorde,7);nativeRect(g,396,184,222,48,0x2a1d52,6);
@@ -2090,7 +2099,7 @@ create(){
     const x=18+(i%6)*101,y=98+Math.floor(i/6)*104,lv=m.progression?.level||5;
     nativeRect(g,x,y,97,98,m.shiny?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,x+2,y+2,93,94,0x0f2352,6);
     g.fillStyle(0x000000,.25).fillEllipse(x+48,y+60,46,9);
-    this.pokemonIdleSprite(m.id,x+48,y+61,44,5,null,'height');
+    this.pokemonIdleSprite(m,x+48,y+61,44,5,null,'height');
     const nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
     estrechar(this.uiLabel(x+48,y+74,nice+(m.shiny?' ✦':''),8,m.shiny?MENU_UI.amarillo:'#ffffff',[.5,.5]),90);
     this.uiLabel(x+48,y+88,'Nv '+lv+' · '+where,6,MENU_UI.suave,[.5,.5]);
@@ -2120,7 +2129,7 @@ create(){
   const lv=m.progression?.level||5,nice=String(m.id).replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   this.tradeOverlay(({D,g,keep,lift,close})=>{
    keep(this.uiLabel(320,94,'Enviar '+nice+' Nv '+lv+'?',13,MENU_UI.amarillo,[.5,.5],D+2));
-   keep(this.pokemonIdleSprite(m.id,320,170,60,D+2,null,'height'));
+   keep(this.pokemonIdleSprite(m,320,170,60,D+2,null,'height'));
    keep(this.uiLabel(320,196,'Ele sai do seu save e vira um código para o seu amigo.',8,'#ffffff',[.5,.5],D+2));
    keep(this.uiLabel(320,212,'Só envie se for mesmo trocar: o código vale uma vez.',7,'#ffb0b0',[.5,.5],D+2));
    lift(this.button(230,252,160,28,'CANCELAR',close,false,9));
@@ -2327,7 +2336,7 @@ create(){
   // Favorite Pokémon beside the trainer, like a gym leader with his ace.
   const fav=favoriteMember(state);
   if(fav){this.npcSprite(this.playerNpc(),474,224,3.6,5);
-   this.pokemonIdleSprite(fav.id,540,224,52,6,sp=>sp.setData('torre2-card-favorite',fav.id),'height');
+   this.pokemonIdleSprite(fav,540,224,52,6,sp=>sp.setData('torre2-card-favorite',fav.id),'height');
    this.uiLabel(540,232,(fav.nickname||fav.id).toUpperCase(),7,'#ffe08a',[.5,.5],7)}
   else this.npcSprite(this.playerNpc(),500,224,3.6,5);
   // Pokédex medal (owner list item 21): bronze 50, silver 100, gold 151.
@@ -3092,6 +3101,13 @@ create(){
   match.torre2.playerLevel=firstPlayer.level;match.torre2.enemyLevel=firstEnemy.level;
   match.torre2Loadout=firstPlayer.loadout;
   match.torre2OpponentLoadout=firstEnemy.loadout;
+  // Shiny: the fighter uses its original shiny PMD sheet (no aura, no VFX
+  // change: cos.aura null keeps the native skin glow off).
+  {const man=this.registry.get('manifiesto')||{},sh=m=>m?.shiny===true&&!!man[portraitId({id:m.id})+'-shinyt2'];
+   if(sh(firstPlayer)||sh(firstEnemy)){
+    match.aspectos=[sh(firstPlayer)?'shinyt2':null,sh(firstEnemy)?'shinyt2':null];
+    match.cos=[sh(firstPlayer)?{aura:null,fx:'normal'}:null,sh(firstEnemy)?{aura:null,fx:'normal'}:null];
+   }}
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
   this.launchBattle(match,wild);
@@ -3542,7 +3558,7 @@ create(){
   g.fillStyle(0x061433,.35).fillRect(x+2,y+Math.round(size*.62),size-4,Math.round(size*.34));
   g.fillStyle(0xffffff,.28).fillRect(x+4,y+2,size-8,1);
   g.fillStyle(0x000000,.25).fillEllipse(x+size/2,y+size-8,size*.6,6);
-  if(!this.pokemonIdleSprite(member.id,x+size/2,y+size-7,size-12,6,null,true))
+  if(!this.pokemonIdleSprite(member,x+size/2,y+size-7,size-12,6,null,true))
    this.drawPortrait(member,x+size/2,y+size/2,size-6,6);
  }
  teamScreen(state){
@@ -3771,7 +3787,7 @@ create(){
   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
   g.fillStyle(glow,.16).fillRoundedRect(18,50,188,130,6);
   g.fillStyle(0x000000,.3).fillEllipse(112,158,90,14);
-  this.pokemonIdleSprite(member.id,112,158,80,5,null,'height');
+  this.pokemonIdleSprite(member,112,158,80,5,null,'height');
   const nice=member.id.replace(/-/g,' ').replace(/(^|\s)\S/g,c=>c.toUpperCase());
   this.uiLabel(112,64,nice+' · Nv '+(member.progression?.level||5),11,MENU_UI.amarillo,[.5,.5],4);
   // Potential: five drawn pixel stars (filled gold / empty slate) popping in.
@@ -3831,9 +3847,32 @@ create(){
   const page=Math.min(pages-1,Math.max(0,this.__torre2BagPage|0));
   card(164,72,0x4e92bc,.08);
   this.uiLabel(240,174,owned.length?'BOLSA · toque para equipar ('+owned.length+')':'BOLSA VAZIA',8,MENU_UI.amarillo,[0,.5],4);
+  // Owner 2026-11-24: hover (or one tap) tells what the item does; EQUIPAR
+  // in that box equips it. Nothing is equipped by a single accidental tap.
+  let tip=[],pinned=null;
+  const hideTip=()=>{tip.forEach(o=>o?.active&&o.destroy());tip=[]};
+  const showTip=(k,x,y,pin)=>{
+   hideTip();const it=HELD_ITEMS[k],w=300,h=pin?66:46,bx=Math.max(226,Math.min(624-w,x-w/2)),by=y-18-h;
+   const only=it.only&&!it.only.includes(member.id);
+   const tg=this.add.graphics().setDepth(40);tip.push(tg);
+   nativeRect(tg,bx,by,w,h,MENU_UI.contorno,7);nativeRect(tg,bx+2,by+2,w-4,h-4,0xf4f1e6,6);
+   tg.fillStyle(MENU_UI.contorno,1).fillTriangle(x-7,by+h,x+7,by+h,x,by+h+8);tg.fillStyle(0xf4f1e6,1).fillTriangle(x-5,by+h-2,x+5,by+h-2,x,by+h+5);
+   const lab=(lx,ly,s,c,txt,o=[0,.5])=>{const l=textoMenu(this,lx,ly,txt,{tam:s,color:c,borde:0,literal:true}).setOrigin(...o).setDepth(41);tip.push(l);return l};
+   lab(bx+10,by+12,9,MENU_UI.textoOscuro,it.name).setData('torre2-ficha-tip',k);
+   lab(bx+w-10,by+12,7,'#36507a','na bolsa: '+(cur.inventory?.held?.[k]||0),[1,.5]);
+   estrechar(lab(bx+10,by+30,7,only?'#a83a3a':'#24365a',itemDesc(k)+(only?' · sem efeito neste Pokémon':'')),w-20);
+   if(pin){
+    const btn=this.button(bx+w-52,by+h-14,88,18,'EQUIPAR',()=>equip(k),true,8).setData('torre2-ficha-equip-confirm',k);
+    this.children.list.slice(-3).forEach(o=>{o.setDepth?.(o===btn?43:42);tip.push(o)});
+    lab(bx+10,by+h-14,6,'#36507a','Toque em EQUIPAR para usar neste Pokémon');
+   }
+  };
   owned.slice(page*per,page*per+per).forEach(([k,n],i)=>{const x=250+(i%14)*26,y=196+Math.floor(i/14)*26;
    const zone=this.add.rectangle(x,y,24,24,0x0c1725,1).setDepth(4).setStrokeStyle(1,0x4e92bc).setInteractive({useHandCursor:true});
-   zone.on('pointerup',()=>equip(k));zone.setData('torre2-ficha-equip',k);
+   zone.on('pointerover',()=>{if(!pinned)showTip(k,x,y,false);zone.setStrokeStyle(1,0xffd23f)});
+   zone.on('pointerout',()=>{zone.setStrokeStyle(1,pinned===k?0xffd23f:0x4e92bc);if(!pinned)hideTip()});
+   zone.on('pointerup',()=>{pinned=pinned===k?null:k;if(pinned)showTip(k,x,y,true);else hideTip()});
+   zone.setData('torre2-ficha-equip',k);
    icon(k,x,y);if(n>1)this.uiLabel(x+11,y+9,String(n),6,'#ffffff',[1,.5],6);
   });
   if(pages>1)this.button(588,174,52,16,(page+1)+'/'+pages+' ▶',()=>{this.__torre2BagPage=(page+1)%pages;this.individualScreen(readCampaign()||cur,index)},true,7);
@@ -3979,7 +4018,7 @@ create(){
   };
   // Animated full-body sprite (as in battle); the PMD portrait is the fallback.
   const floor=this.add.graphics().setDepth(17);floor.fillStyle(0x000000,.35).fillEllipse(111,176,64,9);
-  if(!this.pokemonIdleSprite(member.id,111,177,62,18,null,true)){
+  if(!this.pokemonIdleSprite(member,111,177,62,18,null,true)){
    if(this.textures.exists(key))portrait();
    else{
     this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
@@ -4314,7 +4353,7 @@ create(){
   const g=this.add.graphics().setDepth(2),col=TIPOS[stats.types[0]]??0x5f86bd;
   nativeRect(g,12,44,218,256,MENU_UI.contorno,8);nativeRect(g,14,46,214,252,0x13233b,7);
   g.fillStyle(col,.16).fillRoundedRect(20,74,202,104,6);g.fillStyle(0x000000,.3).fillEllipse(121,166,96,14);
-  this.pokemonIdleSprite(member.id,121,166,84,5,null,'height');
+  this.pokemonIdleSprite(member,121,166,84,5,null,'height');
   const species=String(stats.name||member.id).toUpperCase();
   estrechar(this.uiLabel(121,58,(member.nickname||species)+(member.shiny?' ✦':''),11,MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
   this.uiLabel(121,190,'NV '+stats.level+(member.nickname?' · '+species:''),9,'#ffffff',[.5,.5],4);
@@ -4453,7 +4492,7 @@ create(){
  // Pokédex entry: animated sprite on a platform, number, types, where it
  // appears in the campaign's tall grass and the evolution line. Unseen
  // species show only a silhouette and "???". Read-only.
- dexDetail(state,row){
+ dexDetail(state,row,shinyView=false){
   const D=9000,objs=[];const keep=o=>{if(o)objs.push(o);return o};
   const close=()=>{objs.forEach(o=>o?.active&&o.destroy());this.children.list
    .filter(o=>o.getData?.('torre2-dex-detail-ui')).forEach(o=>o.destroy());};
@@ -4475,7 +4514,7 @@ create(){
   g.fillStyle(0x061433,.9).fillEllipse(cx,ground+6,170,34);
   g.fillStyle(row.seen?col:0x24386e,1).fillEllipse(cx,ground+2,160,28);
   g.fillStyle(0xffffff,.18).fillEllipse(cx,ground,130,18);
-  const ok=this.pokemonIdleSprite(row.id,cx,ground+1,130,D+3,sp=>{
+  const ok=this.pokemonIdleSprite({id:row.id,shiny:shinyView&&row.seen},cx,ground+1,130,D+3,sp=>{
    keep(sp);if(!row.seen)sp.setTintFill(0x0a1638);
   });
   keep(ok);
@@ -4486,6 +4525,14 @@ create(){
   const L=(x,y,t,s,c,o=[0,.5])=>keep(this.uiLabel(x,y,t,s,c,o,D+4));
   // Right: identity.
   L(300,58,'Nº '+dexNo,9,MENU_UI.suave);
+  // Owner 2026-11-24: see the original shiny sprite of every seen species.
+  const hasShiny=!!this.registry.get('manifiesto')?.[portraitId({id:row.id})+'-shinyt2'];
+  if(row.seen&&hasShiny){
+   const sb=this.button(536,62,96,20,shinyView?'NORMAL':'✦ SHINY',()=>{close();this.dexDetail(state,row,!shinyView)},shinyView,8)
+    .setDepth(D+6).setData('torre2-dex-shiny-toggle',shinyView);
+   this.children.list.slice(-3).forEach(o=>{if(o!==sb){o.setDepth?.(D+5);o.setData?.('torre2-dex-detail-ui',true)}});keep(sb);
+   if(shinyView)L(cx,62,'✦ SHINY',9,MENU_UI.amarillo,[.5,.5]);
+  }
   L(300,80,row.seen?nice:'???',16,row.shinyCaught?MENU_UI.amarillo:'#ffffff');
   if(row.seen)types.slice(0,2).forEach((t,k)=>{pastillaTipo(g,300+k*64,96,t,60,14);
    L(330+k*64,103,t[0]+t.slice(1).toLowerCase(),8,'#ffffff',[.5,.5])});

@@ -14,6 +14,7 @@ import {removeNewsTitleOption,removeUpdatesTitleButton,removeMessagesTitleButton
 import {patchFireTrailMarks} from './torre2-fire-trail-patch.mjs';
 import {windowNativePokedex} from './torre2-pokedex-window.mjs';
 import {installJohtoSpriteCollabAssets} from './install-johto-sprites.mjs';
+import {installShinySpriteCollabAssets,SHINY_FOLDER} from './install-shiny-sprites.mjs';
 import {patchAccountRequirement,patchAccountScene} from './torre2-trainer-name.mjs';
 
 const site=path.resolve(process.env.TORRE2_SITE_ROOT||'_site');
@@ -312,7 +313,13 @@ fighter=fighter.replace(spriteGraphicsAnchor,spriteGraphicsAnchor+branchSpriteSy
 const combat=await read(path.join(original,'escenas/combate.js'));
 const nativeSpriteLoad='soltarPMD(this,m,dexs);';
 exactly(combat,nativeSpriteLoad,'native fighter sprite preload');
-const branchPreload='if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of '+
+// Campaign shiny Pokémon (owner 2026-11-24): also preload the original shiny
+// sheet (NNNN-shinyt2) of every shiny party member / wild Pokémon.
+const shinyPreload='if(d.torre2?.party)for(const mm of [...d.torre2.party.friend,...d.torre2.party.foes]){'+
+ 'if(mm?.shiny!==true)continue;const f=buscar(mm.id);'+
+ 'const dx=f?.etapa?f.def.evoluciones[f.etapa-1]?.dex??f.def.dex:f?.def?.dex;'+
+ 'if(dx&&m[dx+"-shinyt2"])dexs.add(dx+"-shinyt2")}';
+const branchPreload=shinyPreload+'if(!d.torre2&&d.modo!=="online")for(const [baby,stages] of '+
  '[["0240",["0126","0467"]],["0236",["0107","0106","0237"]],["0123",["0212"]]])'+
  'if(dexs.has(baby))for(const dex of stages)if(m[dex])dexs.add(dex);';
 // Whole game (owner request 2026-11-20): cap live fire particles per emitter
@@ -364,6 +371,10 @@ must(title.includes('escena:"torre2Multi"'),'MULTIPLAYER entry missing in title'
 // Update exclusively missing artist-sourced Magmortar combat animations.
 // installJohtoSpriteCollabAssets is additive and rejects missing originals.
 await installJohtoSpriteCollabAssets(root);
+// Original shiny PMD sheets (owner 2026-11-24), additive NNNN-shinyt2 folders.
+{const shiny=await installShinySpriteCollabAssets(root);
+ console.log('Shiny PMD: '+shiny.species+' species, '+shiny.png+' new files'+(shiny.missing.length?', no source for '+shiny.missing.join(','):''));
+ must(shiny.species>=140||JSON.parse(await read(manifestFile))['0006-'+SHINY_FOLDER],'shiny PMD sprites missing');}
 const manifest=JSON.parse(await read(manifestFile));
 for(const dex of ['0123','0212'])
  must(manifest[dex]?.anims?.Idle?.file,
