@@ -25,7 +25,7 @@ test('accept → progress since accepting → deliver once with reward',()=>{
  const done=claimQuest(s,'q02',ctx);assert.equal(done.inventory.pokeball,5);assert.equal(questState(done,q,ctx),'done');
  assert.equal(claimQuest(done,'q02',ctx),null,'reward once');
  const bug=QUESTS.find(x=>x.id==='q03');let t=acceptQuest(done,'q03');assert.equal(questProgress(t,bug,ctx),2);
- t=claimQuest(t,'q03',ctx);assert.equal(t.inventory.held.silverpowder,1,'held item reward');
+ t=claimQuest(t,'q03',ctx);assert.equal(t.inventory.greatball,3,'q03 reward (its old item is now a 3x3 prize)');
  assert.equal(questSummary(t,ctx).done,2);
 });
 test('nicknames: cleaned, max 12, empty clears',()=>{

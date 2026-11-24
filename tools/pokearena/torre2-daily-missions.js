@@ -100,13 +100,16 @@ export const POINT_SHOP=Object.freeze([
  {id:'status10',name:'Kit de remédios',desc:'2 de cada remédio de status',cost:30,items:{antidote:2,paralyzeheal:2,awakening:2,burnheal:2,iceheal:2},icon:'mart:antidote'},
  {id:'money5k',name:'₽ 5.000',desc:'Dinheiro para a loja',cost:35,money:5000,icon:'money'},
  {id:'money20k',name:'₽ 20.000',desc:'Dinheiro para a loja',cost:120,money:20000,icon:'money'},
- // README item 1: a random held item (individuality.js HELD_ITEMS).
- {id:'heldbox',name:'Item surpresa',desc:'Item de batalha aleatório',cost:45,heldRandom:true,icon:'gift'},
- {id:'leftovers',name:'Sobras',desc:'Item de batalha · recupera HP',cost:90,held:'leftovers',icon:'held:leftovers'},
- {id:'luckyegg',name:'Ovo da Sorte',desc:'Item de batalha · mais EXP',cost:80,held:'luckyegg',icon:'held:luckyegg'},
- {id:'expshare',name:'Compartilhar EXP',desc:'Item de batalha · EXP dividida',cost:80,held:'expshare',icon:'held:expshare'},
- {id:'quickclaw',name:'Garra Rápida',desc:'Item de batalha',cost:70,held:'quickclaw',icon:'held:quickclaw'},
- {id:'focusband',name:'Faixa do Foco',desc:'Item de batalha',cost:70,held:'focusband',icon:'held:focusband'}
+ // Owner 2026-11-24: specific battle items are not sold here (each has its
+ // own source). The surprise box stays — a hard way to get one: it only
+ // draws items not obtained yet in this journey.
+ {id:'heldbox',name:'Item surpresa',desc:'Item de batalha que você ainda não tem',cost:45,heldRandom:true,icon:'gift'},
+ {id:'ultra10',name:'10× Ultra Ball',desc:'Pacote grande',cost:110,items:{ultraball:10},icon:'ball:ultraball'},
+ {id:'great20',name:'20× Great Ball',desc:'Pacote grande',cost:70,items:{greatball:20},icon:'ball:greatball'},
+ {id:'balls',name:'Kit de Pokébolas',desc:'5 Poké · 5 Great · 2 Ultra',cost:40,items:{pokeball:5,greatball:5,ultraball:2},icon:'ball:pokeball'},
+ {id:'super10',name:'10× Super Poção',desc:'Recupera 50 HP',cost:90,items:{superpotion:10},icon:'mart:superpotion'},
+ {id:'fullheal6',name:'6× Cura Total',desc:'Cura qualquer status',cost:70,items:{fullheal:6},icon:'mart:fullheal'},
+ {id:'money50k',name:'₽ 50.000',desc:'Dinheiro para a loja',cost:280,money:50000,icon:'money'}
 ]);
 export function missionPoints(s){return Math.max(0,Math.floor(Number(s?.missionPoints)||0))}
 export function claimDailyWithPoints(s,id,typesOf=()=>[]){
@@ -114,7 +117,15 @@ export function claimDailyWithPoints(s,id,typesOf=()=>[]){
  next.missionPoints=missionPoints(s)+(id==='bonus'?POINTS_BONUS:POINTS_PER_MISSION);
  return next;
 }
-export function shopItemState(s,item){
+// Battle items already obtained in this journey (once each).
+export function heldObtainedSet(s){
+ const got=new Set(list(s?.heldObtained));
+ for(const [k,n] of Object.entries(s?.inventory?.held||{}))if(n>0)got.add(k);
+ for(const m of [...list(s?.team),...list(s?.box)])if(m?.heldItem)got.add(m.heldItem);
+ return got;
+}
+export function shopItemState(s,item,heldKeys=null){
+ if(item.heldRandom&&heldKeys&&heldKeys.every(k=>heldObtainedSet(s).has(k)))return {ok:false,reason:'Você já tem todos'};
  if(item.oncePerJourney&&list(s?.pointShopBought).includes(item.id))return {ok:false,reason:'Já comprado nesta jornada'};
  if(missionPoints(s)<item.cost)return {ok:false,reason:'Faltam '+(item.cost-missionPoints(s))+' pontos'};
  return {ok:true,reason:''};
@@ -122,13 +133,15 @@ export function shopItemState(s,item){
 export function buyWithPoints(s,id,random=Math.random,heldKeys=[]){
  const item=POINT_SHOP.find(x=>x.id===id);if(!item)return null;
  if(!shopItemState(s,item).ok)return null;
- if(item.heldRandom&&!heldKeys.length)return null;
+ const fresh=heldKeys.filter(k=>!heldObtainedSet(s).has(k));
+ if(item.heldRandom&&!fresh.length)return null;
  if(item.held&&heldKeys.length&&!heldKeys.includes(item.held))return null;
  const next=JSON.parse(JSON.stringify(s));
  next.missionPoints=missionPoints(s)-item.cost;
  if(item.heldRandom){
-  const key=heldKeys[Math.min(heldKeys.length-1,Math.floor(Math.max(0,Number(random())||0)*heldKeys.length))];
+  const key=fresh[Math.min(fresh.length-1,Math.floor(Math.max(0,Number(random())||0)*fresh.length))];
   next.inventory.held={...(next.inventory.held||{}),[key]:((next.inventory.held||{})[key]||0)+1};
+  next.heldObtained=[...new Set([...list(s?.heldObtained),key])];
   next.lastHeldItem=key;
  }else if(item.held){
   next.inventory.held={...(next.inventory.held||{}),[item.held]:((next.inventory.held||{})[item.held]||0)+1};

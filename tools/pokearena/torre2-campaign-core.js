@@ -20,7 +20,7 @@ import {towerRun,towerFloor,towerToken,towerCheckHeal,resolveTowerFloor} from '.
 import {EVENTS_3X3,ALL_EVENTS,eventStatus,eventTeam,playerTrio,eventToken,resolveEventResult,eventPokemonRoll} from './battle-events.js';
 import {timeOfDay,filterByTime} from './world.js';
 import {cleanRules,eligibleIndices,playerLevelFor,buildOpponents,customState,customToken,resolveCustomResult} from './custom-battles.js';
-import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,wildItemRoll,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
+import {HELD_ITEMS,LEADER_ITEMS,EVENT_ITEMS,giveHeldOnce,giveItem,expFactor,blocksEvolution,moneyFactor,wildLevelShift,escapesWildLoss,machoBraceGrowth} from './individuality.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -699,7 +699,7 @@ export function resolveBattle(s,won,random=Math.random){
    if(freshBadge)awards.push(STAGES[next.stage].badge);
    // Held item of the gym's type, first win only (individuality.js).
    if(freshBadge&&LEADER_ITEMS[next.stage]){
-    next.inventory=giveItem(next,LEADER_ITEMS[next.stage]).inventory;next.lastHeldReward=LEADER_ITEMS[next.stage]}
+    const g=giveHeldOnce(next,LEADER_ITEMS[next.stage]);if(g.given){next.inventory=g.state.inventory;next.heldObtained=g.state.heldObtained;next.lastHeldReward=LEADER_ITEMS[next.stage]}}
    const tm=grantGymTM(next,next.stage);
    next.lastRewardTM=tm.added?tm.item.name:null;
    next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
@@ -1036,7 +1036,7 @@ export function resolveEventBattle(s,token,won,random=Math.random){
   }else next.losses++;
   const r=resolveEventResult(next,id,!!won);
   Object.assign(next,r.state);next.eventPending=null;next.lastHeldReward=null;
-  if(r.first&&EVENT_ITEMS[id]){next.inventory=giveItem(next,EVENT_ITEMS[id]).inventory;next.lastHeldReward=EVENT_ITEMS[id]}
+  if(r.first&&EVENT_ITEMS[id]){const g=giveHeldOnce(next,EVENT_ITEMS[id]);if(g.given){next.inventory=g.state.inventory;next.heldObtained=g.state.heldObtained;next.lastHeldReward=EVENT_ITEMS[id]}}
   // 5% per win: one of the challenger's Pokémon joins (team, or PC if full).
   let gift=null;next.lastEventPokemon=null;
   const species=won?eventPokemonRoll(ALL_EVENTS.find(e=>e.id===id),random):null;
@@ -1123,10 +1123,10 @@ export function resolveWildBattle(s,won,random=Math.random){
    next.lastMessage=wild.id+' desmaiou e foi embora. '+(next.champion?'Ele volta depois de mais algumas vitórias.':'Ele volta depois que você zerar a Liga.');
   }else
   next.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
-  // Small chance (5%) of the held item of the wild Pokémon's type.
-  next.lastHeldReward=wildItemRoll(kantoTypes(wild.id),random);
-  if(next.lastHeldReward){next.inventory=giveItem(next,next.lastHeldReward).inventory;
-   next.lastMessage+=' Ele deixou cair: '+HELD_ITEMS[next.lastHeldReward].name+'!'}
+  // Owner 2026-11-24: battle items come only from their one specific
+  // source (leader, 3x3/Rocket challenge or city mission), never from wild
+  // drops.
+  next.lastHeldReward=null;
   return {won:true,message:next.lastMessage,growth,
    sharedExp:shared.gains,evolutions:shared.evolutions};
  });

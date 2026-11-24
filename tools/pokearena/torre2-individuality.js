@@ -139,9 +139,9 @@ export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','mir
 // Owner 2026-11-24: every 3x3/Rocket challenge gives a battle item on its
 // (single) win; better items on later maps.
 export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e7:'silverpowder',k1:'smokeball',
- e2:'mysticwater',e8:'seaincense',e3:'metalcoat',e9:'poisonbarb',k2:'amuletcoin',
- e10:'hardstone',e11:'charcoal',k3:'cleansetag',e4:'blackbelt',e12:'scopelens',e13:'nevermeltice',k4:'kingsrock',
- e5:'blackglasses',e14:'leftovers',e6:'dragonfang',e15:'luckyegg',k5:'choiceband'});
+ e2:'whiteherb',e8:'seaincense',e3:'metalcoat',e9:'quickclaw',k2:'amuletcoin',
+ e10:'thickclub',e11:'mentalherb',k3:'cleansetag',e4:'machobrace',e12:'blackglasses',e13:'focusband',k4:'kingsrock',
+ e5:'brightpowder',e14:'scopelens',e6:'dragonscale',e15:'leftovers',k5:'choiceband'});
 export const WILD_ITEM_CHANCE=.05;
 // Wild win: small chance of the item of the wild Pokémon's first type.
 export function wildItemRoll(types,random=Math.random){
@@ -149,7 +149,21 @@ export function wildItemRoll(types,random=Math.random){
  if(!(Number.isFinite(r)&&r>=0&&r<WILD_ITEM_CHANCE))return null;
  return itemForType(list(types)[0]);
 }
-export const HOW_TO_GET='Ganhe itens vencendo líderes e eventos 3x3 pela 1ª vez, com 5% de chance em lutas selvagens e na Loja de pontos.';
+export const HOW_TO_GET='Cada item de batalha existe uma vez por jornada: líderes, desafios 3x3/Rocket, missões da cidade ou o Item surpresa da Loja de pontos. Toque num item para ver de onde ele vem.';
+// Owner 2026-11-24: each battle item is obtained ONCE per journey, from one
+// specific source. Items already owned (old saves) count as obtained.
+export function heldObtained(s){
+ const got=new Set(list(s?.heldObtained));
+ for(const [k,n] of Object.entries(s?.inventory?.held||{}))if(n>0)got.add(k);
+ for(const m of [...list(s?.team),...list(s?.box)])if(m?.heldItem)got.add(m.heldItem);
+ return got;
+}
+export function giveHeldOnce(state,key){
+ if(!HELD_ITEMS[key])return {state,given:false};
+ const got=heldObtained(state);if(got.has(key))return {state,given:false};
+ const next=giveItem(state,key);next.heldObtained=[...new Set([...list(state?.heldObtained),key])];
+ return {state:next,given:true};
+}
 export function heldItemOf(member){return HELD_ITEMS[member?.heldItem]?member.heldItem:null}
 export function itemDesc(key){const it=HELD_ITEMS[key];return !it?'':it.type?'+10% de dano com golpes do tipo '+it.type:it.desc}
 const holds=(member,key)=>heldItemOf(member)===key&&(!HELD_ITEMS[key].only||HELD_ITEMS[key].only.includes(member?.id));
