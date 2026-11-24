@@ -106,19 +106,20 @@ test('PC box Pokémon have a read-only Summary; city missions warn when ready',(
  assert.match(scene,/Missão da cidade concluída/);
  assert.match(scene,/readyAnnounced/);
 });
-test('points shop: 16 items with sprites, specific held items and money',async()=>{
- const {POINT_SHOP,buyWithPoints}=await import('../tools/pokearena/torre2-daily-missions.js');
+test('points shop: supplies, money and the surprise box (only items not obtained yet)',async()=>{
+ const {POINT_SHOP,buyWithPoints,shopItemState}=await import('../tools/pokearena/torre2-daily-missions.js');
  const {HELD_ITEMS}=await import('../tools/pokearena/torre2-individuality.js');
+ const keys=Object.keys(HELD_ITEMS);
  assert.ok(POINT_SHOP.length>=16);
- for(const it of POINT_SHOP){assert.ok(it.icon&&it.desc&&it.cost>0,it.id);if(it.held)assert.ok(HELD_ITEMS[it.held],it.held)}
- const s={missionPoints:300,money:100,inventory:{held:{}},pointShopBought:[]};
- const a=buyWithPoints(s,'leftovers',Math.random,Object.keys(HELD_ITEMS));
- assert.equal(a.inventory.held.leftovers,1);assert.equal(a.missionPoints,210);
- const m=buyWithPoints(s,'money5k');assert.equal(m.money,5100);assert.equal(m.missionPoints,265);
+ for(const it of POINT_SHOP){assert.ok(it.icon&&it.desc&&it.cost>0,it.id);assert.ok(!it.held,'no specific battle item for sale: '+it.id)}
+ const box=POINT_SHOP.find(i=>i.heldRandom);assert.ok(box,'surprise box kept');
+ const s={missionPoints:300,money:100,inventory:{held:{leftovers:1}},pointShopBought:[],heldObtained:['charcoal']};
+ const owned=new Set(['leftovers','charcoal']);
+ for(let i=0;i<40;i++){const r=buyWithPoints(s,'heldbox',()=>i/40,keys);assert.ok(!owned.has(r.lastHeldItem),r.lastHeldItem);assert.ok(r.heldObtained.includes(r.lastHeldItem))}
+ const all={missionPoints:300,inventory:{held:{}},heldObtained:keys};
+ assert.equal(buyWithPoints(all,'heldbox',Math.random,keys),null);assert.equal(shopItemState(all,box,keys).ok,false);
+ const m=buyWithPoints(s,'money5k');assert.equal(m.money,5100);
  const k=buyWithPoints(s,'status10');assert.equal(k.inventory.antidote,2);assert.equal(k.inventory.iceheal,2);
- const scene=read('torre2-campaign-scene.js');
- assert.match(scene,/pointShopScreen\(state,page=0\)\{/);
- assert.match(scene,/const x=18\+\(i%3\)\*204,y=92\+Math\.floor\(i\/3\)\*70/);
 });
 test('challenges: reward shown, won once, prizes grow with the map',async()=>{
  const {ALL_EVENTS,eventStatus,rewardTier}=await import('../tools/pokearena/torre2-battle-events.js');
@@ -143,4 +144,15 @@ test('routes: catchable FRLG species added, grass screen paged, route table publ
   assert.match(routes,new RegExp("'"+id+"'"),id);
  assert.match(pub,/\['tools\/pokearena\/torre2-route-data\.js','torre2\/route-data\.js'\]/);
  assert.match(scene,/uniq\.slice\(gPage\*12,gPage\*12\+12\)/);
+});
+test('every battle item has exactly ONE source and is given once per journey',async()=>{
+ const I=await import('../tools/pokearena/torre2-individuality.js');const Q=await import('../tools/pokearena/torre2-npc-quests.js');
+ const src={};const add=(k,w)=>{(src[k]??=[]).push(w)};
+ I.LEADER_ITEMS.forEach((k,i)=>add(k,'leader'+i));Object.entries(I.EVENT_ITEMS).forEach(([e,k])=>add(k,e));Q.ALL_QUESTS.forEach(q=>q.reward?.held&&add(q.reward.held,q.id));
+ for(const k of Object.keys(I.HELD_ITEMS))assert.equal((src[k]||[]).length,1,k+' '+JSON.stringify(src[k]));
+ let s={inventory:{held:{}},team:[],box:[]};
+ const a=I.giveHeldOnce(s,'charcoal');assert.ok(a.given);assert.equal(a.state.inventory.held.charcoal,1);
+ const b=I.giveHeldOnce(a.state,'charcoal');assert.equal(b.given,false,'second copy refused');
+ const eq={inventory:{held:{}},team:[{heldItem:'magnet'}],box:[]};assert.equal(I.giveHeldOnce(eq,'magnet').given,false,'equipped counts as obtained');
+ const core=read('torre2-campaign-core.js');assert.doesNotMatch(core,/wildItemRoll\(/);assert.match(core,/giveHeldOnce\(next,LEADER_ITEMS/);
 });

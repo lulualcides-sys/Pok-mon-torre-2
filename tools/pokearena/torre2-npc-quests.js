@@ -37,54 +37,54 @@ const Q=(id,stage,sprite,npc,line,kind,goal,extra,reward)=>Object.freeze({id,sta
 export const QUESTS=Object.freeze([
  Q('q01',0,'youngster','Jovem Joey','Meu Rattata é o melhor! Duvido você ter um Pokémon Normal tão bom.','haveType',1,{type:'NORMAL'},{items:{potion:3}}),
  Q('q02',0,'lass','Menina Ana','Estou aprendendo a capturar. Me mostra como se faz? Pegue 2!','captures',2,{},{items:{pokeball:5}}),
- Q('q03',0,'bugcatcher','Caçador Téo','Insetos são os mais legais! Traga dois Pokémon Inseto.','haveType',2,{type:'BUG'},{held:'silverpowder'}),
+ Q('q03',0,'bugcatcher','Caçador Téo','Insetos são os mais legais! Traga dois Pokémon Inseto.','haveType',2,{type:'BUG'},{items:{greatball:3}}),
  Q('q04',0,'oldman','Vovô de Viridian','No meu tempo a gente capturava com paciência. Capture um Pokémon para mim.','captures',1,{},{items:{greatball:2}}),
  Q('q05',0,'hiker','Montanhista Bento','As pedras de Pewter são duras como o Brock! Tem um Pokémon Pedra?','haveType',1,{type:'ROCK'},{money:800}),
  Q('q06',0,'camper','Campista Lucas','Treino todo dia. Quero ver um Pokémon seu no Nv 10.','level',10,{},{items:{superpotion:2}}),
- Q('q07',1,'swimmer','Nadador Davi','A água de Cerulean é limpinha. Traga 2 Pokémon de Água!','haveType',2,{type:'WATER'},{held:'mysticwater'}),
+ Q('q07',1,'swimmer','Nadador Davi','A água de Cerulean é limpinha. Traga 2 Pokémon de Água!','haveType',2,{type:'WATER'},{items:{greatball:3},money:1000}),
  Q('q08',1,'bill','Bill','Estou pesquisando Pokémon. Veja 20 espécies na sua Pokédex!','dexSeen',20,{},{money:1500}),
  Q('q09',1,'lass','Menina Clara','Vi um Zubat no Mt. Moon e fiquei com medo... você tem um?','have',1,{species:'zubat'},{items:{greatball:3}}),
  Q('q10',1,'camper','Campista Rui','A Ponte Pepita é puxada! Vença 5 batalhas depois de falar comigo.','wins',5,{},{money:1200}),
- Q('q11',1,'youngster','Jovem Beto','Plantas crescem rápido aqui. Tem um Pokémon Planta?','haveType',1,{type:'GRASS'},{held:'miracleseed'}),
+ Q('q11',1,'youngster','Jovem Beto','Plantas crescem rápido aqui. Tem um Pokémon Planta?','haveType',1,{type:'GRASS'},{held:'everstone'}),
  Q('q12',1,'picnicker','Piquenique Lia','Meu sonho é ter um Pokémon no Nv 15. Me mostra o seu?','level',15,{},{items:{superpotion:3}}),
  Q('q13',2,'sailor','Marinheiro Zé','O S.S. Anne só leva treinador de verdade. Mostre 3 Pokémon de Água!','haveType',3,{type:'WATER'},{money:2000}),
  Q('q14',2,'man','Presidente do Fã-Clube','Eu amo Pokémon talentosos! Tem algum com 3 estrelas?','stars',3,{},{held:'soothebell'}),
- Q('q15',2,'scientist','Cientista Ivo','Estudo a eletricidade do Lt. Surge. Traga um Pokémon Elétrico.','haveType',1,{type:'ELECTRIC'},{held:'magnet'}),
- Q('q16',2,'fisherman','Pescador Nico','Todo mundo ri do Magikarp, mas eu amo! Me mostra um.','have',1,{species:'magikarp'},{held:'seaincense'}),
- Q('q17',2,'gentleman','Cavalheiro Otto','Só converso com treinadores de sucesso. Mostre que tem $5000.','money',5000,{},{held:'amuletcoin'}),
- Q('q18',2,'rocker','Roqueiro Dinho','Quero ver energia! Vença 8 batalhas depois de aceitar.','wins',8,{},{held:'quickclaw'}),
- Q('q19',3,'woman','Florista Rosa','O jardim da Erika é lindo. Traga 3 Pokémon Planta!','haveType',3,{type:'GRASS'},{held:'leftovers'}),
+ Q('q15',2,'scientist','Cientista Ivo','Estudo a eletricidade do Lt. Surge. Traga um Pokémon Elétrico.','haveType',1,{type:'ELECTRIC'},{money:2000}),
+ Q('q16',2,'fisherman','Pescador Nico','Todo mundo ri do Magikarp, mas eu amo! Me mostra um.','have',1,{species:'magikarp'},{held:'deepseatooth'}),
+ Q('q17',2,'gentleman','Cavalheiro Otto','Só converso com treinadores de sucesso. Mostre que tem $5000.','money',5000,{},{items:{ultraball:2},money:2000}),
+ Q('q18',2,'rocker','Roqueiro Dinho','Quero ver energia! Vença 8 batalhas depois de aceitar.','wins',8,{},{held:'stick'}),
+ Q('q19',3,'woman','Florista Rosa','O jardim da Erika é lindo. Traga 3 Pokémon Planta!','haveType',3,{type:'GRASS'},{items:{superpotion:5}}),
  Q('q20',3,'acef','Treinadora Bia','Colecionar é tudo! Capture 25 espécies.','dexCaught',25,{},{items:{ultraball:3}}),
  Q('q21',3,'clerk','Vendedor da Loja','Na loja de departamentos amamos variedade. Junte 3 itens de batalha.','held',3,{},{money:3000}),
- Q('q22',3,'rocketf','Recruta Rocket','Ei! O Cassino é nosso... Vença 10 batalhas e talvez eu te deixe em paz.','wins',10,{},{held:'smokeball'}),
- Q('q23',3,'biker','Motoqueiro Vado','A Ciclovia é perigosa. Mostre 2 Pokémon Veneno!','haveType',2,{type:'POISON'},{held:'poisonbarb'}),
+ Q('q22',3,'rocketf','Recruta Rocket','Ei! O Cassino é nosso... Vença 10 batalhas e talvez eu te deixe em paz.','wins',10,{},{money:3000}),
+ Q('q23',3,'biker','Motoqueiro Vado','A Ciclovia é perigosa. Mostre 2 Pokémon Veneno!','haveType',2,{type:'POISON'},{items:{fullheal:3}}),
  Q('q24',3,'gentleman','Cavalheiro Hugo','Experiência é tudo. Tem um Pokémon no Nv 25?','level',25,{},{held:'expshare'}),
- Q('q25',4,'fisherman','Pescador Tião','Os lagos de Fuchsia são enormes. Mostre 4 Pokémon de Água.','haveType',4,{type:'WATER'},{held:'kingsrock'}),
+ Q('q25',4,'fisherman','Pescador Tião','Os lagos de Fuchsia são enormes. Mostre 4 Pokémon de Água.','haveType',4,{type:'WATER'},{held:'deepseascale'}),
  Q('q26',4,'man','Guarda do Safari','No Safari a gente captura muito! Capture 5 depois de aceitar.','captures',5,{},{items:{ultraball:5}}),
  Q('q27',4,'oldman','Guarda Velho','Perdi minha dentadura... brincadeira! Me mostra um Chansey.','have',1,{species:'chansey'},{held:'luckypunch'}),
- Q('q28',4,'blackbelt','Faixa-Preta Kaito','Força de verdade! Mostre 2 Pokémon Lutador.','haveType',2,{type:'FIGHTING'},{held:'blackbelt'}),
- Q('q29',4,'acef','Treinadora Lumi','Procuro talentos raros. Tem um Pokémon com 4 estrelas?','stars',4,{},{held:'scopelens'}),
+ Q('q28',4,'blackbelt','Faixa-Preta Kaito','Força de verdade! Mostre 2 Pokémon Lutador.','haveType',2,{type:'FIGHTING'},{items:{ultraball:3}}),
+ Q('q29',4,'acef','Treinadora Lumi','Procuro talentos raros. Tem um Pokémon com 4 estrelas?','stars',4,{},{items:{ultraball:4}}),
  Q('q30',4,'camper','Campista Gil','Lutas 3x3 são incríveis! Vença 1 evento 3x3.','events',1,{},{money:4000}),
- Q('q31',5,'woman','Médium Íris','Sinto uma mente forte em você. Mostre 2 Pokémon Psíquicos.','haveType',2,{type:'PSYCHIC'},{held:'twistedspoon'}),
+ Q('q31',5,'woman','Médium Íris','Sinto uma mente forte em você. Mostre 2 Pokémon Psíquicos.','haveType',2,{type:'PSYCHIC'},{money:4000}),
  Q('q32',5,'scientist','Cientista da Silph','A Silph precisa de dados! Capture 40 espécies.','dexCaught',40,{},{held:'upgrade'}),
- Q('q33',5,'blackbelt','Mestre do Dojô','No Dojô se treina até cair! Vença 12 batalhas depois de aceitar.','wins',12,{},{held:'focusband'}),
- Q('q34',5,'rocket','Recruta Rocket','Desafio personalizado? Isso é coisa de forte... Complete 1 e eu fujo!','series',1,{},{held:'choiceband'}),
- Q('q35',5,'channeler','Médium de Lavender','Os espíritos da Torre Pokémon pedem... um Pokémon Fantasma.','haveType',1,{type:'GHOST'},{held:'spelltag'}),
- Q('q36',5,'fuji','Sr. Fuji','Pokémon rivais crescem juntos. Vença 3 lutas de rivalidade.','rivalry',3,{},{held:'cleansetag'}),
+ Q('q33',5,'blackbelt','Mestre do Dojô','No Dojô se treina até cair! Vença 12 batalhas depois de aceitar.','wins',12,{},{items:{ultraball:4},money:2000}),
+ Q('q34',5,'rocket','Recruta Rocket','Desafio personalizado? Isso é coisa de forte... Complete 1 e eu fujo!','series',1,{},{money:5000}),
+ Q('q35',5,'channeler','Médium de Lavender','Os espíritos da Torre Pokémon pedem... um Pokémon Fantasma.','haveType',1,{type:'GHOST'},{items:{superpotion:5}}),
+ Q('q36',5,'fuji','Sr. Fuji','Pokémon rivais crescem juntos. Vença 3 lutas de rivalidade.','rivalry',3,{},{money:4000}),
  Q('q37',6,'scientist','Cientista do Laboratório','Fósseis e pedras! Mostre 3 Pokémon Pedra.','haveType',3,{type:'ROCK'},{money:5000}),
  Q('q38',6,'oldman','Velho do Quiz','Pergunta: quantas insígnias você tem? Se forem 6, ganha prêmio!','badges',6,{},{items:{ultraball:5}}),
- Q('q39',6,'biker','Motoqueiro Brasa','Cinnabar é puro fogo! Mostre 3 Pokémon de Fogo.','haveType',3,{type:'FIRE'},{held:'charcoal'}),
+ Q('q39',6,'biker','Motoqueiro Brasa','Cinnabar é puro fogo! Mostre 3 Pokémon de Fogo.','haveType',3,{type:'FIRE'},{items:{fullheal:5}}),
  Q('q40',6,'swimmer','Nadadora Mar','Nadei até aqui! Tem um Pokémon no Nv 40?','level',40,{},{held:'shellbell'}),
- Q('q41',6,'nurse','Enfermeira Joy','Pokémon raros me fascinam. Tem algum com habilidade oculta?','ability',1,{},{held:'mentalherb'}),
- Q('q42',6,'ace','Ás Pedro','A Torre de desafios separa os fortes. Chegue ao andar 10.','tower',10,{},{held:'leftovers'}),
- Q('q43',7,'ace','Ás Marcos','Só aceito o melhor. Mostre um Pokémon com 5 estrelas!','stars',5,{},{held:'brightpowder'}),
- Q('q44',7,'acef','Ás Carla','A Victory Road exige preparo. Capture 70 espécies.','dexCaught',70,{},{held:'machobrace'}),
- Q('q45',7,'hiker','Montanhista Ulisses','Cavernas pedem Pokémon de Terra. Mostre 3!','haveType',3,{type:'GROUND'},{held:'softsand'}),
+ Q('q41',6,'nurse','Enfermeira Joy','Pokémon raros me fascinam. Tem algum com habilidade oculta?','ability',1,{},{items:{ultraball:5}}),
+ Q('q42',6,'ace','Ás Pedro','A Torre de desafios separa os fortes. Chegue ao andar 10.','tower',10,{},{money:8000}),
+ Q('q43',7,'ace','Ás Marcos','Só aceito o melhor. Mostre um Pokémon com 5 estrelas!','stars',5,{},{items:{ultraball:6}}),
+ Q('q44',7,'acef','Ás Carla','A Victory Road exige preparo. Capture 70 espécies.','dexCaught',70,{},{money:8000}),
+ Q('q45',7,'hiker','Montanhista Ulisses','Cavernas pedem Pokémon de Terra. Mostre 3!','haveType',3,{type:'GROUND'},{items:{ultraball:5}}),
  Q('q46',7,'blackbelt','Faixa-Preta Ryu','Disciplina total: tenha um Pokémon no Nv 50.','level',50,{},{held:'laxincense'}),
  Q('q47',9,'oak','Prof. Carvalho','Você é Campeão! Agora complete 100 espécies na Pokédex.','dexCaught',100,{},{items:{ultraball:10}}),
  Q('q48',9,'bill','Bill','Um shiny! Você já capturou algum? Quero ver!','shiny',1,{},{held:'lightball'}),
  Q('q49',9,'gentleman','Magnata de Kanto','Treinadores lendários vencem eventos. Vença 10 eventos 3x3.','events',10,{},{money:20000}),
- Q('q50',9,'ace','Ás Lendária','Três desafios personalizados completos. Topa?','series',3,{},{held:'dragonscale'}),
+ Q('q50',9,'ace','Ás Lendária','Três desafios personalizados completos. Topa?','series',3,{},{money:15000}),
  Q('q51',9,'channeler','Médium Selene','Os espíritos querem companhia: mostre 3 Pokémon Fantasma.','haveType',3,{type:'GHOST'},{held:'metalpowder'}),
  Q('q52',9,'oak','Prof. Carvalho','O sonho de todo pesquisador: os 151 de Kanto!','dexCaught',151,{},{money:50000,items:{ultraball:20}})
 ]);
@@ -95,16 +95,16 @@ export const RARE_CHANCE=.03;
 const R=(id,sprite,npc,line,kind,goal,extra,reward)=>Object.freeze({id,stage:1,rare:true,sprite,npc,line,kind,goal,...extra,reward});
 export const RARE_QUESTS=Object.freeze([
  R('r01','oak','Prof. Carvalho (raro)','Uma pesquisa lendária: complete 120 espécies e eu te dou meu maior tesouro.','dexCaught',120,{},{items:{masterball:1},money:30000}),
- R('r02','blackbelt','Grão-Mestre Kenshin','Só um treinador de elite chega ao Nv 60. Prove que é um!','level',60,{},{held:'leftovers',items:{masterball:1},money:15000}),
+ R('r02','blackbelt','Grão-Mestre Kenshin','Só um treinador de elite chega ao Nv 60. Prove que é um!','level',60,{},{items:{masterball:1},money:15000}),
  R('r03','acef','Caçadora de Talentos','Dois Pokémon com 5 estrelas? Isso é raríssimo... me mostre!','starsCount',2,{},{items:{masterball:1},held:'luckyegg'}),
  R('r04','ace','Campeão Errante','Trinta vitórias seguidas de treino. Topa o desafio?','wins',30,{},{money:50000,items:{ultraball:15}}),
  R('r05','man','Colecionador Rico','Capture 10 Pokémon depois de aceitar e a Master Ball é sua.','captures',10,{},{items:{masterball:1,ultraball:10}}),
  R('r06','bill','Bill (raro)','Três shinies! Ninguém acredita que existe alguém assim...','shiny',3,{},{items:{masterball:2},money:20000}),
  R('r07','gentleman','Lorde dos Eventos','Vença 15 eventos 3x3 e receba uma relíquia.','events',15,{},{held:'souldew',money:40000}),
- R('r08','ace','Senhor da Torre','Chegue ao andar 25 da Torre de desafios.','tower',25,{},{held:'choiceband',items:{masterball:1},money:25000}),
- R('r09','rocket','Agente Rocket Desertor','Complete 5 desafios personalizados e eu te passo segredos... e uma Master Ball.','series',5,{},{items:{masterball:1},held:'expshare'}),
- R('r10','oldman','Ancião do Dragão','Os dragões escolhem poucos. Tenha 3 Pokémon Dragão.','haveType',3,{type:'DRAGON'},{held:'dragonscale',items:{masterball:1},money:20000}),
- R('r11','fuji','Sr. Fuji (raro)','Dez vitórias de rivalidade mostram um coração forte.','rivalry',10,{},{held:'amuletcoin',items:{masterball:1}}),
+ R('r08','ace','Senhor da Torre','Chegue ao andar 25 da Torre de desafios.','tower',25,{},{items:{masterball:1},money:25000}),
+ R('r09','rocket','Agente Rocket Desertor','Complete 5 desafios personalizados e eu te passo segredos... e uma Master Ball.','series',5,{},{items:{masterball:1},money:20000}),
+ R('r10','oldman','Ancião do Dragão','Os dragões escolhem poucos. Tenha 3 Pokémon Dragão.','haveType',3,{type:'DRAGON'},{items:{masterball:1},money:20000}),
+ R('r11','fuji','Sr. Fuji (raro)','Dez vitórias de rivalidade mostram um coração forte.','rivalry',10,{},{items:{masterball:1},money:20000}),
  R('r12','clerk','Dono da Loja de Departamentos','Junte 25 itens de batalha diferentes. Pago muito bem!','held',25,{},{money:60000,items:{masterball:1}})
 ]);
 export const ALL_QUESTS=Object.freeze([...QUESTS,...RARE_QUESTS]);
@@ -180,7 +180,12 @@ export function claimQuest(s,id,ctx={}){
  if(r.money)next.money=(Number(next.money)||0)+r.money;
  next.inventory={...(next.inventory||{})};
  for(const [k,n] of Object.entries(r.items||{}))next.inventory[k]=(Number(next.inventory[k])||0)+n;
- if(r.held){const held={...(next.inventory.held||{})};held[r.held]=(held[r.held]||0)+1;next.inventory.held=held}
+ // Battle items: once per journey (owner 2026-11-24); a copy already owned
+ // is not given again.
+ if(r.held){const got=new Set(list(next.heldObtained));for(const [k,n] of Object.entries(next.inventory.held||{}))if(n>0)got.add(k);
+  for(const m of [...list(next.team),...list(next.box)])if(m?.heldItem)got.add(m.heldItem);
+  if(!got.has(r.held)){const held={...(next.inventory.held||{})};held[r.held]=(held[r.held]||0)+1;next.inventory.held=held;
+   next.heldObtained=[...new Set([...list(next.heldObtained),r.held])]}}
  return next;
 }
 export function questSummary(s,ctx={}){

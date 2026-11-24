@@ -40,7 +40,7 @@ import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,que
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
 import {rewardTier,EVENTS_3X3,ROCKET_EVENTS,ALL_EVENTS,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {EVENT_ITEMS,setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {EVENT_ITEMS,LEADER_ITEMS,setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -1984,6 +1984,18 @@ create(){
  }
  // Daily missions (Mais → MISSÕES): three per day, claimed once each, bonus.
  speciesTypes(id){try{const {def,etapa}=buscar(id);return (etapa>0?def.evoluciones?.[etapa-1]?.tipos:def.tipos)||def.tipos||[]}catch{return []}}
+ // The single place each battle item comes from (owner 2026-11-24).
+ heldSourceText(key){
+  const li=LEADER_ITEMS.indexOf(key);
+  if(li>=0)return (li>=8?'Liga · ':'Líder ')+(STAGES[li]?.leader||'')+' (1ª vitória)';
+  const ev=Object.entries(EVENT_ITEMS).find(([,k])=>k===key);
+  if(ev){const e=ALL_EVENTS.find(x=>x.id===ev[0]);if(e)return (e.rocket?'Equipe Rocket · ':'Evento 3x3 · ')+e.name}
+  const q=ALL_QUESTS.find(x=>x.reward?.held===key);
+  if(q)return 'Missão da cidade · '+q.npc+(q.rare?' (rara)':'');
+  return '—';
+ }
+ heldSourceLine(key){return this.heldSourceText(key)+' · ou Item surpresa (Loja de pontos)'
+ }
  // What the player can really do today (owner 2026-11-24: no impossible
  // daily missions): types in the tall grass already reachable, VS Seeker.
  dailyCtx(s){
@@ -2069,7 +2081,7 @@ create(){
    return this.uiLabel(x,y,'?',14,'#e8c8ff',[.5,.5],6);
   };
   POINT_SHOP.slice(page*PER,page*PER+PER).forEach((it,i)=>{
-   const x=18+(i%3)*204,y=92+Math.floor(i/3)*70,w=196,h=64,st=shopItemState(cur,it);
+   const x=18+(i%3)*204,y=92+Math.floor(i/3)*70,w=196,h=64,st=shopItemState(cur,it,Object.keys(HELD_ITEMS));
    nativeRect(g,x,y,w,h,st.ok?MENU_UI.oro:MENU_UI.panelBorde,7);nativeRect(g,x+2,y+2,w-4,h-4,st.ok?0x2a3f78:0x0a1a46,6);
    // Icon window.
    nativeRect(g,x+8,y+8,34,34,MENU_UI.contorno,6);nativeRect(g,x+9,y+9,32,32,0x0c1725,5);
@@ -3885,7 +3897,7 @@ create(){
   let tip=[],pinned=null;
   const hideTip=()=>{tip.forEach(o=>o?.active&&o.destroy());tip=[]};
   const showTip=(k,x,y,pin)=>{
-   hideTip();const it=HELD_ITEMS[k],w=300,h=pin?66:46,bx=Math.max(226,Math.min(624-w,x-w/2)),by=y-18-h;
+   hideTip();const it=HELD_ITEMS[k],w=300,h=pin?76:56,bx=Math.max(226,Math.min(624-w,x-w/2)),by=y-18-h;
    const only=it.only&&!it.only.includes(member.id);
    const tg=this.add.graphics().setDepth(40);tip.push(tg);
    nativeRect(tg,bx,by,w,h,MENU_UI.contorno,7);nativeRect(tg,bx+2,by+2,w-4,h-4,0xf4f1e6,6);
@@ -3893,7 +3905,8 @@ create(){
    const lab=(lx,ly,s,c,txt,o=[0,.5])=>{const l=textoMenu(this,lx,ly,txt,{tam:s,color:c,borde:0,literal:true}).setOrigin(...o).setDepth(41);tip.push(l);return l};
    lab(bx+10,by+12,9,MENU_UI.textoOscuro,it.name).setData('torre2-ficha-tip',k);
    lab(bx+w-10,by+12,7,'#36507a','na bolsa: '+(cur.inventory?.held?.[k]||0),[1,.5]);
-   estrechar(lab(bx+10,by+30,7,only?'#a83a3a':'#24365a',itemDesc(k)+(only?' · sem efeito neste Pokémon':'')),w-20);
+   estrechar(lab(bx+10,by+29,7,only?'#a83a3a':'#24365a',itemDesc(k)+(only?' · sem efeito neste Pokémon':'')),w-20);
+   estrechar(lab(bx+10,by+43,6,'#7a4a00','Uma vez por jornada: '+this.heldSourceLine(k)),w-20).setData('torre2-ficha-tip-source',k);
    if(pin){
     const btn=this.button(bx+w-52,by+h-14,88,18,'EQUIPAR',()=>equip(k),true,8).setData('torre2-ficha-equip-confirm',k);
     this.children.list.slice(-3).forEach(o=>{o.setDepth?.(o===btn?43:42);tip.push(o)});

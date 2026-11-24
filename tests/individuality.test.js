@@ -80,13 +80,13 @@ test('held items: original FRLG icons vendored with provenance, every item has o
  const pub=read('publish-alpha0762.mjs');
  assert.match(pub,/tools\/pokearena\/torre2-held-items/);assert.match(pub,/assets\/ui\/frlg\/items\/held/);
 });
-test('held items: how to earn them (leaders, 3x3 events, wild 5%)',()=>{
+test('held items: how to earn them (leaders, 3x3 events; no wild drops since 2026-11-24)',()=>{
  assert.equal(LEADER_ITEMS.length,13);for(const k of [...LEADER_ITEMS,...Object.values(EVENT_ITEMS)])assert.ok(HELD_ITEMS[k],k);
  assert.equal(LEADER_ITEMS[0],'hardstone');assert.equal(LEADER_ITEMS[6],'charcoal');
  assert.equal(itemForType('fire'),'charcoal');assert.equal(itemForType('???'),null);
  assert.equal(wildItemRoll(['ELECTRIC'],()=>0.01),'magnet');assert.equal(wildItemRoll(['ELECTRIC'],()=>0.06),null);
  const core=read('torre2-campaign-core.js');
- assert.match(core,/LEADER_ITEMS\[/);assert.match(core,/EVENT_ITEMS\[/);assert.match(core,/wildItemRoll\(/);
+ assert.match(core,/LEADER_ITEMS\[/);assert.match(core,/EVENT_ITEMS\[/);assert.doesNotMatch(core,/wildItemRoll\(/);
 });
 
 test('25 hidden abilities: type pinch, weather, absorb, sturdy, intimidate',()=>{
