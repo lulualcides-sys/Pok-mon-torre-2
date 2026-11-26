@@ -2066,6 +2066,7 @@ create(){
  }
  // The single place each battle item comes from (owner 2026-11-24).
  heldSourceText(key){
+  if(key==='machobrace')return 'Somente Item surpresa (Loja de pontos)';
   const li=LEADER_ITEMS.indexOf(key);
   if(li>=0)return (li>=8?'Liga · ':'Líder ')+(STAGES[li]?.leader||'')+' (1ª vitória)';
   const ev=Object.entries(EVENT_ITEMS).find(([,k])=>k===key);
@@ -2074,7 +2075,7 @@ create(){
   if(q)return 'Missão da cidade · '+q.npc+(q.rare?' (rara)':'');
   return '—';
  }
- heldSourceLine(key){return this.heldSourceText(key)+' · ou Item surpresa (Loja de pontos)'
+ heldSourceLine(key){return key==='machobrace'?this.heldSourceText(key):this.heldSourceText(key)+' · ou Item surpresa (Loja de pontos)'
  }
  // What the player can really do today (owner 2026-11-24: no impossible
  // daily missions): types in the tall grass already reachable, VS Seeker.

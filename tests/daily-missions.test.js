@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {dayKey,missionsFor,ensureDaily,missionProgress,claimDaily,DAILY_BONUS} from '../tools/pokearena/torre2-daily-missions.js';
+import {dayKey,missionsFor,ensureDaily,missionProgress,claimDaily,DAILY_BONUS,shopItemState,buyWithPoints,heldObtainedSet} from '../tools/pokearena/torre2-daily-missions.js';
 const base=()=>({wins:10,team:[{id:'bulbasaur',uid:'a'}],box:[],dexSeen:['bulbasaur'],rematches:{wins:0},inventory:{pokeball:1,greatball:0,ultraball:0,potion:0,superpotion:0,tms:[]},money:100});
 test('same three missions for the same day, different on other days',()=>{
  assert.equal(dayKey(new Date(2026,10,20)),'2026-11-20');
@@ -30,4 +30,18 @@ test('a new day resets missions and baseline',()=>{
  assert.strictEqual(ensureDaily(s,'2026-11-20'),s);
  const t=ensureDaily({...s,wins:20},'2026-11-21');
  assert.equal(t.daily.day,'2026-11-21');assert.equal(t.daily.baseline.wins,20);assert.deepEqual(t.daily.claimed,[]);
+});
+
+test('Macho Brace can return only through the surprise item after consumption',()=>{
+ const baseState={missionPoints:100,inventory:{held:{}},heldObtained:['machobrace'],team:[],box:[]};
+ assert.ok(!heldObtainedSet(baseState).has('machobrace'),'historical acquisition does not lock surprise reroll');
+ const surprise={id:'heldbox',heldRandom:true,cost:45};
+ assert.equal(shopItemState(baseState,surprise,['machobrace']).ok,true);
+ const rolled=buyWithPoints(baseState,'heldbox',()=>0,['machobrace']);
+ assert.equal(rolled.inventory.held.machobrace,1);
+ assert.ok(heldObtainedSet(rolled).has('machobrace'),'cannot roll another while one is owned');
+ const spent={...rolled,inventory:{held:{}},team:[{uid:'u',heldItem:null,machobraceUsed:true}]};
+ assert.ok(!heldObtainedSet(spent).has('machobrace'),'consumed brace becomes eligible again');
+ const reroll=buyWithPoints({...spent,missionPoints:100},'heldbox',()=>0,['machobrace']);
+ assert.equal(reroll.inventory.held.machobrace,1);
 });

@@ -25,7 +25,7 @@ test('hidden ability: about 5%, stable, known kinds only',()=>{
  assert.equal(hiddenAbilityOf({uid:'y',hiddenAbility:null}),null);
  assert.equal(Object.keys(HIDDEN_ABILITIES).length,25);
 });
-test('held items: equip from the bag, swap back, unknown refused',()=>{
+test('held items: equip from the bag, swap back, unknown refused; Macho Brace is consumed per Pokémon',()=>{
  let s={team:[{id:'charmander',uid:'c1'}],box:[],inventory:{}};
  s=giveItem(s,'charcoal',1);s=giveItem(s,'magnet',1);s=giveItem(s,'vest',1);
  s=equipItem(s,'c1','charcoal');assert.equal(s.team[0].heldItem,'charcoal');assert.equal(s.inventory.held.charcoal,undefined);
@@ -33,6 +33,17 @@ test('held items: equip from the bag, swap back, unknown refused',()=>{
  s=equipItem(s,'c1','magnet');assert.equal(s.team[0].heldItem,'magnet');assert.equal(s.inventory.held.charcoal,1);
  s=equipItem(s,'c1',null);assert.equal(s.team[0].heldItem,null);assert.equal(s.inventory.held.magnet,1);
  assert.equal(equipItem(s,'c1','dragonfang'),null,'not owned');assert.equal(equipItem(s,'c1','nope'),null);
+ s=giveItem(s,'machobrace',1);s=equipItem(s,'c1','machobrace');
+ assert.equal(s.team[0].heldItem,'machobrace');
+ s=equipItem(s,'c1',null);
+ assert.equal(s.team[0].heldItem,null);
+ assert.equal(s.team[0].machobraceUsed,true,'removing consumes the one use');
+ assert.equal(s.inventory.held.machobrace,undefined,'consumed brace does not return to bag');
+ assert.equal(equipItem(s,'c1','machobrace'),null,'same Pokémon cannot use it twice');
+ s.team.push({id:'machop',uid:'c2'});s=giveItem(s,'machobrace',1);
+ s=equipItem(s,'c2','machobrace');
+ assert.equal(s.team[1].heldItem,'machobrace','another Pokémon may use a later surprise copy');
+
  assert.equal(Object.keys(HELD_ITEMS).length,47);
 });
 test('rivalries: families, both directions, party check',()=>{
@@ -82,6 +93,7 @@ test('held items: original FRLG icons vendored with provenance, every item has o
 });
 test('held items: how to earn them (leaders, 3x3 events; no wild drops since 2026-11-24)',()=>{
  assert.equal(LEADER_ITEMS.length,13);for(const k of [...LEADER_ITEMS,...Object.values(EVENT_ITEMS)])assert.ok(HELD_ITEMS[k],k);
+ assert.ok(!Object.values(EVENT_ITEMS).includes('machobrace'),'Macho Brace is not a fixed event reward');
  assert.equal(LEADER_ITEMS[0],'hardstone');assert.equal(LEADER_ITEMS[6],'charcoal');
  assert.equal(itemForType('fire'),'charcoal');assert.equal(itemForType('???'),null);
  assert.equal(wildItemRoll(['ELECTRIC'],()=>0.01),'magnet');assert.equal(wildItemRoll(['ELECTRIC'],()=>0.06),null);

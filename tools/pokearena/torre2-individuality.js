@@ -108,7 +108,7 @@ export const HELD_ITEMS=Object.freeze({
  luckyegg:{name:'Ovo da Sorte',desc:'+50% de EXP'},
  expshare:{name:'Compartilhar EXP',desc:'+25% de EXP'},
  soothebell:{name:'Sino Calmante',desc:'+10% de EXP (a campanha não tem amizade)'},
- machobrace:{name:'Bracelete Macho',desc:'Ganha +1 de potencial a cada vitória (até 31)'},
+ machobrace:{name:'Bracelete Macho',desc:'Ganha +1 de potencial a cada vitória (até 31). Cada Pokémon só usa uma vez; ao retirar, é consumido.'},
  amuletcoin:{name:'Moeda Amuleto',desc:'Dobra o dinheiro das lutas contra treinadores'},
  everstone:{name:'Pedra Eterna',desc:'Impede a evolução enquanto estiver equipada'},
  cleansetag:{name:'Amuleto Purificador',desc:'Pokémon selvagens aparecem 2 níveis abaixo'},
@@ -140,7 +140,7 @@ export const LEADER_ITEMS=Object.freeze(['hardstone','mysticwater','magnet','mir
 // (single) win; better items on later maps.
 export const EVENT_ITEMS=Object.freeze({e1:'sharpbeak',e7:'silverpowder',k1:'smokeball',
  e2:'whiteherb',e8:'seaincense',e3:'metalcoat',e9:'quickclaw',k2:'amuletcoin',
- e10:'thickclub',e11:'mentalherb',k3:'cleansetag',e4:'machobrace',e12:'blackglasses',e13:'focusband',k4:'kingsrock',
+ e10:'thickclub',e11:'mentalherb',k3:'cleansetag',e12:'blackglasses',e13:'focusband',k4:'kingsrock',
  e5:'brightpowder',e14:'scopelens',e6:'dragonscale',e15:'leftovers',k5:'choiceband'});
 export const WILD_ITEM_CHANCE=.05;
 // Wild win: small chance of the item of the wild Pokémon's first type.
@@ -149,7 +149,7 @@ export function wildItemRoll(types,random=Math.random){
  if(!(Number.isFinite(r)&&r>=0&&r<WILD_ITEM_CHANCE))return null;
  return itemForType(list(types)[0]);
 }
-export const HOW_TO_GET='Cada item de batalha existe uma vez por jornada: líderes, desafios 3x3/Rocket, missões da cidade ou o Item surpresa da Loja de pontos. Toque num item para ver de onde ele vem.';
+export const HOW_TO_GET='Itens de batalha vêm de líderes, desafios 3x3/Rocket, missões da cidade ou Item surpresa. O Bracelete Macho só vem no Item surpresa e é consumido ao retirar. Toque num item para ver de onde ele vem.';
 // Owner 2026-11-24: each battle item is obtained ONCE per journey, from one
 // specific source. Items already owned (old saves) count as obtained.
 export function heldObtained(s){
@@ -174,7 +174,11 @@ export function equipItem(state,uid,key){
  const held={...(next.inventory?.held||{})};
  if(key&&!HELD_ITEMS[key])return null;
  if(key&&!(held[key]>0))return null;
- if(m.heldItem&&HELD_ITEMS[m.heldItem])held[m.heldItem]=(held[m.heldItem]||0)+1;
+ if(key==='machobrace'&&m.machobraceUsed)return null;
+ if(m.heldItem&&HELD_ITEMS[m.heldItem]){
+  if(m.heldItem==='machobrace')m.machobraceUsed=true;
+  else held[m.heldItem]=(held[m.heldItem]||0)+1;
+ }
  if(key){held[key]--;if(!held[key])delete held[key]}
  m.heldItem=key||null;
  next.inventory={...next.inventory,held};

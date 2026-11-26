@@ -100,9 +100,8 @@ export const POINT_SHOP=Object.freeze([
  {id:'status10',name:'Kit de remédios',desc:'2 de cada remédio de status',cost:30,items:{antidote:2,paralyzeheal:2,awakening:2,burnheal:2,iceheal:2},icon:'mart:antidote'},
  {id:'money5k',name:'₽ 5.000',desc:'Dinheiro para a loja',cost:35,money:5000,icon:'money'},
  {id:'money20k',name:'₽ 20.000',desc:'Dinheiro para a loja',cost:120,money:20000,icon:'money'},
- // Owner 2026-11-24: specific battle items are not sold here (each has its
- // own source). The surprise box stays — a hard way to get one: it only
- // draws items not obtained yet in this journey.
+ // Specific battle items are not sold here. Macho Brace is exclusive to
+ // the surprise box; after being consumed on removal it can be rolled again.
  {id:'heldbox',name:'Item surpresa',desc:'Item de batalha que você ainda não tem',cost:45,heldRandom:true,icon:'gift'},
  {id:'ultra10',name:'10× Ultra Ball',desc:'Pacote grande',cost:110,items:{ultraball:10},icon:'ball:ultraball'},
  {id:'great20',name:'20× Great Ball',desc:'Pacote grande',cost:70,items:{greatball:20},icon:'ball:greatball'},
@@ -122,6 +121,10 @@ export function heldObtainedSet(s){
  const got=new Set(list(s?.heldObtained));
  for(const [k,n] of Object.entries(s?.inventory?.held||{}))if(n>0)got.add(k);
  for(const m of [...list(s?.team),...list(s?.box)])if(m?.heldItem)got.add(m.heldItem);
+ // Macho Brace may be re-rolled after it is consumed. Historical ownership
+ // does not lock it out; a currently owned/equipped copy still does.
+ got.delete('machobrace');
+ if((Number(s?.inventory?.held?.machobrace)||0)>0||[...list(s?.team),...list(s?.box)].some(m=>m?.heldItem==='machobrace'))got.add('machobrace');
  return got;
 }
 export function shopItemState(s,item,heldKeys=null){
