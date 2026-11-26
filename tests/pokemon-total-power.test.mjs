@@ -13,10 +13,16 @@ test('power rating is bounded from 0 to 100',()=>{
  assert.ok(score>=0&&score<=100);
 });
 
-test('higher level and potential increase the rating',()=>{
+test('higher individual potential increases the rating, not level',()=>{
  const high={...base,progression:{level:100},potential:{hp:31,atk:31,def:31}};
  const highStats={...stats,level:100,hp:stats.hp*(1+100/95)/(1+50/95)};
  assert.ok(powerRating(high,highStats)>powerRating(base,stats));
+});
+
+test('the same Pokémon keeps the same rating when only its level changes',()=>{
+ const highLevel={...base,progression:{level:100}};
+ const highStats={...stats,level:100,hp:stats.hp*(1+100/95)/(1+50/95)};
+ assert.equal(powerRating(highLevel,highStats),powerRating(base,stats));
 });
 
 test('combat hidden ability and equipped battle item contribute to total power',()=>{
