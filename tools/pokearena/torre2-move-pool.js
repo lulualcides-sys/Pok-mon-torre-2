@@ -1163,9 +1163,10 @@ export function balanceCampaignLeechSeed(move){
 // All other moves keep their previous cooldown; native Arena/VS values are untouched.
 export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
- sleep:2.5,
- 'sleep-powder':2.5,
+ sleep:15,
+ 'sleep-powder':15,
  supersonic:15,
+ 'confuse-ray':15,
  'seismic-toss':4,
  'egg-bomb':4,
  hex:6.5,
