@@ -40,7 +40,7 @@ import {ALL_QUESTS,rollRareQuest,RARE_CHANCE,QUESTS,CITY_NAMES,objectiveText,que
 import {buildLookTexture,playerLookId,readLook,saveLook,cycleLook,lookLabel,defaultLook} from './trainer-look.js';
 import {cycleRule,ruleLabel,customState,startSeries,abandonSeries,seriesReward,CUSTOM_DIFFICULTY,eligibleIndices} from './custom-battles.js';
 import {rewardTier,EVENTS_3X3,ROCKET_EVENTS,ALL_EVENTS,eventStatus,eventTeam,battleWeatherRoll,WEATHER_INTRO} from './battle-events.js';
-import {EVENT_ITEMS,LEADER_ITEMS,setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
+import {EVENT_ITEMS,LEADER_ITEMS,setNickname,installIndividuality,potentialOf,potentialStars,potentialGrade,potentialPercent,potentialTotalWord,POTENTIAL_STATS,powerRating,hiddenAbilityOf,HIDDEN_ABILITIES,HELD_ITEMS,HELD_ICON_DIR,heldIconKey,HOW_TO_GET,heldItemOf,itemDesc,equipItem,rivalsOf,areRivals,partyHasRivalry} from './individuality.js';
 // Campaign combat hook for individual Pokémon (potential, ability, item, rivals).
 installIndividuality();
 import {towerStatus,towerRun,towerBest,towerReward,startTowerRun,endTowerRun,TOWER_REWARD_EVERY,TOWER_ITEM_NAMES} from './challenge-tower.js';
@@ -3907,7 +3907,7 @@ create(){
   this.screenBanner(20,300,'Ficha do Pokémon','badges');
   const g=this.add.graphics().setDepth(2);
   nativeRect(g,12,44,200,250,MENU_UI.contorno,8);nativeRect(g,14,46,196,246,0x13233b,7);
-  const p=potentialOf(member),stars=potentialStars(p);
+  const p=potentialOf(member),stars=potentialStars(p),power=powerRating(member,pokemonStats(member));
   // Card glow by rating (1 star grey … 5 stars gold).
   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
   g.fillStyle(glow,.16).fillRoundedRect(18,50,188,130,6);
@@ -3927,7 +3927,7 @@ create(){
    if(on)this.tweens.add({targets:sg,scale:1,duration:260,delay:120+i*90,ease:'Back.Out'});
    if(on&&stars===5)this.tweens.add({targets:sg,alpha:.65,duration:700,delay:700+i*120,yoyo:true,repeat:-1});
   }
-  this.uiLabel(112,212,potentialTotalWord(p),9,'#'+glow.toString(16).padStart(6,'0'),[.5,.5],4).setData('torre2-ficha-stars',stars);
+  this.uiLabel(112,212,'FORÇA TOTAL · '+power+'/100',9,'#'+glow.toString(16).padStart(6,'0'),[.5,.5],4).setData('torre2-ficha-power',power);
   // Stats: segmented bar (31 points) + FireRed-style judge word.
   POTENTIAL_STATS.forEach(([k,label],i)=>{const v=p[k],y=232+i*20,c=[0x64cb9c,0xf6a268,0x7ab3f5][i];
    this.uiLabel(22,y,label,8,MENU_UI.suave,[0,.5],4);
@@ -4034,7 +4034,7 @@ create(){
    .on('pointerdown',(_pointer,_x,_y,event)=>event?.stopPropagation?.());
   const member=state.team[index];
   if(!member)return this.scene.restart();
-  const stats=pokemonStats(member),pool=availableMoves(member);
+  const stats=pokemonStats(member),power=powerRating(member,stats),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
   const slotReason=move=>campaignMoveSlotReason(member,activeSlot,move);
@@ -4128,7 +4128,7 @@ create(){
    this.showSummary(next,index,slot,page);
   }).setData('torre2-summary-nickname',true);
   const typesCaption=stats.types.join('  /  ');
-  label(25,80,'NV. '+stats.level+(member.nickname?' · '+stats.name.toUpperCase():''),C.white,member.nickname?9:11).setData('torre2-summary-level',typesCaption);
+  label(25,80,'NV. '+stats.level+' · FORÇA '+power+'/100'+(member.nickname?' · '+stats.name.toUpperCase():''),C.white,member.nickname?8:10).setData('torre2-summary-level',typesCaption).setData('torre2-summary-power',power);
   stats.types.slice(0,2).reverse().forEach((t,i)=>pill(200-i*48,80,t));
   const {def,etapa}=buscar(member.id);
   const dex=(etapa>0?def.evoluciones[etapa-1]?.dex:def.dex)||'0150';
