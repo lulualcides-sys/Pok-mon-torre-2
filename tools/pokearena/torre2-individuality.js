@@ -261,7 +261,8 @@ export function powerRating(member,stats={}){
  const speciesScore=clampPower(hp/180*20,0,20)+
   clampPower(atk/180*30,0,30)+clampPower(def/180*25,0,25)+
   clampPower(speed/180*25,0,25);
- const levelFactor=.55+.45*Math.pow(level/100,.65);
+ // This is the Pokémon's intrinsic potential, not its training progress.
+ // Level is used only to normalize HP back to the species baseline above.
  const p=potentialOf(member);
  const potentialFactor=ivFactor(p.hp)*.20+ivFactor(p.atk)*.45+ivFactor(p.def)*.35;
  const ha=hiddenAbilityOf(member);
@@ -270,7 +271,7 @@ export function powerRating(member,stats={}){
  let itemFactor=key&&item?POWER_ITEM[key]||1:1;
  if(item?.type&&list(stats.types).map(up).includes(item.type))itemFactor=Math.max(itemFactor,1.05);
  if(item?.only&&!item.only.includes(member?.id))itemFactor=1;
- return Math.round(clampPower(speciesScore*levelFactor*potentialFactor*abilityFactor*itemFactor,0,100));
+ return Math.round(clampPower(speciesScore*potentialFactor*abilityFactor*itemFactor,0,100));
 }
 // --- Combat (pure) -------------------------------------------------------------
 // atk/def: {member, side:0|1, hpRatio, hp, hpMax, types:[...], status:bool}
