@@ -230,6 +230,48 @@ export const RIVAL_BONUS=1.10;
 export function partyHasRivalry(party){
  return list(party?.friend).some(a=>list(party?.foes).some(b=>areRivals(a?.id,b?.id)));
 }
+// --- Índice de força total (0–100), somente informativo ----------------------
+// Normaliza atributos da espécie, nível e bônus efetivos em condições neutras.
+// Bônus situacionais são ponderados como expectativa; itens de EXP/economia não
+// aumentam força de combate. Não altera dano, HP nem regras das batalhas.
+const POWER_ABILITY=Object.freeze({
+ furia:1.035,casca:1.10,vigor:1.08,foco:1.05,sorte:1.10,
+ chama:1.025,torrente:1.025,crescimento:1.025,enxame:1.025,
+ gordura:1.08,levitacao:1.06,coragem:1.035,forca:1.15,
+ robustez:1.035,afobacao:1.10,fogointerior:1.07,
+ absorvevolt:1.04,absorveagua:1.04,pressao:1.025,intimidacao:1.05,
+ clorofila:1.025,nadorapido:1.025,veuareia:1.025,corpogelo:1.02,
+ rivalidade:1.025
+});
+const POWER_ITEM=Object.freeze({
+ choiceband:1.15,upgrade:1.12,lightball:1.40,thickclub:1.40,
+ luckypunch:1.30,stick:1.30,deepseatooth:1.40,deepseascale:1.10,
+ souldew:1.15,brightpowder:1.10,laxincense:1.05,metalpowder:1.10,
+ quickclaw:1.07,scopelens:1.05,kingsrock:1.025,focusband:1.02,
+ leftovers:1.04,shellbell:1.04,seaincense:1.025,dragonscale:1.025
+});
+const clampPower=(n,min,max)=>Math.max(min,Math.min(max,Number.isFinite(n)?n:min));
+export function powerRating(member,stats={}){
+ const level=clampPower(Number(stats.level??member?.progression?.level??5),1,100);
+ const hp=clampPower(Number(stats.hp)||0,0,10000)/(1+level/95);
+ const atk=clampPower(Number(stats.attack)||0,0,10000);
+ const def=clampPower(Number(stats.defense)||0,0,10000);
+ const speed=clampPower(Number(stats.speed)||0,0,10000);
+ // HP 20%, ATK 30%, DEF 25%, SPD 25%; same reference for all species.
+ const speciesScore=clampPower(hp/180*20,0,20)+
+  clampPower(atk/180*30,0,30)+clampPower(def/180*25,0,25)+
+  clampPower(speed/180*25,0,25);
+ const levelFactor=.55+.45*Math.pow(level/100,.65);
+ const p=potentialOf(member);
+ const potentialFactor=ivFactor(p.hp)*.20+ivFactor(p.atk)*.45+ivFactor(p.def)*.35;
+ const ha=hiddenAbilityOf(member);
+ const abilityFactor=POWER_ABILITY[ha]||1;
+ const key=heldItemOf(member),item=HELD_ITEMS[key];
+ let itemFactor=key&&item?POWER_ITEM[key]||1:1;
+ if(item?.type&&list(stats.types).map(up).includes(item.type))itemFactor=Math.max(itemFactor,1.05);
+ if(item?.only&&!item.only.includes(member?.id))itemFactor=1;
+ return Math.round(clampPower(speciesScore*levelFactor*potentialFactor*abilityFactor*itemFactor,0,100));
+}
 // --- Combat (pure) -------------------------------------------------------------
 // atk/def: {member, side:0|1, hpRatio, hp, hpMax, types:[...], status:bool}
 // move: {tipo}; ctx: {weather:'sun'|'rain'|'sand'|'hail'|'none'}
