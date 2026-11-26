@@ -15,20 +15,18 @@ const cooldowns=Object.fromEntries(
   .map(match=>[match[1],Number(match[2])])
 );
 
-test('only Supersonic and Hypnosis use 15 seconds in the campaign',()=>{
- assert.equal(cooldowns.supersonic,15);
- assert.equal(cooldowns.hypnosis,15);
+test('only the five requested Sleep/Confusion moves use 15 seconds in the campaign',()=>{
+ for(const id of ['supersonic','hypnosis','sleep','sleep-powder','confuse-ray'])
+  assert.equal(cooldowns[id],15,id+' must have a 15s campaign cooldown');
  const fifteenSecondMoves=Object.entries(cooldowns)
   .filter(([,seconds])=>seconds===15).map(([id])=>id).sort();
- assert.deepEqual(fifteenSecondMoves,['hypnosis','supersonic']);
+ assert.deepEqual(fifteenSecondMoves,['confuse-ray','hypnosis','sleep','sleep-powder','supersonic']);
 });
 
 test('other Sleep and Confusion moves keep their previous campaign cooldowns',()=>{
- assert.equal(cooldowns.sleep,2.5);
- assert.equal(cooldowns['sleep-powder'],2.5);
  for(const id of [
   'sing','lovely-kiss','spore','yawn','grass-whistle','dark-void',
-  'confusion','confuse-ray','sweet-kiss','teeter-dance','swagger','flatter',
+  'confusion','sweet-kiss','teeter-dance','swagger','flatter',
   'dynamic-punch','dizzy-punch','water-pulse','psybeam','signal-beam',
   'psychic','petal-dance','outrage','thrash'
  ]) assert.equal(Object.hasOwn(cooldowns,id),false,id+' must not receive the 15s override');
