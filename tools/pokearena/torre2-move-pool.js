@@ -916,6 +916,18 @@ export function defaultLoadout(member){
   // accidentally replaced by the full-power attack used by their renderer.
   return SLOTS.map(slot=>available.find(m=>m.torre2IntroSlot===slot)?.id||null);
  }
+ // Crobat has its own campaign preset. Never fall back to the stale
+ // Golbat/Zubat "Power Struggle" entry when its evolution kit is incomplete.
+ // Use only moves already present in this campaign library; native VFX remain
+ // untouched and this branch is never used by Arena, League or VS.
+ if(member.id==='crobat'){
+  const pool=available.filter(m=>canonicalMoveKey(m.nombre)!=='power-struggle'&&
+   canonicalMoveKey(m.id)!=='power-struggle');
+  const preferred=['gust','bite','crunch'].map(key=>
+   pool.find(m=>m.id===key||canonicalMoveKey(m.nombre)===key)?.id||null);
+  return uniqueCampaignSlots(
+   meaningfulDefaultUltimate(member,preferred,pool),pool,member);
+ }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
   // The native client has no per-species role plan for this Gen V family.
   // Keep the approved four-slot kit and permit its EXISTING signatures to
@@ -1033,6 +1045,23 @@ export function selectedMoves(member){
       !campaignMoveSlotReason(member,i,move))return id;
    return fallback;
   }),available,member);
+ }
+ // Crobat's saved pre-evolution slots must not survive as a valid-looking
+ // four-move set. Preserve deliberate Crobat selections, but replace legacy
+ // Power Struggle / Golbat loadouts with the current Crobat campaign preset.
+ if(member.id==='crobat'){
+  const safe=available.filter(m=>canonicalMoveKey(m.nombre)!=='power-struggle'&&
+   canonicalMoveKey(m.id)!=='power-struggle');
+  const validSafe=new Set(safe.map(m=>m.id));
+  const legacy=member.moves?.some(id=>{
+   const move=available.find(m=>m.id===id);
+   return canonicalMoveKey(move?.nombre||id)==='power-struggle';
+  });
+  const current=member.moves?.length===4&&member.movePlanSpecies==='crobat'&&
+   member.moves.every(id=>validSafe.has(id))&&!legacy;
+  const chosen=current?member.moves:defaultLoadout(member);
+  return uniqueCampaignSlots(chosen.filter(id=>validSafe.has(id)).slice(0,4),
+   safe,member).filter(Boolean);
  }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
   // The native client has no per-species role plan for this Gen V family.
