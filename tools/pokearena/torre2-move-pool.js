@@ -1159,8 +1159,8 @@ export function balanceCampaignLeechSeed(move){
   dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
   cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
 }
-// Campaign-only cooldown override. The source native move and Arena/VS
-// retain their original cooldown; only the isolated campaign copy changes.
+// Campaign-only cooldown override: only Supersonic and Hypnosis use 15s.
+// All other moves keep their previous cooldown; native Arena/VS values are untouched.
 export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
  sleep:2.5,
