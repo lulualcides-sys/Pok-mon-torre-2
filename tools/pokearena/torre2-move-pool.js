@@ -907,10 +907,20 @@ function meaningfulDefaultUltimate(member,chosen,available){
   result[3]=proposed.id;
  return result;
 }
+const isStruggleMove=move=>/(^|-)struggle($|-)/.test(canonicalMoveKey(
+ typeof move==='string'?move:(move?.torre2IntroSource||move?.nombre||move?.id)));
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
  const level=member.progression?.level??5;
+ // Crobat must never inherit Struggle from Zubat/Golbat saves or tutorial
+ // fallbacks. This species-specific rule runs BEFORE the generic Lv5 intro.
+ if(norm(member.id)==='crobat'){
+  const safe=available.filter(m=>!isStruggleMove(m));
+  const preferred=['gust','bite','crunch'].map(key=>
+   safe.find(m=>m.id===key||canonicalMoveKey(m.nombre)===key)?.id||null);
+  return uniqueCampaignSlots(preferred,safe,member);
+ }
  if(level>=5&&level<KANTO_INTRO.tutorialUntil){
   // The three keys and Lv8 ULT are real editor options. They cannot be
   // accidentally replaced by the full-power attack used by their renderer.
@@ -1027,6 +1037,19 @@ export function defaultLoadout(member){
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
  const level=member.progression?.level??5;
+ // Replace the complete stale Crobat set if ANY saved slot is Struggle,
+ // regardless of its translated display name or whether its ID is in pool.
+ if(norm(member.id)==='crobat'){
+  const safe=available.filter(m=>!isStruggleMove(m));
+  const safeIds=new Set(safe.map(m=>m.id));
+  const legacy=(member.moves||[]).some(id=>
+   isStruggleMove(available.find(m=>m.id===id)||id));
+  const validCurrent=member.moves?.length===4&&!legacy&&
+   member.moves.every(id=>safeIds.has(id));
+  const chosen=validCurrent?member.moves:defaultLoadout(member);
+  return uniqueCampaignSlots(chosen.filter(id=>safeIds.has(id)).slice(0,4),
+   safe,member).filter(Boolean);
+ }
  // Old saved slots can contain an originally equipped high-power move whose
  // real unlock gate was unavailable at Lv5. Render the SAME safe 3 moves
  // shown in the campaign menu without erasing the player's saved loadout.
@@ -1045,23 +1068,6 @@ export function selectedMoves(member){
       !campaignMoveSlotReason(member,i,move))return id;
    return fallback;
   }),available,member);
- }
- // Crobat's saved pre-evolution slots must not survive as a valid-looking
- // four-move set. Preserve deliberate Crobat selections, but replace legacy
- // Power Struggle / Golbat loadouts with the current Crobat campaign preset.
- if(member.id==='crobat'){
-  const safe=available.filter(m=>canonicalMoveKey(m.nombre)!=='power-struggle'&&
-   canonicalMoveKey(m.id)!=='power-struggle');
-  const validSafe=new Set(safe.map(m=>m.id));
-  const legacy=member.moves?.some(id=>{
-   const move=available.find(m=>m.id===id);
-   return canonicalMoveKey(move?.nombre||id)==='power-struggle';
-  });
-  const current=member.moves?.length===4&&member.movePlanSpecies==='crobat'&&
-   member.moves.every(id=>validSafe.has(id))&&!legacy;
-  const chosen=current?member.moves:defaultLoadout(member);
-  return uniqueCampaignSlots(chosen.filter(id=>validSafe.has(id)).slice(0,4),
-   safe,member).filter(Boolean);
  }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
   // The native client has no per-species role plan for this Gen V family.

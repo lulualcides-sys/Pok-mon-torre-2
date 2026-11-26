@@ -60,6 +60,21 @@ for(const p of KANTO_151){
  report.push({species:id,level5:lv5.length,level25:lv25.length,
   level50:lv50.length,legalInstalled:moves.length});
 }
+const crobatMoves=level=>Object.values(resolveLoadout(member('crobat',level)))
+ .filter(Boolean);
+for(const level of [5,8,25,50]){
+ const kit=crobatMoves(level);
+ assert.equal(kit.length,4,'Crobat must have four usable campaign moves at Lv'+level);
+ assert.ok(kit.every(m=>!/struggle/i.test(m.nombre+' '+m.id)),
+  'Crobat must never have Struggle in its campaign loadout at Lv'+level);
+}
+const legacyCrobat=member('crobat',50);
+legacyCrobat.moves=['struggle','power-struggle','struggle','power-struggle'];
+const migratedCrobat=Object.values(resolveLoadout(legacyCrobat)).filter(Boolean);
+assert.equal(migratedCrobat.length,4,'Legacy Crobat loadout must migrate to four moves');
+assert.ok(migratedCrobat.every(m=>!/struggle/i.test(m.nombre+' '+m.id)),
+ 'Legacy Crobat saves must not retain Struggle');
+console.log('CROBAT_CAMPAIGN_LOADOUT',JSON.stringify(crobatMoves(50).map(m=>m.nombre)));
 const move=(id,level,key)=>availableMoves(member(id,level)).find(m=>m.id===key);
 for(const [id,at] of [['ponyta',21],['rapidash',40]]){
  assert.ok(move(id,at,'flame-charge'),'Flame Charge from original client unavailable '+id);
