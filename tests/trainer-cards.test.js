@@ -44,7 +44,7 @@ test('leader showdown has real roster, dialogue and existing 2.5s VS transition'
 test('the city panel uses original shiny portraits for shiny team members',()=>{
  assert.match(card,/function portrait\(scene,layer,member,x,y,size=43,role='opponent'\)/);
  assert.match(card,/who\.shiny===true&&scene\.registry\?\.get\('manifiesto'\)\?\.\[dex\+'-shinyt2'\]/);
- assert.match(card,/assets\/pmd\/\'+shinyDex\+'\/portrait\.png/);
+ assert.match(card,/assets\/pmd\/'\+shinyDex\+'\/portrait\.png/);
  assert.match(card,/portrait\(scene,layer,m,x\+18,ry\+10,21,'team'\)/);
  assert.match(card,/torre2-portrait-shiny/);
 });
