@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {powerRating} from '../tools/pokearena/torre2-individuality.js';
 
 const stats={level:50,hp:135,attack:120,defense:110,speed:105,types:['ELECTRIC']};
@@ -27,4 +28,15 @@ test('an item for another species does not inflate the score',()=>{
  const invalid={...base,id:'raichu',heldItem:'lightball'};
  const without={...base,id:'raichu'};
  assert.equal(powerRating(invalid,stats),powerRating(without,stats));
+});
+
+
+test('0–100 power rating has separated visual meters in all three campaign views',()=>{
+ const scene=readFileSync(new URL('../tools/pokearena/torre2-campaign-scene.js',import.meta.url),'utf8');
+ assert.match(scene,/setData\('torre2-ficha-power',power\)/);
+ assert.match(scene,/setData\('torre2-summary-power',power\)/);
+ assert.match(scene,/setData\('torre2-box-power',power\)/);
+ assert.match(scene,/fillRoundedRect\(29,220,Math\.max\(2,166\*power\/100\),4,2\)/);
+ assert.match(scene,/fillRoundedRect\(76,202,Math\.max\(2,130\*power\/100\),4,2\)/);
+ assert.match(scene,/fillRoundedRect\(33,281,Math\.max\(1,126\*power\/100\),3,1\)/);
 });
