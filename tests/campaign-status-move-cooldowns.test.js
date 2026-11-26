@@ -6,49 +6,37 @@ import path from 'node:path';
 const source=fs.readFileSync(
  path.join(process.cwd(),'tools/pokearena/torre2-move-pool.js'),'utf8'
 );
-const statusBlock=source.match(
- /export const KANTO_CAMPAIGN_SLEEP_AND_CONFUSION_COOLDOWNS=Object\.freeze\(\{([\s\S]*?)\}\);/
+const quickBlock=source.match(
+ /export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object\.freeze\(\{([\s\S]*?)\}\);/
 );
-assert.ok(statusBlock,'Campaign Sleep/Confusion cooldown table must exist');
+assert.ok(quickBlock,'Campaign quick cooldown table must remain present');
 const cooldowns=Object.fromEntries(
- [...statusBlock[1].matchAll(/['"]?([a-z0-9-]+)['"]?\s*:\s*(\d+(?:\.\d+)?)/g)]
+ [...quickBlock[1].matchAll(/['"]?([a-z0-9-]+)['"]?\s*:\s*(\d+(?:\.\d+)?)/g)]
   .map(match=>[match[1],Number(match[2])])
 );
 
-const sleepMoves=[
- 'sleep','rest','sleep-powder','hypnosis','sing','lovely-kiss',
- 'spore','yawn','grass-whistle','dark-void'
-];
-const confusionMoves=[
- 'confusion','confuse-ray','supersonic','sweet-kiss','teeter-dance',
- 'swagger','flatter','dynamic-punch','dizzy-punch','water-pulse',
- 'psybeam','signal-beam','psychic','petal-dance','outrage','thrash'
-];
-
-test('all Sleep and Confusion moves use a 15-second campaign cooldown',()=>{
- for(const id of [...sleepMoves,...confusionMoves])
-  assert.equal(cooldowns[id],15,id+' must have a 15s cooldown');
- assert.ok(Object.values(cooldowns).every(value=>value===15),
-  'No move in the status cooldown table may use a different duration');
+test('only Supersonic and Hypnosis use 15 seconds in the campaign',()=>{
+ assert.equal(cooldowns.supersonic,15);
+ assert.equal(cooldowns.hypnosis,15);
+ const fifteenSecondMoves=Object.entries(cooldowns)
+  .filter(([,seconds])=>seconds===15).map(([id])=>id).sort();
+ assert.deepEqual(fifteenSecondMoves,['hypnosis','supersonic']);
 });
 
-test('status cooldown overrides also apply to campaign practice ULTs',()=>{
- const start=source.indexOf('export function balanceCampaignQuickCooldown(move){');
- const end=source.indexOf('export function resolveLoadout(member){',start);
- assert.ok(start>=0&&end>start,'Campaign cooldown resolver must exist');
- const resolver=source.slice(start,end);
- const statusIndex=resolver.indexOf('const statusCd=');
- const practiceGuardIndex=resolver.indexOf('if(move.torre2IntroPractice&&');
- assert.ok(statusIndex>=0&&practiceGuardIndex>statusIndex,
-  '15s status cooldown must be applied before the practice-ULT exception');
+test('other Sleep and Confusion moves keep their previous campaign cooldowns',()=>{
+ assert.equal(cooldowns.sleep,2.5);
+ assert.equal(cooldowns['sleep-powder'],2.5);
+ for(const id of [
+  'sing','lovely-kiss','spore','yawn','grass-whistle','dark-void',
+  'confusion','confuse-ray','sweet-kiss','teeter-dance','swagger','flatter',
+  'dynamic-punch','dizzy-punch','water-pulse','psybeam','signal-beam',
+  'psychic','petal-dance','outrage','thrash'
+ ]) assert.equal(Object.hasOwn(cooldowns,id),false,id+' must not receive the 15s override');
 });
 
-test('quick-cooldown table no longer overrides Sleep/Confusion durations',()=>{
- const quickBlock=source.match(
-  /export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object\.freeze\(\{([\s\S]*?)\}\);/
- );
- assert.ok(quickBlock,'Other campaign cooldown table must remain present');
- for(const id of [...sleepMoves,...confusionMoves])
-  assert.doesNotMatch(quickBlock[1],new RegExp('(?:^|[\n,])\\s*[\'"]?'+id+'[\'"]?\\s*:'),
-   id+' must be governed by the 15s status table');
+test('campaign practice ULT protection and other quick cooldowns remain intact',()=>{
+ assert.match(source,/if\(move\.torre2IntroPractice&&/);
+ assert.equal(cooldowns['charge-beam'],1.5);
+ assert.equal(cooldowns.gust,1.2);
+ assert.equal(cooldowns.thunderbolt,2);
 });
