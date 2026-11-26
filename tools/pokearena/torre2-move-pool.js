@@ -1159,43 +1159,13 @@ export function balanceCampaignLeechSeed(move){
   dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
   cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
 }
-// Every move that directly applies Sleep or Confusion (including
-// secondary confusion effects and self-confusion moves) uses 15s in the
-// Kanto campaign. Unknown/not-equipped names are inert; no source kit changes.
-export const KANTO_CAMPAIGN_SLEEP_AND_CONFUSION_COOLDOWNS=Object.freeze({
- // Sleep
- sleep:15,
- rest:15,
- 'sleep-powder':15,
- hypnosis:15,
- sing:15,
- 'lovely-kiss':15,
- spore:15,
- yawn:15,
- 'grass-whistle':15,
- 'dark-void':15,
- // Confusion
- confusion:15,
- 'confuse-ray':15,
- supersonic:15,
- 'sweet-kiss':15,
- 'teeter-dance':15,
- swagger:15,
- flatter:15,
- 'dynamic-punch':15,
- 'dizzy-punch':15,
- 'water-pulse':15,
- psybeam:15,
- 'signal-beam':15,
- psychic:15,
- 'petal-dance':15,
- outrage:15,
- thrash:15
-});
-// Other campaign-specific quick cooldowns remain independent. The native
-// source move and Arena/VS retain their original values.
+// Campaign-only cooldown override. The source native move and Arena/VS
+// retain their original cooldown; only the isolated campaign copy changes.
 export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
+ sleep:2.5,
+ 'sleep-powder':2.5,
+ supersonic:15,
  'seismic-toss':4,
  'egg-bomb':4,
  hex:6.5,
@@ -1203,16 +1173,14 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  thunderbolt:2,
  // Owner request 2026-11-21, campaign only (Arena/VS keep native values).
  gust:1.2,
+ hypnosis:15,
  'cross-poison':5
 });
 export function balanceCampaignQuickCooldown(move){
- if(!move)return move;
- const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
- // Status-move cooldowns take precedence even when the move is an early ULT.
- const statusCd=KANTO_CAMPAIGN_SLEEP_AND_CONFUSION_COOLDOWNS[name];
- if(Number.isFinite(statusCd))return {...move,cd:statusCd};
  // Lv8 practice ULTs keep their >=8s cooldown. Only Gust/Thunderbolt
  // normal HAB previews share their campaign cooldown with real moves.
+ if(!move)return move;
+ const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
  if(move.torre2IntroPractice&&
    (move.torre2IntroSlot==='e'||!['gust','thunderbolt'].includes(name)))
   return move;
