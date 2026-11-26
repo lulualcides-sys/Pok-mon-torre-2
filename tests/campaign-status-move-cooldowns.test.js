@@ -7,11 +7,11 @@ const source=fs.readFileSync(
  path.join(process.cwd(),'tools/pokearena/torre2-move-pool.js'),'utf8'
 );
 const statusBlock=source.match(
- /export const KANTO_CAMPAIGN_SLEEP_AND_CONFUSION_COOLDOWNS=Object\\.freeze\\(\\{([\\s\\S]*?)\\}\\);/
+ /export const KANTO_CAMPAIGN_SLEEP_AND_CONFUSION_COOLDOWNS=Object\.freeze\(\{([\s\S]*?)\}\);/
 );
 assert.ok(statusBlock,'Campaign Sleep/Confusion cooldown table must exist');
 const cooldowns=Object.fromEntries(
- [...statusBlock[1].matchAll(/['"]?([a-z0-9-]+)['"]?\\s*:\\s*(\\d+(?:\\.\\d+)?)/g)]
+ [...statusBlock[1].matchAll(/['"]?([a-z0-9-]+)['"]?\s*:\s*(\d+(?:\.\d+)?)/g)]
   .map(match=>[match[1],Number(match[2])])
 );
 
@@ -45,10 +45,10 @@ test('status cooldown overrides also apply to campaign practice ULTs',()=>{
 
 test('quick-cooldown table no longer overrides Sleep/Confusion durations',()=>{
  const quickBlock=source.match(
-  /export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object\\.freeze\\(\\{([\\s\\S]*?)\\}\\);/
+  /export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object\.freeze\(\{([\s\S]*?)\}\);/
  );
  assert.ok(quickBlock,'Other campaign cooldown table must remain present');
  for(const id of [...sleepMoves,...confusionMoves])
-  assert.doesNotMatch(quickBlock[1],new RegExp('(?:^|[\\n,])\\s*[\'"]?'+id+'[\'"]?\\s*:'),
+  assert.doesNotMatch(quickBlock[1],new RegExp('(?:^|[\n,])\\s*[\'"]?'+id+'[\'"]?\\s*:'),
    id+' must be governed by the 15s status table');
 });
