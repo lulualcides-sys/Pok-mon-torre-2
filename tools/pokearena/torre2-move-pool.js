@@ -1001,9 +1001,16 @@ export function defaultLoadout(member){
    reserved[1]='ancient-power';
   return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available,member);
  }
- const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
- const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
- return uniqueCampaignSlots(meaningfulDefaultUltimate(member,ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available),available,member);
+ const {def,etapa}=buscar(member.id),activeStage=etapaDe(def,etapa);
+ const slots=['lmb','rmb','q','e'];
+ // Generic evolved forms (including Crobat) must seed the campaign loadout
+ // from the ACTIVE evolution kit, not the base species' first-stage kit.
+ // Otherwise the evolved form can inherit a single base move (e.g. Power
+ // Struggle) after member.moves is intentionally cleared on evolution.
+ const ids=slots.map(slot=>canonicalMoveKey(activeStage?.kit?.[slot]?.nombre));
+ return uniqueCampaignSlots(meaningfulDefaultUltimate(member,
+  ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id)
+   .filter(Boolean).slice(0,4),available),available,member);
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
