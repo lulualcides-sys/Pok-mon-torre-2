@@ -4475,7 +4475,7 @@ create(){
   if(!member)return this.pcScreen(cur,pcPage);
   this.children.removeAll(true);this.backdrop();
   this.screenBanner(20,300,'Sumário · Caixa do PC','team');
-  const info=this.memberInfo(member),stats=pokemonStats(member),kit=resolveLoadout(member);
+  const info=this.memberInfo(member),stats=pokemonStats(member),power=powerRating(member,stats),kit=resolveLoadout(member);
   const pot=potentialOf(member),stars=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
   const g=this.add.graphics().setDepth(2),col=TIPOS[stats.types[0]]??0x5f86bd;
   const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][stars];
@@ -4484,7 +4484,7 @@ create(){
   nativeRect(g,12,44,218,256,MENU_UI.contorno,8);nativeRect(g,14,46,214,252,0x13233b,7);
   const species=String(stats.name||member.id).toUpperCase();
   estrechar(this.uiLabel(121,60,(member.nickname||species)+(member.shiny?' ✦':''),11,member.shiny?'#ffd23f':MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
-  this.uiLabel(121,75,'NV '+stats.level+(member.nickname?' · '+species:''),8,'#c8d6f0',[.5,.5],4);
+  this.uiLabel(121,75,'NV '+stats.level+' · FORÇA '+power+'/100'+(member.nickname?' · '+species:''),7,'#c8d6f0',[.5,.5],4).setData('torre2-box-power',power);
   g.fillStyle(col,.18).fillRoundedRect(22,84,198,92,7);g.fillStyle(col,.10).fillRoundedRect(22,140,198,36,{tl:0,tr:0,bl:7,br:7});
   g.lineStyle(1,col,.6).strokeRoundedRect(22,84,198,92,7);
   g.fillStyle(0x000000,.32).fillEllipse(121,166,96,12);
