@@ -983,8 +983,14 @@ create(){
   const cards=renderTrainerCardHub(this,state,handlers);
   // Back from a screen opened in MAIS: MAIS opens again (owner 2026-11-24).
   if(this.__torre2BackToExtras){this.__torre2BackToExtras=false;extrasPage(this,state,handlers)}
-  // A Pokémon was just caught: its result card (owner 2026-11-24).
-  {const lc=(readCampaign()||state).lastCapture;if(lc?.uid)this.captureResultScreen(readCampaign()||state)}
+  // A capture result belongs to one capture event, never to every map/menu
+  // redraw. The scene persists across navigation, so guard by the captured
+  // Pokémon UID until the player dismisses the result card.
+  {const cur=readCampaign()||state,lc=cur.lastCapture;
+   if(lc?.uid&&this.__torre2CaptureResultShownUid!==lc.uid){
+    this.__torre2CaptureResultShownUid=lc.uid;
+    this.captureResultScreen(cur);
+   }}
   // Destroyed when another screen clears the scene: delayed hub messages
   // must not appear over the Summary or other screens (owner print 2026-11-22).
   const hubMark=this.add.zone(-10,-10,1,1),hubAlive={get active(){return hubScene.children.list.includes(hubMark)}},hubScene=this;
@@ -1993,8 +1999,16 @@ create(){
   const lc=state.lastCapture;if(!lc?.uid)return;
   const all=[...(state.team||[]),...(state.box||[])],member=all.find(m=>m?.uid===lc.uid);
   const D=9300,objs=[];const keep=o=>{if(o)objs.push(o);return o};
-  const done=()=>{objs.forEach(o=>o?.active&&o.destroy());
-   try{const cur=readCampaign();if(cur?.lastCapture?.uid===lc.uid){const next={...cur};delete next.lastCapture;saveCampaign(next)}}catch{}};
+  const done=()=>{
+   objs.forEach(o=>o?.active&&o.destroy());
+   // Consume the event in both the persistent save and the caller's snapshot.
+   // Otherwise a stale in-memory state can reopen the card over later menus.
+   try{const cur=readCampaign();if(cur?.lastCapture?.uid===lc.uid){
+    const next={...cur};delete next.lastCapture;saveCampaign(next);
+   }}catch{}
+   if(state?.lastCapture?.uid===lc.uid)delete state.lastCapture;
+   if(this.__torre2CaptureResultShownUid===lc.uid)this.__torre2CaptureResultShownUid=null;
+  };
   if(!member){done();return}
   let stats;try{stats=pokemonStats(member)}catch{stats={name:member.id,level:member.progression?.level||5,types:[]}}
   const pot=potentialOf(member),stars=potentialStars(pot),ha=hiddenAbilityOf(member);
