@@ -124,7 +124,7 @@ test('points shop: supplies, money and the surprise box (only items not obtained
 test('challenges: reward shown, won once, prizes grow with the map',async()=>{
  const {ALL_EVENTS,eventStatus,rewardTier}=await import('../tools/pokearena/torre2-battle-events.js');
  const {EVENT_ITEMS,HELD_ITEMS}=await import('../tools/pokearena/torre2-individuality.js');
- for(const ev of ALL_EVENTS){assert.ok(HELD_ITEMS[EVENT_ITEMS[ev.id]],ev.id+' gives a battle item');assert.ok(ev.reward.money>=2000)}
+ for(const ev of ALL_EVENTS){if(EVENT_ITEMS[ev.id])assert.ok(HELD_ITEMS[EVENT_ITEMS[ev.id]],ev.id+' gives a battle item');else assert.equal(ev.id,'e4','Macho Brace was removed from fixed event rewards');assert.ok(ev.reward.money>=2000)}
  const lvl=ev=>ev.champion?9:ev.minBadges;
  const sorted=[...ALL_EVENTS].sort((a,b)=>lvl(a)-lvl(b));
  for(let i=1;i<sorted.length;i++)if(lvl(sorted[i])>lvl(sorted[i-1]))assert.ok(sorted[i].reward.money>=sorted[i-1].reward.money,sorted[i].id);
@@ -149,7 +149,8 @@ test('every battle item has exactly ONE source and is given once per journey',as
  const I=await import('../tools/pokearena/torre2-individuality.js');const Q=await import('../tools/pokearena/torre2-npc-quests.js');
  const src={};const add=(k,w)=>{(src[k]??=[]).push(w)};
  I.LEADER_ITEMS.forEach((k,i)=>add(k,'leader'+i));Object.entries(I.EVENT_ITEMS).forEach(([e,k])=>add(k,e));Q.ALL_QUESTS.forEach(q=>q.reward?.held&&add(q.reward.held,q.id));
- for(const k of Object.keys(I.HELD_ITEMS))assert.equal((src[k]||[]).length,1,k+' '+JSON.stringify(src[k]));
+ for(const k of Object.keys(I.HELD_ITEMS))assert.equal((src[k]||[]).length,k==='machobrace'?0:1,k+' '+JSON.stringify(src[k]));
+  assert.ok(!I.LEADER_ITEMS.includes('machobrace')&&!Object.values(I.EVENT_ITEMS).includes('machobrace')&&!Q.ALL_QUESTS.some(q=>q.reward?.held==='machobrace'),'Macho Brace has no fixed reward source; only the surprise box can grant it');
  let s={inventory:{held:{}},team:[],box:[]};
  const a=I.giveHeldOnce(s,'charcoal');assert.ok(a.given);assert.equal(a.state.inventory.held.charcoal,1);
  const b=I.giveHeldOnce(a.state,'charcoal');assert.equal(b.given,false,'second copy refused');
