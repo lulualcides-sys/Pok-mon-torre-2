@@ -493,21 +493,28 @@ export function enemyPortraitDex(scene,id){
  }catch{return null}
 }
 function portraitDex(scene,id){return enemyPortraitDex(scene,id)}
-function portrait(scene,layer,id,x,y,size=43,role='opponent'){
+function portrait(scene,layer,member,x,y,size=43,role='opponent'){
+ const who=member&&typeof member==='object'?member:{id:member};
+ const id=who.id;
  const dex=portraitDex(scene,id);
  if(!dex)return null;
- const key='torre2-portrait-'+dex;
+ // The live team panel receives the complete member record so shiny status
+ // selects the original PMD shiny portrait, not the normal-colour fallback.
+ const shinyDex=who.shiny===true&&scene.registry?.get('manifiesto')?.[dex+'-shinyt2']
+  ?dex+'-shinyt2':dex;
+ const key='torre2-portrait-'+shinyDex;
  const show=()=>{
   if(!layer.active||!scene.textures.exists(key))return;
   const image=scene.add.image(x,y,key).setDisplaySize(size,size)
    .setData(role==='team'?'torre2-team-preview-sprite':'torre2-opponent-sprite',id)
-   .setData(role==='team'?'torre2-team-preview-size':'torre2-opponent-size',size);
+   .setData(role==='team'?'torre2-team-preview-size':'torre2-opponent-size',size)
+   .setData('torre2-portrait-shiny',shinyDex!==dex);
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
  // Native on-demand PMD portraits with bounded callbacks and one
  // request per species; unavailable art cannot retry infinitely.
- requestCardPortrait(scene,key,'assets/pmd/'+dex+'/portrait.png',show);
+ requestCardPortrait(scene,key,'assets/pmd/'+shinyDex+'/portrait.png',show);
  return key;
 }
 export function trainerCardEntries(state){
@@ -698,7 +705,7 @@ function cityPanel(scene,layer,state,all,handlers={}){
   rectRedondo(g,x+8,ry,21,21,UI.contorno,4);rectRedondo(g,x+9,ry+1,19,19,0x0c1844,3);
   if(!m){g.setAlpha(.45);const b=pixelIcon(scene,layer,'team',x+18,ry+10,1);b?.setAlpha?.(.55);b?.setData?.('torre2-empty-slot-ball',i);continue;}
   ball(g,x+18,ry+10,4);
-  portrait(scene,layer,m.id,x+18,ry+10,21,'team');
+  portrait(scene,layer,m,x+18,ry+10,21,'team');
   const lv=m.progression?.level??m.level??'?';
   text(scene,layer,x+34,ry+6,String(m.id).replace(/-/g,' ').toUpperCase(),8,UI.texto).setOrigin(0,.5);
   text(scene,layer,x+w-9,ry+6,'NV '+lv,8,UI.suave).setOrigin(1,.5);
