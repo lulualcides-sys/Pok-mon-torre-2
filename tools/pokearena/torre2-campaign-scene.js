@@ -3927,7 +3927,13 @@ create(){
    if(on)this.tweens.add({targets:sg,scale:1,duration:260,delay:120+i*90,ease:'Back.Out'});
    if(on&&stars===5)this.tweens.add({targets:sg,alpha:.65,duration:700,delay:700+i*120,yoyo:true,repeat:-1});
   }
-  this.uiLabel(112,212,'FORÇA TOTAL · '+power+'/100',9,'#'+glow.toString(16).padStart(6,'0'),[.5,.5],4).setData('torre2-ficha-power',power);
+  // Dedicated power card: score and meter stay clear of the potential rows.
+  nativeRect(g,22,204,180,24,0x0c1725,5);
+  g.lineStyle(1,glow,.85).strokeRoundedRect(22,204,180,24,5);
+  this.uiLabel(29,212,'FORÇA TOTAL',7,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(195,212,String(power)+'/100',9,'#'+glow.toString(16).padStart(6,'0'),[1,.5],4).setData('torre2-ficha-power',power);
+  g.fillStyle(0x26384f,1).fillRoundedRect(29,220,166,4,2);
+  if(power>0)g.fillStyle(glow,1).fillRoundedRect(29,220,Math.max(2,166*power/100),4,2);
   // Stats: segmented bar (31 points) + FireRed-style judge word.
   POTENTIAL_STATS.forEach(([k,label],i)=>{const v=p[k],y=232+i*20,c=[0x64cb9c,0xf6a268,0x7ab3f5][i];
    this.uiLabel(22,y,label,8,MENU_UI.suave,[0,.5],4);
@@ -4128,7 +4134,7 @@ create(){
    this.showSummary(next,index,slot,page);
   }).setData('torre2-summary-nickname',true);
   const typesCaption=stats.types.join('  /  ');
-  label(25,80,'NV. '+stats.level+' · FORÇA '+power+'/100'+(member.nickname?' · '+stats.name.toUpperCase():''),C.white,member.nickname?8:10).setData('torre2-summary-level',typesCaption).setData('torre2-summary-power',power);
+  label(25,80,'NV. '+stats.level,C.white,10).setData('torre2-summary-level',typesCaption);
   stats.types.slice(0,2).reverse().forEach((t,i)=>pill(200-i*48,80,t));
   const {def,etapa}=buscar(member.id);
   const dex=(etapa>0?def.evoluciones[etapa-1]?.dex:def.dex)||'0150';
@@ -4187,7 +4193,10 @@ create(){
    const card=button(24,268,174,38,'',()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
    const fx=this.add.graphics().setDepth(14);
    fx.fillStyle(glow,.18).fillRoundedRect(27,271,168,32,4);
-   label(32,273,'FICHA DO POKÉMON ▸',C.gold,9);
+   label(32,273,'FICHA ▸',C.gold,9);
+   label(160,273,String(power)+'/100',8,C.white).setOrigin(1,.5).setData('torre2-summary-power',power);
+   fx.fillStyle(0x0a1422,1).fillRoundedRect(32,280,128,5,2);
+   fx.fillStyle(glow,1).fillRoundedRect(33,281,Math.max(1,126*power/100),3,1);
    // Item in its own slot on the right (never over the text).
    fx.fillStyle(0x0a1422,1).fillRoundedRect(168,272,26,26,4);fx.lineStyle(1,it?0x9ff0bf:0x34465f,1).strokeRoundedRect(168,272,26,26,4);
    const pts=r=>Array.from({length:10},(_,i)=>{const q=i%2?r*.45:r,an=-Math.PI/2+i*Math.PI/5;return new Phaser.Geom.Point(Math.cos(an)*q,Math.sin(an)*q)});
@@ -4484,13 +4493,20 @@ create(){
   nativeRect(g,12,44,218,256,MENU_UI.contorno,8);nativeRect(g,14,46,214,252,0x13233b,7);
   const species=String(stats.name||member.id).toUpperCase();
   estrechar(this.uiLabel(121,60,(member.nickname||species)+(member.shiny?' ✦':''),11,member.shiny?'#ffd23f':MENU_UI.amarillo,[.5,.5],4),200).setData('torre2-box-summary',member.uid||member.id);
-  this.uiLabel(121,75,'NV '+stats.level+' · FORÇA '+power+'/100'+(member.nickname?' · '+species:''),7,'#c8d6f0',[.5,.5],4).setData('torre2-box-power',power);
+  this.uiLabel(121,75,'NV '+stats.level+(member.nickname?' · '+species:''),7,'#c8d6f0',[.5,.5],4);
   g.fillStyle(col,.18).fillRoundedRect(22,84,198,92,7);g.fillStyle(col,.10).fillRoundedRect(22,140,198,36,{tl:0,tr:0,bl:7,br:7});
   g.lineStyle(1,col,.6).strokeRoundedRect(22,84,198,92,7);
   g.fillStyle(0x000000,.32).fillEllipse(121,166,96,12);
   this.pokemonIdleSprite(member,121,166,78,5,null,'height');
   stats.types.slice(0,2).forEach((ty,k)=>{const n=Math.min(2,stats.types.length),px=121-(n*58-4)/2+k*58;
    pastillaTipo(g,px,184,ty,54,14);this.uiLabel(px+27,191,ty[0]+ty.slice(1).toLowerCase(),8,'#ffffff',[.5,.5],5)});
+  // Separate 0–100 rating band below the sprite and type pills.
+  nativeRect(g,22,198,198,12,0x0a1422,4);
+  g.lineStyle(1,glow,.75).strokeRoundedRect(22,198,198,12,4);
+  this.uiLabel(27,204,'FORÇA',6,MENU_UI.amarillo,[0,.5],4);
+  this.uiLabel(215,204,power+'/100',8,hex(glow),[1,.5],4).setData('torre2-box-power',power);
+  g.fillStyle(0x26384f,1).fillRoundedRect(76,202,130,4,2);
+  if(power>0)g.fillStyle(glow,1).fillRoundedRect(76,202,Math.max(2,130*power/100),4,2);
   const bar=(y,label,v,max,c,txtv,tc='#ffffff')=>{this.uiLabel(24,y,label,8,MENU_UI.suave,[0,.5],4);
    nativeRect(g,58,y-4,124,9,0x0a1422,4);g.fillStyle(c,1).fillRoundedRect(59,y-3,Math.max(4,122*Math.min(1,v/max)),7,3);
    g.fillStyle(0xffffff,.25).fillRect(61,y-2,Math.max(2,118*Math.min(1,v/max)),1);
