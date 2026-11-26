@@ -4186,29 +4186,19 @@ create(){
   if(member.id==='mewtwo')label(25,282,'TESTE · GOLPES LIBERADOS','#ffcd7b',10);
   // Individual Pokémon (README 5/9/1/10): potential, hidden ability, item.
   else{
-   // Ficha card in the same style as the Ficha screen: drawn gold stars,
-   // rating word, hidden-ability seal and the equipped item icon.
-   const pot=potentialOf(member),st=potentialStars(pot),ha=hiddenAbilityOf(member),it=heldItemOf(member);
+   // Compact force rating directly in the Pokémon summary. Keep label,
+   // value and meter on separate rows so none can collide on mobile.
+   const st=potentialStars(potentialOf(member));
    const glow=[0,0x5d6b80,0x4e92bc,0x5fbf8f,0xb57cf0,0xf2c14e][st];
-   const card=button(24,268,174,38,'',()=>this.individualScreen(state,index)).setData('torre2-summary-ficha',true);
+   button(24,268,174,38,'',()=>this.individualScreen(state,index))
+    .setData('torre2-summary-ficha',true);
    const fx=this.add.graphics().setDepth(14);
-   fx.fillStyle(glow,.18).fillRoundedRect(27,271,168,32,4);
-   label(32,273,'FICHA ▸',C.gold,9);
-   label(160,273,String(power)+'/100',8,C.white).setOrigin(1,.5).setData('torre2-summary-power',power);
-   fx.fillStyle(0x0a1422,1).fillRoundedRect(32,280,128,5,2);
-   fx.fillStyle(glow,1).fillRoundedRect(33,281,Math.max(1,126*power/100),3,1);
-   // Item in its own slot on the right (never over the text).
-   fx.fillStyle(0x0a1422,1).fillRoundedRect(168,272,26,26,4);fx.lineStyle(1,it?0x9ff0bf:0x34465f,1).strokeRoundedRect(168,272,26,26,4);
-   const pts=r=>Array.from({length:10},(_,i)=>{const q=i%2?r*.45:r,an=-Math.PI/2+i*Math.PI/5;return new Phaser.Geom.Point(Math.cos(an)*q,Math.sin(an)*q)});
-   for(let i=0;i<5;i++){const sg=this.add.graphics({x:39+i*15,y:294}).setDepth(15),on=i<st;
-    if(on){sg.fillStyle(0x7a4a00,1).fillPoints(pts(7),true);sg.fillStyle(0xffd23f,1).fillPoints(pts(5.8),true);sg.fillStyle(0xfff3b0,1).fillPoints(pts(2.3).map(q=>new Phaser.Geom.Point(q.x-1,q.y-1.3)),true)}
-    else{sg.fillStyle(0x0c1725,1).fillPoints(pts(7),true);sg.fillStyle(0x4a5f7d,1).fillPoints(pts(5.6),true)}}
-   const word=label(112,294,potentialTotalWord(pot),'#'+glow.toString(16).padStart(6,'0'),8).setOrigin(0,.5);
-   if(word.displayWidth>52)word.setScale(52/word.displayWidth);
-   // Hidden-ability seal: a drawn purple diamond (the font has no ✦ glyph).
-   if(ha){fx.fillStyle(0x3a1d5c,1).fillPoints([[156,272],[162,278],[156,284],[150,278]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true);
-    fx.fillStyle(0xd7b4ff,1).fillPoints([[156,274],[160,278],[156,282],[152,278]].map(([x,y])=>new Phaser.Geom.Point(x,y)),true)}
-   if(it&&this.textures.exists(heldIconKey(it)))this.add.image(181,285,heldIconKey(it)).setDepth(15);
+   fx.fillStyle(glow,.16).fillRoundedRect(27,271,168,32,4);
+   label(34,276,'FORÇA TOTAL',C.gold,9);
+   label(189,276,String(power)+'/100',C.white,10)
+    .setOrigin(1,.5).setData('torre2-summary-power',power);
+   fx.fillStyle(0x0a1422,1).fillRoundedRect(34,287,154,6,3);
+   fx.fillStyle(glow,1).fillRoundedRect(35,288,Math.max(1,152*power/100),4,2);
   }
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
    try{
