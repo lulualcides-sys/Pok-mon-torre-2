@@ -139,6 +139,7 @@ on:
       - 'tools/pokearena/alpha0773-arenas/**'
       - 'tools/pokearena/torre2-arenas/**'
       - 'tools/pokearena/torre2-held-items/**'
+      - '.github/workflows/torre2-alpha0762-publish.yml'
   workflow_dispatch:
 
 permissions:
